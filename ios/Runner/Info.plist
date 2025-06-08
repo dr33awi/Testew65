@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>تطبيق الأذكار</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>test_athkar_app</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	
+	<!-- أذونات الموقع -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>نحتاج إلى إذن الموقع لحساب مواقيت الصلاة الدقيقة لمنطقتك</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>نحتاج إلى إذن الموقع لحساب مواقيت الصلاة الدقيقة لمنطقتك وإشعارك عند وقت الصلاة</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>نحتاج إلى إذن الموقع للحصول على مواقيت الصلاة حتى عندما لا يكون التطبيق مفتوحًا</string>
+	
+	<!-- أذونات الإشعارات -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+		<string>processing</string>
+	</array>
+	
+	<!-- وصف أذونات الإشعارات -->
+	<key>NSCalendarsUsageDescription</key>
+	<string>نحتاج الوصول إلى التقويم لجدولة إشعارات الصلاة والأذكار</string>
+	
+	<!-- وصف الإشعارات -->
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>نحتاج إلى إذن الإشعارات لإعلامك بمواقيت الصلاة والأذكار</string>
+	
+	<!-- أذونات الإشعارات المحلية الجديدة -->
+	<key>NSUserNotificationCenterUsageDescription</key>
+	<string>نحتاج إلى إذن الإشعارات لإعلامك بمواقيت الصلاة والأذكار</string>
+	<key>UNUserNotificationCenterUsageDescription</key>
+	<string>نحتاج إلى إذن الإشعارات لإعلامك بمواقيت الصلاة والأذكار</string>
+	
+	<!-- إذن إشعارات جديد لـ iOS 10 وما بعده -->
+	<key>FIRMessagingAutoInitEnabled</key>
+	<false/>
+	
+	<!-- إعدادات إشعارات الأذكار -->
+	<key>NSAthkarNotificationsDescription</key>
+	<string>نحتاج إلى إذن الإشعارات لتذكيرك بالأذكار في الأوقات المناسبة</string>
+	
+	<!-- دعم اللغات -->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>ar</string>
+		<string>en</string>
+	</array>
+	
+	<!-- إعدادات واجهة المستخدم -->
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIStatusBarHidden</key>
+	<false/>
+	
+	<!-- أذونات الإشعارات الكاملة -->
+	<key>NSUserNotificationAlertStyle</key>
+	<string>alert</string>
+	
+	<!-- إذن الإشعارات المحلية الحديث -->
+	<key>UNUserNotificationCenter</key>
+	<true/>
+	
+	<!-- الخطوط المخصصة -->
+	<key>UIAppFonts</key>
+	<array>
+		<string>Fonts/Cairo-Regular.ttf</string>
+		<string>Fonts/Cairo-Bold.ttf</string>
+		<string>Fonts/Cairo-SemiBold.ttf</string>
+		<string>Fonts/Cairo-Medium.ttf</string>
+		<string>Fonts/Cairo-Light.ttf</string>
+		<string>Fonts/Amiri-Bold.ttf</string>
+	</array>
+</dict>
+</plist>

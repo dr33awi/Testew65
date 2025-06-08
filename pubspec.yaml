@@ -1,0 +1,91 @@
+name: athkar_app
+description: "تطبيق أذكار إسلامية مع مواقيت الصلاة واتجاه القبلة"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  # 💡 حزم Flutter الأساسية
+  flutter:
+    sdk: flutter                           # الحزمة الرئيسية لتطبيقات Flutter
+  flutter_localizations:
+    sdk: flutter                           # دعم اللغات المتعددة في Flutter
+
+  # 🎨 التصميم وواجهة المستخدم
+  google_fonts: ^6.1.0                     # استخدام خطوط Google بسهولة
+  cupertino_icons: ^1.0.6                  # أيقونات واجهة iOS
+  auto_size_text: ^3.0.0                   # ضبط حجم النص تلقائيًا
+  flutter_svg: ^2.0.9                      # عرض صور SVG داخل التطبيق
+  flutter_screenutil: ^5.9.0               # دعم التصميم المتجاوب حسب حجم الشاشة
+  flutter_spinkit: ^5.2.1                  # مؤثرات تحميل متنوعة وجميلة
+  
+  # 🔄 إدارة الحالة وحقن التبعيات
+  provider: ^6.0.5                         # إدارة الحالة باستخدام Provider
+  get_it: ^8.0.3                           # حقن التبعيات
+  
+  # 🗃️ تخزين البيانات
+  shared_preferences: ^2.2.2               # تخزين بيانات بسيطة في الجهاز محليًا
+
+  # 🔔 الإشعارات
+  flutter_local_notifications: ^17.0.0     # عرض إشعارات محلية داخل التطبيق
+  timezone: ^0.9.4                         # دعم المناطق الزمنية للإشعارات
+  rxdart: ^0.28.0                          # إدارة تدفقات البيانات (Streams)
+
+  # 🕌 الموقع الجغرافي وأوقات الصلاة
+  adhan: ^2.0.0+1                          # حساب أوقات الصلاة
+  geolocator: ^10.1.0                      # تحديد الموقع الجغرافي للجهاز
+  flutter_compass: ^0.8.0                  # قراءة بيانات البوصلة للاتجاه نحو القبلة
+  permission_handler: ^11.1.0              # طلب صلاحيات الوصول مثل الموقع أو الإشعارات
+
+  # 🔄 التاريخ والوقت (هجري وميلادي)
+  intl: ^0.20.2                            # تهيئة التواريخ والأرقام
+  hijri: ^3.0.0                            # تحويل التاريخ بين هجري وميلادي
+
+  # 🌐 المشاركة
+  share_plus: ^7.2.1                       # مشاركة النصوص مع تطبيقات أخرى
+  battery_plus: ^6.2.1
+  device_info_plus: ^11.4.0
+  app_settings: ^6.1.1
+  flutter_native_timezone_latest: ^1.0.0
+  loading_animation_widget: ^1.3.0
+  flutter_staggered_animations: ^1.1.1
+  smooth_page_indicator: ^1.2.1
+  equatable: ^2.0.7
+  flutter_timezone: ^4.1.1
+  flutter_secure_storage: ^9.2.4
+  geocoding: ^4.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter                           # اختبار واجهات وتفاعلات التطبيق
+  flutter_lints: ^3.0.1                    # أدوات لتحسين جودة الكود
+  build_runner: ^2.4.7                     # توليد الكود تلقائيًا
+  mockito: ^5.4.4                          # إنشاء كائنات وهمية للاختبار
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/                       # صور التطبيق
+    - assets/data/
+    - assets/data/athkar.json
+
+  fonts:
+    - family: Cairo
+      fonts:
+        - asset: assets/fonts/Cairo-Regular.ttf
+        - asset: assets/fonts/Cairo-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Cairo-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Cairo-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Cairo-Light.ttf
+          weight: 300
+    - family: Amiri
+      fonts:
+        - asset: assets/fonts/Amiri-Bold.ttf
+          weight: 700

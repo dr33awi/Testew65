@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+  <!-- أذونات الإشعارات والتنبيهات (محسّنة) -->
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+  <uses-permission android:name="android.permission.VIBRATE" />
+  <uses-permission android:name="android.permission.WAKE_LOCK"/>
+  <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+  <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+  <!-- إضافة إذن جديد لأندرويد 12 وما فوق -->
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+  
+  <!-- أذونات الإنترنت والموقع (لمواقيت الصلاة) -->
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+  <application
+      android:label="تطبيق الأذكار"
+      android:name="${applicationName}"
+      android:icon="@mipmap/ic_launcher"
+      android:allowBackup="true"
+      android:fullBackupContent="true">
+
+      <!-- مستقبلات وخدمات الإشعارات المحلية -->
+      <receiver android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver"
+          android:exported="false">
+          <intent-filter>
+              <action android:name="android.intent.action.BOOT_COMPLETED"/>
+              <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+              <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+              <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+          </intent-filter>
+      </receiver>
+      
+      <receiver android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" 
+          android:exported="false" />
+
+      <!-- خدمات مدير المنبهات لجدولة الإشعارات -->
+      <service
+          android:name="dev.fluttercommunity.plus.androidalarmmanager.AlarmService"
+          android:permission="android.permission.BIND_JOB_SERVICE"
+          android:exported="false"/>
+          
+      <!-- مستقبل الإنذارات محسن -->
+      <receiver
+          android:name="dev.fluttercommunity.plus.androidalarmmanager.AlarmBroadcastReceiver"
+          android:enabled="true"
+          android:exported="false"
+          android:process=":athkar_alarm_process">
+          <intent-filter>
+              <action android:name="android.intent.action.BOOT_COMPLETED"/>
+          </intent-filter>
+      </receiver>
+          
+      <receiver
+          android:name="dev.fluttercommunity.plus.androidalarmmanager.RebootBroadcastReceiver"
+          android:enabled="true"
+          android:exported="false">
+          <intent-filter>
+              <action android:name="android.intent.action.BOOT_COMPLETED" />
+              <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+              <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+          </intent-filter>
+      </receiver>
+
+      <!-- خدمة الإشعارات المتقدمة للبقاء في الخلفية -->
+      <service
+        android:name="com.dexterous.flutterlocalnotifications.ForegroundService"
+        android:exported="false"
+        android:stopWithTask="false"
+        android:foregroundServiceType="dataSync"/>
+
+      <!-- النشاط الرئيسي للتطبيق -->
+      <activity
+          android:name=".MainActivity"
+          android:exported="true"
+          android:launchMode="singleTop"
+          android:theme="@style/LaunchTheme"
+          android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+          android:hardwareAccelerated="true"
+          android:windowSoftInputMode="adjustResize"
+          android:showWhenLocked="true"
+          android:turnScreenOn="true">
+          
+          <!-- مُحسّن للأجهزة ذات الشاشات الكبيرة -->
+          <meta-data
+            android:name="io.flutter.embedding.android.DefaultFlutterActivity"
+            android:value="true" />
+            
+          <!-- تكوين شاشة البداية -->
+          <meta-data
+            android:name="io.flutter.embedding.android.SplashScreenDrawable"
+            android:resource="@drawable/launch_background"
+          />
+          
+          <!-- تكوين النشاط الرئيسي -->
+          <meta-data
+            android:name="io.flutter.embedding.android.NormalTheme"
+            android:resource="@style/NormalTheme"
+          />
+            
+          <intent-filter>
+              <action android:name="android.intent.action.MAIN"/>
+              <category android:name="android.intent.category.LAUNCHER"/>
+          </intent-filter>
+          
+          <!-- إضافة معالجة أهمية عالية للإشعارات -->
+          <intent-filter>
+              <action android:name="FLUTTER_NOTIFICATION_CLICK" />
+              <category android:name="android.intent.category.DEFAULT" />
+          </intent-filter>
+      </activity>
+      
+      <!-- تكوين قناة الإشعارات لإصدارات Android الحديثة -->
+      <meta-data
+          android:name="com.google.firebase.messaging.default_notification_channel_id"
+          android:value="athkar_channel_id" />
+      
+      <!-- لا تحذف البيانات الوصفية أدناه.
+      يستخدمها أداة Flutter لإنشاء GeneratedPluginRegistrant.java -->
+      <meta-data
+          android:name="flutterEmbedding"
+          android:value="2" />
+  </application>
+</manifest>
