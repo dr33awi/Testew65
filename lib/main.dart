@@ -6,7 +6,6 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'app/di/service_locator.dart';
 import 'app/app.dart';
-// تم إزالة import غير المستخدم: import 'app/routes/app_router.dart';
 import 'core/infrastructure/services/notifications/notification_service.dart';
 import 'core/infrastructure/services/storage/storage_service.dart';
 import 'core/constants/app_constants.dart';
