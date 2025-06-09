@@ -26,6 +26,9 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
   bool _hasChanges = false;
   bool _showAdvancedSettings = false;
 
+  // استخدام اللون الأخضر الموحد
+  final Color _primaryGreenColor = ThemeConstants.success;
+
   @override
   void initState() {
     super.initState();
@@ -175,12 +178,12 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: context.primaryColor.withOpacity(0.1),
+                    color: _primaryGreenColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     Icons.notifications_active,
-                    color: context.primaryColor,
+                    color: _primaryGreenColor,
                     size: 24,
                   ),
                 ),
@@ -221,7 +224,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 _markAsChanged();
               });
             },
-            activeColor: context.primaryColor,
+            activeColor: _primaryGreenColor,
           ),
           
           // الاهتزاز
@@ -239,7 +242,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                     });
                   }
                 : null,
-            activeColor: context.primaryColor,
+            activeColor: _primaryGreenColor,
           ),
           
           // تشغيل الأذان
@@ -257,7 +260,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                     });
                   }
                 : null,
-            activeColor: context.primaryColor,
+            activeColor: _primaryGreenColor,
           ),
           
           // اختيار نوع صوت الأذان (يظهر فقط عند تفعيل الأذان)
@@ -301,16 +304,6 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                       },
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.play_circle_outline),
-                    onPressed: () {
-                      HapticFeedback.mediumImpact();
-                      context.showInfoSnackBar('تشغيل صوت الأذان للاختبار');
-                      // هنا يمكن إضافة كود تشغيل صوت الأذان للاختبار
-                    },
-                    tooltip: 'اختبار الصوت',
-                  ),
                 ],
               ),
             ),
@@ -323,11 +316,11 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
 
   Widget _buildPrayerNotificationsSection() {
     final prayers = [
-      (PrayerType.fajr, 'الفجر', Icons.dark_mode, _getPrayerColor(PrayerType.fajr)),
-      (PrayerType.dhuhr, 'الظهر', Icons.light_mode, _getPrayerColor(PrayerType.dhuhr)),
-      (PrayerType.asr, 'العصر', Icons.wb_cloudy, _getPrayerColor(PrayerType.asr)),
-      (PrayerType.maghrib, 'المغرب', Icons.wb_twilight, _getPrayerColor(PrayerType.maghrib)),
-      (PrayerType.isha, 'العشاء', Icons.bedtime, _getPrayerColor(PrayerType.isha)),
+      (PrayerType.fajr, 'الفجر', Icons.dark_mode),
+      (PrayerType.dhuhr, 'الظهر', Icons.light_mode),
+      (PrayerType.asr, 'العصر', Icons.wb_cloudy),
+      (PrayerType.maghrib, 'المغرب', Icons.wb_twilight),
+      (PrayerType.isha, 'العشاء', Icons.bedtime),
     ];
     
     return Container(
@@ -354,12 +347,12 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: context.primaryColor.withOpacity(0.1),
+                    color: _primaryGreenColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     Icons.mosque,
-                    color: context.primaryColor,
+                    color: _primaryGreenColor,
                     size: 24,
                   ),
                 ),
@@ -392,7 +385,6 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
             prayer.$1,
             prayer.$2,
             prayer.$3,
-            prayer.$4,
           )),
         ],
       ),
@@ -403,7 +395,6 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
     PrayerType type,
     String name,
     IconData icon,
-    Color color,
   ) {
     final isEnabled = _notificationSettings.enabledPrayers[type] ?? false;
     final minutesBefore = _notificationSettings.minutesBefore[type] ?? 0;
@@ -413,12 +404,12 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: _primaryGreenColor.withOpacity(0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
           icon,
-          color: color,
+          color: _primaryGreenColor,
           size: 20,
         ),
       ),
@@ -445,7 +436,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 });
               }
             : null,
-        activeColor: color,
+        activeColor: _primaryGreenColor,
       ),
       children: [
         if (isEnabled && _notificationSettings.enabled)
@@ -494,22 +485,6 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 ),
                 const SizedBox(width: 8),
                 const Text('دقيقة'),
-                
-                const Spacer(),
-                
-                // زر اختبار الإشعار
-                TextButton.icon(
-                  icon: const Icon(Icons.notifications_active, size: 16),
-                  label: const Text('اختبار'),
-                  onPressed: () {
-                    HapticFeedback.mediumImpact();
-                    context.showInfoSnackBar('تم إرسال إشعار تجريبي لصلاة $name');
-                    // هنا يمكن إضافة كود لإرسال إشعار تجريبي
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: color,
-                  ),
-                ),
               ],
             ),
           ),
@@ -544,12 +519,12 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
             leading: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: context.primaryColor.withOpacity(0.1),
+                color: _primaryGreenColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 Icons.settings,
-                color: context.primaryColor,
+                color: _primaryGreenColor,
                 size: 24,
               ),
             ),
@@ -574,7 +549,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 onChanged: _notificationSettings.enabled ? (_) {
                   context.showInfoSnackBar('هذه الميزة قيد التطوير');
                 } : null,
-                activeColor: context.primaryColor,
+                activeColor: _primaryGreenColor,
               ),
               
               // تنبيه للصلوات الفائتة
@@ -585,7 +560,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 onChanged: _notificationSettings.enabled ? (_) {
                   context.showInfoSnackBar('هذه الميزة قيد التطوير');
                 } : null,
-                activeColor: context.primaryColor,
+                activeColor: _primaryGreenColor,
               ),
               
               // عدم إزعاج أثناء النوم
@@ -596,7 +571,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 onChanged: _notificationSettings.enabled ? (_) {
                   context.showInfoSnackBar('هذه الميزة قيد التطوير');
                 } : null,
-                activeColor: context.primaryColor,
+                activeColor: _primaryGreenColor,
               ),
               
               const SizedBox(height: 8),
@@ -616,7 +591,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
         child: ElevatedButton(
           onPressed: _isSaving || !_hasChanges ? null : _saveSettings,
           style: ElevatedButton.styleFrom(
-            backgroundColor: context.primaryColor,
+            backgroundColor: _primaryGreenColor,
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -670,24 +645,5 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
         ],
       ),
     );
-  }
-
-  Color _getPrayerColor(PrayerType type) {
-    switch (type) {
-      case PrayerType.fajr:
-        return const Color(0xFF1A237E); // Deep blue
-      case PrayerType.sunrise:
-        return const Color(0xFFFFB300); // Amber
-      case PrayerType.dhuhr:
-        return const Color(0xFFFF6F00); // Orange
-      case PrayerType.asr:
-        return const Color(0xFF00897B); // Teal
-      case PrayerType.maghrib:
-        return const Color(0xFFE65100); // Deep orange
-      case PrayerType.isha:
-        return const Color(0xFF4A148C); // Purple
-      default:
-        return const Color(0xFF607D8B); // Blue grey
-    }
   }
 }

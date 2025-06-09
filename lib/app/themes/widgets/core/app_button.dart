@@ -256,25 +256,26 @@ class AppButton extends StatelessWidget {
     }
   }
 
-  // Factory constructors للاستخدام السريع
-  factory AppButton.primary({
-    required String text,
-    required VoidCallback? onPressed,
-    IconData? icon,
-    bool isLoading = false,
-    bool isFullWidth = false,
-    ButtonSize size = ButtonSize.medium,
-  }) {
-    return AppButton(
-      text: text,
-      onPressed: onPressed,
-      type: ButtonType.primary,
-      icon: icon,
-      isLoading: isLoading,
-      isFullWidth: isFullWidth,
-      size: size,
-    );
-  }
+factory AppButton.primary({
+  required String text,
+  required VoidCallback? onPressed,
+  IconData? icon,
+  bool isLoading = false,
+  bool isFullWidth = false,
+  ButtonSize size = ButtonSize.medium,
+  Color? backgroundColor, // إضافة معلمة اختيارية للون الخلفية
+}) {
+  return AppButton(
+    text: text,
+    onPressed: onPressed,
+    type: ButtonType.primary,
+    icon: icon,
+    isLoading: isLoading,
+    isFullWidth: isFullWidth,
+    size: size,
+    customColor: backgroundColor, // استخدام اللون المخصص إذا تم تمريره
+  );
+}
 
   factory AppButton.secondary({
     required String text,

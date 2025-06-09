@@ -73,7 +73,7 @@ class AppInfoDialog extends StatelessWidget {
     String cancelText = 'إلغاء',
     IconData icon = Icons.help_outline,
     Color? accentColor,
-    bool destructive = false,
+    bool destructive = false, required Color confirmButtonColor,
   }) {
     return show<bool>(
       context: context,

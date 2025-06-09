@@ -21,9 +21,6 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
   // إعدادات الحساب
   late PrayerCalculationSettings _calculationSettings;
   
-  // إعدادات التنبيهات
-  late PrayerNotificationSettings _notificationSettings;
-  
   // حالة التحميل
   bool _isLoading = true;
   bool _isSaving = false;
@@ -44,7 +41,6 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
   void _loadSettings() {
     setState(() {
       _calculationSettings = _prayerService.calculationSettings;
-      _notificationSettings = _prayerService.notificationSettings;
       _isLoading = false;
     });
   }
@@ -62,12 +58,8 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       // حفظ إعدادات الحساب
       await _prayerService.updateCalculationSettings(_calculationSettings);
       
-      // حفظ إعدادات التنبيهات
-      await _prayerService.updateNotificationSettings(_notificationSettings);
-      
       _logger.logEvent('prayer_settings_updated', parameters: {
         'calculation_method': _calculationSettings.method.toString(),
-        'notifications_enabled': _notificationSettings.enabled,
       });
       
       if (!mounted) return;
@@ -133,11 +125,6 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
                   child: _buildJuristicSection(),
                 ),
                 
-                // إعدادات التنبيهات
-                SliverToBoxAdapter(
-                  child: _buildNotificationSection(),
-                ),
-                
                 // تعديلات يدوية
                 SliverToBoxAdapter(
                   child: _buildManualAdjustmentsSection(),
@@ -164,6 +151,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       content: 'لديك تغييرات لم يتم حفظها. هل تريد حفظ التغييرات قبل المغادرة؟',
       confirmText: 'حفظ وخروج',
       cancelText: 'تجاهل التغييرات',
+      // يمكن تمرير confirmButtonColor هنا إذا كان مطلوباً
     ).then((result) {
       if (result == true) {
         _saveSettings();
@@ -245,6 +233,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
               });
             }
           },
+          activeColor: ThemeConstants.success, // استخدام اللون الأخضر
         ),
         RadioListTile<AsrJuristic>(
           title: const Text('الحنفي'),
@@ -261,152 +250,8 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
               });
             }
           },
+          activeColor: ThemeConstants.success, // استخدام اللون الأخضر
         ),
-      ],
-    );
-  }
-
-  Widget _buildNotificationSection() {
-    return SettingsSection(
-      title: 'التنبيهات',
-      icon: Icons.notifications,
-      children: [
-        SwitchListTile(
-          title: const Text('تفعيل التنبيهات'),
-          subtitle: const Text('تلقي تنبيهات لأوقات الصلاة'),
-          value: _notificationSettings.enabled,
-          onChanged: (value) {
-            setState(() {
-              _notificationSettings = _notificationSettings.copyWith(
-                enabled: value,
-              );
-              _markAsChanged();
-            });
-          },
-        ),
-        
-        if (_notificationSettings.enabled) ...[
-          const Divider(),
-          
-          // تنبيهات كل صلاة
-          _buildPrayerNotificationTile(
-            'الفجر',
-            PrayerType.fajr,
-          ),
-          _buildPrayerNotificationTile(
-            'الظهر',
-            PrayerType.dhuhr,
-          ),
-          _buildPrayerNotificationTile(
-            'العصر',
-            PrayerType.asr,
-          ),
-          _buildPrayerNotificationTile(
-            'المغرب',
-            PrayerType.maghrib,
-          ),
-          _buildPrayerNotificationTile(
-            'العشاء',
-            PrayerType.isha,
-          ),
-          
-          const Divider(),
-          
-          SwitchListTile(
-            title: const Text('الاهتزاز'),
-            subtitle: const Text('اهتزاز الجهاز عند التنبيه'),
-            value: _notificationSettings.vibrate,
-            onChanged: (value) {
-              setState(() {
-                _notificationSettings = _notificationSettings.copyWith(
-                  vibrate: value,
-                );
-                _markAsChanged();
-              });
-            },
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildPrayerNotificationTile(String name, PrayerType type) {
-    final isEnabled = _notificationSettings.enabledPrayers[type] ?? false;
-    final minutesBefore = _notificationSettings.minutesBefore[type] ?? 0;
-    
-    return ExpansionTile(
-      title: Text(name),
-      subtitle: Text(
-        isEnabled
-            ? 'تنبيه قبل $minutesBefore دقيقة'
-            : 'التنبيه مُعطّل',
-      ),
-      leading: Switch(
-        value: isEnabled,
-        onChanged: (value) {
-          setState(() {
-            final updatedPrayers = Map<PrayerType, bool>.from(
-              _notificationSettings.enabledPrayers,
-            );
-            updatedPrayers[type] = value;
-            
-            _notificationSettings = _notificationSettings.copyWith(
-              enabledPrayers: updatedPrayers,
-            );
-            _markAsChanged();
-          });
-        },
-      ),
-      children: [
-        if (isEnabled)
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: ThemeConstants.space4,
-              vertical: ThemeConstants.space2,
-            ),
-            child: Row(
-              children: [
-                const Text('التنبيه قبل'),
-                ThemeConstants.space3.w,
-                SizedBox(
-                  width: 80,
-                  child: DropdownButtonFormField<int>(
-                    value: minutesBefore,
-                    decoration: const InputDecoration(
-                      isDense: true,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: ThemeConstants.space2,
-                        vertical: ThemeConstants.space1,
-                      ),
-                    ),
-                    items: [0, 5, 10, 15, 20, 25, 30]
-                        .map((minutes) => DropdownMenuItem(
-                              value: minutes,
-                              child: Text('$minutes'),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          final updatedMinutes = Map<PrayerType, int>.from(
-                            _notificationSettings.minutesBefore,
-                          );
-                          updatedMinutes[type] = value;
-                          
-                          _notificationSettings = _notificationSettings.copyWith(
-                            minutesBefore: updatedMinutes,
-                          );
-                          _markAsChanged();
-                        });
-                      }
-                    },
-                  ),
-                ),
-                ThemeConstants.space2.w,
-                const Text('دقيقة'),
-              ],
-            ),
-          ),
       ],
     );
   }
@@ -437,6 +282,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
         children: [
           IconButton(
             icon: const Icon(Icons.remove_circle_outline),
+            color: ThemeConstants.success, // استخدام اللون الأخضر
             onPressed: () {
               _updateAdjustment(key, adjustment - 1);
             },
@@ -451,6 +297,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
+            color: ThemeConstants.success, // استخدام اللون الأخضر
             onPressed: () {
               _updateAdjustment(key, adjustment + 1);
             },
@@ -483,6 +330,9 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
         isLoading: _isSaving,
         isFullWidth: true,
         icon: Icons.save,
+        // استخدام الخاصية backgroundColor إذا كانت مدعومة في AppButton.primary
+        // وإلا يمكن استخدام customColor من خلال الطريقة العادية
+        backgroundColor: ThemeConstants.success,
       ),
     );
   }
@@ -515,12 +365,12 @@ class SettingsSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(ThemeConstants.space2),
                 decoration: BoxDecoration(
-                  color: context.primaryColor.withValues(alpha: 0.1),
+                  color: ThemeConstants.success.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                 ),
                 child: Icon(
                   icon,
-                  color: context.primaryColor,
+                  color: ThemeConstants.success,
                   size: ThemeConstants.iconMd,
                 ),
               ),
@@ -554,6 +404,7 @@ class SettingsSection extends StatelessWidget {
             horizontal: ThemeConstants.space4,
             vertical: ThemeConstants.space2,
           ),
+          color: context.cardColor,
           child: Column(children: children),
         ),
       ],
@@ -622,6 +473,7 @@ class CalculationMethodDialog extends StatelessWidget {
                         onMethodSelected(value);
                       }
                     },
+                    activeColor: ThemeConstants.success, // استخدام اللون الأخضر
                   );
                 }).toList(),
               ),
@@ -635,6 +487,9 @@ class CalculationMethodDialog extends StatelessWidget {
             child: TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('إلغاء'),
+              style: TextButton.styleFrom(
+                foregroundColor: ThemeConstants.success, // استخدام اللون الأخضر
+              ),
             ),
           ),
         ],
