@@ -6,12 +6,10 @@ import 'dart:async';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
-import '../../../core/infrastructure/services/permissions/permission_service.dart';
 import '../services/prayer_times_service.dart';
 import '../models/prayer_time_model.dart';
 import '../widgets/prayer_time_card.dart';
 import '../widgets/next_prayer_countdown.dart';
-import '../widgets/prayer_calendar_strip.dart';
 import '../widgets/location_header.dart';
 
 class PrayerTimesScreen extends StatefulWidget {
@@ -25,7 +23,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
     with TickerProviderStateMixin {
   late final LoggerService _logger;
   late final PrayerTimesService _prayerService;
-  late final PermissionService _permissionService;
   
   // Controllers
   final _scrollController = ScrollController();
@@ -36,8 +33,8 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
   DailyPrayerTimes? _dailyTimes;
   PrayerTime? _nextPrayer;
   bool _isLoading = true;
+  bool _isRetryingLocation = false;
   String? _errorMessage;
-  DateTime _selectedDate = DateTime.now();
   
   // Subscriptions
   StreamSubscription<DailyPrayerTimes>? _timesSubscription;
@@ -53,14 +50,9 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
 
   void _initializeServices() {
     _logger = getIt<LoggerService>();
-    _permissionService = getIt<PermissionService>();
     
     // تهيئة خدمة مواقيت الصلاة
-    _prayerService = PrayerTimesService(
-      logger: _logger,
-      storage: getIt(),
-      permissionService: _permissionService,
-    );
+    _prayerService = getIt<PrayerTimesService>();
     
     // الاستماع للتحديثات
     _timesSubscription = _prayerService.prayerTimesStream.listen((times) {
@@ -68,6 +60,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
         setState(() {
           _dailyTimes = times;
           _isLoading = false;
+          _errorMessage = null;
         });
       }
     });
@@ -102,29 +95,63 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
     });
     
     try {
+      // تحقق من وجود مواقيت مخزنة مسبقاً لعرضها أثناء تحديث الموقع
+      final cachedTimes = await _prayerService.getCachedPrayerTimes(DateTime.now());
+      if (cachedTimes != null) {
+        setState(() {
+          _dailyTimes = cachedTimes;
+          _nextPrayer = cachedTimes.nextPrayer;
+          _isLoading = false;
+        });
+      }
+      
       // التحقق من وجود موقع محفوظ
       if (_prayerService.currentLocation == null) {
         // طلب الموقع
         await _requestLocation();
       } else {
         // تحديث المواقيت
-        await _prayerService.updatePrayerTimes(date: _selectedDate);
+        await _prayerService.updatePrayerTimes();
       }
     } catch (e) {
       setState(() {
-        _errorMessage = e.toString();
+        _errorMessage = 'حدث خطأ أثناء تحميل مواقيت الصلاة. يرجى المحاولة مرة أخرى.';
         _isLoading = false;
       });
+      
+      _logger.error(
+        message: 'خطأ في تحميل مواقيت الصلاة',
+        error: e,
+      );
     }
   }
 
   Future<void> _requestLocation() async {
+    setState(() {
+      _isRetryingLocation = true;
+    });
+    
     try {
       final location = await _prayerService.getCurrentLocation();
-      _logger.logEvent('prayer_location_obtained', parameters: {
-        'city': location.cityName ?? 'unknown',
-        'country': location.countryName ?? 'unknown',
-      });
+      
+      _logger.info(
+        message: 'تم تحديد الموقع بنجاح',
+        data: {
+          'city': location.cityName,
+          'country': location.countryName,
+          'latitude': location.latitude,
+          'longitude': location.longitude,
+        },
+      );
+      
+      // تحديث مواقيت الصلاة بعد تحديد الموقع
+      await _prayerService.updatePrayerTimes();
+      
+      if (mounted) {
+        setState(() {
+          _isRetryingLocation = false;
+        });
+      }
     } catch (e) {
       _logger.error(
         message: 'فشل الحصول على الموقع',
@@ -135,18 +162,19 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
         setState(() {
           _errorMessage = 'لم نتمكن من تحديد موقعك. يرجى التحقق من إعدادات الموقع.';
           _isLoading = false;
+          _isRetryingLocation = false;
         });
+        
+        // عرض رسالة خطأ للمستخدم
+        context.showErrorSnackBar(
+          'لم نتمكن من تحديد موقعك. يرجى التحقق من إعدادات الموقع.',
+          action: SnackBarAction(
+            label: 'حاول مجدداً',
+            onPressed: _requestLocation,
+          ),
+        );
       }
     }
-  }
-
-  void _onDateChanged(DateTime date) {
-    setState(() {
-      _selectedDate = date;
-    });
-    
-    HapticFeedback.lightImpact();
-    _prayerService.updatePrayerTimes(date: date);
   }
 
   @override
@@ -155,7 +183,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
     _fadeController.dispose();
     _timesSubscription?.cancel();
     _nextPrayerSubscription?.cancel();
-    _prayerService.dispose();
     super.dispose();
   }
 
@@ -163,23 +190,26 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      body: CustomScrollView(
-        controller: _scrollController,
-        physics: const AlwaysScrollableScrollPhysics(),
-        slivers: [
-          // App Bar
-          _buildAppBar(),
-          
-          // المحتوى
-          if (_isLoading)
-            _buildLoadingState()
-          else if (_errorMessage != null)
-            _buildErrorState()
-          else if (_dailyTimes != null)
-            ..._buildContent()
-          else
-            _buildEmptyState(),
-        ],
+      body: RefreshIndicator(
+        onRefresh: _loadPrayerTimes,
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            // App Bar
+            _buildAppBar(),
+            
+            // المحتوى
+            if (_isLoading && _dailyTimes == null)
+              _buildLoadingState()
+            else if (_errorMessage != null && _dailyTimes == null)
+              _buildErrorState()
+            else if (_dailyTimes != null)
+              ..._buildContent()
+            else
+              _buildEmptyState(),
+          ],
+        ),
       ),
       
       // زر الإعدادات العائم
@@ -200,8 +230,17 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
       actions: [
         // زر تحديث الموقع
         IconButton(
-          icon: const Icon(Icons.my_location),
-          onPressed: _requestLocation,
+          icon: _isRetryingLocation 
+              ? SizedBox(
+                  width: 20, 
+                  height: 20, 
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(context.primaryColor),
+                  ),
+                )
+              : const Icon(Icons.my_location),
+          onPressed: _isRetryingLocation ? null : _requestLocation,
           tooltip: 'تحديث الموقع',
         ),
         
@@ -228,15 +267,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
         ),
       ),
       
-      // شريط التقويم
-      SliverPersistentHeader(
-        pinned: true,
-        delegate: _CalendarStripDelegate(
-          selectedDate: _selectedDate,
-          onDateChanged: _onDateChanged,
-        ),
-      ),
-      
       // العد التنازلي للصلاة التالية
       if (_nextPrayer != null)
         SliverToBoxAdapter(
@@ -259,6 +289,11 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
           delegate: SliverChildBuilderDelegate(
             (context, index) {
               final prayer = _dailyTimes!.prayers[index];
+              
+              // تخطي الشروق لأنه ليس صلاة
+              if (prayer.type == PrayerType.sunrise) {
+                return const SizedBox.shrink();
+              }
               
               return Padding(
                 padding: const EdgeInsets.only(bottom: ThemeConstants.space3),
@@ -298,10 +333,13 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AppLoading.circular(size: LoadingSize.large),
-            ThemeConstants.space4.h,
-            Text(
+            const SizedBox(height: ThemeConstants.space4),
+            const Text(
               'جاري تحميل مواقيت الصلاة...',
-              style: context.bodyLarge,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
@@ -336,14 +374,13 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
   }
 
   Widget _buildFAB() {
-    return FloatingActionButton.extended(
+    return FloatingActionButton(
       onPressed: () {
         HapticFeedback.lightImpact();
-        _showQiblaDirection();
+        Navigator.pushNamed(context, '/prayer-settings');
       },
-      icon: const Icon(Icons.explore),
-      label: const Text('اتجاه القبلة'),
       backgroundColor: context.primaryColor,
+      child: const Icon(Icons.settings),
     );
   }
 
@@ -363,46 +400,5 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
           ? 'تم تفعيل تنبيه ${prayer.nameAr}'
           : 'تم إيقاف تنبيه ${prayer.nameAr}',
     );
-  }
-
-  void _showQiblaDirection() {
-    Navigator.pushNamed(context, '/qibla');
-  }
-}
-
-// Delegate للتقويم
-class _CalendarStripDelegate extends SliverPersistentHeaderDelegate {
-  final DateTime selectedDate;
-  final Function(DateTime) onDateChanged;
-
-  _CalendarStripDelegate({
-    required this.selectedDate,
-    required this.onDateChanged,
-  });
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return Container(
-      color: context.backgroundColor,
-      child: PrayerCalendarStrip(
-        selectedDate: selectedDate,
-        onDateChanged: onDateChanged,
-      ),
-    );
-  }
-
-  @override
-  double get maxExtent => 100;
-
-  @override
-  double get minExtent => 100;
-
-  @override
-  bool shouldRebuild(covariant _CalendarStripDelegate oldDelegate) {
-    return selectedDate != oldDelegate.selectedDate;
   }
 }

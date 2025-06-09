@@ -57,11 +57,16 @@ class PrayerTimeCard extends StatelessWidget {
                     ThemeConstants.space1.h,
                     
                     if (isNext)
-                      Text(
-                        prayer.remainingTimeText,
-                        style: context.bodySmall?.copyWith(
-                          color: _getTextColor(context).withValues(alpha: 0.8),
-                        ),
+                      StreamBuilder(
+                        stream: Stream.periodic(const Duration(seconds: 1)),
+                        builder: (context, snapshot) {
+                          return Text(
+                            prayer.remainingTimeText,
+                            style: context.bodySmall?.copyWith(
+                              color: _getTextColor(context).withValues(alpha: 0.8),
+                            ),
+                          );
+                        },
                       )
                     else if (isPassed)
                       Row(
@@ -75,7 +80,7 @@ class PrayerTimeCard extends StatelessWidget {
                           Text(
                             'انتهى الوقت',
                             style: context.bodySmall?.copyWith(
-                              color: isNext ? Colors.white.withOpacity(0.8) : context.textSecondaryColor,
+                              color: isNext ? Colors.white.withValues(alpha: 0.8) : context.textSecondaryColor,
                             ),
                           ),
                         ],

@@ -1,8 +1,6 @@
 // lib/features/prayer_times/utils/prayer_extensions.dart
 
 import 'package:flutter/material.dart';
-import '../../../app/themes/theme_constants.dart';
-import '../../../core/infrastructure/services/utils/extensions/datetime_extensions.dart';
 import '../models/prayer_time_model.dart';
 import 'prayer_helpers.dart';
 

@@ -3,7 +3,6 @@
 import 'package:athkar_app/app/themes/core/theme_extensions.dart';
 import 'package:flutter/material.dart';
 import '../../../app/themes/theme_constants.dart';
-import '../../../core/infrastructure/services/utils/extensions/datetime_extensions.dart';
 import '../models/prayer_time_model.dart';
 
 /// أدوات مساعدة لمواقيت الصلاة

@@ -1,7 +1,5 @@
 // lib/features/prayer_times/models/prayer_time_model.dart
 
-import 'package:flutter/material.dart';
-
 /// نموذج وقت الصلاة
 class PrayerTime {
   final String id;

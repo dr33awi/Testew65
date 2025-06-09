@@ -23,14 +23,14 @@ class NextPrayerCountdown extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            context.primaryColor,
-            context.primaryColor.darken(0.1),
+            _getPrayerColor(nextPrayer.type),
+            _getPrayerColor(nextPrayer.type).darken(0.2),
           ],
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: context.primaryColor.withValues(alpha: 0.3),
+            color: _getPrayerColor(nextPrayer.type).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -144,11 +144,16 @@ class NextPrayerCountdown extends StatelessWidget {
           // شريط التقدم
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: _calculateProgress(),
-              minHeight: 6,
-              backgroundColor: Colors.white.withValues(alpha: 0.2),
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+            child: StreamBuilder(
+              stream: Stream.periodic(const Duration(seconds: 1)),
+              builder: (context, snapshot) {
+                return LinearProgressIndicator(
+                  value: _calculateProgress(),
+                  minHeight: 6,
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                );
+              }
             ),
           ),
         ],
@@ -184,11 +189,31 @@ class NextPrayerCountdown extends StatelessWidget {
   double _calculateProgress() {
     if (currentPrayer == null) return 0.0;
     
+    final now = DateTime.now();
     final totalDuration = nextPrayer.time.difference(currentPrayer!.time);
-    final elapsed = DateTime.now().difference(currentPrayer!.time);
+    final elapsed = now.difference(currentPrayer!.time);
     
     if (totalDuration.inSeconds == 0) return 0.0;
     
     return (elapsed.inSeconds / totalDuration.inSeconds).clamp(0.0, 1.0);
+  }
+  
+  Color _getPrayerColor(PrayerType type) {
+    switch (type) {
+      case PrayerType.fajr:
+        return const Color(0xFF1A237E); // Deep blue
+      case PrayerType.sunrise:
+        return const Color(0xFFFFB300); // Amber
+      case PrayerType.dhuhr:
+        return const Color(0xFFFF6F00); // Orange
+      case PrayerType.asr:
+        return const Color(0xFF00897B); // Teal
+      case PrayerType.maghrib:
+        return const Color(0xFFE65100); // Deep orange
+      case PrayerType.isha:
+        return const Color(0xFF4A148C); // Purple
+      default:
+        return const Color(0xFF607D8B); // Blue grey
+    }
   }
 }

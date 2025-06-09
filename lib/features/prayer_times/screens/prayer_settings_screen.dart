@@ -1,7 +1,6 @@
 // lib/features/prayer_times/screens/prayer_settings_screen.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
@@ -28,6 +27,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
   // حالة التحميل
   bool _isLoading = true;
   bool _isSaving = false;
+  bool _hasChanges = false;
 
   @override
   void initState() {
@@ -38,11 +38,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
 
   void _initializeServices() {
     _logger = getIt<LoggerService>();
-    _prayerService = PrayerTimesService(
-      logger: _logger,
-      storage: getIt(),
-      permissionService: getIt(),
-    );
+    _prayerService = getIt<PrayerTimesService>();
   }
 
   void _loadSettings() {
@@ -50,6 +46,12 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       _calculationSettings = _prayerService.calculationSettings;
       _notificationSettings = _prayerService.notificationSettings;
       _isLoading = false;
+    });
+  }
+
+  void _markAsChanged() {
+    setState(() {
+      _hasChanges = true;
     });
   }
 
@@ -68,19 +70,24 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
         'notifications_enabled': _notificationSettings.enabled,
       });
       
-      if (mounted) {
-        context.showSuccessSnackBar('تم حفظ الإعدادات بنجاح');
-        Navigator.pop(context);
-      }
+      if (!mounted) return;
+      
+      context.showSuccessSnackBar('تم حفظ الإعدادات بنجاح');
+      setState(() {
+        _hasChanges = false;
+      });
+      
+      // العودة للشاشة السابقة
+      Navigator.pop(context);
     } catch (e) {
       _logger.error(
         message: 'خطأ في حفظ الإعدادات',
         error: e,
       );
       
-      if (mounted) {
-        context.showErrorSnackBar('فشل حفظ الإعدادات');
-      }
+      if (!mounted) return;
+      
+      context.showErrorSnackBar('فشل حفظ الإعدادات');
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -92,8 +99,25 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      appBar: CustomAppBar.simple(
+      appBar: CustomAppBar(
         title: 'إعدادات مواقيت الصلاة',
+        actions: [
+          if (_hasChanges && !_isSaving)
+            IconButton(
+              icon: const Icon(Icons.save),
+              onPressed: _saveSettings,
+              tooltip: 'حفظ التغييرات',
+            ),
+        ],
+        leading: BackButton(
+          onPressed: () {
+            if (_hasChanges) {
+              _showUnsavedChangesDialog();
+            } else {
+              Navigator.pop(context);
+            }
+          },
+        ),
       ),
       body: _isLoading
           ? Center(child: AppLoading.circular())
@@ -133,8 +157,24 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
     );
   }
 
+  void _showUnsavedChangesDialog() {
+    AppInfoDialog.showConfirmation(
+      context: context,
+      title: 'تغييرات غير محفوظة',
+      content: 'لديك تغييرات لم يتم حفظها. هل تريد حفظ التغييرات قبل المغادرة؟',
+      confirmText: 'حفظ وخروج',
+      cancelText: 'تجاهل التغييرات',
+    ).then((result) {
+      if (result == true) {
+        _saveSettings();
+      } else {
+        Navigator.pop(context);
+      }
+    });
+  }
+
   Widget _buildCalculationSection() {
-    return _SettingsSection(
+    return SettingsSection(
       title: 'طريقة الحساب',
       icon: Icons.calculate,
       children: [
@@ -170,13 +210,14 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
   void _showCalculationMethodDialog() {
     showDialog(
       context: context,
-      builder: (context) => _CalculationMethodDialog(
+      builder: (context) => CalculationMethodDialog(
         currentMethod: _calculationSettings.method,
         onMethodSelected: (method) {
           setState(() {
             _calculationSettings = _calculationSettings.copyWith(
               method: method,
             );
+            _markAsChanged();
           });
           Navigator.pop(context);
         },
@@ -185,7 +226,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
   }
 
   Widget _buildJuristicSection() {
-    return _SettingsSection(
+    return SettingsSection(
       title: 'المذهب الفقهي',
       icon: Icons.school,
       children: [
@@ -200,6 +241,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
                 _calculationSettings = _calculationSettings.copyWith(
                   asrJuristic: value,
                 );
+                _markAsChanged();
               });
             }
           },
@@ -215,6 +257,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
                 _calculationSettings = _calculationSettings.copyWith(
                   asrJuristic: value,
                 );
+                _markAsChanged();
               });
             }
           },
@@ -224,7 +267,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
   }
 
   Widget _buildNotificationSection() {
-    return _SettingsSection(
+    return SettingsSection(
       title: 'التنبيهات',
       icon: Icons.notifications,
       children: [
@@ -237,6 +280,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
               _notificationSettings = _notificationSettings.copyWith(
                 enabled: value,
               );
+              _markAsChanged();
             });
           },
         ),
@@ -277,6 +321,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
                 _notificationSettings = _notificationSettings.copyWith(
                   vibrate: value,
                 );
+                _markAsChanged();
               });
             },
           ),
@@ -308,6 +353,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
             _notificationSettings = _notificationSettings.copyWith(
               enabledPrayers: updatedPrayers,
             );
+            _markAsChanged();
           });
         },
       ),
@@ -350,6 +396,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
                           _notificationSettings = _notificationSettings.copyWith(
                             minutesBefore: updatedMinutes,
                           );
+                          _markAsChanged();
                         });
                       }
                     },
@@ -365,7 +412,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
   }
 
   Widget _buildManualAdjustmentsSection() {
-    return _SettingsSection(
+    return SettingsSection(
       title: 'تعديلات يدوية',
       icon: Icons.tune,
       subtitle: 'تعديل أوقات الصلاة بالدقائق',
@@ -423,6 +470,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       _calculationSettings = _calculationSettings.copyWith(
         manualAdjustments: adjustments,
       );
+      _markAsChanged();
     });
   }
 
@@ -431,7 +479,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       padding: const EdgeInsets.all(ThemeConstants.space4),
       child: AppButton.primary(
         text: 'حفظ الإعدادات',
-        onPressed: _isSaving ? null : _saveSettings,
+        onPressed: _isSaving || !_hasChanges ? null : _saveSettings,
         isLoading: _isSaving,
         isFullWidth: true,
         icon: Icons.save,
@@ -440,15 +488,15 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
   }
 }
 
-// ===== Helper Widgets =====
-
-class _SettingsSection extends StatelessWidget {
+/// قسم في شاشة الإعدادات
+class SettingsSection extends StatelessWidget {
   final String title;
   final String? subtitle;
   final IconData icon;
   final List<Widget> children;
 
-  const _SettingsSection({
+  const SettingsSection({
+    super.key,
     required this.title,
     this.subtitle,
     required this.icon,
@@ -467,7 +515,7 @@ class _SettingsSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(ThemeConstants.space2),
                 decoration: BoxDecoration(
-                  color: context.primaryColor.withOpacity(0.1),
+                  color: context.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                 ),
                 child: Icon(
@@ -513,11 +561,13 @@ class _SettingsSection extends StatelessWidget {
   }
 }
 
-class _CalculationMethodDialog extends StatelessWidget {
+/// مربع حوار اختيار طريقة الحساب
+class CalculationMethodDialog extends StatelessWidget {
   final CalculationMethod currentMethod;
   final Function(CalculationMethod) onMethodSelected;
 
-  const _CalculationMethodDialog({
+  const CalculationMethodDialog({
+    super.key,
     required this.currentMethod,
     required this.onMethodSelected,
   });
@@ -569,7 +619,6 @@ class _CalculationMethodDialog extends StatelessWidget {
                     groupValue: currentMethod,
                     onChanged: (value) {
                       if (value != null) {
-                        HapticFeedback.lightImpact();
                         onMethodSelected(value);
                       }
                     },
