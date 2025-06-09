@@ -326,6 +326,10 @@ class DailyPrayerTimes {
       settings: PrayerCalculationSettings.fromJson(json['settings']),
     );
   }
+
+  get additionalPrayers => null;
+
+  get mainPrayers => null;
 }
 
 /// إعدادات تنبيهات الصلاة

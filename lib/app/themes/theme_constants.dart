@@ -208,7 +208,7 @@ class ThemeConstants {
   // ===== الظلال الجاهزة =====
   static List<BoxShadow> shadowSm = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: opacity10),
+      color: Colors.black.withOpacity(opacity10),
       blurRadius: 2,
       offset: const Offset(0, 1),
     ),
@@ -216,7 +216,7 @@ class ThemeConstants {
 
   static List<BoxShadow> shadowMd = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: opacity10),
+      color: Colors.black.withOpacity(opacity10),
       blurRadius: 4,
       offset: const Offset(0, 2),
     ),
@@ -224,7 +224,7 @@ class ThemeConstants {
 
   static List<BoxShadow> shadowLg = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: opacity10),
+      color: Colors.black.withOpacity(opacity10),
       blurRadius: 8,
       offset: const Offset(0, 4),
     ),
@@ -232,7 +232,7 @@ class ThemeConstants {
 
   static List<BoxShadow> shadowXl = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: opacity20),
+      color: Colors.black.withOpacity(opacity20),
       blurRadius: 16,
       offset: const Offset(0, 8),
     ),
@@ -337,6 +337,58 @@ class ThemeConstants {
         return ishaGradient;
       default:
         return primaryGradient;
+    }
+  }
+
+  /// الحصول على لون حسب اسم الصلاة
+  static Color getPrayerColor(String name) {
+    switch (name.toLowerCase()) {
+      case 'fajr':
+      case 'الفجر':
+        return const Color(0xFF1A237E); // Deep blue
+      case 'dhuhr':
+      case 'الظهر':
+        return const Color(0xFFFF6F00); // Orange
+      case 'asr':
+      case 'العصر':
+        return const Color(0xFF00897B); // Teal
+      case 'maghrib':
+      case 'المغرب':
+        return const Color(0xFFE65100); // Deep orange
+      case 'isha':
+      case 'العشاء':
+        return const Color(0xFF4A148C); // Purple
+      case 'sunrise':
+      case 'الشروق':
+        return const Color(0xFFFFB300); // Amber
+      default:
+        return const Color(0xFF607D8B); // Blue grey
+    }
+  }
+
+  /// الحصول على أيقونة حسب اسم الصلاة
+  static IconData getPrayerIcon(String name) {
+    switch (name.toLowerCase()) {
+      case 'fajr':
+      case 'الفجر':
+        return Icons.dark_mode;
+      case 'dhuhr':
+      case 'الظهر':
+        return Icons.light_mode;
+      case 'asr':
+      case 'العصر':
+        return Icons.wb_cloudy;
+      case 'maghrib':
+      case 'المغرب':
+        return Icons.wb_twilight;
+      case 'isha':
+      case 'العشاء':
+        return Icons.bedtime;
+      case 'sunrise':
+      case 'الشروق':
+        return Icons.wb_sunny;
+      default:
+        return Icons.access_time;
     }
   }
 

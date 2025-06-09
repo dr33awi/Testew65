@@ -9,7 +9,7 @@ import '../../../core/infrastructure/services/logging/logger_service.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
 import '../services/prayer_times_service.dart';
 import '../models/prayer_time_model.dart';
-import '../widgets/prayer_time_card.dart' hide LocationHeader, NextPrayerCountdown, PrayerCalendarStrip;
+import '../widgets/prayer_time_card.dart';
 import '../widgets/next_prayer_countdown.dart';
 import '../widgets/prayer_calendar_strip.dart';
 import '../widgets/location_header.dart';

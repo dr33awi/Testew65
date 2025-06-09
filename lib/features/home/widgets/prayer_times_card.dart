@@ -105,34 +105,6 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
     }
   }
 
-  // حساب نسبة التقدم بناءً على أوقات الصلاة
-  double _calculatePrayerProgress() {
-    if (_dailyTimes == null) return 0.0;
-    
-    final prayers = _getPrayersForDisplay();
-    if (prayers.isEmpty) return 0.0;
-    
-    final now = DateTime.now();
-    final firstPrayerTime = prayers.first.time;
-    final lastPrayerTime = prayers.last.time;
-    
-    // إذا كان الوقت قبل الفجر
-    if (now.isBefore(firstPrayerTime)) {
-      return 0.0;
-    }
-    
-    // إذا كان الوقت بعد العشاء
-    if (now.isAfter(lastPrayerTime)) {
-      return 1.0;
-    }
-    
-    // حساب التقدم بين الفجر والعشاء
-    final totalMinutes = lastPrayerTime.difference(firstPrayerTime).inMinutes;
-    final elapsedMinutes = now.difference(firstPrayerTime).inMinutes;
-    
-    return (elapsedMinutes / totalMinutes).clamp(0.0, 1.0);
-  }
-
   // حساب نسبة التقدم في اليوم
   double _getDayProgress() {
     final now = DateTime.now();
@@ -304,21 +276,16 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
                       Expanded(
                         child: LayoutBuilder(
                           builder: (context, constraints) {
-                            // حساب موضع كل صلاة
-                            final itemWidth = constraints.maxWidth / prayers.length;
-                            final startX = itemWidth / 2; // البداية من منتصف أول عنصر
-                            final endX = constraints.maxWidth - (itemWidth / 2); // النهاية عند منتصف آخر عنصر
-                            
                             return Stack(
                               alignment: Alignment.topCenter,
                               clipBehavior: Clip.hardEdge,
                               children: [
-                                // خط الزمن - يبدأ من الفجر وينتهي عند العشاء
+                                // خط الزمن
                                 Positioned(
                                   top: 16,
-                                  left: startX,
+                                  left: 20,
+                                  right: 20,
                                   child: Container(
-                                    width: endX - startX,
                                     height: 2,
                                     decoration: BoxDecoration(
                                       color: context.dividerColor.withOpacity(0.2),
@@ -327,21 +294,19 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
                                   ),
                                 ),
                                 
-                                // مؤشر التقدم - يتحرك حسب الوقت الحالي
+                                // مؤشر التقدم
                                 AnimatedBuilder(
                                   animation: _progressAnimation,
                                   builder: (context, child) {
-                                    // حساب التقدم بناءً على أوقات الصلاة
-                                    final progress = _calculatePrayerProgress();
-                                    final animatedProgress = progress * _progressAnimation.value;
-                                    final progressWidth = (endX - startX) * animatedProgress;
+                                    final progress = _getDayProgress() * _progressAnimation.value;
+                                    final maxWidth = constraints.maxWidth - 40;
                                     
                                     return Positioned(
                                       top: 16,
-                                      left: startX,
+                                      left: 20,
                                       child: Container(
-                                        width: progressWidth,
-                                        height: 3, // زيادة السماكة قليلاً
+                                        width: maxWidth * progress,
+                                        height: 2,
                                         decoration: BoxDecoration(
                                           gradient: LinearGradient(
                                             colors: nextPrayer != null
@@ -354,24 +319,16 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
                                                     context.primaryColor.darken(0.2),
                                                   ],
                                           ),
-                                          borderRadius: BorderRadius.circular(1.5),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: (nextPrayer != null
-                                                  ? _getPrayerColor(nextPrayer.type)
-                                                  : context.primaryColor).withOpacity(0.6),
-                                              blurRadius: 8,
-                                              spreadRadius: 2,
-                                            ),
-                                          ],
+                                          borderRadius: BorderRadius.circular(1),
                                         ),
                                       ),
                                     );
                                   },
                                 ),
                                 
-                                // الصلوات - فوق الخطوط
-                                Positioned.fill(
+                                // الصلوات
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -592,67 +549,44 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // النقطة على الخط مع خلفية بيضاء لإخفاء الخط
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                // خلفية بيضاء/داكنة لإخفاء الخط خلف الدائرة
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: context.isDarkMode 
-                        ? const Color(0xFF0D2920) // لون يتناسب مع الخلفية الداكنة
-                        : Colors.white,
-                  ),
-                ),
-                // الدائرة الملونة
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: isPassed || isActive
-                        ? LinearGradient(
-                            colors: [
-                              _getPrayerColor(prayer.type),
-                              _getPrayerColor(prayer.type).darken(0.2),
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          )
-                        : null,
-                    color: !isPassed && !isActive
-                        ? context.dividerColor.withOpacity(0.3)
-                        : null,
-                    border: Border.all(
-                      color: isPassed || isActive
-                          ? Colors.white.withOpacity(0.3)
-                          : context.dividerColor.withOpacity(0.2),
-                      width: 2,
-                    ),
-                    boxShadow: isActive
-                        ? [
-                            BoxShadow(
-                              color: _getPrayerColor(prayer.type).withOpacity(0.5),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  child: Icon(
-                    isPassed && !isActive
-                        ? Icons.check
-                        : _getPrayerIcon(prayer.type),
-                    color: isPassed || isActive
-                        ? Colors.white
-                        : context.textSecondaryColor.withOpacity(0.5),
-                    size: 14,
-                  ),
-                ),
-              ],
+            // النقطة على الخط
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: isPassed || isActive
+                    ? LinearGradient(
+                        colors: [
+                          _getPrayerColor(prayer.type),
+                          _getPrayerColor(prayer.type).darken(0.2),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      )
+                    : null,
+                color: !isPassed && !isActive
+                    ? context.dividerColor.withOpacity(0.3)
+                    : null,
+                boxShadow: isActive
+                    ? [
+                        BoxShadow(
+                          color: _getPrayerColor(prayer.type).withOpacity(0.5),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Icon(
+                isPassed && !isActive
+                    ? Icons.check
+                    : _getPrayerIcon(prayer.type),
+                color: isPassed || isActive
+                    ? Colors.white
+                    : context.textSecondaryColor.withOpacity(0.5),
+                size: 14,
+              ),
             ),
             
             const SizedBox(height: 4),
