@@ -1,5 +1,5 @@
 // lib/features/home/widgets/category_grid.dart
-// تصميم مبتكر - نمط Timeline مع تدرجات ديناميكية
+// تصميم مبتكر - نمط Timeline مع تدرجات ديناميكية متناسقة
 
 import 'package:athkar_app/app/themes/core/theme_extensions.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +26,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'مواقيت الصلاة',
       subtitle: 'أوقات الصلوات الخمس',
       icon: Icons.mosque,
-      gradient: [Color(0xFF1E88E5), Color(0xFF1565C0)],
+      gradient: [Color(0xFF1A237E), Color(0xFF303F9F)], // تدرج ازرق داكن متناسق مع الفجر
       routeName: AppRouter.prayerTimes,
     ),
     CategoryItem(
@@ -34,7 +34,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'الأذكار',
       subtitle: 'أذكار الصباح والمساء',
       icon: Icons.auto_awesome,
-      gradient: [Color(0xFF00897B), Color(0xFF00695C)],
+      gradient: [Color(0xFF00897B), Color(0xFF26A69A)], // تدرج اخضر متناسق مع العصر
       routeName: AppRouter.athkar,
     ),
     CategoryItem(
@@ -42,7 +42,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'القرآن الكريم',
       subtitle: 'تلاوة وحفظ وتدبر',
       icon: Icons.book,
-      gradient: [Color(0xFF5E35B1), Color(0xFF4527A0)],
+      gradient: [Color(0xFF4A148C), Color(0xFF7B1FA2)], // تدرج بنفسجي متناسق مع العشاء
       routeName: '/quran',
     ),
     CategoryItem(
@@ -50,7 +50,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'اتجاه القبلة',
       subtitle: 'البوصلة الذكية',
       icon: Icons.navigation,
-      gradient: [Color(0xFFE53935), Color(0xFFD32F2F)],
+      gradient: [Color(0xFFE65100), Color(0xFFF57C00)], // تدرج برتقالي متناسق مع المغرب
       routeName: AppRouter.qibla,
     ),
     CategoryItem(
@@ -58,7 +58,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'المسبحة الرقمية',
       subtitle: 'عداد التسبيح الذكي',
       icon: Icons.radio_button_checked,
-      gradient: [Color(0xFFFB8C00), Color(0xFFEF6C00)],
+      gradient: [Color(0xFFFF6F00), Color(0xFFFF9800)], // تدرج برتقالي متناسق مع الظهر
       routeName: '/tasbih',
     ),
     CategoryItem(
@@ -66,7 +66,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'الأدعية',
       subtitle: 'أدعية من القرآن والسنة',
       icon: Icons.pan_tool,
-      gradient: [Color(0xFF00ACC1), Color(0xFF00838F)],
+      gradient: [Color(0xFF0277BD), Color(0xFF039BE5)], // تدرج ازرق متناسق مع مواقيت الصلاة
       routeName: '/dua',
     ),
   ];
@@ -163,7 +163,7 @@ class _CategoryGridState extends State<CategoryGrid> {
               padding: const EdgeInsets.all(ThemeConstants.space3),
               child: Row(
                 children: [
-                  // الأيقونة الرئيسية
+                  // الأيقونة الرئيسية - تصميم محسن
                   Container(
                     width: 60,
                     height: 60,
@@ -216,7 +216,7 @@ class _CategoryGridState extends State<CategoryGrid> {
                         
                         ThemeConstants.space2.h,
                         
-                        // Progress Bar - مضاء بالكامل
+                        // تحسين شريط التقدم ليتناسق مع التصميم العام
                         Container(
                           height: 4,
                           decoration: BoxDecoration(
@@ -235,11 +235,19 @@ class _CategoryGridState extends State<CategoryGrid> {
                     ),
                   ),
                   
-                  // Arrow icon
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                    color: Colors.white.withOpacity(0.7),
+                  // رمز السهم - محسن للتناسق
+                  Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 14,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),

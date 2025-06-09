@@ -212,8 +212,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
         ),
       ),
       
-      // زر الإعدادات العائم
-      floatingActionButton: _buildFAB(),
+      // تم إزالة زر الإعدادات العائم
     );
   }
 
@@ -242,6 +241,13 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
               : const Icon(Icons.my_location),
           onPressed: _isRetryingLocation ? null : _requestLocation,
           tooltip: 'تحديث الموقع',
+        ),
+        
+        // زر إعدادات الإشعارات
+        IconButton(
+          icon: const Icon(Icons.notifications_outlined),
+          onPressed: () => Navigator.pushNamed(context, '/prayer-notifications-settings'),
+          tooltip: 'إعدادات الإشعارات',
         ),
         
         // زر الإعدادات
@@ -301,10 +307,12 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                   position: index,
                   duration: ThemeConstants.durationNormal,
                   child: SlideAnimation(
-                    verticalOffset: 50.0,
+                    verticalOffset: 30.0,
                     child: FadeInAnimation(
                       child: PrayerTimeCard(
                         prayer: prayer,
+                        // إظهار الخلفيات الملونة لجميع الصلوات
+                        forceColored: true,
                         onNotificationToggle: (enabled) {
                           _togglePrayerNotification(prayer, enabled);
                         },
@@ -370,17 +378,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
           iconColor: context.primaryColor,
         ),
       ),
-    );
-  }
-
-  Widget _buildFAB() {
-    return FloatingActionButton(
-      onPressed: () {
-        HapticFeedback.lightImpact();
-        Navigator.pushNamed(context, '/prayer-settings');
-      },
-      backgroundColor: context.primaryColor,
-      child: const Icon(Icons.settings),
     );
   }
 

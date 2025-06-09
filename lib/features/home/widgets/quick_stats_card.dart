@@ -24,6 +24,27 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
   late AnimationController _progressController;
   late Animation<double> _progressAnimation;
 
+  // تحديد اللون حسب وقت اليوم لتناسق أفضل مع الواجهة
+  List<Color> _getTimeBasedGradient() {
+    final hour = DateTime.now().hour;
+    
+    if (hour < 5) {
+      return [const Color(0xFF1F1C2C), const Color(0xFF4A148C)]; // ليل
+    } else if (hour < 8) {
+      return [const Color(0xFF1A237E), const Color(0xFF303F9F)]; // فجر
+    } else if (hour < 12) {
+      return [const Color(0xFFFF9800), const Color(0xFFFF6F00)]; // صباح
+    } else if (hour < 15) {
+      return [const Color(0xFFFF6F00), const Color(0xFFE65100)]; // ظهر
+    } else if (hour < 17) {
+      return [const Color(0xFF00897B), const Color(0xFF00695C)]; // عصر
+    } else if (hour < 20) {
+      return [const Color(0xFFE65100), const Color(0xFFBF360C)]; // مغرب
+    } else {
+      return [const Color(0xFF4A148C), const Color(0xFF311B92)]; // عشاء/ليل
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -95,7 +116,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
                     icon: Icons.local_fire_department,
                     label: 'أيام متتالية',
                     gradient: [
-                      Color(0xFFF57C00),
+                      Color(0xFFFF6F00),
                       Color(0xFFE65100),
                     ],
                     onTap: () => widget.onStatTap('achievements'),
@@ -112,10 +133,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
 
   Widget _buildCircularProgressCard(BuildContext context) {
     final isDark = context.isDarkMode;
-    final gradient = [
-      Color(0xFF2196F3),
-      Color(0xFF1976D2),
-    ];
+    final gradient = _getTimeBasedGradient();
     
     return Material(
       color: Colors.transparent,
@@ -145,6 +163,20 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
           child: Stack(
             alignment: Alignment.center,
             children: [
+              // إضافة نمط ديناميكي في الخلفية
+              Positioned(
+                right: -30,
+                top: -30,
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.05),
+                  ),
+                ),
+              ),
+              
               // Content
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -276,103 +308,122 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
               ),
             ],
           ),
-          child: Container(
-            padding: const EdgeInsets.all(ThemeConstants.space3),
-            child: Row(
-              children: [
-                // Icon with modern container
-                Container(
-                  width: 50,
-                  height: 50,
+          child: Stack(
+            children: [
+              // إضافة نمط ديناميكي في الخلفية
+              Positioned(
+                right: -20,
+                top: -20,
+                child: Container(
+                  width: 70,
+                  height: 70,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Icon(
-                        icon,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                      if (isStreak)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: Colors.yellowAccent,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.yellowAccent.withOpacity(0.5),
-                                  blurRadius: 4,
-                                  spreadRadius: 1,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                    ],
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.05),
                   ),
                 ),
-                
-                ThemeConstants.space3.w,
-                
-                // Text content
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        label,
-                        style: context.titleMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: ThemeConstants.bold,
+              ),
+              
+              // المحتوى
+              Container(
+                padding: const EdgeInsets.all(ThemeConstants.space3),
+                child: Row(
+                  children: [
+                    // Icon with modern container
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 1.5,
                         ),
                       ),
-                      
-                      ThemeConstants.space2.h,
-                      
-                      // Progress bar
-                      Stack(
+                      child: Stack(
+                        alignment: Alignment.center,
                         children: [
-                          Container(
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(2),
+                          Icon(
+                            icon,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                          if (isStreak)
+                            Positioned(
+                              right: 0,
+                              top: 0,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: Colors.yellowAccent,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.yellowAccent.withOpacity(0.5),
+                                      blurRadius: 4,
+                                      spreadRadius: 1,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    
+                    ThemeConstants.space3.w,
+                    
+                    // Text content
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            label,
+                            style: context.titleMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: ThemeConstants.bold,
                             ),
                           ),
-                          Container(
-                            height: 4,
-                            width: 80,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(2),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.white.withOpacity(0.5),
-                                  blurRadius: 4,
+                          
+                          ThemeConstants.space2.h,
+                          
+                          // Progress bar with shimmer effect
+                          Stack(
+                            children: [
+                              Container(
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(2),
                                 ),
-                              ],
-                            ),
+                              ),
+                              Container(
+                                height: 4,
+                                width: 80,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(2),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.white.withOpacity(0.5),
+                                      blurRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

@@ -5,6 +5,7 @@ import '../../features/home/screens/home_screen.dart';
 
 import '../../features/prayer_times/screens/prayer_times_screen.dart';
 import '../../features/prayer_times/screens/prayer_settings_screen.dart';
+import '../../features/prayer_times/screens/prayer_notifications_settings_screen.dart';
 
 class AppRouter {
   // Main Routes
@@ -30,6 +31,7 @@ class AppRouter {
   static const String quranReader = '/quran-reader';
   static const String duaDetails = '/dua-details';
   static const String prayerSettings = '/prayer-settings';
+  static const String prayerNotificationsSettings = '/prayer-notifications-settings';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     debugPrint('AppRouter: Generating route for ${settings.name}');
@@ -41,7 +43,8 @@ class AppRouter {
       
       // Main Features
       case prayerTimes:
-return _slideRoute(const PrayerTimesScreen(), settings);        
+        return _slideRoute(const PrayerTimesScreen(), settings);
+        
       case athkar:
         return _slideRoute(_buildComingSoonScreen('الأذكار'), settings);
         
@@ -76,8 +79,11 @@ return _slideRoute(const PrayerTimesScreen(), settings);
       case notificationSettings:
         return _slideRoute(_buildComingSoonScreen('إعدادات الإشعارات'), settings);
         
-case prayerSettings:
-  return _slideRoute(const PrayerSettingsScreen(), settings);
+      case prayerSettings:
+        return _slideRoute(const PrayerSettingsScreen(), settings);
+        
+      case prayerNotificationsSettings:
+        return _slideRoute(const PrayerNotificationsSettingsScreen(), settings);
         
       // Default
       default:

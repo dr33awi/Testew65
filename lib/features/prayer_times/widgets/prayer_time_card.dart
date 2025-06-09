@@ -9,11 +9,14 @@ import '../models/prayer_time_model.dart';
 class PrayerTimeCard extends StatelessWidget {
   final PrayerTime prayer;
   final Function(bool) onNotificationToggle;
+  // إضافة خاصية جديدة للتحكم في إظهار الألوان دائمًا
+  final bool forceColored;
 
   const PrayerTimeCard({
     super.key,
     required this.prayer,
     required this.onNotificationToggle,
+    this.forceColored = false, // افتراضيًا لا نجبر الألوان
   });
 
   @override
@@ -22,108 +25,191 @@ class PrayerTimeCard extends StatelessWidget {
     final isPassed = prayer.isPassed;
     final gradient = _getGradient(prayer.type);
     
-    return AppCard(
-      style: isNext ? CardStyle.gradient : CardStyle.normal,
-      gradientColors: isNext ? gradient : null,
-      backgroundColor: isPassed ? context.cardColor.darken(0.03) : null,
-      elevation: isNext ? ThemeConstants.elevation4 : ThemeConstants.elevation1,
-      showShadow: isNext,
-      onTap: () => _showPrayerDetails(context),
-      child: SizedBox(
-        height: 90,
-        child: Padding(
-          padding: const EdgeInsets.all(ThemeConstants.space3),
-          child: Row(
-            children: [
-              // الأيقونة والحالة
-              _buildStatusIcon(context),
-              
-              ThemeConstants.space4.w,
-              
-              // معلومات الصلاة
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      prayer.nameAr,
-                      style: context.titleMedium?.copyWith(
-                        color: _getTextColor(context),
-                        fontWeight: isNext ? ThemeConstants.bold : ThemeConstants.semiBold,
-                      ),
-                    ),
-                    
-                    ThemeConstants.space1.h,
-                    
-                    if (isNext)
-                      StreamBuilder(
-                        stream: Stream.periodic(const Duration(seconds: 1)),
-                        builder: (context, snapshot) {
-                          return Text(
-                            prayer.remainingTimeText,
-                            style: context.bodySmall?.copyWith(
-                              color: _getTextColor(context).withValues(alpha: 0.8),
-                            ),
-                          );
-                        },
-                      )
-                    else if (isPassed)
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.check_circle,
-                            size: 14,
-                            color: isNext ? Colors.white : context.successColor,
-                          ),
-                          ThemeConstants.space1.w,
-                          Text(
-                            'انتهى الوقت',
-                            style: context.bodySmall?.copyWith(
-                              color: isNext ? Colors.white.withValues(alpha: 0.8) : context.textSecondaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-              ),
-              
-              // الوقت
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
+    // تحديد ما إذا كان سيتم عرض الخلفية الملونة
+    final useGradient = forceColored || isNext;
+    
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: useGradient ? gradient[0].withOpacity(0.3) : Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => _showPrayerDetails(context),
+          splashColor: useGradient ? Colors.white.withOpacity(0.1) : gradient[0].withOpacity(0.1),
+          highlightColor: useGradient ? Colors.white.withOpacity(0.05) : gradient[0].withOpacity(0.05),
+          child: Ink(
+            decoration: BoxDecoration(
+              gradient: useGradient 
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: gradient,
+                  )
+                : null,
+              color: !useGradient ? (isPassed ? context.cardColor.darken(0.03) : context.cardColor) : null,
+            ),
+            child: SizedBox(
+              height: 90,
+              child: Stack(
                 children: [
-                  Text(
-                    _formatTime(prayer.time),
-                    style: context.headlineSmall?.copyWith(
-                      color: _getTextColor(context),
-                      fontWeight: ThemeConstants.bold,
+                  // إضافة نمط للخلفية
+                  if (useGradient) Positioned(
+                    right: -30,
+                    top: -30,
+                    child: Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.05),
+                      ),
                     ),
                   ),
                   
-                  if (prayer.iqamaTime != null)
-                    Text(
-                      'الإقامة ${_formatTime(prayer.iqamaTime!)}',
-                      style: context.bodySmall?.copyWith(
-                        color: _getTextColor(context).withValues(alpha: 0.7),
+                  if (useGradient) Positioned(
+                    left: -20,
+                    bottom: -30,
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.03),
                       ),
                     ),
+                  ),
+                  
+                  // إضافة مؤشر داخلي للصلاة القادمة
+                  if (isNext)
+                    Positioned.fill(
+                      child: Container(
+                        margin: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.8),
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                    ),
+                  
+                  // المحتوى الأساسي
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    child: Row(
+                      children: [
+                        // الأيقونة والحالة
+                        _buildStatusIcon(context, useGradient),
+                        
+                        const SizedBox(width: 14),
+                        
+                        // معلومات الصلاة
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                prayer.nameAr,
+                                style: context.titleMedium?.copyWith(
+                                  color: _getTextColor(context, useGradient),
+                                  fontWeight: isNext ? ThemeConstants.bold : ThemeConstants.semiBold,
+                                ),
+                              ),
+                              
+                              const SizedBox(height: 4),
+                              
+                              if (isNext)
+                                StreamBuilder(
+                                  stream: Stream.periodic(const Duration(seconds: 1)),
+                                  builder: (context, snapshot) {
+                                    return Text(
+                                      prayer.remainingTimeText,
+                                      style: context.bodySmall?.copyWith(
+                                        color: _getTextColor(context, useGradient).withValues(alpha: 0.8),
+                                      ),
+                                    );
+                                  },
+                                )
+                              else if (isPassed)
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.check_circle,
+                                      size: 14,
+                                      color: useGradient ? Colors.white : context.successColor,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'انتهى الوقت',
+                                      style: context.bodySmall?.copyWith(
+                                        color: useGradient ? Colors.white.withValues(alpha: 0.8) : context.textSecondaryColor,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              else
+                                Text(
+                                  "متبقي " + _formatTime(prayer.time),
+                                  style: context.bodySmall?.copyWith(
+                                    color: _getTextColor(context, useGradient).withValues(alpha: 0.8),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        
+                        // الوقت
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              _formatTime(prayer.time),
+                              style: context.headlineSmall?.copyWith(
+                                color: _getTextColor(context, useGradient),
+                                fontWeight: ThemeConstants.bold,
+                              ),
+                            ),
+                            
+                            if (prayer.iqamaTime != null)
+                              Text(
+                                'الإقامة ${_formatTime(prayer.iqamaTime!)}',
+                                style: context.bodySmall?.copyWith(
+                                  color: _getTextColor(context, useGradient).withValues(alpha: 0.7),
+                                ),
+                              ),
+                          ],
+                        ),
+                        
+                        const SizedBox(width: 8),
+                        
+                        // زر التنبيه
+                        _buildNotificationToggle(context, useGradient),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-              
-              ThemeConstants.space3.w,
-              
-              // زر التنبيه
-              _buildNotificationToggle(context),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildStatusIcon(BuildContext context) {
+  Widget _buildStatusIcon(BuildContext context, bool useGradient) {
     IconData icon;
     Color color;
     
@@ -132,56 +218,59 @@ class PrayerTimeCard extends StatelessWidget {
       color = Colors.white;
     } else if (prayer.isPassed) {
       icon = Icons.check_circle_outline;
-      color = context.successColor;
+      color = useGradient ? Colors.white : context.successColor;
     } else {
       icon = _getPrayerIcon(prayer.type);
-      color = context.textSecondaryColor;
+      color = useGradient ? Colors.white : _getPrayerTypeColor(prayer.type);
     }
     
     return Container(
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: prayer.isNext 
+        color: useGradient 
             ? Colors.white.withValues(alpha: 0.2)
             : color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: prayer.isNext 
+          color: useGradient 
               ? Colors.white.withValues(alpha: 0.3)
               : color.withValues(alpha: 0.2),
           width: 1.5,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Icon(
         icon,
-        color: prayer.isNext ? Colors.white : color,
+        color: color,
         size: 24,
       ),
     );
   }
 
-  Widget _buildNotificationToggle(BuildContext context) {
-    // لا نعرض زر التنبيه للصلوات التي انتهت
-    if (prayer.isPassed) {
-      return const SizedBox(width: 40);
-    }
-    
+  Widget _buildNotificationToggle(BuildContext context, bool useGradient) {
+    // تم تعديل الدالة لإظهار زر التنبيه دائمًا بغض النظر عن انتهاء وقت الصلاة
     return IconButton(
       onPressed: () {
         HapticFeedback.lightImpact();
-        onNotificationToggle(!prayer.isPassed);
+        onNotificationToggle(true);
       },
       icon: Icon(
         Icons.notifications_outlined,
-        color: _getTextColor(context).withValues(alpha: 0.7),
+        color: _getTextColor(context, useGradient).withValues(alpha: 0.7),
       ),
       tooltip: 'تنبيه الصلاة',
     );
   }
 
-  Color _getTextColor(BuildContext context) {
-    if (prayer.isNext) return Colors.white;
+  Color _getTextColor(BuildContext context, bool useGradient) {
+    if (useGradient) return Colors.white;
     if (prayer.isPassed) return context.textSecondaryColor;
     return context.textPrimaryColor;
   }
