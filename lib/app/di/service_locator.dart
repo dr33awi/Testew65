@@ -29,7 +29,8 @@ import 'package:athkar_app/core/infrastructure/services/device/battery/battery_s
 // معالج الأخطاء
 import '../../core/error/error_handler.dart';
 
-
+// خدمات الميزات
+import '../../features/prayer_times/services/prayer_times_service.dart';
 
 final getIt = GetIt.instance;
 
@@ -210,13 +211,29 @@ class ServiceLocator {
   /// تسجيل خدمات الميزات
   void _registerFeatureServices() {
     debugPrint('ServiceLocator: تسجيل خدمات الميزات...');
+    
+    // خدمة مواقيت الصلاة
+    if (!getIt.isRegistered<PrayerTimesService>()) {
+      getIt.registerLazySingleton<PrayerTimesService>(
+        () => PrayerTimesService(
+          logger: getIt<LoggerService>(),
+          storage: getIt<StorageService>(),
+          permissionService: getIt<PermissionService>(),
+        ),
+      );
+    }
+    
+    // يمكن إضافة خدمات أخرى هنا في المستقبل
+    // مثل: خدمة الأذكار، خدمة القرآن، خدمة القبلة، إلخ
   }
 
   /// إعادة تعيين خدمة محددة
   static Future<void> resetService<T extends Object>() async {
     if (getIt.isRegistered<T>()) {
       // التنظيف إذا كانت الخدمة تحتاج ذلك
-
+      if (T == PrayerTimesService && getIt.isRegistered<PrayerTimesService>()) {
+        getIt<PrayerTimesService>().dispose();
+      }
       
       await getIt.unregister<T>();
       debugPrint('ServiceLocator: تم إلغاء تسجيل ${T.toString()}');
@@ -246,7 +263,10 @@ class ServiceLocator {
     debugPrint('ServiceLocator: تنظيف الموارد...');
 
     try {
-
+      // تنظيف خدمات الميزات
+      if (getIt.isRegistered<PrayerTimesService>()) {
+        getIt<PrayerTimesService>().dispose();
+      }
 
       // تنظيف خدمة البطارية
       if (getIt.isRegistered<BatteryService>()) {
@@ -311,4 +331,6 @@ extension ServiceLocatorExtensions on BuildContext {
   /// الحصول على خدمة البطارية
   BatteryService get batteryService => getIt<BatteryService>();
   
+  /// الحصول على خدمة مواقيت الصلاة
+  PrayerTimesService get prayerTimesService => getIt<PrayerTimesService>();
 }

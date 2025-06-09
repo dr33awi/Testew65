@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../app/themes/app_theme.dart';
 import '../widgets/category_grid.dart';
 import '../widgets/quick_stats_card.dart';
+import '../widgets/prayer_times_card.dart';
+import '../widgets/welcome_message.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -18,7 +20,15 @@ class HomeScreen extends StatelessWidget {
             floating: true,
             backgroundColor: context.backgroundColor,
             elevation: 0,
+            title: Text(
+              'تطبيق الأذكار',
+              style: context.titleLarge?.semiBold,
+            ),
             actions: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined),
+                onPressed: () => Navigator.pushNamed(context, '/notifications'),
+              ),
               IconButton(
                 icon: const Icon(Icons.settings_outlined),
                 onPressed: () => Navigator.pushNamed(context, '/settings'),
@@ -27,37 +37,14 @@ class HomeScreen extends StatelessWidget {
           ),
           
           // Welcome Message
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(ThemeConstants.space4),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.wb_sunny,
-                    color: context.primaryColor,
-                    size: ThemeConstants.iconLg,
-                  ),
-                  ThemeConstants.space3.w,
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'صباح الخير',
-                          style: context.titleLarge?.semiBold,
-                        ),
-                        Text(
-                          'لا تنس أذكار الصباح',
-                          style: context.bodyMedium,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          const SliverToBoxAdapter(
+            child: WelcomeMessage(),
           ),
           
+          // Prayer Times Card
+          const SliverToBoxAdapter(
+            child: PrayerTimesCard(),
+          ),
 
           SliverToBoxAdapter(
             child: ThemeConstants.space4.h,

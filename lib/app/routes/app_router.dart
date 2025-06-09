@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../../app/themes/app_theme.dart';
 import '../../features/home/screens/home_screen.dart';
 
+import '../../features/prayer_times/screens/prayer_times_screen.dart';
+import '../../features/prayer_times/screens/prayer_settings_screen.dart';
+
 class AppRouter {
   // Main Routes
   static const String initialRoute = '/';
@@ -38,8 +41,7 @@ class AppRouter {
       
       // Main Features
       case prayerTimes:
-        return _slideRoute(_buildComingSoonScreen('مواقيت الصلاة'), settings);
-        
+return _slideRoute(const PrayerTimesScreen(), settings);        
       case athkar:
         return _slideRoute(_buildComingSoonScreen('الأذكار'), settings);
         
@@ -74,8 +76,8 @@ class AppRouter {
       case notificationSettings:
         return _slideRoute(_buildComingSoonScreen('إعدادات الإشعارات'), settings);
         
-      case prayerSettings:
-        return _slideRoute(_buildComingSoonScreen('إعدادات الصلاة'), settings);
+case prayerSettings:
+  return _slideRoute(const PrayerSettingsScreen(), settings);
         
       // Default
       default:
