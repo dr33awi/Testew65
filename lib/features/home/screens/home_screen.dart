@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/themes/app_theme.dart';
 import '../widgets/category_grid.dart';
 import '../widgets/quick_stats_card.dart';
-import '../widgets/prayer_times_card.dart';
+import '../../prayer_times/widgets/home_prayer_times_card.dart';
 import '../widgets/welcome_message.dart';
 
 class HomeScreen extends StatelessWidget {

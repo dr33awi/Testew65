@@ -7,8 +7,8 @@ import 'dart:math' as math;
 import '../../../app/themes/app_theme.dart';
 import '../../../app/routes/app_router.dart';
 import '../../../app/di/service_locator.dart';
-import '../../prayer_times/services/prayer_times_service.dart';
-import '../../prayer_times/models/prayer_time_model.dart';
+import '../services/prayer_times_service.dart';
+import '../models/prayer_time_model.dart';
 
 class PrayerTimesCard extends StatefulWidget {
   const PrayerTimesCard({super.key});
