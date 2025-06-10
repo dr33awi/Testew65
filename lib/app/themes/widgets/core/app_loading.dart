@@ -191,18 +191,20 @@ class AppLoading extends StatelessWidget {
   }
 
   // Factory constructors
-  factory AppLoading.circular({
-    LoadingSize size = LoadingSize.medium,
-    Color? color,
-    double? value,
-  }) {
-    return AppLoading(
-      type: LoadingType.circular,
-      size: size,
-      color: color,
-      value: value,
-    );
-  }
+factory AppLoading.circular({
+  LoadingSize size = LoadingSize.medium,
+  Color? color,
+  double? value,
+  String? message,
+}) {
+  return AppLoading(
+    type: LoadingType.circular,
+    size: size,
+    color: color,
+    value: value,
+    message: message,
+  );
+}
 
   factory AppLoading.linear({
     LoadingSize size = LoadingSize.medium,
