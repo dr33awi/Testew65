@@ -65,33 +65,32 @@ class AppInfoDialog extends StatelessWidget {
   }
 
   /// عرض حوار تأكيد
-static Future<bool?> showConfirmation({
-  required BuildContext context,
-  required String title,
-  required String content,
-  String confirmText = 'تأكيد',
-  String cancelText = 'إلغاء',
-  IconData icon = Icons.help_outline,
-  Color? accentColor,
-  bool destructive = false,
-  Color? confirmButtonColor, // جعل المعلمة اختيارية
-}) {
-  return show<bool>(
-    context: context,
-    title: title,
-    content: content,
-    icon: icon,
-    accentColor: destructive ? ThemeConstants.error : accentColor,
-    closeButtonText: cancelText,
-    actions: [
-      DialogAction(
-        label: confirmText,
-        onPressed: () => Navigator.of(context).pop(true),
-        isPrimary: true,
-      ),
-    ],
-  );
-}
+  static Future<bool?> showConfirmation({
+    required BuildContext context,
+    required String title,
+    required String content,
+    String confirmText = 'تأكيد',
+    String cancelText = 'إلغاء',
+    IconData icon = Icons.help_outline,
+    Color? accentColor,
+    bool destructive = false, required Color confirmButtonColor,
+  }) {
+    return show<bool>(
+      context: context,
+      title: title,
+      content: content,
+      icon: icon,
+      accentColor: destructive ? ThemeConstants.error : accentColor,
+      closeButtonText: cancelText,
+      actions: [
+        DialogAction(
+          label: confirmText,
+          onPressed: () => Navigator.of(context).pop(true),
+          isPrimary: true,
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
