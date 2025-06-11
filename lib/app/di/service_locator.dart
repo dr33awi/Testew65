@@ -31,6 +31,7 @@ import '../../core/error/error_handler.dart';
 
 // خدمات الميزات
 import '../../features/prayer_times/services/prayer_times_service.dart';
+import 'package:athkar_app/features/qibla/services/qibla_service.dart';
 
 final getIt = GetIt.instance;
 
@@ -223,8 +224,23 @@ class ServiceLocator {
       );
     }
     
-    // يمكن إضافة خدمات أخرى هنا في المستقبل
-    // مثل: خدمة الأذكار، خدمة القرآن، خدمة القبلة، إلخ
+    // تسجيل خدمة القبلة
+    _registerQiblaServices();
+  }
+  
+  /// تسجيل خدمات القبلة
+  void _registerQiblaServices() {
+    debugPrint('ServiceLocator: تسجيل خدمات القبلة...');
+    
+    if (!getIt.isRegistered<QiblaService>()) {
+      getIt.registerFactory<QiblaService>(
+        () => QiblaService(
+          logger: getIt<LoggerService>(),
+          storage: getIt<StorageService>(),
+          permissionService: getIt<PermissionService>(),
+        ),
+      );
+    }
   }
 
   /// إعادة تعيين خدمة محددة
@@ -333,4 +349,7 @@ extension ServiceLocatorExtensions on BuildContext {
   
   /// الحصول على خدمة مواقيت الصلاة
   PrayerTimesService get prayerTimesService => getIt<PrayerTimesService>();
+  
+  /// الحصول على خدمة القبلة
+  QiblaService get qiblaService => getIt<QiblaService>();
 }

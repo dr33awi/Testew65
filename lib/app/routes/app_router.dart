@@ -6,6 +6,7 @@ import '../../features/home/screens/home_screen.dart';
 import '../../features/prayer_times/screens/prayer_times_screen.dart';
 import '../../features/prayer_times/screens/prayer_settings_screen.dart';
 import '../../features/prayer_times/screens/prayer_notifications_settings_screen.dart';
+import 'package:athkar_app/features/qibla/screens/qibla_screen.dart';
 
 class AppRouter {
   // Main Routes
@@ -52,7 +53,7 @@ class AppRouter {
         return _slideRoute(_buildComingSoonScreen('القرآن الكريم'), settings);
         
       case qibla:
-        return _slideRoute(_buildComingSoonScreen('اتجاه القبلة'), settings);
+        return _slideRoute(const QiblaScreen(), settings);
         
       case tasbih:
         return _slideRoute(_buildComingSoonScreen('التسبيح'), settings);
