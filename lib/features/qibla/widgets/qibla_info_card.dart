@@ -95,7 +95,7 @@ class QiblaInfoCard extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // معلومات القبلة
           Padding(
             padding: const EdgeInsets.all(16),
@@ -132,9 +132,9 @@ class QiblaInfoCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // معلومات إضافية
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -173,7 +173,7 @@ class QiblaInfoCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 // تحذير البيانات القديمة
                 if (qiblaData.isStale)
                   Container(
@@ -311,7 +311,7 @@ class QiblaInfoCard extends StatelessWidget {
 
   String _getLastUpdateText() {
     final age = qiblaData.age;
-    
+
     if (age.inMinutes < 1) {
       return 'الآن';
     } else if (age.inMinutes < 60) {
@@ -327,7 +327,7 @@ class QiblaInfoCard extends StatelessWidget {
     final coordinates = '${qiblaData.latitude}, ${qiblaData.longitude}';
     Clipboard.setData(ClipboardData(text: coordinates));
     HapticFeedback.lightImpact();
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('تم نسخ الإحداثيات: $coordinates'),
