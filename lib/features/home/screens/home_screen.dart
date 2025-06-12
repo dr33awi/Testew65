@@ -5,6 +5,7 @@ import '../widgets/category_grid.dart';
 import '../widgets/quick_stats_card.dart';
 import '../../prayer_times/widgets/home_prayer_times_card.dart';
 import '../widgets/welcome_message.dart';
+import '../widgets/daily_quotes_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -46,6 +47,14 @@ class HomeScreen extends StatelessWidget {
             child: PrayerTimesCard(),
           ),
 
+          // Daily Quotes Card - مباشرة بعد كارد الصلاة
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(top: ThemeConstants.space4),
+              child: const DailyQuotesCard(),
+            ),
+          ),
+          
           SliverToBoxAdapter(
             child: ThemeConstants.space4.h,
           ),
