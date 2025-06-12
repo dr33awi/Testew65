@@ -12,6 +12,8 @@ class PrayerTime {
   final bool isPassed;
   final PrayerType type;
 
+  var timeRemaining;
+
   PrayerTime({
     required this.id,
     required this.nameAr,
