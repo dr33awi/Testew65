@@ -14,52 +14,42 @@ class QiblaInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.cardColor,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
+    return AppCard(
+      padding: EdgeInsets.zero,
+      borderRadius: ThemeConstants.radius2xl,
       child: Column(
         children: [
-          // رأس البطاقة
+          // Header with location name
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4, vertical: ThemeConstants.space3), // Reduced vertical padding
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  context.primaryColor.withValues(alpha: 0.1),
-                  context.primaryColor.withValues(alpha: 0.05),
+                  context.primaryColor.withOpacity(0.1),
+                  context.primaryColor.withOpacity(0.05),
                 ],
               ),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(ThemeConstants.radius2xl),
               ),
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(ThemeConstants.space2), // Reduced padding
                   decoration: BoxDecoration(
-                    color: context.primaryColor.withValues(alpha: 0.1),
+                    color: context.primaryColor.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.location_on,
                     color: context.primaryColor,
-                    size: 24,
+                    size: ThemeConstants.iconMd,
                   ),
                 ),
-                const SizedBox(width: 12),
+                ThemeConstants.space2.w, // Reduced spacing
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,38 +60,27 @@ class QiblaInfoCard extends StatelessWidget {
                           color: context.textSecondaryColor,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      ThemeConstants.space1.h,
                       Text(
                         _getLocationName(),
-                        style: context.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: context.bodyLarge?.bold,
                         overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
+                        maxLines: 1, // Reduced max lines for compactness
                       ),
                     ],
                   ),
                 ),
-                // زر نسخ الإحداثيات
-                IconButton(
-                  onPressed: () => _copyCoordinates(context),
-                  icon: Icon(
-                    Icons.copy,
-                    size: 20,
-                    color: context.textSecondaryColor,
-                  ),
-                  tooltip: 'نسخ الإحداثيات',
-                ),
+                // Removed Copy coordinates button
               ],
             ),
           ),
 
-          // معلومات القبلة
+          // Qibla Info Details
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(ThemeConstants.space4), // Kept consistent padding
             child: Column(
               children: [
-                // صف المعلومات الأساسية
+                // Primary Info (Direction and Distance)
                 Row(
                   children: [
                     Expanded(
@@ -115,10 +94,10 @@ class QiblaInfoCard extends StatelessWidget {
                       ),
                     ),
                     Container(
-                      width: 1,
-                      height: 60,
-                      color: context.dividerColor,
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                      width: ThemeConstants.borderLight,
+                      height: ThemeConstants.heightXl,
+                      color: context.dividerColor.withOpacity(0.5),
+                      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space2),
                     ),
                     Expanded(
                       child: _buildInfoTile(
@@ -127,20 +106,23 @@ class QiblaInfoCard extends StatelessWidget {
                         title: 'المسافة للكعبة',
                         value: qiblaData.distanceDescription,
                         subtitle: 'خط مستقيم',
-                        color: Colors.orange,
+                        color: ThemeConstants.warning, // Use warning color for distance
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                ThemeConstants.space4.h,
 
-                // معلومات إضافية
+                // Additional Details
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(ThemeConstants.space3),
                   decoration: BoxDecoration(
                     color: context.backgroundColor,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: ThemeConstants.radiusMd.circular,
+                    border: Border.all(
+                      color: context.dividerColor.withOpacity(0.2),
+                    ),
                   ),
                   child: Column(
                     children: [
@@ -149,13 +131,13 @@ class QiblaInfoCard extends StatelessWidget {
                         label: 'خط العرض',
                         value: '${qiblaData.latitude.toStringAsFixed(6)}°',
                       ),
-                      const SizedBox(height: 8),
+                      ThemeConstants.space2.h,
                       _buildDetailRow(
                         context: context,
                         label: 'خط الطول',
                         value: '${qiblaData.longitude.toStringAsFixed(6)}°',
                       ),
-                      const SizedBox(height: 8),
+                      ThemeConstants.space2.h,
                       _buildDetailRow(
                         context: context,
                         label: 'دقة الموقع',
@@ -163,7 +145,7 @@ class QiblaInfoCard extends StatelessWidget {
                         valueColor: _getAccuracyColor(),
                       ),
                       if (!qiblaData.isStale) ...[
-                        const SizedBox(height: 8),
+                        ThemeConstants.space2.h,
                         _buildDetailRow(
                           context: context,
                           label: 'آخر تحديث',
@@ -174,31 +156,31 @@ class QiblaInfoCard extends StatelessWidget {
                   ),
                 ),
 
-                // تحذير البيانات القديمة
+                // Stale data warning
                 if (qiblaData.isStale)
                   Container(
-                    margin: const EdgeInsets.only(top: 12),
-                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(top: ThemeConstants.space3),
+                    padding: const EdgeInsets.all(ThemeConstants.space3),
                     decoration: BoxDecoration(
-                      color: Colors.amber.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      color: ThemeConstants.warning.withOpacity(0.1),
+                      borderRadius: ThemeConstants.radiusMd.circular,
                       border: Border.all(
-                        color: Colors.amber.withValues(alpha: 0.3),
+                        color: ThemeConstants.warning.withOpacity(0.3),
                       ),
                     ),
                     child: Row(
                       children: [
                         Icon(
                           Icons.warning_amber_rounded,
-                          color: Colors.amber[700],
-                          size: 20,
+                          color: ThemeConstants.warning.darken(0.1),
+                          size: ThemeConstants.iconMd,
                         ),
-                        const SizedBox(width: 8),
+                        ThemeConstants.space2.w,
                         Expanded(
                           child: Text(
-                            'بيانات الموقع قديمة، يُنصح بالتحديث',
+                            'بيانات الموقع قديمة، يُنصح بالتحديث لضمان الدقة.',
                             style: context.bodySmall?.copyWith(
-                              color: Colors.amber[700],
+                              color: ThemeConstants.warning.darken(0.1),
                             ),
                           ),
                         ),
@@ -233,37 +215,36 @@ class QiblaInfoCard extends StatelessWidget {
     required String subtitle,
     required Color color,
   }) {
-    return Column(
-      children: [
-        Icon(
-          icon,
-          color: color,
-          size: 28,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          title,
-          style: context.bodySmall?.copyWith(
-            color: context.textSecondaryColor,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: context.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: ThemeConstants.space1), // Smaller vertical padding
+      child: Column(
+        children: [
+          Icon(
+            icon,
             color: color,
+            size: ThemeConstants.iconLg,
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          subtitle,
-          style: context.bodySmall?.copyWith(
-            color: context.textSecondaryColor,
-            fontSize: 11,
+          ThemeConstants.space1.h, // Reduced spacing
+          Text(
+            title,
+            style: context.bodySmall?.copyWith(
+              color: context.textSecondaryColor,
+            ),
           ),
-        ),
-      ],
+          // No additional vertical space here, value directly below title
+          Text(
+            value,
+            style: context.titleMedium?.bold.textColor(color),
+          ),
+          ThemeConstants.space1.h,
+          Text(
+            subtitle,
+            style: context.bodySmall?.copyWith( // Used bodySmall for subtitle for compactness
+              color: context.textSecondaryColor.withOpacity(0.7),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -285,7 +266,7 @@ class QiblaInfoCard extends StatelessWidget {
         Text(
           value,
           style: context.bodySmall?.copyWith(
-            fontWeight: FontWeight.w600,
+            fontWeight: ThemeConstants.semiBold,
             color: valueColor ?? context.textPrimaryColor,
           ),
         ),
@@ -304,9 +285,9 @@ class QiblaInfoCard extends StatelessWidget {
   }
 
   Color _getAccuracyColor() {
-    if (qiblaData.hasHighAccuracy) return Colors.green;
-    if (qiblaData.hasMediumAccuracy) return Colors.orange;
-    return Colors.red;
+    if (qiblaData.hasHighAccuracy) return ThemeConstants.success;
+    if (qiblaData.hasMediumAccuracy) return ThemeConstants.warning;
+    return ThemeConstants.error;
   }
 
   String _getLastUpdateText() {
@@ -323,24 +304,15 @@ class QiblaInfoCard extends StatelessWidget {
     }
   }
 
-  void _copyCoordinates(BuildContext context) {
-    final coordinates = '${qiblaData.latitude}, ${qiblaData.longitude}';
-    Clipboard.setData(ClipboardData(text: coordinates));
-    HapticFeedback.lightImpact();
+  // Removed _copyCoordinates method entirely
+  // void _copyCoordinates(BuildContext context) {
+  //   final coordinates = '${qiblaData.latitude.toStringAsFixed(6)}, ${qiblaData.longitude.toStringAsFixed(6)}';
+  //   Clipboard.setData(ClipboardData(text: coordinates));
+  //   HapticFeedback.lightImpact();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('تم نسخ الإحداثيات: $coordinates'),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        action: SnackBarAction(
-          label: 'حسناً',
-          onPressed: () {},
-        ),
-      ),
-    );
-  }
+  //   AppSnackBar.showInfo(
+  //     context: context,
+  //     message: 'تم نسخ الإحداثيات: $coordinates',
+  //   );
+  // }
 }

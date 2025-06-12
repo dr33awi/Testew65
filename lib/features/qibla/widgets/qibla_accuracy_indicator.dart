@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
 
 class QiblaAccuracyIndicator extends StatefulWidget {
-  final double accuracy;
+  final double accuracy; // Accuracy from 0.0 to 100.0 (percentage)
   final bool isCalibrated;
   final VoidCallback? onCalibrate;
 
@@ -30,7 +30,7 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: ThemeConstants.durationNormal,
       vsync: this,
     );
     _progressAnimation = Tween<double>(
@@ -38,7 +38,7 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
       end: widget.accuracy,
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeOutCubic,
+      curve: ThemeConstants.curveSmooth,
     ));
     _animationController.forward();
   }
@@ -53,7 +53,7 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
         end: widget.accuracy,
       ).animate(CurvedAnimation(
         parent: _animationController,
-        curve: Curves.easeOutCubic,
+        curve: ThemeConstants.curveSmooth,
       ));
       _animationController.forward(from: 0);
     }
@@ -69,6 +69,7 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
   Widget build(BuildContext context) {
     return AppCard(
       padding: EdgeInsets.zero,
+      borderRadius: ThemeConstants.radiusLg,
       child: Column(
         children: [
           // رأس البطاقة
@@ -77,8 +78,8 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  _getAccuracyColor(widget.accuracy).withValues(alpha: 0.1),
-                  _getAccuracyColor(widget.accuracy).withValues(alpha: 0.05),
+                  _getAccuracyColor(widget.accuracy).withOpacity(0.1),
+                  _getAccuracyColor(widget.accuracy).withOpacity(0.05),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -92,7 +93,7 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                 Container(
                   padding: const EdgeInsets.all(ThemeConstants.space3),
                   decoration: BoxDecoration(
-                    color: _getAccuracyColor(widget.accuracy).withValues(alpha: 0.1),
+                    color: _getAccuracyColor(widget.accuracy).withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -108,9 +109,7 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                     children: [
                       Text(
                         'دقة البوصلة',
-                        style: context.titleMedium?.copyWith(
-                          fontWeight: ThemeConstants.semiBold,
-                        ),
+                        style: context.titleMedium?.semiBold,
                       ),
                       Text(
                         _getAccuracyDescription(widget.accuracy),
@@ -130,6 +129,7 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                     },
                     size: ButtonSize.small,
                     icon: Icons.compass_calibration,
+                    color: ThemeConstants.warning, // لون مميز لزر المعايرة
                   ),
               ],
             ),
@@ -149,9 +149,9 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                       return CustomPaint(
                         size: const Size(double.infinity, 120),
                         painter: AccuracyGaugePainter(
-                          progress: _progressAnimation.value / 100,
+                          progress: _progressAnimation.value / 100, // Pass as 0-1
                           color: _getAccuracyColor(_progressAnimation.value),
-                          backgroundColor: context.dividerColor.withValues(alpha: 0.2),
+                          backgroundColor: context.dividerColor.withOpacity(0.2),
                         ),
                         child: Center(
                           child: Column(
@@ -185,9 +185,9 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                   padding: const EdgeInsets.all(ThemeConstants.space3),
                   decoration: BoxDecoration(
                     color: context.surfaceColor,
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                    borderRadius: ThemeConstants.radiusMd.circular,
                     border: Border.all(
-                      color: context.dividerColor.withValues(alpha: 0.2),
+                      color: context.dividerColor.withOpacity(0.2),
                     ),
                   ),
                   child: Column(
@@ -199,14 +199,13 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                         widget.isCalibrated ? ThemeConstants.success : ThemeConstants.warning,
                       ),
                       ThemeConstants.space2.h,
-                      Divider(color: context.dividerColor.withValues(alpha: 0.2)),
+                      Divider(color: context.dividerColor.withOpacity(0.2)),
                       ThemeConstants.space2.h,
                       _buildStatusRow(
                         context,
                         'التداخل المغناطيسي',
-                        widget.accuracy > 70 ? 'منخفض' : widget.accuracy > 40 ? 'متوسط' : 'عالي',
-                        widget.accuracy > 70 ? ThemeConstants.success : 
-                        widget.accuracy > 40 ? ThemeConstants.warning : ThemeConstants.error,
+                        _getMagneticInterferenceText(widget.accuracy),
+                        _getMagneticInterferenceColor(widget.accuracy),
                       ),
                     ],
                   ),
@@ -215,14 +214,14 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                 ThemeConstants.space3.h,
                 
                 // نصائح لتحسين الدقة
-                if (widget.accuracy < 70)
+                if (widget.accuracy < 70) // Show tips if accuracy is not good
                   Container(
                     padding: const EdgeInsets.all(ThemeConstants.space3),
                     decoration: BoxDecoration(
-                      color: ThemeConstants.info.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                      color: ThemeConstants.info.withOpacity(0.1),
+                      borderRadius: ThemeConstants.radiusMd.circular,
                       border: Border.all(
-                        color: ThemeConstants.info.withValues(alpha: 0.3),
+                        color: ThemeConstants.info.withOpacity(0.3),
                       ),
                     ),
                     child: Row(
@@ -246,7 +245,7 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                                 ),
                               ),
                               ThemeConstants.space1.h,
-                              ...getTips(widget.accuracy).map((tip) => Padding(
+                              ..._getTips(widget.accuracy).map((tip) => Padding(
                                 padding: const EdgeInsets.only(top: 4),
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -298,8 +297,8 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
             vertical: ThemeConstants.space1,
           ),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
+            color: color.withOpacity(0.1),
+            borderRadius: ThemeConstants.radiusSm.circular,
           ),
           child: Text(
             value,
@@ -329,10 +328,22 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
     if (accuracy >= 80) return 'دقة ممتازة';
     if (accuracy >= 60) return 'دقة جيدة';
     if (accuracy >= 40) return 'دقة متوسطة';
-    return 'دقة ضعيفة';
+    return 'دقة ضعيفة جداً';
   }
 
-  List<String> getTips(double accuracy) {
+  String _getMagneticInterferenceText(double accuracy) {
+    if (accuracy >= 70) return 'منخفض';
+    if (accuracy >= 40) return 'متوسط';
+    return 'عالي';
+  }
+
+  Color _getMagneticInterferenceColor(double accuracy) {
+    if (accuracy >= 70) return ThemeConstants.success;
+    if (accuracy >= 40) return ThemeConstants.warning;
+    return ThemeConstants.error;
+  }
+
+  List<String> _getTips(double accuracy) {
     final tips = <String>[];
     
     if (accuracy < 70) {
@@ -350,9 +361,9 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
   }
 }
 
-// رسام مؤشر الدقة
+// رسام مؤشر الدقة (Gauge)
 class AccuracyGaugePainter extends CustomPainter {
-  final double progress;
+  final double progress; // Progress from 0.0 to 1.0
   final Color color;
   final Color backgroundColor;
 
@@ -364,10 +375,10 @@ class AccuracyGaugePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height - 20);
-    final radius = math.min(size.width / 2, size.height - 40);
-    
-    // رسم الخلفية
+    final center = Offset(size.width / 2, size.height - 20); // Adjust center for gauge style
+    final radius = math.min(size.width / 2, size.height - 40); // Adjust radius
+
+    // Background arc
     final backgroundPaint = Paint()
       ..color = backgroundColor
       ..style = PaintingStyle.stroke
@@ -376,13 +387,13 @@ class AccuracyGaugePainter extends CustomPainter {
     
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
-      math.pi,
-      math.pi,
+      math.pi, // Start from 180 degrees (left)
+      math.pi, // Sweep 180 degrees (to right)
       false,
       backgroundPaint,
     );
     
-    // رسم التقدم
+    // Progress arc
     final progressPaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
@@ -391,13 +402,13 @@ class AccuracyGaugePainter extends CustomPainter {
     
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
-      math.pi,
-      math.pi * progress,
+      math.pi, // Start from 180 degrees
+      math.pi * progress, // Sweep based on progress
       false,
       progressPaint,
     );
     
-    // رسم المؤشر
+    // Indicator (thumb)
     final indicatorAngle = math.pi + (math.pi * progress);
     final indicatorX = center.dx + radius * math.cos(indicatorAngle);
     final indicatorY = center.dy + radius * math.sin(indicatorAngle);
@@ -408,7 +419,7 @@ class AccuracyGaugePainter extends CustomPainter {
     
     canvas.drawCircle(Offset(indicatorX, indicatorY), 10, indicatorPaint);
     
-    // رسم الحدود
+    // White border for indicator
     final borderPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
