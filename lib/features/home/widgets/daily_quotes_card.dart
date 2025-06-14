@@ -13,14 +13,24 @@ class DailyQuotesCard extends StatefulWidget {
 }
 
 class _DailyQuotesCardState extends State<DailyQuotesCard> {
-  Map<String, dynamic>? _todayQuote;
+  Map<String, dynamic>? _todayVerse;
+  Map<String, dynamic>? _todayHadith;
   bool _isLoading = true;
   String? _error;
+  PageController? _pageController;
+  int _currentPage = 0;
   
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(initialPage: 0);
     _loadDailyQuotes();
+  }
+  
+  @override
+  void dispose() {
+    _pageController?.dispose();
+    super.dispose();
   }
   
   Future<void> _loadDailyQuotes() async {
@@ -30,28 +40,77 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
         _error = null;
       });
       
-      // تحميل ملف الاقتباسات اليومية
-      final String jsonString = await rootBundle.loadString('assets/data/daily_quotes.json');
-      final Map<String, dynamic> data = json.decode(jsonString);
+      // محاولة تحميل الملف
+      print('محاولة تحميل الملف من: assets/data/daily_quotes.json');
       
-      // الحصول على اقتباس اليوم بناءً على تاريخ اليوم
-      final int dayOfYear = DateTime.now().difference(DateTime(DateTime.now().year, 1, 1)).inDays;
-      final List<dynamic> quotes = data['quotes'] ?? [];
-      
-      if (quotes.isNotEmpty) {
-        // اختيار اقتباس بناءً على يوم السنة للحصول على اقتباس مختلف كل يوم
-        final int index = dayOfYear % quotes.length;
-        _todayQuote = quotes[index];
+      String jsonString;
+      try {
+        jsonString = await rootBundle.loadString('assets/data/daily_quotes.json');
+        print('تم تحميل الملف بنجاح. حجم المحتوى: ${jsonString.length} حرف');
+      } catch (e) {
+        print('خطأ في تحميل الملف: $e');
+        throw Exception('لا يمكن العثور على ملف daily_quotes.json. تأكد من إضافته في pubspec.yaml');
       }
+      
+      // محاولة تحليل JSON
+      Map<String, dynamic> data;
+      try {
+        data = json.decode(jsonString);
+        print('تم تحليل JSON بنجاح');
+      } catch (e) {
+        print('خطأ في تحليل JSON: $e');
+        print('أول 100 حرف من المحتوى: ${jsonString.substring(0, min(100, jsonString.length))}');
+        throw Exception('خطأ في تنسيق ملف JSON. تأكد من صحة التنسيق');
+      }
+      
+      // التحقق من وجود البيانات المطلوبة
+      final List<dynamic>? quranVerses = data['quran_verses'];
+      final List<dynamic>? hadiths = data['hadiths'];
+      
+      if (quranVerses == null || hadiths == null) {
+        throw Exception('لا يحتوي الملف على البيانات المطلوبة (quran_verses أو hadiths)');
+      }
+      
+      if (quranVerses.isEmpty || hadiths.isEmpty) {
+        throw Exception('مصفوفة الآيات أو الأحاديث فارغة');
+      }
+      
+      print('عدد الآيات: ${quranVerses.length}');
+      print('عدد الأحاديث: ${hadiths.length}');
+      
+      // الحصول على آية وحديث اليوم بناءً على تاريخ اليوم
+      final int dayOfYear = DateTime.now().difference(DateTime(DateTime.now().year, 1, 1)).inDays;
+      final int verseIndex = dayOfYear % quranVerses.length;
+      final int hadithIndex = dayOfYear % hadiths.length;
+      
+      // تحديد آية اليوم
+      _todayVerse = {
+        'type': 'verse',
+        'content': quranVerses[verseIndex]['text'] ?? '',
+        'source': quranVerses[verseIndex]['source'] ?? '',
+      };
+      
+      // تحديد حديث اليوم
+      _todayHadith = {
+        'type': 'hadith',
+        'content': hadiths[hadithIndex]['text'] ?? '',
+        'source': hadiths[hadithIndex]['source'] ?? '',
+      };
+      
+      print('تم اختيار الآية رقم: $verseIndex');
+      print('تم اختيار الحديث رقم: $hadithIndex');
       
       setState(() {
         _isLoading = false;
       });
+      
+      print('تم تحميل الاقتباسات بنجاح');
+      
     } catch (e) {
-      print('Error loading daily quotes: $e'); // للتشخيص
+      print('خطأ نهائي: $e');
       setState(() {
         _isLoading = false;
-        _error = 'حدث خطأ في تحميل البيانات: $e';
+        _error = e.toString();
       });
     }
   }
@@ -62,7 +121,11 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
       return _buildLoadingCard(context);
     }
     
-    if (_error != null || _todayQuote == null) {
+    if (_error != null) {
+      return _buildErrorCard(context);
+    }
+    
+    if (_todayVerse == null || _todayHadith == null) {
       return const SizedBox.shrink();
     }
     
@@ -70,33 +133,41 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
       padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
       child: Column(
         children: [
-          // كارد الآية
-          _buildQuoteCard(
-            context: context,
-            title: 'آية اليوم',
-            content: _todayQuote!['verse'] ?? '',
-            source: _todayQuote!['verse_source'] ?? '',
-            icon: Icons.menu_book_rounded,
-            gradient: [
-              context.primaryColor,
-              context.primaryColor.withOpacity(0.8),
-            ],
+          SizedBox(
+            height: 280,
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentPage = index;
+                });
+              },
+              children: [
+                // آية اليوم
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space2),
+                  child: _buildQuoteCard(
+                    context: context,
+                    quote: _todayVerse!,
+                    title: 'آية اليوم',
+                  ),
+                ),
+                // حديث اليوم
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space2),
+                  child: _buildQuoteCard(
+                    context: context,
+                    quote: _todayHadith!,
+                    title: 'حديث اليوم',
+                  ),
+                ),
+              ],
+            ),
           ),
           
-          ThemeConstants.space4.h,
-          
-          // كارد الحديث
-          _buildQuoteCard(
-            context: context,
-            title: 'حديث اليوم',
-            content: _todayQuote!['hadith'] ?? '',
-            source: _todayQuote!['hadith_source'] ?? '',
-            icon: Icons.auto_stories_rounded,
-            gradient: [
-              const Color(0xFF6B46C1),
-              const Color(0xFF9333EA),
-            ],
-          ),
+          // مؤشر الصفحات
+          ThemeConstants.space3.h,
+          _buildPageIndicator(),
         ],
       ),
     );
@@ -104,12 +175,20 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
   
   Widget _buildQuoteCard({
     required BuildContext context,
+    required Map<String, dynamic> quote,
     required String title,
-    required String content,
-    required String source,
-    required IconData icon,
-    required List<Color> gradient,
   }) {
+    final bool isVerse = quote['type'] == 'verse';
+    final gradient = isVerse
+        ? [
+            context.primaryColor,
+            context.primaryColor.withOpacity(0.8),
+          ]
+        : [
+            const Color(0xFF6B46C1),
+            const Color(0xFF9333EA),
+          ];
+    
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -132,8 +211,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
         borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
         child: InkWell(
           onTap: () {
-            // يمكن إضافة وظيفة النسخ أو المشاركة هنا
-            _showQuoteActions(context, content, source);
+            _showQuoteActions(context, quote['content'], quote['source']);
           },
           borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
           child: Padding(
@@ -151,7 +229,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
                         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                       ),
                       child: Icon(
-                        icon,
+                        isVerse ? Icons.menu_book_rounded : Icons.auto_stories_rounded,
                         color: Colors.white,
                         size: ThemeConstants.iconLg,
                       ),
@@ -164,72 +242,75 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const Spacer(),
-                    Icon(
-                      Icons.share_outlined,
-                      color: Colors.white.withOpacity(0.8),
-                      size: ThemeConstants.iconMd,
-                    ),
                   ],
                 ),
                 
                 ThemeConstants.space4.h,
                 
                 // Content
-                Container(
-                  padding: const EdgeInsets.all(ThemeConstants.space4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.2),
-                      width: ThemeConstants.borderThin,
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(ThemeConstants.space4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: ThemeConstants.borderThin,
+                      ),
                     ),
-                  ),
-                  child: Column(
-                    children: [
-                      // علامة اقتباس البداية
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.format_quote,
-                            color: Colors.white.withOpacity(0.5),
-                            size: ThemeConstants.iconSm,
-                          ),
-                        ],
-                      ),
-                      
-                      // النص
-                      Text(
-                        content,
-                        style: context.bodyLarge?.copyWith(
-                          color: Colors.white,
-                          fontSize: 16,
-                          height: 1.8,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      
-                      // علامة اقتباس النهاية
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Transform.rotate(
-                            angle: pi,
-                            child: Icon(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // علامة اقتباس البداية
+                        Row(
+                          children: [
+                            Icon(
                               Icons.format_quote,
                               color: Colors.white.withOpacity(0.5),
                               size: ThemeConstants.iconSm,
                             ),
+                          ],
+                        ),
+                        
+                        const Spacer(),
+                        
+                        // النص
+                        SingleChildScrollView(
+                          child: Text(
+                            quote['content'],
+                            style: context.bodyLarge?.copyWith(
+                              color: Colors.white,
+                              fontSize: 16,
+                              height: 1.8,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                        ],
-                      ),
-                    ],
+                        ),
+                        
+                        const Spacer(),
+                        
+                        // علامة اقتباس النهاية
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Transform.rotate(
+                              angle: pi,
+                              child: Icon(
+                                Icons.format_quote,
+                                color: Colors.white.withOpacity(0.5),
+                                size: ThemeConstants.iconSm,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 
                 // Source
-                if (source.isNotEmpty) ...[
+                if (quote['source'].isNotEmpty) ...[
                   ThemeConstants.space3.h,
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -244,7 +325,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
                           borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
                         ),
                         child: Text(
-                          source,
+                          quote['source'],
                           style: context.labelSmall?.copyWith(
                             color: Colors.white.withOpacity(0.9),
                           ),
@@ -261,28 +342,94 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
     );
   }
   
+  Widget _buildPageIndicator() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(
+        2,
+        (index) => Container(
+          width: 8,
+          height: 8,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: _currentPage == index
+                ? context.primaryColor
+                : context.primaryColor.withOpacity(0.3),
+          ),
+        ),
+      ),
+    );
+  }
+  
   Widget _buildLoadingCard(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
-      child: Column(
-        children: [
-          _buildShimmerCard(),
-          ThemeConstants.space4.h,
-          _buildShimmerCard(),
-        ],
-      ),
+      child: _buildShimmerCard(),
     );
   }
   
   Widget _buildShimmerCard() {
     return Container(
-      height: 200,
+      height: 280,
       decoration: BoxDecoration(
         color: Colors.grey.withOpacity(0.1),
         borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
       ),
       child: const Center(
         child: CircularProgressIndicator(),
+      ),
+    );
+  }
+  
+  Widget _buildErrorCard(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      child: Container(
+        padding: const EdgeInsets.all(ThemeConstants.space4),
+        decoration: BoxDecoration(
+          color: Colors.red.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+          border: Border.all(
+            color: Colors.red.withOpacity(0.3),
+            width: ThemeConstants.borderThin,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.error_outline,
+              color: Colors.red,
+              size: ThemeConstants.iconXl,
+            ),
+            ThemeConstants.space2.h,
+            Text(
+              'خطأ في تحميل الاقتباسات',
+              style: context.titleMedium?.copyWith(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            ThemeConstants.space2.h,
+            Text(
+              _error ?? 'حدث خطأ غير معروف',
+              style: context.bodySmall?.copyWith(
+                color: Colors.red.shade700,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            ThemeConstants.space3.h,
+            ElevatedButton.icon(
+              onPressed: _loadDailyQuotes,
+              icon: const Icon(Icons.refresh),
+              label: const Text('إعادة المحاولة'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

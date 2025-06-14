@@ -1,8 +1,8 @@
-// lib/features/home/presentation/widgets/quick_stats_card.dart
+// lib/features/home/widgets/quick_stats_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
-import '../../../../app/themes/app_theme.dart';
+import '../../../app/themes/app_theme.dart';
 
 class QuickStatsCard extends StatefulWidget {
   final int dailyProgress;
@@ -24,26 +24,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
   late AnimationController _progressController;
   late Animation<double> _progressAnimation;
 
-  // تحديد اللون حسب وقت اليوم لتناسق أفضل مع الواجهة
-  List<Color> _getTimeBasedGradient() {
-    final hour = DateTime.now().hour;
-    
-    if (hour < 5) {
-      return [const Color(0xFF1F1C2C), const Color(0xFF4A148C)]; // ليل
-    } else if (hour < 8) {
-      return [const Color(0xFF1A237E), const Color(0xFF303F9F)]; // فجر
-    } else if (hour < 12) {
-      return [const Color(0xFFFF9800), const Color(0xFFFF6F00)]; // صباح
-    } else if (hour < 15) {
-      return [const Color(0xFFFF6F00), const Color(0xFFE65100)]; // ظهر
-    } else if (hour < 17) {
-      return [const Color(0xFF00897B), const Color(0xFF00695C)]; // عصر
-    } else if (hour < 20) {
-      return [const Color(0xFFE65100), const Color(0xFFBF360C)]; // مغرب
-    } else {
-      return [const Color(0xFF4A148C), const Color(0xFF311B92)]; // عشاء/ليل
-    }
-  }
+
 
   @override
   void initState() {
@@ -51,7 +32,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
     
     // Progress animation
     _progressController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: ThemeConstants.durationSlow,
       vsync: this,
     );
     
@@ -76,7 +57,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      margin: ThemeConstants.space4.horizontal,
       height: 160,
       child: Row(
         children: [
@@ -97,11 +78,11 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
                 Expanded(
                   child: _buildModernStatItem(
                     context: context,
-                    icon: Icons.favorite,
+                    icon: ThemeConstants.iconFavorite,
                     label: 'المفضلة',
                     gradient: [
-                      Color(0xFFE91E63),
-                      Color(0xFFC2185B),
+                      ThemeConstants.error,
+                      ThemeConstants.error.darken(0.2),
                     ],
                     onTap: () => widget.onStatTap('favorites'),
                   ),
@@ -115,10 +96,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
                     context: context,
                     icon: Icons.local_fire_department,
                     label: 'أيام متتالية',
-                    gradient: [
-                      Color(0xFFFF6F00),
-                      Color(0xFFE65100),
-                    ],
+                    gradient: [ThemeConstants.warning, ThemeConstants.warning.darken(0.2)],
                     onTap: () => widget.onStatTap('achievements'),
                     isStreak: true,
                   ),
@@ -132,18 +110,17 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
   }
 
   Widget _buildCircularProgressCard(BuildContext context) {
-    final isDark = context.isDarkMode;
-    final gradient = _getTimeBasedGradient();
+    final gradient = [context.primaryColor, context.primaryColor.darken(0.2)];
     
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
       child: InkWell(
         onTap: () {
           HapticFeedback.lightImpact();
           widget.onStatTap('daily_progress');
         },
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -151,10 +128,10 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
               end: Alignment.bottomRight,
               colors: gradient,
             ),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
             boxShadow: [
               BoxShadow(
-                color: gradient[0].withOpacity(0.3),
+                color: gradient[0].withValues(alpha: ThemeConstants.opacity30),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
@@ -172,7 +149,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
                   height: 100,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: ThemeConstants.opacity5),
                   ),
                 ),
               ),
@@ -191,10 +168,10 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
                         height: 75,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
-                            width: 1.5,
+                            color: Colors.white.withValues(alpha: ThemeConstants.opacity30),
+                            width: ThemeConstants.borderMedium,
                           ),
                         ),
                       ),
@@ -210,9 +187,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
                               value: _progressAnimation.value,
                               strokeWidth: 6,
                               backgroundColor: Colors.transparent,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
+                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           );
                         },
@@ -224,12 +199,12 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
+                            padding: ThemeConstants.space1.bottom,
                             child: Text(
                               '%',
                               style: context.titleMedium?.copyWith(
                                 color: Colors.white,
-                                fontSize: 20,
+                                fontSize: ThemeConstants.textSizeXl,
                                 fontWeight: ThemeConstants.semiBold,
                               ),
                             ),
@@ -239,7 +214,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
                             style: context.headlineMedium?.copyWith(
                               color: Colors.white,
                               fontWeight: ThemeConstants.bold,
-                              fontSize: 32,
+                              fontSize: ThemeConstants.textSize3xl + 8,
                             ),
                           ),
                         ],
@@ -254,15 +229,15 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
                     style: context.titleSmall?.copyWith(
                       color: Colors.white,
                       fontWeight: ThemeConstants.bold,
-                      fontSize: 16,
+                      fontSize: ThemeConstants.textSizeLg,
                     ),
                   ),
                   
                   Text(
                     'استمر في التقدم',
                     style: context.bodySmall?.copyWith(
-                      color: Colors.white.withOpacity(0.9),
-                      fontSize: 13,
+                      color: Colors.white.withValues(alpha: ThemeConstants.opacity90),
+                      fontSize: ThemeConstants.textSizeSm + 1,
                       fontWeight: ThemeConstants.medium,
                     ),
                   ),
@@ -285,13 +260,13 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
   }) {
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
       child: InkWell(
         onTap: () {
           HapticFeedback.lightImpact();
           onTap();
         },
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -299,10 +274,10 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
               end: Alignment.bottomRight,
               colors: gradient,
             ),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
             boxShadow: [
               BoxShadow(
-                color: gradient[0].withOpacity(0.3),
+                color: gradient[0].withValues(alpha: ThemeConstants.opacity30),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
@@ -319,14 +294,14 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
                   height: 70,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: ThemeConstants.opacity5),
                   ),
                 ),
               ),
               
               // المحتوى
               Container(
-                padding: const EdgeInsets.all(ThemeConstants.space3),
+                padding: ThemeConstants.space3.all,
                 child: Row(
                   children: [
                     // Icon with modern container
@@ -334,11 +309,11 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
                       width: 50,
                       height: 50,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(16),
+                        color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
+                        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
-                          width: 1.5,
+                          color: Colors.white.withValues(alpha: ThemeConstants.opacity30),
+                          width: ThemeConstants.borderMedium,
                         ),
                       ),
                       child: Stack(
@@ -347,7 +322,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
                           Icon(
                             icon,
                             color: Colors.white,
-                            size: 24,
+                            size: ThemeConstants.iconMd,
                           ),
                           if (isStreak)
                             Positioned(
@@ -361,7 +336,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.yellowAccent.withOpacity(0.5),
+                                      color: Colors.yellowAccent.withValues(alpha: ThemeConstants.opacity50),
                                       blurRadius: 4,
                                       spreadRadius: 1,
                                     ),
@@ -397,8 +372,8 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
                               Container(
                                 height: 4,
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(2),
+                                  color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
+                                  borderRadius: BorderRadius.circular(ThemeConstants.radiusXs),
                                 ),
                               ),
                               Container(
@@ -406,10 +381,10 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
                                 width: 80,
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(2),
+                                  borderRadius: BorderRadius.circular(ThemeConstants.radiusXs),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.white.withOpacity(0.5),
+                                      color: Colors.white.withValues(alpha: ThemeConstants.opacity50),
                                       blurRadius: 4,
                                     ),
                                   ],

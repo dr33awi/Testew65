@@ -1,13 +1,10 @@
 // lib/features/home/widgets/category_grid.dart
-// تصميم مبتكر - نمط Timeline مع تدرجات ديناميكية متناسقة
-
-import 'package:athkar_app/app/themes/core/theme_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../../app/themes/app_theme.dart';
-import '../../../../app/routes/app_router.dart';
-import '../../../../app/di/service_locator.dart';
-import '../../../../core/infrastructure/services/logging/logger_service.dart';
+import '../../../app/themes/app_theme.dart';
+import '../../../app/routes/app_router.dart';
+import '../../../app/di/service_locator.dart';
+import '../../../core/infrastructure/services/logging/logger_service.dart';
 
 class CategoryGrid extends StatefulWidget {
   const CategoryGrid({super.key});
@@ -25,16 +22,16 @@ class _CategoryGridState extends State<CategoryGrid> {
       id: 'prayer_times',
       title: 'مواقيت الصلاة',
       subtitle: 'أوقات الصلوات الخمس',
-      icon: Icons.mosque,
-      gradient: [Color(0xFF1A237E), Color(0xFF303F9F)], // تدرج ازرق داكن متناسق مع الفجر
+      icon: ThemeConstants.iconPrayer,
+      gradient: [ThemeConstants.primaryDark, ThemeConstants.primary],
       routeName: AppRouter.prayerTimes,
     ),
     CategoryItem(
       id: 'athkar',
       title: 'الأذكار',
       subtitle: 'أذكار الصباح والمساء',
-      icon: Icons.auto_awesome,
-      gradient: [Color(0xFF00897B), Color(0xFF26A69A)], // تدرج اخضر متناسق مع العصر
+      icon: ThemeConstants.iconAthkar,
+      gradient: [ThemeConstants.primary, ThemeConstants.primaryLight],
       routeName: AppRouter.athkar,
     ),
     CategoryItem(
@@ -42,15 +39,15 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'القرآن الكريم',
       subtitle: 'تلاوة وحفظ وتدبر',
       icon: Icons.book,
-      gradient: [Color(0xFF4A148C), Color(0xFF7B1FA2)], // تدرج بنفسجي متناسق مع العشاء
+      gradient: [ThemeConstants.info, ThemeConstants.info.darken(0.2)],
       routeName: '/quran',
     ),
     CategoryItem(
       id: 'qibla',
       title: 'اتجاه القبلة',
       subtitle: 'البوصلة الذكية',
-      icon: Icons.navigation,
-      gradient: [Color(0xFFE65100), Color(0xFFF57C00)], // تدرج برتقالي متناسق مع المغرب
+      icon: ThemeConstants.iconQibla,
+      gradient: [ThemeConstants.warning, ThemeConstants.warning.darken(0.2)],
       routeName: AppRouter.qibla,
     ),
     CategoryItem(
@@ -58,7 +55,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'المسبحة الرقمية',
       subtitle: 'عداد التسبيح الذكي',
       icon: Icons.radio_button_checked,
-      gradient: [Color(0xFFFF6F00), Color(0xFFFF9800)], // تدرج برتقالي متناسق مع الظهر
+      gradient: [ThemeConstants.success, ThemeConstants.success.darken(0.2)],
       routeName: '/tasbih',
     ),
     CategoryItem(
@@ -66,7 +63,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'الأدعية',
       subtitle: 'أدعية من القرآن والسنة',
       icon: Icons.pan_tool,
-      gradient: [Color(0xFF0277BD), Color(0xFF039BE5)], // تدرج ازرق متناسق مع مواقيت الصلاة
+      gradient: [ThemeConstants.primaryLight, ThemeConstants.primary],
       routeName: '/dua',
     ),
   ];
@@ -74,7 +71,7 @@ class _CategoryGridState extends State<CategoryGrid> {
   @override
   void initState() {
     super.initState();
-    _logger = context.getService<LoggerService>();
+    _logger = getIt<LoggerService>();
   }
 
   void _onCategoryTap(CategoryItem category, int index) {
@@ -84,10 +81,12 @@ class _CategoryGridState extends State<CategoryGrid> {
       _selectedIndex = index;
     });
     
-    Future.delayed(const Duration(milliseconds: 200), () {
-      setState(() {
-        _selectedIndex = -1;
-      });
+    Future.delayed(ThemeConstants.durationFast, () {
+      if (mounted) {
+        setState(() {
+          _selectedIndex = -1;
+        });
+      }
     });
     
     _logger.logEvent('category_tapped', parameters: {
@@ -108,18 +107,27 @@ class _CategoryGridState extends State<CategoryGrid> {
   @override
   Widget build(BuildContext context) {
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      padding: ThemeConstants.space4.horizontal,
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             if (index >= _categories.length) return null;
             
-            return Padding(
-              padding: EdgeInsets.only(bottom: ThemeConstants.space3),
-              child: _buildCategoryItem(
-                context,
-                _categories[index],
-                index,
+            return AnimationConfiguration.staggeredList(
+              position: index,
+              duration: ThemeConstants.durationNormal,
+              child: SlideAnimation(
+                verticalOffset: 30.0,
+                child: FadeInAnimation(
+                  child: Padding(
+                    padding: ThemeConstants.space3.bottom,
+                    child: _buildCategoryItem(
+                      context,
+                      _categories[index],
+                      index,
+                    ),
+                  ),
+                ),
               ),
             );
           },
@@ -130,16 +138,15 @@ class _CategoryGridState extends State<CategoryGrid> {
   }
 
   Widget _buildCategoryItem(BuildContext context, CategoryItem category, int index) {
-    final isDark = context.isDarkMode;
     final isSelected = _selectedIndex == index;
     
     return AnimatedScale(
       scale: isSelected ? 0.95 : 1.0,
-      duration: const Duration(milliseconds: 150),
+      duration: ThemeConstants.durationFast,
       child: Container(
         height: 100,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -147,7 +154,7 @@ class _CategoryGridState extends State<CategoryGrid> {
           ),
           boxShadow: [
             BoxShadow(
-              color: category.gradient[0].withOpacity(0.3),
+              color: category.gradient[0].withValues(alpha: ThemeConstants.opacity30),
               blurRadius: 12,
               offset: const Offset(0, 6),
             ),
@@ -155,28 +162,28 @@ class _CategoryGridState extends State<CategoryGrid> {
         ),
         child: Material(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
           child: InkWell(
             onTap: () => _onCategoryTap(category, index),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
             child: Container(
-              padding: const EdgeInsets.all(ThemeConstants.space3),
+              padding: ThemeConstants.space3.all,
               child: Row(
                 children: [
-                  // الأيقونة الرئيسية - تصميم محسن
+                  // الأيقونة الرئيسية
                   Container(
                     width: 60,
                     height: 60,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(18),
+                      color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
+                      borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                        width: 1.5,
+                        color: Colors.white.withValues(alpha: ThemeConstants.opacity30),
+                        width: ThemeConstants.borderMedium,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: ThemeConstants.opacity10),
                           blurRadius: 8,
                           offset: const Offset(0, 3),
                         ),
@@ -185,7 +192,7 @@ class _CategoryGridState extends State<CategoryGrid> {
                     child: Icon(
                       category.icon,
                       color: Colors.white,
-                      size: 28,
+                      size: ThemeConstants.iconLg,
                     ),
                   ),
                   
@@ -210,21 +217,21 @@ class _CategoryGridState extends State<CategoryGrid> {
                         Text(
                           category.subtitle,
                           style: context.bodySmall?.copyWith(
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: ThemeConstants.opacity70),
                           ),
                         ),
                         
                         ThemeConstants.space2.h,
                         
-                        // تحسين شريط التقدم ليتناسق مع التصميم العام
+                        // شريط التقدم
                         Container(
                           height: 4,
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(2),
+                            borderRadius: BorderRadius.circular(ThemeConstants.radiusXs),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.white.withOpacity(0.5),
+                                color: Colors.white.withValues(alpha: ThemeConstants.opacity50),
                                 blurRadius: 4,
                                 offset: const Offset(0, 0),
                               ),
@@ -235,17 +242,17 @@ class _CategoryGridState extends State<CategoryGrid> {
                     ),
                   ),
                   
-                  // رمز السهم - محسن للتناسق
+                  // رمز السهم
                   Container(
                     width: 30,
                     height: 30,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
+                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                     ),
                     child: Icon(
                       Icons.arrow_forward_ios_rounded,
-                      size: 14,
+                      size: ThemeConstants.iconSm,
                       color: Colors.white,
                     ),
                   ),

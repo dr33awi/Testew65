@@ -15,15 +15,6 @@ enum CardType {
   stat,        // بطاقة إحصائيات
 }
 
-/// أنماط البطاقات
-enum CardStyle {
-  normal,        // عادي
-  gradient,      // متدرج
-  glassmorphism, // زجاجي
-  outlined,      // محدد
-  elevated,      // مرتفع
-}
-
 /// إجراءات البطاقة
 class CardAction {
   final IconData icon;
@@ -41,11 +32,10 @@ class CardAction {
   });
 }
 
-/// بطاقة موحدة لجميع الاستخدامات
+/// بطاقة موحدة بتصميم بسيط وأنيق
 class AppCard extends StatelessWidget {
-  // النوع والأسلوب
+  // النوع
   final CardType type;
-  final CardStyle style;
   
   // المحتوى الأساسي
   final String? title;
@@ -57,16 +47,14 @@ class AppCard extends StatelessWidget {
   final IconData? icon;
   final Widget? leading;
   final Widget? trailing;
-  final String? imageUrl;
   
   // الألوان والتصميم
-  final Color? primaryColor;
-  final Color? backgroundColor;
-  final List<Color>? gradientColors;
+  final Color? accentColor;
   final double? elevation;
   final double? borderRadius;
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
+  final bool showBorder;
   
   // التفاعل
   final VoidCallback? onTap;
@@ -75,9 +63,7 @@ class AppCard extends StatelessWidget {
   
   // خصائص إضافية
   final String? badge;
-  final Color? badgeColor;
   final bool isSelected;
-  final bool showShadow;
   final bool animate;
   
   // خصائص خاصة بالأذكار
@@ -95,7 +81,6 @@ class AppCard extends StatelessWidget {
   const AppCard({
     super.key,
     this.type = CardType.normal,
-    this.style = CardStyle.normal,
     this.title,
     this.subtitle,
     this.content,
@@ -103,21 +88,17 @@ class AppCard extends StatelessWidget {
     this.icon,
     this.leading,
     this.trailing,
-    this.imageUrl,
-    this.primaryColor,
-    this.backgroundColor,
-    this.gradientColors,
+    this.accentColor,
     this.elevation,
     this.borderRadius,
     this.padding,
     this.margin,
+    this.showBorder = false,
     this.onTap,
     this.onLongPress,
     this.actions,
     this.badge,
-    this.badgeColor,
     this.isSelected = false,
-    this.showShadow = true,
     this.animate = true,
     this.currentCount,
     this.totalCount,
@@ -137,7 +118,7 @@ class AppCard extends StatelessWidget {
       return AnimationConfiguration.synchronized(
         duration: ThemeConstants.durationNormal,
         child: SlideAnimation(
-          horizontalOffset: 50,
+          horizontalOffset: 30,
           curve: ThemeConstants.curveSmooth,
           child: FadeInAnimation(
             curve: ThemeConstants.curveDefault,
@@ -151,26 +132,33 @@ class AppCard extends StatelessWidget {
   }
 
   Widget _buildCard(BuildContext context) {
-    final effectiveColor = primaryColor ?? context.primaryColor;
+    final effectiveColor = accentColor ?? context.primaryColor;
     final effectiveBorderRadius = borderRadius ?? ThemeConstants.radiusLg;
+    final effectiveElevation = elevation ?? (showBorder ? 0 : ThemeConstants.elevationMd);
     
     return Container(
-      margin: margin ?? const EdgeInsets.symmetric(
+      margin: margin ?? EdgeInsets.symmetric(
         horizontal: ThemeConstants.space4,
         vertical: ThemeConstants.space2,
       ),
       child: Material(
-        elevation: showShadow ? (elevation ?? ThemeConstants.elevation4) : 0,
-        shadowColor: showShadow ? effectiveColor.withValues(alpha: ThemeConstants.opacity20) : Colors.transparent,
+        elevation: effectiveElevation,
+        shadowColor: Colors.black.withOpacity(0.05),
         borderRadius: BorderRadius.circular(effectiveBorderRadius),
-        color: Colors.transparent,
+        color: context.cardColor,
         clipBehavior: Clip.antiAlias,
-        child: Container(
-          decoration: _getDecoration(context, effectiveColor, effectiveBorderRadius),
-          child: InkWell(
-            onTap: onTap,
-            onLongPress: onLongPress,
-            borderRadius: BorderRadius.circular(effectiveBorderRadius),
+        child: InkWell(
+          onTap: onTap,
+          onLongPress: onLongPress,
+          borderRadius: BorderRadius.circular(effectiveBorderRadius),
+          child: Container(
+            decoration: showBorder ? BoxDecoration(
+              borderRadius: BorderRadius.circular(effectiveBorderRadius),
+              border: Border.all(
+                color: isSelected ? effectiveColor : context.dividerColor,
+                width: isSelected ? ThemeConstants.borderMedium : ThemeConstants.borderLight,
+              ),
+            ) : null,
             child: Stack(
               children: [
                 Padding(
@@ -187,58 +175,9 @@ class AppCard extends StatelessWidget {
     );
   }
 
-  BoxDecoration _getDecoration(BuildContext context, Color color, double radius) {
-    final bgColor = backgroundColor ?? context.cardColor;
-    
-    switch (style) {
-      case CardStyle.gradient:
-        return BoxDecoration(
-          borderRadius: BorderRadius.circular(radius),
-          gradient: ThemeConstants.customGradient(
-            colors: gradientColors ?? [color, color.darken(0.2)],
-          ),
-        );
-        
-      case CardStyle.glassmorphism:
-        return BoxDecoration(
-          borderRadius: BorderRadius.circular(radius),
-          color: bgColor.withValues(alpha: ThemeConstants.opacity70),
-          border: Border.all(
-            color: context.isDarkMode ? Colors.white.withValues(alpha: ThemeConstants.opacity20) : color.withValues(alpha: ThemeConstants.opacity20),
-            width: ThemeConstants.borderThin,
-          ),
-        );
-        
-      case CardStyle.outlined:
-        return BoxDecoration(
-          borderRadius: BorderRadius.circular(radius),
-          color: bgColor,
-          border: Border.all(
-            color: color.withValues(alpha: ThemeConstants.opacity30),
-            width: ThemeConstants.borderMedium,
-          ),
-        );
-        
-      case CardStyle.elevated:
-        return BoxDecoration(
-          borderRadius: BorderRadius.circular(radius),
-          color: bgColor,
-          boxShadow: ThemeConstants.shadowForElevation(elevation ?? 8),
-        );
-        
-      case CardStyle.normal:
-        return BoxDecoration(
-          borderRadius: BorderRadius.circular(radius),
-          color: bgColor,
-        );
-    }
-  }
-
   Widget _buildContent(BuildContext context) {
-    // إذا كان هناك child مخصص، استخدمه
     if (child != null) return child!;
     
-    // بناء المحتوى حسب النوع
     switch (type) {
       case CardType.athkar:
         return _buildAthkarContent(context);
@@ -266,14 +205,14 @@ class AppCard extends StatelessWidget {
           if (title != null) ThemeConstants.space1.h,
           Text(
             subtitle!,
-            style: context.bodyMedium?.textColor(_getTextColor(context, isSecondary: true)),
+            style: context.bodyMedium,
           ),
         ],
         if (content != null) ...[
           ThemeConstants.space3.h,
           Text(
             content!,
-            style: context.bodyLarge?.textColor(_getTextColor(context)),
+            style: context.bodyLarge,
           ),
         ],
         if (actions != null && actions!.isNotEmpty) ...[
@@ -285,23 +224,84 @@ class AppCard extends StatelessWidget {
   }
 
   Widget _buildAthkarContent(BuildContext context) {
+    final effectiveColor = accentColor ?? context.primaryColor;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // الرأس مع العداد والمفضلة
         if (currentCount != null || onFavoriteToggle != null)
-          _buildAthkarHeader(context),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              if (currentCount != null && totalCount != null)
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: ThemeConstants.space3,
+                    vertical: ThemeConstants.space1,
+                  ),
+                  decoration: BoxDecoration(
+                    color: effectiveColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                  ),
+                  child: Text(
+                    'التكرار: $currentCount/$totalCount',
+                    style: context.labelMedium?.copyWith(
+                      color: effectiveColor,
+                      fontWeight: ThemeConstants.semiBold,
+                    ),
+                  ),
+                ),
+              
+              if (onFavoriteToggle != null)
+                IconButton(
+                  icon: Icon(
+                    isFavorite == true ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite == true ? ThemeConstants.error : context.textSecondaryColor,
+                  ),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    onFavoriteToggle!();
+                  },
+                  tooltip: isFavorite == true ? 'إزالة من المفضلة' : 'إضافة للمفضلة',
+                ),
+            ],
+          ),
         
         if (currentCount != null || onFavoriteToggle != null)
           ThemeConstants.space3.h,
         
         // محتوى الذكر
-        _buildAthkarBody(context),
+        Container(
+          padding: const EdgeInsets.all(ThemeConstants.space5),
+          decoration: BoxDecoration(
+            color: context.surfaceColor,
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+            border: Border.all(
+              color: context.dividerColor,
+              width: ThemeConstants.borderLight,
+            ),
+          ),
+          child: Text(
+            content ?? title ?? '',
+            textAlign: TextAlign.center,
+            style: context.athkarStyle.copyWith(
+              color: context.textPrimaryColor,
+            ),
+          ),
+        ),
         
         // المصدر
         if (source != null) ...[
           ThemeConstants.space3.h,
-          _buildSource(context),
+          Center(
+            child: Text(
+              source!,
+              style: context.labelMedium?.copyWith(
+                color: context.textSecondaryColor,
+              ),
+            ),
+          ),
         ],
         
         // الإجراءات
@@ -314,7 +314,7 @@ class AppCard extends StatelessWidget {
   }
 
   Widget _buildQuoteContent(BuildContext context) {
-    final effectiveColor = primaryColor ?? context.primaryColor;
+    final effectiveColor = accentColor ?? context.primaryColor;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,17 +322,20 @@ class AppCard extends StatelessWidget {
       children: [
         if (subtitle != null)
           Container(
-            padding: const EdgeInsets.symmetric(
+            padding: EdgeInsets.symmetric(
               horizontal: ThemeConstants.space3,
               vertical: ThemeConstants.space1,
             ),
             decoration: BoxDecoration(
-              color: effectiveColor.withValues(alpha: ThemeConstants.opacity20),
+              color: effectiveColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
             ),
             child: Text(
               subtitle!,
-              style: context.labelMedium?.textColor(_getTextColor(context)).semiBold,
+              style: context.labelMedium?.copyWith(
+                color: effectiveColor,
+                fontWeight: ThemeConstants.semiBold,
+              ),
             ),
           ),
         
@@ -341,23 +344,23 @@ class AppCard extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(ThemeConstants.space4),
           decoration: BoxDecoration(
-            color: _getTextColor(context).withValues(alpha: ThemeConstants.opacity10),
+            color: context.surfaceColor,
             borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
             border: Border.all(
-              color: _getTextColor(context).withValues(alpha: ThemeConstants.opacity20),
-              width: ThemeConstants.borderThin,
+              color: context.dividerColor,
+              width: ThemeConstants.borderLight,
             ),
           ),
           child: Stack(
             children: [
               // علامة اقتباس في البداية
-              const Positioned(
+              Positioned(
                 top: 0,
                 right: 0,
                 child: Icon(
                   Icons.format_quote,
                   size: ThemeConstants.iconSm,
-                  color: Colors.black26,
+                  color: effectiveColor.withOpacity(0.2),
                 ),
               ),
               
@@ -366,7 +369,7 @@ class AppCard extends StatelessWidget {
                 child: Text(
                   content ?? title ?? '',
                   textAlign: TextAlign.center,
-                  style: context.bodyLarge?.textColor(_getTextColor(context)).copyWith(
+                  style: context.bodyLarge?.copyWith(
                     fontSize: 18,
                     height: 1.8,
                   ),
@@ -382,7 +385,7 @@ class AppCard extends StatelessWidget {
                   child: Icon(
                     Icons.format_quote,
                     size: ThemeConstants.iconSm,
-                    color: _getTextColor(context).withValues(alpha: ThemeConstants.opacity50),
+                    color: effectiveColor.withOpacity(0.2),
                   ),
                 ),
               ),
@@ -392,14 +395,22 @@ class AppCard extends StatelessWidget {
         
         if (source != null) ...[
           ThemeConstants.space3.h,
-          _buildSource(context),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              source!,
+              style: context.labelMedium?.copyWith(
+                color: context.textSecondaryColor,
+              ),
+            ),
+          ),
         ],
       ],
     );
   }
 
   Widget _buildCompletionContent(BuildContext context) {
-    final effectiveColor = primaryColor ?? context.primaryColor;
+    final effectiveColor = accentColor ?? context.primaryColor;
     
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -409,12 +420,8 @@ class AppCard extends StatelessWidget {
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: effectiveColor.withValues(alpha: ThemeConstants.opacity10),
+            color: effectiveColor.withOpacity(0.1),
             shape: BoxShape.circle,
-            border: Border.all(
-              color: effectiveColor.withValues(alpha: ThemeConstants.opacity30),
-              width: ThemeConstants.borderMedium,
-            ),
           ),
           child: Icon(
             icon ?? Icons.check_circle_outline,
@@ -429,7 +436,7 @@ class AppCard extends StatelessWidget {
         if (title != null)
           Text(
             title!,
-            style: context.headlineMedium?.textColor(_getTextColor(context)),
+            style: context.headlineMedium,
             textAlign: TextAlign.center,
           ),
         
@@ -438,7 +445,7 @@ class AppCard extends StatelessWidget {
           Text(
             content!,
             textAlign: TextAlign.center,
-            style: context.bodyLarge?.textColor(_getTextColor(context)),
+            style: context.bodyLarge,
           ),
         ],
         
@@ -447,7 +454,7 @@ class AppCard extends StatelessWidget {
           Text(
             subtitle!,
             textAlign: TextAlign.center,
-            style: context.bodyMedium?.textColor(_getTextColor(context, isSecondary: true)),
+            style: context.bodyMedium,
           ),
         ],
         
@@ -460,7 +467,7 @@ class AppCard extends StatelessWidget {
   }
 
   Widget _buildInfoContent(BuildContext context) {
-    final effectiveColor = primaryColor ?? context.primaryColor;
+    final effectiveColor = accentColor ?? context.primaryColor;
     
     return Row(
       children: [
@@ -469,7 +476,7 @@ class AppCard extends StatelessWidget {
             width: ThemeConstants.icon2xl,
             height: ThemeConstants.icon2xl,
             decoration: BoxDecoration(
-              color: effectiveColor.withValues(alpha: ThemeConstants.opacity10),
+              color: effectiveColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
             ),
             child: Icon(
@@ -488,13 +495,13 @@ class AppCard extends StatelessWidget {
               if (title != null)
                 Text(
                   title!,
-                  style: context.titleMedium?.semiBold.textColor(_getTextColor(context)),
+                  style: context.titleMedium?.semiBold,
                 ),
               if (subtitle != null) ...[
                 ThemeConstants.space1.h,
                 Text(
                   subtitle!,
-                  style: context.bodyMedium?.textColor(_getTextColor(context, isSecondary: true)),
+                  style: context.bodyMedium,
                 ),
               ],
             ],
@@ -507,7 +514,7 @@ class AppCard extends StatelessWidget {
   }
 
   Widget _buildStatContent(BuildContext context) {
-    final effectiveColor = primaryColor ?? context.primaryColor;
+    final effectiveColor = accentColor ?? context.primaryColor;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -526,7 +533,7 @@ class AppCard extends StatelessWidget {
               Icon(
                 Icons.arrow_forward_ios_rounded,
                 size: ThemeConstants.iconSm,
-                color: _getTextColor(context, isSecondary: true),
+                color: context.textSecondaryColor,
               ),
           ],
         ),
@@ -536,14 +543,17 @@ class AppCard extends StatelessWidget {
         if (value != null)
           Text(
             value!,
-            style: context.headlineMedium?.textColor(effectiveColor).bold,
+            style: context.headlineMedium?.copyWith(
+              color: effectiveColor,
+              fontWeight: ThemeConstants.bold,
+            ),
           ),
         
         if (title != null) ...[
           ThemeConstants.space1.h,
           Text(
             title!,
-            style: context.bodyMedium?.textColor(_getTextColor(context, isSecondary: true)),
+            style: context.bodyMedium,
           ),
         ],
         
@@ -554,7 +564,7 @@ class AppCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress!,
               minHeight: 4,
-              backgroundColor: context.dividerColor.withValues(alpha: ThemeConstants.opacity50),
+              backgroundColor: context.dividerColor,
               valueColor: AlwaysStoppedAnimation<Color>(effectiveColor),
             ),
           ),
@@ -564,7 +574,7 @@ class AppCard extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    final effectiveColor = primaryColor ?? context.primaryColor;
+    final effectiveColor = accentColor ?? context.primaryColor;
     
     return Row(
       children: [
@@ -574,7 +584,7 @@ class AppCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(ThemeConstants.space2),
             decoration: BoxDecoration(
-              color: effectiveColor.withValues(alpha: ThemeConstants.opacity10),
+              color: effectiveColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
             ),
             child: Icon(
@@ -591,7 +601,7 @@ class AppCard extends StatelessWidget {
           Expanded(
             child: Text(
               title!,
-              style: context.titleMedium?.textColor(_getTextColor(context)).semiBold,
+              style: context.titleMedium?.semiBold,
             ),
           ),
         
@@ -600,108 +610,7 @@ class AppCard extends StatelessWidget {
     );
   }
 
-  Widget _buildAthkarHeader(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        if (currentCount != null && totalCount != null)
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: ThemeConstants.opacity20),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: ThemeConstants.space3,
-              vertical: ThemeConstants.space1,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (icon != null) ...[
-                  Icon(
-                    icon,
-                    color: Colors.white,
-                    size: ThemeConstants.iconSm,
-                  ),
-                  ThemeConstants.space1.w,
-                ],
-                Text(
-                  'عدد التكرار $currentCount/$totalCount',
-                  style: context.labelMedium?.textColor(Colors.white).semiBold,
-                ),
-              ],
-            ),
-          ),
-        
-        if (onFavoriteToggle != null)
-          IconButton(
-            icon: Icon(
-              isFavorite == true ? Icons.favorite : Icons.favorite_border,
-              color: style == CardStyle.gradient ? Colors.white : primaryColor ?? context.primaryColor,
-              size: ThemeConstants.iconMd,
-            ),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              onFavoriteToggle!();
-            },
-            tooltip: isFavorite == true ? 'إزالة من المفضلة' : 'إضافة للمفضلة',
-          ),
-      ],
-    );
-  }
-
-  Widget _buildAthkarBody(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(ThemeConstants.space5),
-      decoration: BoxDecoration(
-        color: style == CardStyle.gradient 
-            ? Colors.white.withValues(alpha: ThemeConstants.opacity10)
-            : (primaryColor ?? context.primaryColor).withValues(alpha: ThemeConstants.opacity10),
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-        border: Border.all(
-          color: style == CardStyle.gradient
-              ? Colors.white.withValues(alpha: ThemeConstants.opacity20)
-              : (primaryColor ?? context.primaryColor).withValues(alpha: ThemeConstants.opacity20),
-          width: ThemeConstants.borderThin,
-        ),
-      ),
-      child: Text(
-        content ?? title ?? '',
-        textAlign: TextAlign.center,
-        style: context.bodyLarge?.textColor(_getTextColor(context)).copyWith(
-          fontSize: 20,
-          fontFamily: ThemeConstants.fontFamilyArabic,
-          fontWeight: ThemeConstants.semiBold,
-          height: 2.0,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSource(BuildContext context) {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: ThemeConstants.space4,
-          vertical: ThemeConstants.space2,
-        ),
-        decoration: BoxDecoration(
-          color: style == CardStyle.gradient
-              ? Colors.black.withValues(alpha: ThemeConstants.opacity20)
-              : (primaryColor ?? context.primaryColor).withValues(alpha: ThemeConstants.opacity10),
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-        ),
-        child: Text(
-          source!,
-          style: context.labelLarge?.textColor(_getTextColor(context)).semiBold,
-        ),
-      ),
-    );
-  }
-
   Widget _buildActions(BuildContext context) {
-    // للبطاقات من نوع completion، عرض الإجراءات بشكل عمودي
     if (type == CardType.completion) {
       return Column(
         children: actions!.map((action) => Padding(
@@ -711,7 +620,6 @@ class AppCard extends StatelessWidget {
       );
     }
     
-    // للبطاقات الأخرى، عرض الإجراءات بشكل أفقي
     return Wrap(
       spacing: ThemeConstants.space2,
       runSpacing: ThemeConstants.space2,
@@ -720,7 +628,7 @@ class AppCard extends StatelessWidget {
   }
 
   Widget _buildActionButton(BuildContext context, CardAction action, {bool fullWidth = false}) {
-    final effectiveColor = action.color ?? primaryColor ?? context.primaryColor;
+    final effectiveColor = action.color ?? accentColor ?? context.primaryColor;
     
     if (action.isPrimary) {
       return SizedBox(
@@ -735,9 +643,6 @@ class AppCard extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: effectiveColor,
             foregroundColor: effectiveColor.contrastingTextColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-            ),
           ),
         ),
       );
@@ -754,20 +659,16 @@ class AppCard extends StatelessWidget {
         },
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         child: Container(
-          padding: const EdgeInsets.symmetric(
+          padding: EdgeInsets.symmetric(
             horizontal: ThemeConstants.space3,
             vertical: ThemeConstants.space2,
           ),
           decoration: BoxDecoration(
-            color: style == CardStyle.gradient
-                ? Colors.white.withValues(alpha: ThemeConstants.opacity20)
-                : effectiveColor.withValues(alpha: ThemeConstants.opacity10),
+            color: effectiveColor.withOpacity(0.1),
             borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
             border: Border.all(
-              color: style == CardStyle.gradient
-                  ? Colors.white.withValues(alpha: ThemeConstants.opacity30)
-                  : effectiveColor.withValues(alpha: ThemeConstants.opacity30),
-              width: ThemeConstants.borderThin,
+              color: effectiveColor.withOpacity(0.2),
+              width: ThemeConstants.borderLight,
             ),
           ),
           child: Row(
@@ -775,15 +676,16 @@ class AppCard extends StatelessWidget {
             children: [
               Icon(
                 action.icon,
-                color: style == CardStyle.gradient ? Colors.white : effectiveColor,
+                color: effectiveColor,
                 size: ThemeConstants.iconSm,
               ),
               ThemeConstants.space2.w,
               Text(
                 action.label,
-                style: context.labelMedium?.textColor(
-                  style == CardStyle.gradient ? Colors.white : effectiveColor
-                ).semiBold,
+                style: context.labelMedium?.copyWith(
+                  color: effectiveColor,
+                  fontWeight: ThemeConstants.semiBold,
+                ),
               ),
             ],
           ),
@@ -793,13 +695,13 @@ class AppCard extends StatelessWidget {
   }
 
   Widget _buildBadge(BuildContext context) {
-    final badgeBgColor = badgeColor ?? context.colorScheme.secondary;
+    final badgeBgColor = accentColor ?? context.primaryColor;
     
     return Positioned(
       top: ThemeConstants.space2,
       left: ThemeConstants.space2,
       child: Container(
-        padding: const EdgeInsets.symmetric(
+        padding: EdgeInsets.symmetric(
           horizontal: ThemeConstants.space2,
           vertical: ThemeConstants.space1,
         ),
@@ -809,14 +711,17 @@ class AppCard extends StatelessWidget {
         ),
         child: Text(
           badge!,
-          style: context.labelSmall?.textColor(badgeBgColor.contrastingTextColor).semiBold,
+          style: context.labelSmall?.copyWith(
+            color: badgeBgColor.contrastingTextColor,
+            fontWeight: ThemeConstants.semiBold,
+          ),
         ),
       ),
     );
   }
 
   Widget _buildSelectionIndicator(BuildContext context) {
-    final effectiveColor = primaryColor ?? context.primaryColor;
+    final effectiveColor = accentColor ?? context.primaryColor;
     
     return Positioned(
       top: ThemeConstants.space2,
@@ -826,10 +731,6 @@ class AppCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: effectiveColor,
           shape: BoxShape.circle,
-          border: Border.all(
-            color: backgroundColor ?? context.cardColor,
-            width: 1.5,
-          ),
         ),
         child: Icon(
           Icons.check,
@@ -840,26 +741,13 @@ class AppCard extends StatelessWidget {
     );
   }
 
-  Color _getTextColor(BuildContext context, {bool isSecondary = false}) {
-    if (style == CardStyle.gradient) {
-      return Colors.white.withValues(alpha: isSecondary ? ThemeConstants.opacity70 : 1.0);
-    }
-    
-    if (backgroundColor != null) {
-      return backgroundColor!.contrastingTextColor.withValues(
-        alpha: isSecondary ? ThemeConstants.opacity70 : 1.0
-      );
-    }
-    
-    return isSecondary ? context.textSecondaryColor : context.textPrimaryColor;
-  }
-
   // Factory constructors للتوافق مع الكود القديم
   factory AppCard.simple({
     required String title,
     String? subtitle,
     IconData? icon,
     VoidCallback? onTap,
+    Color? accentColor,
   }) {
     return AppCard(
       type: CardType.normal,
@@ -867,6 +755,7 @@ class AppCard extends StatelessWidget {
       subtitle: subtitle,
       icon: icon,
       onTap: onTap,
+      accentColor: accentColor,
     );
   }
 
@@ -876,20 +765,19 @@ class AppCard extends StatelessWidget {
     int currentCount = 0,
     int totalCount = 1,
     bool isFavorite = false,
-    Color? primaryColor,
+    Color? accentColor,
     VoidCallback? onTap,
     VoidCallback? onFavoriteToggle,
     List<CardAction>? actions,
   }) {
     return AppCard(
       type: CardType.athkar,
-      style: CardStyle.gradient,
       content: content,
       source: source,
       currentCount: currentCount,
       totalCount: totalCount,
       isFavorite: isFavorite,
-      primaryColor: primaryColor,
+      accentColor: accentColor,
       onTap: onTap,
       onFavoriteToggle: onFavoriteToggle,
       actions: actions,
@@ -900,17 +788,14 @@ class AppCard extends StatelessWidget {
     required String quote,
     String? author,
     String? category,
-    Color? primaryColor,
-    List<Color>? gradientColors,
+    Color? accentColor,
   }) {
     return AppCard(
       type: CardType.quote,
-      style: CardStyle.gradient,
       content: quote,
       source: author,
       subtitle: category,
-      primaryColor: primaryColor,
-      gradientColors: gradientColors,
+      accentColor: accentColor,
     );
   }
 
@@ -919,7 +804,7 @@ class AppCard extends StatelessWidget {
     required String message,
     String? subMessage,
     IconData icon = Icons.check_circle_outline,
-    Color? primaryColor,
+    Color? accentColor,
     List<CardAction> actions = const [],
   }) {
     return AppCard(
@@ -928,7 +813,7 @@ class AppCard extends StatelessWidget {
       content: message,
       subtitle: subMessage,
       icon: icon,
-      primaryColor: primaryColor,
+      accentColor: accentColor,
       actions: actions,
       padding: const EdgeInsets.all(ThemeConstants.space6),
     );
@@ -948,7 +833,7 @@ class AppCard extends StatelessWidget {
       subtitle: subtitle,
       icon: icon,
       onTap: onTap,
-      primaryColor: iconColor,
+      accentColor: iconColor,
       trailing: trailing,
     );
   }
@@ -966,7 +851,7 @@ class AppCard extends StatelessWidget {
       title: title,
       value: value,
       icon: icon,
-      primaryColor: color,
+      accentColor: color,
       onTap: onTap,
       progress: progress,
     );

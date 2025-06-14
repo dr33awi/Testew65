@@ -1,6 +1,4 @@
-// lib/features/home/widgets/prayer_times_card.dart
-// تصميم مبتكر وعصري - Timeline Style
-
+// lib/features/prayer_times/widgets/home_prayer_times_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
@@ -56,7 +54,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
 
   void _setupAnimations() {
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: ThemeConstants.durationSlow,
       vsync: this,
     );
     
@@ -65,7 +63,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeOutCubic,
+      curve: ThemeConstants.curveSmooth,
     ));
   }
 
@@ -127,11 +125,13 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
 
   Widget _buildLoadingCard(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      margin: ThemeConstants.space4.horizontal,
       height: 280,
-      child: AppCard(
-        type: CardType.normal,
-        style: CardStyle.elevated,
+      child: Card(
+        elevation: ThemeConstants.elevation2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        ),
         child: Center(
           child: AppLoading.circular(size: LoadingSize.medium),
         ),
@@ -141,49 +141,68 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
 
   Widget _buildNoLocationCard(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      margin: ThemeConstants.space4.horizontal,
       height: 280,
-      child: AppCard(
-        type: CardType.info,
-        style: CardStyle.gradient,
-        gradientColors: [
-          context.primaryColor.withOpacity(0.8),
-          context.primaryColor,
-        ],
-        onTap: _navigateToPrayerTimes,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.location_off,
-                color: Colors.white,
-                size: 40,
-              ),
-            ),
-            ThemeConstants.space4.h,
-            Text(
-              'لم يتم تحديد الموقع',
-              style: context.headlineSmall?.copyWith(
-                color: Colors.white,
-                fontWeight: ThemeConstants.bold,
-              ),
-            ),
-            ThemeConstants.space2.h,
-            Text(
-              'اضغط لتحديد موقعك وعرض مواقيت الصلاة',
-              style: context.bodyMedium?.copyWith(
-                color: Colors.white.withOpacity(0.9),
-              ),
-              textAlign: TextAlign.center,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              context.primaryColor.withValues(alpha: ThemeConstants.opacity70),
+              context.primaryColor,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+          boxShadow: [
+            BoxShadow(
+              color: context.primaryColor.withValues(alpha: ThemeConstants.opacity30),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
           ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+          child: InkWell(
+            onTap: _navigateToPrayerTimes,
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.location_off,
+                    color: Colors.white,
+                    size: ThemeConstants.iconXl,
+                  ),
+                ),
+                ThemeConstants.space4.h,
+                Text(
+                  'لم يتم تحديد الموقع',
+                  style: context.headlineSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: ThemeConstants.bold,
+                  ),
+                ),
+                ThemeConstants.space2.h,
+                Text(
+                  'اضغط لتحديد موقعك وعرض مواقيت الصلاة',
+                  style: context.bodyMedium?.copyWith(
+                    color: Colors.white.withValues(alpha: ThemeConstants.opacity90),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -195,13 +214,13 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
     final nextPrayer = _dailyTimes!.nextPrayer;
     
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      margin: ThemeConstants.space4.horizontal,
       constraints: const BoxConstraints(
         minHeight: 280,
         maxHeight: 280,
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -213,12 +232,16 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
                   end: Alignment.bottomRight,
                   colors: nextPrayer != null
                       ? [
-                          _getPrayerColor(nextPrayer.type).withOpacity(isDark ? 0.3 : 0.2),
-                          _getPrayerColor(nextPrayer.type).darken(0.1).withOpacity(isDark ? 0.2 : 0.1),
+                          ThemeConstants.getPrayerColor(nextPrayer.type.name).withValues(
+                              alpha: isDark ? ThemeConstants.opacity30 : ThemeConstants.opacity20
+                          ),
+                          ThemeConstants.getPrayerColor(nextPrayer.type.name).darken(0.1).withValues(
+                              alpha: isDark ? ThemeConstants.opacity20 : ThemeConstants.opacity10
+                          ),
                         ]
                       : [
-                          context.primaryColor.withOpacity(0.1),
-                          context.primaryColor.withOpacity(0.05),
+                          context.primaryColor.withValues(alpha: ThemeConstants.opacity10),
+                          context.primaryColor.withValues(alpha: ThemeConstants.opacity5),
                         ],
                 ),
               ),
@@ -235,8 +258,8 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      Colors.white.withOpacity(0.1),
-                      Colors.white.withOpacity(0.0),
+                      Colors.white.withValues(alpha: ThemeConstants.opacity10),
+                      Colors.white.withValues(alpha: 0),
                     ],
                   ),
                 ),
@@ -248,9 +271,9 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
               color: Colors.transparent,
               child: InkWell(
                 onTap: _navigateToPrayerTimes,
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: ThemeConstants.space5.all,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -261,7 +284,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
                         child: _buildHeader(context, nextPrayer),
                       ),
                       
-                      const SizedBox(height: 16),
+                      ThemeConstants.space4.h,
                       
                       // بطاقة الصلاة القادمة
                       if (nextPrayer != null) ...[
@@ -269,7 +292,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
                           height: 90,
                           child: _buildNextPrayerCard(context, nextPrayer),
                         ),
-                        const SizedBox(height: 16),
+                        ThemeConstants.space4.h,
                       ],
                       
                       // Timeline للصلوات
@@ -288,7 +311,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
                                   child: Container(
                                     height: 2,
                                     decoration: BoxDecoration(
-                                      color: context.dividerColor.withOpacity(0.2),
+                                      color: context.dividerColor.withValues(alpha: ThemeConstants.opacity20),
                                       borderRadius: BorderRadius.circular(1),
                                     ),
                                   ),
@@ -311,8 +334,8 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
                                           gradient: LinearGradient(
                                             colors: nextPrayer != null
                                                 ? [
-                                                    _getPrayerColor(nextPrayer.type),
-                                                    _getPrayerColor(nextPrayer.type).darken(0.2),
+                                                    ThemeConstants.getPrayerColor(nextPrayer.type.name),
+                                                    ThemeConstants.getPrayerColor(nextPrayer.type.name).darken(0.2),
                                                   ]
                                                 : [
                                                     context.primaryColor,
@@ -328,7 +351,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
                                 
                                 // الصلوات
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  padding: ThemeConstants.space2.horizontal,
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -359,7 +382,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
   Widget _buildHeader(BuildContext context, PrayerTime? nextPrayer) {
     final isDark = context.isDarkMode;
     final primaryColor = nextPrayer != null
-        ? _getPrayerColor(nextPrayer.type)
+        ? ThemeConstants.getPrayerColor(nextPrayer.type.name)
         : context.primaryColor;
     
     return Row(
@@ -371,9 +394,9 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
             Row(
               children: [
                 Icon(
-                  Icons.mosque,
+                  ThemeConstants.iconPrayer,
                   color: isDark ? Colors.white : primaryColor,
-                  size: 24,
+                  size: ThemeConstants.iconMd,
                 ),
                 ThemeConstants.space2.w,
                 Text(
@@ -391,14 +414,14 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
                 if (_dailyTimes!.location.cityName != null) ...[
                   Icon(
                     Icons.location_on,
-                    size: 14,
-                    color: (isDark ? Colors.white : primaryColor).withOpacity(0.7),
+                    size: ThemeConstants.iconSm,
+                    color: (isDark ? Colors.white : primaryColor).withValues(alpha: ThemeConstants.opacity70),
                   ),
                   ThemeConstants.space1.w,
                   Text(
                     _dailyTimes!.location.cityName!,
                     style: context.labelMedium?.copyWith(
-                      color: (isDark ? Colors.white : primaryColor).withOpacity(0.7),
+                      color: (isDark ? Colors.white : primaryColor).withValues(alpha: ThemeConstants.opacity70),
                     ),
                   ),
                 ],
@@ -408,13 +431,13 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
         ),
         // ساعة رقمية
         Container(
-          padding: const EdgeInsets.symmetric(
+          padding: EdgeInsets.symmetric(
             horizontal: ThemeConstants.space3,
             vertical: ThemeConstants.space2,
           ),
           decoration: BoxDecoration(
-            color: (isDark ? Colors.white : Colors.black).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
+            color: (isDark ? Colors.white : Colors.black).withValues(alpha: ThemeConstants.opacity10),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
           ),
           child: StreamBuilder(
             stream: Stream.periodic(const Duration(seconds: 1)),
@@ -424,7 +447,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
                 children: [
                   Icon(
                     Icons.access_time,
-                    size: 16,
+                    size: ThemeConstants.iconSm,
                     color: isDark ? Colors.white : primaryColor,
                   ),
                   ThemeConstants.space1.w,
@@ -446,22 +469,22 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
 
   Widget _buildNextPrayerCard(BuildContext context, PrayerTime nextPrayer) {
     final gradient = [
-      _getPrayerColor(nextPrayer.type),
-      _getPrayerColor(nextPrayer.type).darken(0.2),
+      ThemeConstants.getPrayerColor(nextPrayer.type.name),
+      ThemeConstants.getPrayerColor(nextPrayer.type.name).darken(0.2),
     ];
     
     return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
+      padding: ThemeConstants.space4.all,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: gradient,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
         boxShadow: [
           BoxShadow(
-            color: gradient[0].withOpacity(0.3),
+            color: gradient[0].withValues(alpha: ThemeConstants.opacity30),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -474,13 +497,13 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(16),
+              color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
             ),
             child: Icon(
-              _getPrayerIcon(nextPrayer.type),
+              ThemeConstants.getPrayerIcon(nextPrayer.type.name),
               color: Colors.white,
-              size: 32,
+              size: ThemeConstants.iconLg,
             ),
           ),
           
@@ -494,7 +517,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
                 Text(
                   'الصلاة القادمة',
                   style: context.labelMedium?.copyWith(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withValues(alpha: ThemeConstants.opacity70),
                   ),
                 ),
                 Text(
@@ -525,7 +548,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
                   return Text(
                     'بعد ${_getTimeRemaining(nextPrayer)}',
                     style: context.labelSmall?.copyWith(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: ThemeConstants.opacity70),
                     ),
                   );
                 },
@@ -558,20 +581,20 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
                 gradient: isPassed || isActive
                     ? LinearGradient(
                         colors: [
-                          _getPrayerColor(prayer.type),
-                          _getPrayerColor(prayer.type).darken(0.2),
+                          ThemeConstants.getPrayerColor(prayer.type.name),
+                          ThemeConstants.getPrayerColor(prayer.type.name).darken(0.2),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       )
                     : null,
                 color: !isPassed && !isActive
-                    ? context.dividerColor.withOpacity(0.3)
+                    ? context.dividerColor.withValues(alpha: ThemeConstants.opacity30)
                     : null,
                 boxShadow: isActive
                     ? [
                         BoxShadow(
-                          color: _getPrayerColor(prayer.type).withOpacity(0.5),
+                          color: ThemeConstants.getPrayerColor(prayer.type.name).withValues(alpha: ThemeConstants.opacity50),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -581,15 +604,15 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
               child: Icon(
                 isPassed && !isActive
                     ? Icons.check
-                    : _getPrayerIcon(prayer.type),
+                    : ThemeConstants.getPrayerIcon(prayer.type.name),
                 color: isPassed || isActive
                     ? Colors.white
-                    : context.textSecondaryColor.withOpacity(0.5),
-                size: 14,
+                    : context.textSecondaryColor.withValues(alpha: ThemeConstants.opacity50),
+                size: ThemeConstants.iconSm,
               ),
             ),
             
-            const SizedBox(height: 4),
+            ThemeConstants.space1.h,
             
             // اسم الصلاة
             FittedBox(
@@ -597,12 +620,12 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
               child: Text(
                 prayer.nameAr,
                 style: TextStyle(
-                  fontSize: 10,
+                  fontSize: ThemeConstants.textSizeXs - 1,
                   color: isActive
-                      ? (isDark ? Colors.white : _getPrayerColor(prayer.type))
+                      ? (isDark ? Colors.white : ThemeConstants.getPrayerColor(prayer.type.name))
                       : isPassed
                           ? context.textSecondaryColor
-                          : context.textSecondaryColor.withOpacity(0.5),
+                          : context.textSecondaryColor.withValues(alpha: ThemeConstants.opacity50),
                   fontWeight: isActive ? ThemeConstants.semiBold : null,
                 ),
                 textAlign: TextAlign.center,
@@ -610,7 +633,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
               ),
             ),
             
-            const SizedBox(height: 2),
+            ThemeConstants.space1.h,
             
             // الوقت
             FittedBox(
@@ -618,12 +641,12 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
               child: Text(
                 _formatTime(prayer.time),
                 style: TextStyle(
-                  fontSize: 9,
+                  fontSize: ThemeConstants.textSizeXs - 2,
                   color: isActive
-                      ? _getPrayerColor(prayer.type)
+                      ? ThemeConstants.getPrayerColor(prayer.type.name)
                       : isPassed
-                          ? context.textSecondaryColor.withOpacity(0.7)
-                          : context.textSecondaryColor.withOpacity(0.5),
+                          ? context.textSecondaryColor.withValues(alpha: ThemeConstants.opacity70)
+                          : context.textSecondaryColor.withValues(alpha: ThemeConstants.opacity50),
                   fontWeight: ThemeConstants.bold,
                 ),
                 overflow: TextOverflow.visible,
@@ -643,40 +666,6 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
       prayer.type != PrayerType.midnight &&
       prayer.type != PrayerType.lastThird
     ).toList();
-  }
-
-  Color _getPrayerColor(PrayerType type) {
-    switch (type) {
-      case PrayerType.fajr:
-        return const Color(0xFF1A237E);
-      case PrayerType.dhuhr:
-        return const Color(0xFFFF6F00);
-      case PrayerType.asr:
-        return const Color(0xFF00897B);
-      case PrayerType.maghrib:
-        return const Color(0xFFE65100);
-      case PrayerType.isha:
-        return const Color(0xFF4A148C);
-      default:
-        return context.primaryColor;
-    }
-  }
-
-  IconData _getPrayerIcon(PrayerType type) {
-    switch (type) {
-      case PrayerType.fajr:
-        return Icons.dark_mode;
-      case PrayerType.dhuhr:
-        return Icons.light_mode;
-      case PrayerType.asr:
-        return Icons.wb_cloudy;
-      case PrayerType.maghrib:
-        return Icons.wb_twilight;
-      case PrayerType.isha:
-        return Icons.bedtime;
-      default:
-        return Icons.access_time;
-    }
   }
 
   String _formatTime(DateTime time) {

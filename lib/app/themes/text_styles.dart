@@ -1,44 +1,44 @@
 // lib/app/themes/text_styles.dart
-import 'package:athkar_app/app/themes/theme_constants.dart';
 import 'package:flutter/material.dart';
+import 'theme_constants.dart';
 
 /// أنماط النصوص الموحدة للتطبيق
 class AppTextStyles {
   AppTextStyles._();
 
-  // ===== أنماط العناوين =====
+  // ===== أنماط العناوين (مبسطة) =====
   static const TextStyle h1 = TextStyle(
-    fontSize: ThemeConstants.textSize4xl,
+    fontSize: ThemeConstants.textSize5xl,
     fontWeight: ThemeConstants.bold,
-    height: 1.3,
+    height: 1.2,
     fontFamily: ThemeConstants.fontFamily,
   );
 
   static const TextStyle h2 = TextStyle(
-    fontSize: ThemeConstants.textSize3xl,
+    fontSize: ThemeConstants.textSize4xl,
     fontWeight: ThemeConstants.semiBold,
     height: 1.3,
     fontFamily: ThemeConstants.fontFamily,
   );
 
   static const TextStyle h3 = TextStyle(
+    fontSize: ThemeConstants.textSize3xl,
+    fontWeight: ThemeConstants.semiBold,
+    height: 1.3,
+    fontFamily: ThemeConstants.fontFamily,
+  );
+
+  static const TextStyle h4 = TextStyle(
     fontSize: ThemeConstants.textSize2xl,
     fontWeight: ThemeConstants.semiBold,
     height: 1.4,
     fontFamily: ThemeConstants.fontFamily,
   );
 
-  static const TextStyle h4 = TextStyle(
-    fontSize: ThemeConstants.textSizeXl,
-    fontWeight: ThemeConstants.semiBold,
-    height: 1.4,
-    fontFamily: ThemeConstants.fontFamily,
-  );
-
   static const TextStyle h5 = TextStyle(
-    fontSize: ThemeConstants.textSizeLg,
-    fontWeight: ThemeConstants.semiBold,
-    height: 1.5,
+    fontSize: ThemeConstants.textSizeXl,
+    fontWeight: ThemeConstants.medium,
+    height: 1.4,
     fontFamily: ThemeConstants.fontFamily,
   );
 
@@ -117,11 +117,11 @@ class AppTextStyles {
   );
 
   // ===== إنشاء TextTheme للتطبيق =====
-static TextTheme createTextTheme({
+  static TextTheme createTextTheme({
     required Color color,
     Color? secondaryColor,
   }) {
-    final Color effectiveSecondaryColor = secondaryColor ?? color.withValues(alpha: 0.7);
+    final Color effectiveSecondaryColor = secondaryColor ?? color.withOpacity(0.7);
     
     return TextTheme(
       // Display styles
@@ -130,14 +130,14 @@ static TextTheme createTextTheme({
       displaySmall: h3.copyWith(color: color),
       
       // Headline styles
-      headlineLarge: h1.copyWith(color: color),
-      headlineMedium: h2.copyWith(color: color),
-      headlineSmall: h3.copyWith(color: color),
+      headlineLarge: h3.copyWith(color: color),
+      headlineMedium: h4.copyWith(color: color),
+      headlineSmall: h5.copyWith(color: color),
       
       // Title styles
-      titleLarge: h4.copyWith(color: color),
-      titleMedium: h5.copyWith(color: color),
-      titleSmall: h5.copyWith(color: color, fontSize: ThemeConstants.textSizeMd),
+      titleLarge: h5.copyWith(color: color),
+      titleMedium: body1.copyWith(color: color, fontWeight: ThemeConstants.semiBold),
+      titleSmall: body2.copyWith(color: color, fontWeight: ThemeConstants.semiBold),
       
       // Body styles
       bodyLarge: body1.copyWith(color: color),
@@ -155,14 +155,14 @@ static TextTheme createTextTheme({
   
   /// نص للعناوين الرئيسية في الصفحات
   static TextStyle pageTitle(BuildContext context) {
-    return h2.copyWith(
+    return h3.copyWith(
       color: ThemeConstants.textPrimary(context),
     );
   }
 
   /// نص للعناوين الفرعية
   static TextStyle sectionTitle(BuildContext context) {
-    return h4.copyWith(
+    return h5.copyWith(
       color: ThemeConstants.textPrimary(context),
     );
   }
@@ -184,7 +184,7 @@ static TextTheme createTextTheme({
   /// نص للتلميحات
   static TextStyle hintText(BuildContext context) {
     return caption.copyWith(
-      color: ThemeConstants.textSecondary(context).withValues(alpha: 0.7),
+      color: ThemeConstants.textSecondary(context).withOpacity(0.7),
     );
   }
 

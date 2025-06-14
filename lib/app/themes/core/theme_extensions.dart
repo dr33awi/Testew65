@@ -1,7 +1,7 @@
 // lib/app/themes/core/theme_extensions.dart
-import 'package:athkar_app/app/themes/text_styles.dart';
 import 'package:flutter/material.dart';
 import '../theme_constants.dart';
+import '../text_styles.dart';
 
 /// Extensions لتسهيل الوصول للثيم
 extension ThemeExtension on BuildContext {
@@ -83,7 +83,7 @@ extension ThemeExtension on BuildContext {
   double get safeBottom => screenPadding.bottom;
 }
 
-/// Extensions للألوان - موحدة من جميع الملفات
+/// Extensions للألوان
 extension ColorExtensions on Color {
   /// إنشاء لون بشفافية
   Color withOpacity(double opacity) {
@@ -111,22 +111,7 @@ extension ColorExtensions on Color {
   Color get contrastingTextColor {
     return ThemeData.estimateBrightnessForColor(this) == Brightness.dark
         ? Colors.white
-        : Colors.black87;
-  }
-
-  /// تحويل إلى Material Color
-  MaterialColor toMaterialColor() {
-    final strengths = <double>[.05, .1, .2, .3, .4, .5, .6, .7, .8, .9];
-    final swatch = <int, Color>{};
-    
-    for (var i = 0; i < strengths.length; i++) {
-      final strength = strengths[i];
-      swatch[(strength * 1000).round()] = i < 5
-          ? lighten(strength)
-          : darken(strength - 0.5);
-    }
-    
-    return MaterialColor(toARGB32(), swatch);
+        : ThemeConstants.neutral900;
   }
 }
 
@@ -162,13 +147,6 @@ extension EdgeInsetsExtensions on EdgeInsets {
     top: (top - other.top).clamp(0.0, double.infinity),
     right: (right - other.right).clamp(0.0, double.infinity),
     bottom: (bottom - other.bottom).clamp(0.0, double.infinity),
-  );
-
-  EdgeInsets get copyWith => EdgeInsets.only(
-    left: left,
-    top: top,
-    right: right,
-    bottom: bottom,
   );
 }
 
@@ -246,6 +224,7 @@ extension WidgetExtensions on Widget {
     Color? color,
     double? width,
     double? height,
+    BoxConstraints? constraints,
   }) => Container(
     padding: padding,
     margin: margin,
@@ -253,6 +232,7 @@ extension WidgetExtensions on Widget {
     color: color,
     width: width,
     height: height,
+    constraints: constraints,
     child: this,
   );
 
@@ -283,6 +263,26 @@ extension WidgetExtensions on Widget {
   /// إضافة تحجيم
   Widget scale(double scale) => Transform.scale(
     scale: scale,
+    child: this,
+  );
+
+  /// إضافة ClipRRect
+  Widget clipRRect(double radius) => ClipRRect(
+    borderRadius: BorderRadius.circular(radius),
+    child: this,
+  );
+
+  /// إضافة Card
+  Widget card({
+    EdgeInsetsGeometry? margin,
+    double? elevation,
+    Color? color,
+    ShapeBorder? shape,
+  }) => Card(
+    margin: margin,
+    elevation: elevation,
+    color: color,
+    shape: shape,
     child: this,
   );
 }

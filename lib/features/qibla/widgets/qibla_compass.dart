@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
 
 class QiblaCompass extends StatefulWidget {
-  final double qiblaDirection; // اتجاه القبلة (درجات من الشمال الحقيقي)
-  final double currentDirection; // الاتجاه الحالي للجهاز (درجات من الشمال المغناطيسي)
-  final double accuracy; // دقة البوصلة (0.0 - 1.0)
+  final double qiblaDirection;
+  final double currentDirection;
+  final double accuracy;
   final bool isCalibrated;
   final VoidCallback? onCalibrate;
 
@@ -31,19 +31,19 @@ class _QiblaCompassState extends State<QiblaCompass>
   late Animation<double> _pulseAnimation;
 
   double _previousDirection = 0;
-  bool _hasVibratedForQibla = false; // New state for haptic feedback
+  bool _hasVibratedForQibla = false;
 
   @override
   void initState() {
     super.initState();
 
     _rotationController = AnimationController(
-      duration: ThemeConstants.durationNormal, // Increased for smoother rotation
+      duration: ThemeConstants.durationNormal,
       vsync: this,
     );
 
     _pulseController = AnimationController(
-      duration: ThemeConstants.durationSlow, // Slower pulse
+      duration: ThemeConstants.durationSlow,
       vsync: this,
     )..repeat(reverse: true);
 
@@ -52,7 +52,7 @@ class _QiblaCompassState extends State<QiblaCompass>
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _pulseController,
-      curve: Curves.easeInOut,
+      curve: ThemeConstants.curveDefault,
     ));
 
     _previousDirection = widget.currentDirection;
@@ -62,7 +62,6 @@ class _QiblaCompassState extends State<QiblaCompass>
   void didUpdateWidget(QiblaCompass oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // Smoothly animate rotation to new direction
     if ((widget.currentDirection - _previousDirection).abs() > 1) {
       _previousDirection = oldWidget.currentDirection;
       _rotationController.forward(from: 0);
@@ -78,15 +77,14 @@ class _QiblaCompassState extends State<QiblaCompass>
 
   @override
   Widget build(BuildContext context) {
-    // Calculate relative Qibla angle from current device heading
     final relativeAngle = (widget.qiblaDirection - widget.currentDirection + 360) % 360;
 
     // Haptic Feedback Logic
     final angleDifference = (relativeAngle > 180 ? 360 - relativeAngle : relativeAngle).abs();
-    if (angleDifference < 5 && !_hasVibratedForQibla) { // Within 5 degrees and not yet vibrated
-      HapticFeedback.lightImpact(); // Trigger light vibration
+    if (angleDifference < 5 && !_hasVibratedForQibla) {
+      HapticFeedback.lightImpact();
       _hasVibratedForQibla = true;
-    } else if (angleDifference >= 5 && _hasVibratedForQibla) { // Moved out of the accurate zone
+    } else if (angleDifference >= 5 && _hasVibratedForQibla) {
       _hasVibratedForQibla = false;
     }
 
@@ -97,7 +95,7 @@ class _QiblaCompassState extends State<QiblaCompass>
         return Stack(
           alignment: Alignment.center,
           children: [
-            // Accuracy Indicator Pulse (if accuracy is low)
+            // Accuracy Indicator Pulse
             if (widget.accuracy < 0.8)
               AnimatedBuilder(
                 animation: _pulseAnimation,
@@ -108,7 +106,9 @@ class _QiblaCompassState extends State<QiblaCompass>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: ThemeConstants.warning.withOpacity(0.3 - _pulseAnimation.value * 0.2),
+                        color: ThemeConstants.warning.withValues(
+                          alpha: ThemeConstants.opacity30 - _pulseAnimation.value * ThemeConstants.opacity20
+                        ),
                         width: 2,
                       ),
                     ),
@@ -116,7 +116,7 @@ class _QiblaCompassState extends State<QiblaCompass>
                 },
               ),
 
-            // Compass Background (Static part)
+            // Compass Background
             Container(
               width: size * 0.9,
               height: size * 0.9,
@@ -138,7 +138,6 @@ class _QiblaCompassState extends State<QiblaCompass>
             AnimatedBuilder(
               animation: _rotationController,
               builder: (context, child) {
-                // Interpolate smoothly between previous and current direction
                 final smoothDirection = _lerp(
                   _previousDirection,
                   widget.currentDirection,
@@ -146,13 +145,13 @@ class _QiblaCompassState extends State<QiblaCompass>
                 );
 
                 return Transform.rotate(
-                  angle: -smoothDirection * (math.pi / 180), // Rotate against heading
+                  angle: -smoothDirection * (math.pi / 180),
                   child: SizedBox(
                     width: size,
                     height: size,
                     child: Stack(
                       children: [
-                        // Compass markings (numbers and lines)
+                        // Compass markings
                         CustomPaint(
                           size: Size(size, size),
                           painter: EnhancedCompassPainter(
@@ -161,7 +160,7 @@ class _QiblaCompassState extends State<QiblaCompass>
                           ),
                         ),
 
-                        // Direction labels (N, E, S, W)
+                        // Direction labels
                         _buildDirectionLabels(size, context),
                       ],
                     ),
@@ -170,11 +169,11 @@ class _QiblaCompassState extends State<QiblaCompass>
               },
             ),
 
-            // Qibla Indicator Arrow (Rotates based on Qibla direction relative to device)
+            // Qibla Indicator Arrow
             Transform.rotate(
               angle: relativeAngle * (math.pi / 180),
               child: SizedBox(
-                width: size * 0.8, // Make arrow slightly smaller
+                width: size * 0.8,
                 height: size * 0.8,
                 child: Stack(
                   alignment: Alignment.topCenter,
@@ -185,14 +184,14 @@ class _QiblaCompassState extends State<QiblaCompass>
                       child: TweenAnimationBuilder<double>(
                         duration: ThemeConstants.durationFast,
                         tween: Tween(begin: 0.9, end: 1.0),
-                        curve: Curves.elasticOut,
+                        curve: ThemeConstants.curveSmooth,
                         builder: (context, value, child) {
                           return Transform.scale(
                             scale: value,
                             alignment: Alignment.topCenter,
                             child: SizedBox(
-                              width: 60, // Fixed width for arrow base
-                              height: size * 0.4, // Adjustable height for arrow length
+                              width: 60,
+                              height: size * 0.4,
                               child: CustomPaint(
                                 painter: QiblaArrowPainter(
                                   color: context.primaryColor,
@@ -205,15 +204,15 @@ class _QiblaCompassState extends State<QiblaCompass>
                     ),
                     // "Qibla" text label
                     Positioned(
-                      top: size * 0.1, // Adjust position
+                      top: size * 0.1,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
+                        padding: EdgeInsets.symmetric(
                           horizontal: ThemeConstants.space3,
                           vertical: ThemeConstants.space1,
                         ),
                         decoration: BoxDecoration(
                           color: context.primaryColor,
-                          borderRadius: ThemeConstants.radiusMd.circular,
+                          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                         ),
                         child: Text(
                           'قبلة',
@@ -244,13 +243,13 @@ class _QiblaCompassState extends State<QiblaCompass>
               ),
             ),
 
-            // Device Orientation Indicator (Red Triangle)
+            // Device Orientation Indicator
             Positioned(
-              top: (constraints.maxHeight - size) / 2 + size * 0.05, // Position above the compass
+              top: (constraints.maxHeight - size) / 2 + size * 0.05,
               child: Container(
                 width: 0,
                 height: 0,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   border: Border(
                     left: BorderSide(width: 10, color: Colors.transparent),
                     right: BorderSide(width: 10, color: Colors.transparent),
@@ -267,15 +266,15 @@ class _QiblaCompassState extends State<QiblaCompass>
                 children: [
                   // Current Angle Display
                   Container(
-                    padding: const EdgeInsets.symmetric(
+                    padding: EdgeInsets.symmetric(
                       horizontal: ThemeConstants.space4,
                       vertical: ThemeConstants.space2,
                     ),
                     decoration: BoxDecoration(
-                      color: context.cardColor.withOpacity(0.9),
-                      borderRadius: ThemeConstants.radiusLg.circular,
+                      color: context.cardColor.withValues(alpha: ThemeConstants.opacity90),
+                      borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
                       border: Border.all(
-                        color: context.primaryColor.withOpacity(0.3),
+                        color: context.primaryColor.withValues(alpha: ThemeConstants.opacity30),
                       ),
                       boxShadow: ThemeConstants.shadowSm,
                     ),
@@ -303,15 +302,15 @@ class _QiblaCompassState extends State<QiblaCompass>
 
                   // Accuracy Indicator
                   Container(
-                    padding: const EdgeInsets.symmetric(
+                    padding: EdgeInsets.symmetric(
                       horizontal: ThemeConstants.space3,
                       vertical: ThemeConstants.space1,
                     ),
                     decoration: BoxDecoration(
-                      color: _getAccuracyColor(widget.accuracy).withOpacity(0.2),
-                      borderRadius: ThemeConstants.radiusMd.circular,
+                      color: _getAccuracyColor(widget.accuracy).withValues(alpha: ThemeConstants.opacity20),
+                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                       border: Border.all(
-                        color: _getAccuracyColor(widget.accuracy).withOpacity(0.5),
+                        color: _getAccuracyColor(widget.accuracy).withValues(alpha: ThemeConstants.opacity50),
                       ),
                     ),
                     child: Row(
@@ -379,7 +378,7 @@ class _QiblaCompassState extends State<QiblaCompass>
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: text == 'N'
-                ? ThemeConstants.error.withOpacity(0.1) // Red for North
+                ? ThemeConstants.error.withValues(alpha: ThemeConstants.opacity10)
                 : Colors.transparent,
           ),
           child: Center(
@@ -390,7 +389,7 @@ class _QiblaCompassState extends State<QiblaCompass>
                     ? ThemeConstants.error
                     : isMainDirection
                         ? context.textSecondaryColor
-                        : context.textSecondaryColor.withOpacity(0.6),
+                        : context.textSecondaryColor.withValues(alpha: ThemeConstants.opacity70),
                 fontSize: isMainDirection ? ThemeConstants.textSizeMd : ThemeConstants.textSizeSm,
                 fontWeight: isMainDirection ? ThemeConstants.bold : ThemeConstants.regular,
               ),
@@ -419,7 +418,6 @@ class _QiblaCompassState extends State<QiblaCompass>
     return 'دقة منخفضة';
   }
 
-  // Linear interpolation for smooth rotation
   double _lerp(double a, double b, double t) {
     double diff = b - a;
     if (diff > 180) diff -= 360;
@@ -442,14 +440,16 @@ class EnhancedCompassPainter extends CustomPainter {
 
     // Adjust colors based on accuracy and theme
     final primaryLineColor = Color.lerp(
-      ThemeConstants.error.withOpacity(0.5), // Low accuracy
-      isDarkMode ? ThemeConstants.darkDivider : ThemeConstants.lightDivider, // High accuracy
+      ThemeConstants.error.withValues(alpha: ThemeConstants.opacity50),
+      isDarkMode ? ThemeConstants.darkDivider : ThemeConstants.lightDivider,
       accuracy,
     )!;
 
     final secondaryLineColor = Color.lerp(
-      ThemeConstants.error.withOpacity(0.3), // Low accuracy
-      isDarkMode ? ThemeConstants.darkTextSecondary.withOpacity(0.3) : ThemeConstants.lightTextSecondary.withOpacity(0.3), // High accuracy
+      ThemeConstants.error.withValues(alpha: ThemeConstants.opacity30),
+      isDarkMode 
+          ? ThemeConstants.darkTextSecondary.withValues(alpha: ThemeConstants.opacity30)
+          : ThemeConstants.lightTextSecondary.withValues(alpha: ThemeConstants.opacity30),
       accuracy,
     )!;
 
@@ -458,12 +458,12 @@ class EnhancedCompassPainter extends CustomPainter {
       ..color = primaryLineColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
-    canvas.drawCircle(center, radius - 2, circlePaint); // Outer circle
-    canvas.drawCircle(center, radius * 0.85, circlePaint..strokeWidth = 1); // Inner circle
+    canvas.drawCircle(center, radius - 2, circlePaint);
+    canvas.drawCircle(center, radius * 0.85, circlePaint..strokeWidth = 1);
 
     // Draw markings (lines for degrees)
     for (int i = 0; i < 360; i += 5) {
-      final angle = i * (math.pi / 180); // Convert degrees to radians
+      final angle = i * (math.pi / 180);
       final isMainDirection = i % 90 == 0;
       final isMediumDirection = i % 45 == 0;
       final isMinorDirection = i % 15 == 0;
@@ -479,7 +479,7 @@ class EnhancedCompassPainter extends CustomPainter {
       } else if (isMediumDirection) {
         lineLength = 18;
         linePaint = Paint()
-          ..color = primaryLineColor.withOpacity(0.8)
+          ..color = primaryLineColor.withValues(alpha: ThemeConstants.opacity70)
           ..strokeWidth = 1.5;
       } else if (isMinorDirection) {
         lineLength = 12;
@@ -489,7 +489,7 @@ class EnhancedCompassPainter extends CustomPainter {
       } else {
         lineLength = 8;
         linePaint = Paint()
-          ..color = secondaryLineColor.withOpacity(0.5)
+          ..color = secondaryLineColor.withValues(alpha: ThemeConstants.opacity50)
           ..strokeWidth = 0.5;
       }
 
@@ -530,24 +530,24 @@ class QiblaArrowPainter extends CustomPainter {
 
     // Simple shadow effect
     final shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.2)
+      ..color = Colors.black.withValues(alpha: ThemeConstants.opacity20)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
 
     final path = Path();
 
     // Draw the main arrow shape
-    path.moveTo(size.width / 2, 0); // Top center
-    path.lineTo(size.width * 0.7, size.height * 0.4); // Right wing
-    path.lineTo(size.width * 0.6, size.height * 0.4); // Inner right
-    path.lineTo(size.width * 0.6, size.height * 0.8); // Bottom right
-    path.lineTo(size.width * 0.4, size.height * 0.8); // Bottom left
-    path.lineTo(size.width * 0.4, size.height * 0.4); // Inner left
-    path.lineTo(size.width * 0.3, size.height * 0.4); // Left wing
+    path.moveTo(size.width / 2, 0);
+    path.lineTo(size.width * 0.7, size.height * 0.4);
+    path.lineTo(size.width * 0.6, size.height * 0.4);
+    path.lineTo(size.width * 0.6, size.height * 0.8);
+    path.lineTo(size.width * 0.4, size.height * 0.8);
+    path.lineTo(size.width * 0.4, size.height * 0.4);
+    path.lineTo(size.width * 0.3, size.height * 0.4);
     path.close();
 
     // Apply shadow
     canvas.save();
-    canvas.translate(0, 2); // Offset shadow slightly
+    canvas.translate(0, 2);
     canvas.drawPath(path, shadowPaint);
     canvas.restore();
 
@@ -560,8 +560,8 @@ class QiblaArrowPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Colors.white.withOpacity(0.3),
-          Colors.white.withOpacity(0.0),
+          Colors.white.withValues(alpha: ThemeConstants.opacity30),
+          Colors.white.withValues(alpha: 0),
         ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.4));
 
