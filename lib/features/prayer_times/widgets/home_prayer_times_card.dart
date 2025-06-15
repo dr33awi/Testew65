@@ -646,37 +646,11 @@ class _PrayerTimesCardState extends State<PrayerTimesCard> with SingleTickerProv
   }
 
   Color _getPrayerColor(PrayerType type) {
-    switch (type) {
-      case PrayerType.fajr:
-        return const Color(0xFF1A237E);
-      case PrayerType.dhuhr:
-        return const Color(0xFFFF6F00);
-      case PrayerType.asr:
-        return const Color(0xFF00897B);
-      case PrayerType.maghrib:
-        return const Color(0xFFE65100);
-      case PrayerType.isha:
-        return const Color(0xFF4A148C);
-      default:
-        return context.primaryColor;
-    }
+    return ThemeConstants.getPrayerColor(type.name);
   }
 
   IconData _getPrayerIcon(PrayerType type) {
-    switch (type) {
-      case PrayerType.fajr:
-        return Icons.dark_mode;
-      case PrayerType.dhuhr:
-        return Icons.light_mode;
-      case PrayerType.asr:
-        return Icons.wb_cloudy;
-      case PrayerType.maghrib:
-        return Icons.wb_twilight;
-      case PrayerType.isha:
-        return Icons.bedtime;
-      default:
-        return Icons.access_time;
-    }
+    return ThemeConstants.getPrayerIcon(type.name);
   }
 
   String _formatTime(DateTime time) {
