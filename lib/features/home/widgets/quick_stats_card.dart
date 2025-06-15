@@ -1,8 +1,9 @@
-// lib/features/home/presentation/widgets/quick_stats_card.dart
+// lib/features/home/widgets/quick_stats_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
-import '../../../../app/themes/app_theme.dart';
+import 'dart:ui';
+import '../../../app/themes/app_theme.dart';
 
 class QuickStatsCard extends StatefulWidget {
   final int dailyProgress;
@@ -20,107 +21,67 @@ class QuickStatsCard extends StatefulWidget {
   State<QuickStatsCard> createState() => _QuickStatsCardState();
 }
 
-class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStateMixin {
-  late AnimationController _progressController;
-  late Animation<double> _progressAnimation;
-
-  // تحديد اللون حسب وقت اليوم لتناسق أفضل مع الواجهة
-  List<Color> _getTimeBasedGradient() {
-    final hour = DateTime.now().hour;
-    
-    if (hour < 5) {
-      return [const Color(0xFF1F1C2C), const Color(0xFF4A148C)]; // ليل
-    } else if (hour < 8) {
-      return [const Color(0xFF1A237E), const Color(0xFF303F9F)]; // فجر
-    } else if (hour < 12) {
-      return [const Color(0xFFFF9800), const Color(0xFFFF6F00)]; // صباح
-    } else if (hour < 15) {
-      return [const Color(0xFFFF6F00), const Color(0xFFE65100)]; // ظهر
-    } else if (hour < 17) {
-      return [const Color(0xFF00897B), const Color(0xFF00695C)]; // عصر
-    } else if (hour < 20) {
-      return [const Color(0xFFE65100), const Color(0xFFBF360C)]; // مغرب
-    } else {
-      return [const Color(0xFF4A148C), const Color(0xFF311B92)]; // عشاء/ليل
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    
-    // Progress animation
-    _progressController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-    
-    _progressAnimation = Tween<double>(
-      begin: 0.0,
-      end: widget.dailyProgress / 100,
-    ).animate(CurvedAnimation(
-      parent: _progressController,
-      curve: Curves.easeOutBack,
-    ));
-    
-    // Start animations
-    _progressController.forward();
-  }
-
-  @override
-  void dispose() {
-    _progressController.dispose();
-    super.dispose();
-  }
-
+class _QuickStatsCardState extends State<QuickStatsCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
-      height: 160,
-      child: Row(
+      child: Column(
         children: [
-          // Daily progress - Modern circular design
-          Expanded(
-            flex: 2,
-            child: _buildCircularProgressCard(context),
-          ),
+          // العنوان
+          _buildSectionHeader(context),
           
-          ThemeConstants.space3.w,
+          ThemeConstants.space3.h,
           
-          // Stats column
-          Expanded(
-            flex: 3,
-            child: Column(
+          // البطاقات
+          SizedBox(
+            height: 200,
+            child: Row(
               children: [
-                // Favorites
+                // بطاقة التقدم اليومي
                 Expanded(
-                  child: _buildModernStatItem(
-                    context: context,
-                    icon: Icons.favorite,
-                    label: 'المفضلة',
-                    gradient: [
-                      Color(0xFFE91E63),
-                      Color(0xFFC2185B),
-                    ],
-                    onTap: () => widget.onStatTap('favorites'),
-                  ),
+                  flex: 3,
+                  child: _buildDailyProgressCard(context),
                 ),
                 
-                ThemeConstants.space3.h,
+                ThemeConstants.space3.w,
                 
-                // Streak with animation
+                // بطاقات الإحصائيات
                 Expanded(
-                  child: _buildModernStatItem(
-                    context: context,
-                    icon: Icons.local_fire_department,
-                    label: 'أيام متتالية',
-                    gradient: [
-                      Color(0xFFFF6F00),
-                      Color(0xFFE65100),
+                  flex: 2,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: _buildStatCard(
+                          context: context,
+                          title: 'المفضلة',
+                          value: '12',
+                          icon: Icons.favorite,
+                          gradient: [
+                            ThemeConstants.accent,
+                            ThemeConstants.accentLight,
+                          ],
+                          onTap: () => widget.onStatTap('favorites'),
+                        ),
+                      ),
+                      
+                      ThemeConstants.space3.h,
+                      
+                      Expanded(
+                        child: _buildStatCard(
+                          context: context,
+                          title: 'الإنجازات',
+                          value: '7',
+                          icon: Icons.emoji_events,
+                          gradient: [
+                            ThemeConstants.tertiary,
+                            ThemeConstants.tertiaryLight,
+                          ],
+                          onTap: () => widget.onStatTap('achievements'),
+                          isStreak: true,
+                        ),
+                      ),
                     ],
-                    onTap: () => widget.onStatTap('achievements'),
-                    isStreak: true,
                   ),
                 ),
               ],
@@ -131,302 +92,369 @@ class _QuickStatsCardState extends State<QuickStatsCard> with TickerProviderStat
     );
   }
 
-  Widget _buildCircularProgressCard(BuildContext context) {
-    final isDark = context.isDarkMode;
-    final gradient = _getTimeBasedGradient();
-    
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(24),
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          widget.onStatTap('daily_progress');
-        },
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: gradient,
+  Widget _buildSectionHeader(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 20,
+              decoration: BoxDecoration(
+                gradient: ThemeConstants.primaryGradient,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: gradient[0].withOpacity(0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
+            ThemeConstants.space3.w,
+            Text(
+              'إحصائياتك اليوم',
+              style: context.titleLarge?.copyWith(
+                fontWeight: ThemeConstants.bold,
               ),
-            ],
+            ),
+          ],
+        ),
+        
+        TextButton.icon(
+          onPressed: () => widget.onStatTap('all_stats'),
+          icon: Icon(
+            Icons.bar_chart_rounded,
+            size: ThemeConstants.iconSm,
+            color: context.primaryColor,
           ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // إضافة نمط ديناميكي في الخلفية
-              Positioned(
-                right: -30,
-                top: -30,
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.05),
-                  ),
-                ),
-              ),
-              
-              // Content
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Circular progress with modern design
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Background circle
-                      Container(
-                        width: 75,
-                        height: 75,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withOpacity(0.2),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                      
-                      // Animated progress
-                      AnimatedBuilder(
-                        animation: _progressAnimation,
-                        builder: (context, child) {
-                          return SizedBox(
-                            width: 75,
-                            height: 75,
-                            child: CircularProgressIndicator(
-                              value: _progressAnimation.value,
-                              strokeWidth: 6,
-                              backgroundColor: Colors.transparent,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      
-                      // Percentage text
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 4),
-                            child: Text(
-                              '%',
-                              style: context.titleMedium?.copyWith(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: ThemeConstants.semiBold,
-                              ),
-                            ),
-                          ),
-                          Text(
-                            '${widget.dailyProgress}',
-                            style: context.headlineMedium?.copyWith(
-                              color: Colors.white,
-                              fontWeight: ThemeConstants.bold,
-                              fontSize: 32,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  
-                  ThemeConstants.space3.h,
-                  
-                  Text(
-                    'إنجاز اليوم',
-                    style: context.titleSmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: ThemeConstants.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  
-                  Text(
-                    'استمر في التقدم',
-                    style: context.bodySmall?.copyWith(
-                      color: Colors.white.withOpacity(0.9),
-                      fontSize: 13,
-                      fontWeight: ThemeConstants.medium,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+          label: Text(
+            'المزيد',
+            style: context.labelMedium?.copyWith(
+              color: context.primaryColor,
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildModernStatItem({
-    required BuildContext context,
-    required IconData icon,
-    required String label,
-    required List<Color> gradient,
-    required VoidCallback onTap,
-    bool isStreak = false,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(24),
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onTap();
-        },
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: gradient,
-            ),
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: gradient[0].withOpacity(0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
+  Widget _buildDailyProgressCard(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        boxShadow: [
+          BoxShadow(
+            color: context.primaryColor.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
-          child: Stack(
-            children: [
-              // إضافة نمط ديناميكي في الخلفية
-              Positioned(
-                right: -20,
-                top: -20,
-                child: Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.05),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                widget.onStatTap('daily_progress');
+              },
+              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      context.primaryColor.withOpacity(0.9),
+                      context.primaryColor.darken(0.1).withOpacity(0.8),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.2),
+                    width: 1,
                   ),
                 ),
-              ),
-              
-              // المحتوى
-              Container(
-                padding: const EdgeInsets.all(ThemeConstants.space3),
-                child: Row(
+                child: Stack(
                   children: [
-                    // Icon with modern container
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
-                          width: 1.5,
+                    // نمط زخرفي
+                    Positioned(
+                      right: -30,
+                      top: -30,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withOpacity(0.1),
                         ),
-                      ),
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Icon(
-                            icon,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                          if (isStreak)
-                            Positioned(
-                              right: 0,
-                              top: 0,
-                              child: Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: Colors.yellowAccent,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.yellowAccent.withOpacity(0.5),
-                                      blurRadius: 4,
-                                      spreadRadius: 1,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                        ],
                       ),
                     ),
                     
-                    ThemeConstants.space3.w,
-                    
-                    // Text content
-                    Expanded(
+                    // المحتوى
+                    Padding(
+                      padding: const EdgeInsets.all(ThemeConstants.space4),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // مؤشر التقدم الدائري
+                          _buildCircularProgress(),
+                          
+                          ThemeConstants.space3.h,
+                          
                           Text(
-                            label,
+                            'إنجاز اليوم',
                             style: context.titleMedium?.copyWith(
                               color: Colors.white,
                               fontWeight: ThemeConstants.bold,
                             ),
                           ),
                           
-                          ThemeConstants.space2.h,
-                          
-                          // Progress bar with shimmer effect
-                          Stack(
-                            children: [
-                              Container(
-                                height: 4,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(2),
+                          if (widget.lastReadTime != null) ...[
+                            ThemeConstants.space1.h,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.access_time,
+                                  size: ThemeConstants.iconXs,
+                                  color: Colors.white.withOpacity(0.8),
                                 ),
-                              ),
-                              Container(
-                                height: 4,
-                                width: 80,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(2),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.white.withOpacity(0.5),
-                                      blurRadius: 4,
-                                    ),
-                                  ],
+                                ThemeConstants.space1.w,
+                                Text(
+                                  'آخر قراءة: ${widget.lastReadTime}',
+                                  style: context.labelSmall?.copyWith(
+                                    color: Colors.white.withOpacity(0.8),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
                     ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildCircularProgress() {
+    return Container(
+      width: 90,
+      height: 90,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // خلفية المؤشر
+          Container(
+            width: 90,
+            height: 90,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withOpacity(0.2),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.3),
+                width: 2,
+              ),
+            ),
+          ),
+          
+          // المؤشر الدائري
+          CustomPaint(
+            size: const Size(90, 90),
+            painter: CircularProgressPainter(
+              progress: widget.dailyProgress / 100,
+              strokeWidth: 8,
+              color: Colors.white,
+              backgroundColor: Colors.transparent,
+            ),
+          ),
+          
+          // النسبة المئوية
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${widget.dailyProgress}',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: ThemeConstants.bold,
+                ),
+              ),
+              Text(
+                '%',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: 14,
+                  fontWeight: ThemeConstants.medium,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard({
+    required BuildContext context,
+    required String title,
+    required String value,
+    required IconData icon,
+    required List<Color> gradient,
+    required VoidCallback onTap,
+    bool isStreak = false,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        boxShadow: [
+          BoxShadow(
+            color: gradient[0].withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              onTap();
+            },
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: gradient.map((c) => c.withOpacity(0.9)).toList(),
+                ),
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+              ),
+              child: Stack(
+                children: [
+                  // تأثير النجمة للخطوط المتتالية
+                  if (isStreak)
+                    Positioned(
+                      right: -20,
+                      top: -20,
+                      child: Icon(
+                        Icons.auto_awesome,
+                        size: 60,
+                        color: Colors.white.withOpacity(0.1),
+                      ),
+                    ),
+                  
+                  // المحتوى
+                  Padding(
+                    padding: const EdgeInsets.all(ThemeConstants.space3),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            icon,
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                        ),
+                        
+                        ThemeConstants.space2.h,
+                        
+                        Text(
+                          value,
+                          style: context.headlineSmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: ThemeConstants.bold,
+                          ),
+                        ),
+                        
+                        Text(
+                          title,
+                          style: context.labelMedium?.copyWith(
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// رسام المؤشر الدائري
+class CircularProgressPainter extends CustomPainter {
+  final double progress;
+  final double strokeWidth;
+  final Color color;
+  final Color backgroundColor;
+
+  CircularProgressPainter({
+    required this.progress,
+    required this.strokeWidth,
+    required this.color,
+    required this.backgroundColor,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width - strokeWidth) / 2;
+    
+    // رسم الخلفية
+    if (backgroundColor != Colors.transparent) {
+      final backgroundPaint = Paint()
+        ..color = backgroundColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round;
+      
+      canvas.drawCircle(center, radius, backgroundPaint);
+    }
+    
+    // رسم المؤشر
+    final progressPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+    
+    final sweepAngle = 2 * math.pi * progress;
+    
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -math.pi / 2,
+      sweepAngle,
+      false,
+      progressPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CircularProgressPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+           oldDelegate.color != color ||
+           oldDelegate.strokeWidth != strokeWidth;
   }
 }

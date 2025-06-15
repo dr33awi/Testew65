@@ -199,21 +199,6 @@ class NextPrayerCountdown extends StatelessWidget {
   }
   
   Color _getPrayerColor(PrayerType type) {
-    switch (type) {
-      case PrayerType.fajr:
-        return const Color(0xFF1A237E); // Deep blue
-      case PrayerType.sunrise:
-        return const Color(0xFFFFB300); // Amber
-      case PrayerType.dhuhr:
-        return const Color(0xFFFF6F00); // Orange
-      case PrayerType.asr:
-        return const Color(0xFF00897B); // Teal
-      case PrayerType.maghrib:
-        return const Color(0xFFE65100); // Deep orange
-      case PrayerType.isha:
-        return const Color(0xFF4A148C); // Purple
-      default:
-        return const Color(0xFF607D8B); // Blue grey
-    }
+    return ThemeConstants.getPrayerColor(type.name);
   }
 }
