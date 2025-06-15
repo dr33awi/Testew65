@@ -67,6 +67,10 @@ class AthkarCategory {
         return Icons.wb_sunny;
       case 'Icons.nights_stay':
         return Icons.nights_stay;
+      case 'Icons.nightlight_round':
+        return Icons.nightlight_round;
+      case 'Icons.bedtime':
+        return Icons.bedtime;
       default:
         return Icons.auto_awesome;
     }
