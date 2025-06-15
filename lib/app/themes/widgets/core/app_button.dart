@@ -276,7 +276,28 @@ factory AppButton.primary({
     customColor: backgroundColor, // استخدام اللون المخصص إذا تم تمريره
   );
 }
-
+factory AppButton.custom({
+  required String text,
+  required VoidCallback? onPressed,
+  IconData? icon,
+  bool isLoading = false,
+  bool isFullWidth = false,
+  ButtonSize size = ButtonSize.medium,
+  Color? backgroundColor,
+  Color? textColor,
+}) {
+  return AppButton(
+    text: text,
+    onPressed: onPressed,
+    type: ButtonType.primary,
+    icon: icon,
+    isLoading: isLoading,
+    isFullWidth: isFullWidth,
+    size: size,
+    customColor: backgroundColor,
+    textColor: textColor,
+  );
+}
   factory AppButton.secondary({
     required String text,
     required VoidCallback? onPressed,

@@ -6,8 +6,9 @@ import '../../features/home/screens/home_screen.dart';
 import '../../features/prayer_times/screens/prayer_times_screen.dart';
 import '../../features/prayer_times/screens/prayer_settings_screen.dart';
 import '../../features/prayer_times/screens/prayer_notifications_settings_screen.dart';
-import 'package:athkar_app/features/qibla/screens/qibla_screen.dart';
-import 'package:athkar_app/features/athkar/screens/athkar_categories_screen.dart';
+import '../../features/qibla/screens/qibla_screen.dart';
+import '../../features/athkar/screens/athkar_categories_screen.dart';
+import '../../features/athkar/screens/athkar_details_screen.dart';
 
 class AppRouter {
   // Main Routes
@@ -48,7 +49,21 @@ class AppRouter {
         return _slideRoute(const PrayerTimesScreen(), settings);
         
       case athkar:
-        return _slideRoute(const AthkarCategoriesScreen(), settings);
+        return _slideRoute(AthkarCategoriesScreen(), settings);
+        
+      case athkarDetails:
+        final categoryId = settings.arguments as String?;
+        if (categoryId != null) {
+          return _slideRoute(
+            AthkarDetailsScreen(categoryId: categoryId), 
+            settings
+          );
+        } else {
+          return _slideRoute(
+            _buildErrorScreen('معرف الفئة مطلوب'), 
+            settings
+          );
+        }
         
       case quran:
         return _slideRoute(_buildComingSoonScreen('القرآن الكريم'), settings);
@@ -263,6 +278,46 @@ class AppRouter {
                   icon: Icons.home,
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Widget _buildErrorScreen(String message) {
+    return Scaffold(
+      appBar: CustomAppBar.simple(title: 'خطأ'),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: ThemeConstants.error.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.error_outline,
+                size: 50,
+                color: ThemeConstants.error,
+              ),
+            ),
+            ThemeConstants.space4.h,
+            Text(
+              message,
+              style: AppTextStyles.h5.copyWith(
+                color: ThemeConstants.error,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            ThemeConstants.space6.h,
+            AppButton.outline(
+              text: 'العودة',
+              onPressed: () => Navigator.of(_navigatorKey.currentContext!).pop(),
+              icon: Icons.arrow_back,
             ),
           ],
         ),
