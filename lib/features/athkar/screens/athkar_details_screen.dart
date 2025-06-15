@@ -25,12 +25,18 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen> {
   }
 
   Future<void> _load() async {
-    final cat = await _service.getCategoryById(widget.categoryId);
-    if (!mounted) return;
-    setState(() {
-      _category = cat;
-      _loading = false;
-    });
+    try {
+      final cat = await _service.getCategoryById(widget.categoryId);
+      if (!mounted) return;
+      setState(() {
+        _category = cat;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      context.showErrorSnackBar('تعذر تحميل بيانات الأذكار');
+    }
   }
 
   @override

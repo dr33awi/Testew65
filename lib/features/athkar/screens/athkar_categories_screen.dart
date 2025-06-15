@@ -28,7 +28,17 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar.simple(title: 'الأذكار'),
+      appBar: CustomAppBar.simple(
+        title: 'الأذكار',
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_active_outlined),
+            tooltip: 'إعدادات الإشعارات',
+            onPressed: () =>
+                Navigator.pushNamed(context, AppRouter.notificationSettings),
+          ),
+        ],
+      ),
       body: FutureBuilder<List<AthkarCategory>>(
         future: _futureCategories,
         builder: (context, snapshot) {
