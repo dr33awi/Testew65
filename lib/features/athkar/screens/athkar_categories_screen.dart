@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../app/themes/widgets/core/app_loading.dart';
+import '../../../app/routes/app_router.dart';
 import '../services/athkar_service.dart';
 import '../models/athkar_model.dart';
 
@@ -69,7 +70,11 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
       borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
       child: InkWell(
         onTap: () {
-          // Future feature: open list of athkar
+          Navigator.pushNamed(
+            context,
+            AppRouter.athkarDetails,
+            arguments: cat.id,
+          );
         },
         borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
         child: Container(

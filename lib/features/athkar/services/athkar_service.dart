@@ -14,6 +14,7 @@ class AthkarService {
   final StorageService _storage;
 
   static const String _completedKey = AppConstants.athkarProgressKey;
+  static const String _reminderKey = AppConstants.athkarReminderKey;
 
   List<AthkarCategory>? _categories;
 
@@ -47,11 +48,22 @@ class AthkarService {
     }
   }
 
+  /// الحصول على فئة حسب المعرف
+  Future<AthkarCategory?> getCategoryById(String id) async {
+    final cats = await loadCategories();
+    try {
+      return cats.firstWhere((c) => c.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// جدولة التذكيرات لكل فئة تحوي وقت تنبيه
   Future<void> scheduleCategoryReminders() async {
     final cats = await loadCategories();
+    final enabled = getEnabledReminderCategories();
     for (final cat in cats) {
-      if (cat.notifyTime != null) {
+      if (cat.notifyTime != null && enabled.contains(cat.id)) {
         await NotificationManager.instance.scheduleAthkarReminder(
           categoryId: cat.id,
           categoryName: cat.title,
@@ -73,5 +85,33 @@ class AthkarService {
   /// الفئات المكتملة
   List<String> getCompletedCategories() {
     return _storage.getStringList(_completedKey) ?? [];
+  }
+
+  /// الفئات التي تم تمكين تذكيرها
+  List<String> getEnabledReminderCategories() {
+    return _storage.getStringList(_reminderKey) ?? [];
+  }
+
+  /// تحديث تذكيرات الفئات وجدولتها
+  Future<void> updateReminderSettings(Map<String, bool> enabledMap) async {
+    final enabledIds = enabledMap.entries
+        .where((e) => e.value)
+        .map((e) => e.key)
+        .toList();
+    await _storage.setStringList(_reminderKey, enabledIds);
+
+    final cats = await loadCategories();
+    for (final cat in cats) {
+      if (cat.notifyTime == null) continue;
+      if (enabledIds.contains(cat.id)) {
+        await NotificationManager.instance.scheduleAthkarReminder(
+          categoryId: cat.id,
+          categoryName: cat.title,
+          time: cat.notifyTime!,
+        );
+      } else {
+        await NotificationManager.instance.cancelAthkarReminder(cat.id);
+      }
+    }
   }
 }
