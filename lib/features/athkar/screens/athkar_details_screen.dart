@@ -14,6 +14,7 @@ import '../models/athkar_model.dart';
 import '../widgets/athkar_item_card.dart';
 import '../widgets/athkar_progress_bar.dart';
 import '../widgets/athkar_completion_dialog.dart';
+import '../utils/category_utils.dart';
 
 class AthkarDetailsScreen extends StatefulWidget {
   String categoryId;
@@ -382,7 +383,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
 
   Widget _buildSliverAppBar(BuildContext context, AthkarCategory category) {
     // استخدام ألوان من الثيم بناءً على نوع الفئة
-    final categoryColor = _getCategoryThemeColor(category.id);
+    final categoryColor = CategoryUtils.getCategoryThemeColor(category.id);
     
     return SliverAppBar(
       expandedHeight: 200,
@@ -457,7 +458,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
               // أيقونة الفئة
               Center(
                 child: Icon(
-                  _getCategoryIcon(category.id),
+                  CategoryUtils.getCategoryIcon(category.id),
                   size: 80,
                   color: Colors.white.withValues(alpha: 0.3),
                 ),
@@ -469,37 +470,6 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     );
   }
 
-  // الحصول على أيقونة مناسبة لكل فئة
-  IconData _getCategoryIcon(String categoryId) {
-    switch (categoryId) {
-      case 'morning':
-        return Icons.wb_sunny;
-      case 'evening':
-        return Icons.wb_twilight;
-      case 'sleep':
-        return Icons.nights_stay;
-      case 'wakeup':
-        return Icons.alarm;
-      default:
-        return Icons.auto_awesome;
-    }
-  }
-
-  // الحصول على لون من الثيم بناءً على نوع الفئة
-  Color _getCategoryThemeColor(String categoryId) {
-    switch (categoryId) {
-      case 'morning':
-        return ThemeConstants.primary; // أخضر زيتي
-      case 'evening':
-        return ThemeConstants.primaryDark; // أخضر زيتي داكن
-      case 'sleep':
-        return ThemeConstants.tertiary; // بني دافئ
-      case 'wakeup':
-        return ThemeConstants.accent; // ذهبي دافئ
-      default:
-        return ThemeConstants.primary;
-    }
-  }
 
   Widget _buildFAB(BuildContext context) {
     if (_allCompleted) {
