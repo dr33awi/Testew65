@@ -7,6 +7,9 @@ import '../../features/prayer_times/screens/prayer_times_screen.dart';
 import '../../features/prayer_times/screens/prayer_settings_screen.dart';
 import '../../features/prayer_times/screens/prayer_notifications_settings_screen.dart';
 import 'package:athkar_app/features/qibla/screens/qibla_screen.dart';
+import 'package:athkar_app/features/athkar/screens/athkar_categories_screen.dart';
+import 'package:athkar_app/features/athkar/screens/athkar_details_screen.dart';
+import 'package:athkar_app/features/athkar/screens/notification_settings_screen.dart';
 
 class AppRouter {
   // Main Routes
@@ -47,7 +50,7 @@ class AppRouter {
         return _slideRoute(const PrayerTimesScreen(), settings);
         
       case athkar:
-        return _slideRoute(_buildComingSoonScreen('الأذكار'), settings);
+        return _slideRoute(const AthkarCategoriesScreen(), settings);
         
       case quran:
         return _slideRoute(_buildComingSoonScreen('القرآن الكريم'), settings);
@@ -78,8 +81,15 @@ class AppRouter {
         return _slideRoute(_buildComingSoonScreen('إعدادات التذكيرات'), settings);
         
       case notificationSettings:
-        return _slideRoute(_buildComingSoonScreen('إعدادات الإشعارات'), settings);
-        
+        return _slideRoute(const AthkarNotificationSettingsScreen(), settings);
+
+      case athkarDetails:
+        final id = settings.arguments as String?;
+        if (id == null) {
+          return _fadeRoute(_buildNotFoundScreen(settings.name), settings);
+        }
+        return _slideRoute(AthkarDetailsScreen(categoryId: id), settings);
+
       case prayerSettings:
         return _slideRoute(const PrayerSettingsScreen(), settings);
         

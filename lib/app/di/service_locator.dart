@@ -32,6 +32,7 @@ import '../../core/error/error_handler.dart';
 // خدمات الميزات
 import '../../features/prayer_times/services/prayer_times_service.dart';
 import 'package:athkar_app/features/qibla/services/qibla_service.dart';
+import 'package:athkar_app/features/athkar/services/athkar_service.dart';
 
 final getIt = GetIt.instance;
 
@@ -220,6 +221,16 @@ class ServiceLocator {
           logger: getIt<LoggerService>(),
           storage: getIt<StorageService>(),
           permissionService: getIt<PermissionService>(),
+        ),
+      );
+    }
+
+    // خدمة الأذكار
+    if (!getIt.isRegistered<AthkarService>()) {
+      getIt.registerLazySingleton<AthkarService>(
+        () => AthkarService(
+          logger: getIt<LoggerService>(),
+          storage: getIt<StorageService>(),
         ),
       );
     }
