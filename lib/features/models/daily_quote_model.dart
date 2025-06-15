@@ -1,19 +1,17 @@
-// lib/features/home/models/daily_quote_model.dart
-
 /// نموذج الاقتباس اليومي
 class DailyQuoteModel {
   final String verse;
   final String verseSource;
   final String hadith;
   final String hadithSource;
-  
+
   const DailyQuoteModel({
     required this.verse,
     required this.verseSource,
     required this.hadith,
     required this.hadithSource,
   });
-  
+
   /// إنشاء من JSON
   factory DailyQuoteModel.fromJson(Map<String, dynamic> json) {
     return DailyQuoteModel(
@@ -23,7 +21,7 @@ class DailyQuoteModel {
       hadithSource: json['hadith_source'] ?? '',
     );
   }
-  
+
   /// تحويل إلى JSON
   Map<String, dynamic> toJson() {
     return {
@@ -33,8 +31,8 @@ class DailyQuoteModel {
       'hadith_source': hadithSource,
     };
   }
-  
-  /// نسخ مع تعديل
+
+  /// نسخة معدلة من الكائن
   DailyQuoteModel copyWith({
     String? verse,
     String? verseSource,

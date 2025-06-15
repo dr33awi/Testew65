@@ -19,15 +19,12 @@ class PrayerTimesScreen extends StatefulWidget {
   State<PrayerTimesScreen> createState() => _PrayerTimesScreenState();
 }
 
-class _PrayerTimesScreenState extends State<PrayerTimesScreen>
-    with TickerProviderStateMixin {
+class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   late final LoggerService _logger;
   late final PrayerTimesService _prayerService;
   
   // Controllers
   final _scrollController = ScrollController();
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
   
   // State
   DailyPrayerTimes? _dailyTimes;
@@ -44,7 +41,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
   void initState() {
     super.initState();
     _initializeServices();
-    _setupAnimations();
     _loadPrayerTimes();
   }
 
@@ -72,20 +68,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
         });
       }
     });
-  }
-
-  void _setupAnimations() {
-    _fadeController = AnimationController(
-      duration: ThemeConstants.durationNormal,
-      vsync: this,
-    );
-    
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: ThemeConstants.curveSmooth,
-    );
-    
-    _fadeController.forward();
   }
 
   Future<void> _loadPrayerTimes() async {
@@ -180,7 +162,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
   @override
   void dispose() {
     _scrollController.dispose();
-    _fadeController.dispose();
     _timesSubscription?.cancel();
     _nextPrayerSubscription?.cancel();
     super.dispose();
@@ -211,8 +192,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
           ],
         ),
       ),
-      
-      // تم إزالة زر الإعدادات العائم
     );
   }
 
@@ -264,12 +243,9 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
     return [
       // Header مع الموقع
       SliverToBoxAdapter(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: LocationHeader(
-            location: _dailyTimes!.location,
-            onTap: _requestLocation,
-          ),
+        child: LocationHeader(
+          location: _dailyTimes!.location,
+          onTap: _requestLocation,
         ),
       ),
       
@@ -278,12 +254,9 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(ThemeConstants.space4),
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: NextPrayerCountdown(
-                nextPrayer: _nextPrayer!,
-                currentPrayer: _dailyTimes!.currentPrayer,
-              ),
+            child: NextPrayerCountdown(
+              nextPrayer: _nextPrayer!,
+              currentPrayer: _dailyTimes!.currentPrayer,
             ),
           ),
         ),
@@ -303,22 +276,12 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
               
               return Padding(
                 padding: const EdgeInsets.only(bottom: ThemeConstants.space3),
-                child: AnimationConfiguration.staggeredList(
-                  position: index,
-                  duration: ThemeConstants.durationNormal,
-                  child: SlideAnimation(
-                    verticalOffset: 30.0,
-                    child: FadeInAnimation(
-                      child: PrayerTimeCard(
-                        prayer: prayer,
-                        // إظهار الخلفيات الملونة لجميع الصلوات
-                        forceColored: true,
-                        onNotificationToggle: (enabled) {
-                          _togglePrayerNotification(prayer, enabled);
-                        },
-                      ),
-                    ),
-                  ),
+                child: PrayerTimeCard(
+                  prayer: prayer,
+                  forceColored: true,
+                  onNotificationToggle: (enabled) {
+                    _togglePrayerNotification(prayer, enabled);
+                  },
                 ),
               );
             },

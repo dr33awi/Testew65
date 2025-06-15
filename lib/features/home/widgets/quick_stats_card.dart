@@ -1,11 +1,10 @@
 // lib/features/home/widgets/quick_stats_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:math' as math;
 import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 
-class QuickStatsCard extends StatefulWidget {
+class QuickStatsCard extends StatelessWidget {
   final int dailyProgress;
   final String? lastReadTime;
   final Function(String) onStatTap;
@@ -17,11 +16,6 @@ class QuickStatsCard extends StatefulWidget {
     required this.onStatTap,
   });
 
-  @override
-  State<QuickStatsCard> createState() => _QuickStatsCardState();
-}
-
-class _QuickStatsCardState extends State<QuickStatsCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -61,7 +55,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> {
                             ThemeConstants.accent,
                             ThemeConstants.accentLight,
                           ],
-                          onTap: () => widget.onStatTap('favorites'),
+                          onTap: () => onStatTap('favorites'),
                         ),
                       ),
                       
@@ -77,7 +71,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> {
                             ThemeConstants.tertiary,
                             ThemeConstants.tertiaryLight,
                           ],
-                          onTap: () => widget.onStatTap('achievements'),
+                          onTap: () => onStatTap('achievements'),
                           isStreak: true,
                         ),
                       ),
@@ -117,7 +111,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> {
         ),
         
         TextButton.icon(
-          onPressed: () => widget.onStatTap('all_stats'),
+          onPressed: () => onStatTap('all_stats'),
           icon: Icon(
             Icons.bar_chart_rounded,
             size: ThemeConstants.iconSm,
@@ -155,7 +149,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> {
             child: InkWell(
               onTap: () {
                 HapticFeedback.lightImpact();
-                widget.onStatTap('daily_progress');
+                onStatTap('daily_progress');
               },
               borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
               child: Container(
@@ -197,7 +191,41 @@ class _QuickStatsCardState extends State<QuickStatsCard> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           // مؤشر التقدم الدائري
-                          _buildCircularProgress(),
+                          Container(
+                            width: 90,
+                            height: 90,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withOpacity(0.2),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.3),
+                                width: 2,
+                              ),
+                            ),
+                            child: Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    '$dailyProgress',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    '%',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.8),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                           
                           ThemeConstants.space3.h,
                           
@@ -209,7 +237,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> {
                             ),
                           ),
                           
-                          if (widget.lastReadTime != null) ...[
+                          if (lastReadTime != null) ...[
                             ThemeConstants.space1.h,
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -221,7 +249,7 @@ class _QuickStatsCardState extends State<QuickStatsCard> {
                                 ),
                                 ThemeConstants.space1.w,
                                 Text(
-                                  'آخر قراءة: ${widget.lastReadTime}',
+                                  'آخر قراءة: $lastReadTime',
                                   style: context.labelSmall?.copyWith(
                                     color: Colors.white.withOpacity(0.8),
                                   ),
@@ -238,65 +266,6 @@ class _QuickStatsCardState extends State<QuickStatsCard> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildCircularProgress() {
-    return Container(
-      width: 90,
-      height: 90,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // خلفية المؤشر
-          Container(
-            width: 90,
-            height: 90,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.2),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.3),
-                width: 2,
-              ),
-            ),
-          ),
-          
-          // المؤشر الدائري
-          CustomPaint(
-            size: const Size(90, 90),
-            painter: CircularProgressPainter(
-              progress: widget.dailyProgress / 100,
-              strokeWidth: 8,
-              color: Colors.white,
-              backgroundColor: Colors.transparent,
-            ),
-          ),
-          
-          // النسبة المئوية
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '${widget.dailyProgress}',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: ThemeConstants.bold,
-                ),
-              ),
-              Text(
-                '%',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
-                  fontSize: 14,
-                  fontWeight: ThemeConstants.medium,
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
@@ -400,61 +369,5 @@ class _QuickStatsCardState extends State<QuickStatsCard> {
         ),
       ),
     );
-  }
-}
-
-// رسام المؤشر الدائري
-class CircularProgressPainter extends CustomPainter {
-  final double progress;
-  final double strokeWidth;
-  final Color color;
-  final Color backgroundColor;
-
-  CircularProgressPainter({
-    required this.progress,
-    required this.strokeWidth,
-    required this.color,
-    required this.backgroundColor,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width - strokeWidth) / 2;
-    
-    // رسم الخلفية
-    if (backgroundColor != Colors.transparent) {
-      final backgroundPaint = Paint()
-        ..color = backgroundColor
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth
-        ..strokeCap = StrokeCap.round;
-      
-      canvas.drawCircle(center, radius, backgroundPaint);
-    }
-    
-    // رسم المؤشر
-    final progressPaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-    
-    final sweepAngle = 2 * math.pi * progress;
-    
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -math.pi / 2,
-      sweepAngle,
-      false,
-      progressPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CircularProgressPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
-           oldDelegate.color != color ||
-           oldDelegate.strokeWidth != strokeWidth;
   }
 }

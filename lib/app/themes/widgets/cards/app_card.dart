@@ -1,7 +1,6 @@
 // lib/app/themes/widgets/cards/app_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import '../../theme_constants.dart';
 import '../../core/theme_extensions.dart';
 
@@ -78,7 +77,6 @@ class AppCard extends StatelessWidget {
   final Color? badgeColor;
   final bool isSelected;
   final bool showShadow;
-  final bool animate;
   
   // خصائص خاصة بالأذكار
   final int? currentCount;
@@ -118,7 +116,6 @@ class AppCard extends StatelessWidget {
     this.badgeColor,
     this.isSelected = false,
     this.showShadow = true,
-    this.animate = true,
     this.currentCount,
     this.totalCount,
     this.isFavorite,
@@ -131,23 +128,7 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget card = _buildCard(context);
-    
-    if (animate) {
-      return AnimationConfiguration.synchronized(
-        duration: ThemeConstants.durationNormal,
-        child: SlideAnimation(
-          horizontalOffset: 50,
-          curve: ThemeConstants.curveSmooth,
-          child: FadeInAnimation(
-            curve: ThemeConstants.curveDefault,
-            child: card,
-          ),
-        ),
-      );
-    }
-    
-    return card;
+    return _buildCard(context);
   }
 
   Widget _buildCard(BuildContext context) {

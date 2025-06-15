@@ -1,70 +1,10 @@
 // lib/features/home/widgets/welcome_message.dart
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'dart:math' as math;
 import '../../../app/themes/app_theme.dart';
 
-class WelcomeMessage extends StatefulWidget {
+class WelcomeMessage extends StatelessWidget {
   const WelcomeMessage({super.key});
-
-  @override
-  State<WelcomeMessage> createState() => _WelcomeMessageState();
-}
-
-class _WelcomeMessageState extends State<WelcomeMessage> with TickerProviderStateMixin {
-  late AnimationController _animationController;
-  late AnimationController _iconAnimationController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _iconRotationAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    
-    _animationController = AnimationController(
-      duration: ThemeConstants.durationSlow,
-      vsync: this,
-    );
-    
-    _iconAnimationController = AnimationController(
-      duration: const Duration(seconds: 10),
-      vsync: this,
-    )..repeat();
-    
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: ThemeConstants.curveOvershoot,
-    ));
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: ThemeConstants.curveSmooth,
-    ));
-    
-    _iconRotationAnimation = Tween<double>(
-      begin: 0,
-      end: 2 * math.pi,
-    ).animate(CurvedAnimation(
-      parent: _iconAnimationController,
-      curve: Curves.linear,
-    ));
-    
-    _animationController.forward();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    _iconAnimationController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,220 +16,149 @@ class _WelcomeMessageState extends State<WelcomeMessage> with TickerProviderStat
     
     return Padding(
       padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          return FadeTransition(
-            opacity: _fadeAnimation,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                  boxShadow: [
-                    BoxShadow(
-                      color: gradient[0].withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      padding: const EdgeInsets.all(ThemeConstants.space5),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: gradient.map((c) => c.withOpacity(0.8)).toList(),
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: Stack(
-                        children: [
-                          // نمط زخرفي في الخلفية
-                          Positioned(
-                            right: -20,
-                            top: -20,
-                            child: _buildDecorativePattern(),
-                          ),
-                          
-                          // المحتوى
-                          Row(
-                            children: [
-                              // الأيقونة المتحركة
-                              _buildAnimatedIcon(icon, gradient),
-                              
-                              ThemeConstants.space4.w,
-                              
-                              // النصوص
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      greeting,
-                                      style: context.headlineSmall?.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: ThemeConstants.bold,
-                                        shadows: [
-                                          Shadow(
-                                            color: Colors.black.withOpacity(0.3),
-                                            offset: const Offset(0, 2),
-                                            blurRadius: 4,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    ThemeConstants.space1.h,
-                                    Text(
-                                      message,
-                                      style: context.bodyLarge?.copyWith(
-                                        color: Colors.white.withOpacity(0.9),
-                                        height: 1.4,
-                                      ),
-                                    ),
-                                    ThemeConstants.space2.h,
-                                    _buildTimeDisplay(),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+          boxShadow: [
+            BoxShadow(
+              color: gradient[0].withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildAnimatedIcon(IconData icon, List<Color> gradient) {
-    return AnimatedBuilder(
-      animation: _iconRotationAnimation,
-      builder: (context, child) {
-        return Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(
-              colors: [
-                Colors.white.withOpacity(0.3),
-                Colors.white.withOpacity(0.1),
-              ],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: gradient[0].withOpacity(0.5),
-                blurRadius: 20,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // خلفية دائرية متحركة
-              Transform.rotate(
-                angle: _iconRotationAnimation.value,
-                child: Container(
-                  width: 70,
-                  height: 70,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.2),
-                      width: 2,
-                    ),
-                  ),
-                ),
-              ),
-              
-              // الأيقونة
-              Icon(
-                icon,
-                color: Colors.white,
-                size: ThemeConstants.iconXl,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildTimeDisplay() {
-    return StreamBuilder(
-      stream: Stream.periodic(const Duration(seconds: 1)),
-      builder: (context, snapshot) {
-        final now = DateTime.now();
-        final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-        final dateStr = _getArabicDate(now);
-        
-        return Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: ThemeConstants.space3,
-                vertical: ThemeConstants.space1,
-              ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+              padding: const EdgeInsets.all(ThemeConstants.space5),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                gradient: LinearGradient(
+                  colors: gradient.map((c) => c.withOpacity(0.8)).toList(),
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1,
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.access_time,
-                    color: Colors.white,
-                    size: ThemeConstants.iconSm,
-                  ),
-                  ThemeConstants.space1.w,
-                  Text(
-                    timeStr,
-                    style: context.labelLarge?.copyWith(
+                  // الأيقونة
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          Colors.white.withOpacity(0.3),
+                          Colors.white.withOpacity(0.1),
+                        ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: gradient[0].withOpacity(0.5),
+                          blurRadius: 20,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      icon,
                       color: Colors.white,
-                      fontWeight: ThemeConstants.bold,
+                      size: ThemeConstants.iconXl,
+                    ),
+                  ),
+                  
+                  ThemeConstants.space4.w,
+                  
+                  // النصوص
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          greeting,
+                          style: context.headlineSmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: ThemeConstants.bold,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withOpacity(0.3),
+                                offset: const Offset(0, 2),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                        ),
+                        ThemeConstants.space1.h,
+                        Text(
+                          message,
+                          style: context.bodyLarge?.copyWith(
+                            color: Colors.white.withOpacity(0.9),
+                            height: 1.4,
+                          ),
+                        ),
+                        ThemeConstants.space2.h,
+                        _buildTimeDisplay(context),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-            ThemeConstants.space2.w,
-            Text(
-              dateStr,
-              style: context.labelMedium?.copyWith(
-                color: Colors.white.withOpacity(0.8),
-              ),
-            ),
-          ],
-        );
-      },
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildDecorativePattern() {
-    return Container(
-      width: 100,
-      height: 100,
-      child: CustomPaint(
-        painter: IslamicStarPainter(
-          color: Colors.white.withOpacity(0.1),
+  Widget _buildTimeDisplay(BuildContext context) {
+    final now = DateTime.now();
+    final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    final dateStr = _getArabicDate(now);
+    
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: ThemeConstants.space3,
+            vertical: ThemeConstants.space1,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.access_time,
+                color: Colors.white,
+                size: ThemeConstants.iconSm,
+              ),
+              ThemeConstants.space1.w,
+              Text(
+                timeStr,
+                style: context.labelLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: ThemeConstants.bold,
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+        ThemeConstants.space2.w,
+        Text(
+          dateStr,
+          style: context.labelMedium?.copyWith(
+            color: Colors.white.withOpacity(0.8),
+          ),
+        ),
+      ],
     );
   }
 
@@ -339,17 +208,17 @@ class _WelcomeMessageState extends State<WelcomeMessage> with TickerProviderStat
 
   List<Color> _getGradientColors(int hour) {
     if (hour < 5) {
-      return [ThemeConstants.primaryDark, ThemeConstants.darkCard]; // ليل
+      return [ThemeConstants.primaryDark, ThemeConstants.darkCard];
     } else if (hour < 8) {
-      return [ThemeConstants.primary, ThemeConstants.primaryLight]; // فجر
+      return [ThemeConstants.primary, ThemeConstants.primaryLight];
     } else if (hour < 12) {
-      return [ThemeConstants.accent, ThemeConstants.accentLight]; // صباح
+      return [ThemeConstants.accent, ThemeConstants.accentLight];
     } else if (hour < 17) {
-      return [ThemeConstants.primaryLight, ThemeConstants.primarySoft]; // ظهر
+      return [ThemeConstants.primaryLight, ThemeConstants.primarySoft];
     } else if (hour < 20) {
-      return [ThemeConstants.tertiary, ThemeConstants.tertiaryLight]; // مغرب
+      return [ThemeConstants.tertiary, ThemeConstants.tertiaryLight];
     } else {
-      return [ThemeConstants.primaryDark, ThemeConstants.primary]; // ليل
+      return [ThemeConstants.primaryDark, ThemeConstants.primary];
     }
   }
 
@@ -369,47 +238,4 @@ class _WelcomeMessageState extends State<WelcomeMessage> with TickerProviderStat
     
     return '$dayName، $day $month';
   }
-}
-
-// رسام النجمة الإسلامية
-class IslamicStarPainter extends CustomPainter {
-  final Color color;
-
-  IslamicStarPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-
-    // رسم نجمة ثمانية
-    final path = Path();
-    for (int i = 0; i < 8; i++) {
-      final angle = (i * math.pi / 4) - math.pi / 2;
-      final x = center.dx + radius * math.cos(angle);
-      final y = center.dy + radius * math.sin(angle);
-      
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
-      }
-      
-      // نقطة داخلية
-      final innerAngle = angle + math.pi / 8;
-      final innerX = center.dx + (radius * 0.5) * math.cos(innerAngle);
-      final innerY = center.dy + (radius * 0.5) * math.sin(innerAngle);
-      path.lineTo(innerX, innerY);
-    }
-    
-    path.close();
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

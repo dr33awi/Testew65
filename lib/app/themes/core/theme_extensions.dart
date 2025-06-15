@@ -85,10 +85,11 @@ extension ThemeExtension on BuildContext {
 
 /// Extensions للألوان - موحدة من جميع الملفات
 extension ColorExtensions on Color {
-  /// إنشاء لون بشفافية
-  Color withOpacity(double opacity) {
-    assert(opacity >= 0.0 && opacity <= 1.0);
-    return withValues(alpha: opacity);
+  /// إنشاء لون بشفافية - تم إصلاحها لاستخدام withValues بدلاً من withOpacity المكرر
+  Color withOpacitySafe(double opacity) {
+    // التأكد من أن القيمة في النطاق الصحيح
+    final safeOpacity = opacity.clamp(0.0, 1.0);
+    return withValues(alpha: safeOpacity);
   }
 
   /// تفتيح اللون
@@ -126,7 +127,8 @@ extension ColorExtensions on Color {
           : darken(strength - 0.5);
     }
     
-    return MaterialColor(toARGB32(), swatch);
+    // استخدام value بدلاً من toARGB32() غير الموجود
+    return MaterialColor(value, swatch);
   }
 }
 
@@ -268,11 +270,15 @@ extension WidgetExtensions on Widget {
     child: this,
   );
 
-  /// إضافة تأثير تلاشي
-  Widget opacity(double opacity) => Opacity(
-    opacity: opacity,
-    child: this,
-  );
+  /// إضافة تأثير تلاشي - مع التأكد من صحة قيمة opacity
+  Widget opacity(double opacity) {
+    // التأكد من أن القيمة في النطاق الصحيح
+    final safeOpacity = opacity.clamp(0.0, 1.0);
+    return Opacity(
+      opacity: safeOpacity,
+      child: this,
+    );
+  }
 
   /// إضافة دوران
   Widget rotate(double angle) => Transform.rotate(

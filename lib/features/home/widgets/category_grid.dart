@@ -15,17 +15,13 @@ class CategoryGrid extends StatefulWidget {
   State<CategoryGrid> createState() => _CategoryGridState();
 }
 
-class _CategoryGridState extends State<CategoryGrid> with TickerProviderStateMixin {
+class _CategoryGridState extends State<CategoryGrid> {
   late final LoggerService _logger;
-  final List<AnimationController> _animationControllers = [];
-  final List<Animation<double>> _scaleAnimations = [];
-  int _selectedIndex = -1;
 
   final List<CategoryItem> _categories = [
     CategoryItem(
       id: 'prayer_times',
       title: 'مواقيت الصلاة',
-      subtitle: 'أوقات الصلوات الخمس',
       icon: Icons.mosque,
       gradient: [ThemeConstants.primary, ThemeConstants.primaryLight],
       routeName: AppRouter.prayerTimes,
@@ -34,7 +30,6 @@ class _CategoryGridState extends State<CategoryGrid> with TickerProviderStateMix
     CategoryItem(
       id: 'athkar',
       title: 'الأذكار',
-      subtitle: 'أذكار الصباح والمساء',
       icon: Icons.auto_awesome,
       gradient: [ThemeConstants.accent, ThemeConstants.accentLight],
       routeName: AppRouter.athkar,
@@ -43,7 +38,6 @@ class _CategoryGridState extends State<CategoryGrid> with TickerProviderStateMix
     CategoryItem(
       id: 'quran',
       title: 'القرآن الكريم',
-      subtitle: 'تلاوة وحفظ وتدبر',
       icon: Icons.book,
       gradient: [ThemeConstants.tertiary, ThemeConstants.tertiaryLight],
       routeName: '/quran',
@@ -52,7 +46,6 @@ class _CategoryGridState extends State<CategoryGrid> with TickerProviderStateMix
     CategoryItem(
       id: 'qibla',
       title: 'اتجاه القبلة',
-      subtitle: 'البوصلة الذكية',
       icon: Icons.navigation,
       gradient: [ThemeConstants.primaryDark, ThemeConstants.primary],
       routeName: AppRouter.qibla,
@@ -61,7 +54,6 @@ class _CategoryGridState extends State<CategoryGrid> with TickerProviderStateMix
     CategoryItem(
       id: 'tasbih',
       title: 'المسبحة الرقمية',
-      subtitle: 'عداد التسبيح الذكي',
       icon: Icons.radio_button_checked,
       gradient: [ThemeConstants.accentDark, ThemeConstants.accent],
       routeName: '/tasbih',
@@ -70,7 +62,6 @@ class _CategoryGridState extends State<CategoryGrid> with TickerProviderStateMix
     CategoryItem(
       id: 'dua',
       title: 'الأدعية',
-      subtitle: 'أدعية من القرآن والسنة',
       icon: Icons.pan_tool,
       gradient: [ThemeConstants.tertiaryDark, ThemeConstants.tertiary],
       routeName: '/dua',
@@ -82,61 +73,10 @@ class _CategoryGridState extends State<CategoryGrid> with TickerProviderStateMix
   void initState() {
     super.initState();
     _logger = context.getService<LoggerService>();
-    
-    // إنشاء متحكمات الحركة لكل بطاقة
-    for (int i = 0; i < _categories.length; i++) {
-      final controller = AnimationController(
-        duration: Duration(milliseconds: 600 + (i * 100)),
-        vsync: this,
-      );
-      
-      final animation = Tween<double>(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(CurvedAnimation(
-        parent: controller,
-        curve: ThemeConstants.curveOvershoot,
-      ));
-      
-      _animationControllers.add(controller);
-      _scaleAnimations.add(animation);
-      
-      // بدء الحركة بتأخير تدريجي
-      Future.delayed(Duration(milliseconds: 100 * i), () {
-        if (mounted) {
-          controller.forward();
-        }
-      });
-    }
   }
 
-  @override
-  void dispose() {
-    for (var controller in _animationControllers) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
-
-  void _onCategoryTap(CategoryItem category, int index) {
+  void _onCategoryTap(CategoryItem category) {
     HapticFeedback.lightImpact();
-    
-    setState(() {
-      _selectedIndex = index;
-    });
-    
-    // حركة النقر
-    _animationControllers[index].reverse().then((_) {
-      _animationControllers[index].forward();
-    });
-    
-    Future.delayed(const Duration(milliseconds: 200), () {
-      if (mounted) {
-        setState(() {
-          _selectedIndex = -1;
-        });
-      }
-    });
     
     _logger.logEvent('category_tapped', parameters: {
       'category_id': category.id,
@@ -162,24 +102,15 @@ class _CategoryGridState extends State<CategoryGrid> with TickerProviderStateMix
           crossAxisCount: 2,
           mainAxisSpacing: ThemeConstants.space3,
           crossAxisSpacing: ThemeConstants.space3,
-          childAspectRatio: 1.0,
+          childAspectRatio: 1.3,
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             if (index >= _categories.length) return null;
             
-            return AnimatedBuilder(
-              animation: _scaleAnimations[index],
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _scaleAnimations[index].value,
-                  child: _buildCategoryItem(
-                    context,
-                    _categories[index],
-                    index,
-                  ),
-                );
-              },
+            return _buildCategoryItem(
+              context,
+              _categories[index],
             );
           },
           childCount: _categories.length,
@@ -188,242 +119,154 @@ class _CategoryGridState extends State<CategoryGrid> with TickerProviderStateMix
     );
   }
 
-  Widget _buildCategoryItem(BuildContext context, CategoryItem category, int index) {
-    final isSelected = _selectedIndex == index;
-    
-    return AnimatedContainer(
-      duration: ThemeConstants.durationNormal,
-      transform: Matrix4.identity()
-        ..setEntry(3, 2, 0.001)
-        ..rotateX(isSelected ? 0.05 : 0.0)
-        ..rotateY(isSelected ? -0.05 : 0.0)
-        ..scale(isSelected ? 0.95 : 1.0),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-          boxShadow: [
-            BoxShadow(
-              color: category.gradient[0].withOpacity(0.3),
-              blurRadius: isSelected ? 15 : 20,
-              offset: Offset(0, isSelected ? 5 : 10),
-              spreadRadius: isSelected ? -5 : -5,
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: () => _onCategoryTap(category, index),
-                borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        category.gradient[0].withOpacity(0.9),
-                        category.gradient[1].withOpacity(0.8),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.2),
-                      width: 1,
-                    ),
+  Widget _buildCategoryItem(BuildContext context, CategoryItem category) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        boxShadow: [
+          BoxShadow(
+            color: category.gradient[0].withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+            spreadRadius: -5,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => _onCategoryTap(category),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      category.gradient[0].withOpacity(0.9),
+                      category.gradient[1].withOpacity(0.8),
+                    ],
                   ),
-                  child: Stack(
-                    children: [
-                      // نمط زخرفي في الخلفية
-                      Positioned.fill(
-                        child: CustomPaint(
-                          painter: CategoryPatternPainter(
-                            color: Colors.white.withOpacity(0.1),
-                            pattern: category.pattern,
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    // نمط زخرفي في الخلفية
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: CategoryPatternPainter(
+                          color: Colors.white.withOpacity(0.1),
+                          pattern: category.pattern,
+                        ),
+                      ),
+                    ),
+                    
+                    // تأثير الإضاءة
+                    Positioned(
+                      top: -30,
+                      right: -30,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              Colors.white.withOpacity(0.15),
+                              Colors.white.withOpacity(0.0),
+                            ],
                           ),
                         ),
                       ),
-                      
-                      // تأثير الإضاءة
-                      Positioned(
-                        top: -50,
-                        right: -50,
-                        child: Container(
-                          width: 150,
-                          height: 150,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                Colors.white.withOpacity(0.2),
-                                Colors.white.withOpacity(0.0),
+                    ),
+                    
+                    // المحتوى
+                    Padding(
+                      padding: const EdgeInsets.all(ThemeConstants.space3),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // الأيقونة بدون أنيميشن
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withOpacity(0.2),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.3),
+                                width: 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              category.icon,
+                              color: Colors.white,
+                              size: 26,
+                            ),
+                          ),
+                          
+                          ThemeConstants.space2.h,
+                          
+                          // العنوان
+                          Text(
+                            category.title,
+                            style: context.titleMedium?.copyWith(
+                              color: Colors.white,
+                              fontWeight: ThemeConstants.bold,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  offset: const Offset(0, 2),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          
+                          ThemeConstants.space2.h,
+                          
+                          // مؤشر التقدم المكتمل
+                          Container(
+                            height: 3,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.5),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 0),
+                                ),
                               ],
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                      
-                      // المحتوى
-                      Padding(
-                        padding: const EdgeInsets.all(ThemeConstants.space4),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // الأيقونة
-                            _buildCategoryIcon(category, index),
-                            
-                            ThemeConstants.space3.h,
-                            
-                            // العنوان
-                            Text(
-                              category.title,
-                              style: context.titleLarge?.copyWith(
-                                color: Colors.white,
-                                fontWeight: ThemeConstants.bold,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black.withOpacity(0.3),
-                                    offset: const Offset(0, 2),
-                                    blurRadius: 4,
-                                  ),
-                                ],
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            
-                            ThemeConstants.space1.h,
-                            
-                            // الوصف
-                            Text(
-                              category.subtitle,
-                              style: context.bodySmall?.copyWith(
-                                color: Colors.white.withOpacity(0.9),
-                                height: 1.2,
-                              ),
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            
-                            ThemeConstants.space3.h,
-                            
-                            // مؤشر التقدم أو الحالة
-                            _buildCategoryIndicator(category),
-                          ],
-                        ),
-                      ),
-                      
-                      // أيقونة السهم
-                      Positioned(
-                        bottom: ThemeConstants.space3,
-                        left: ThemeConstants.space3,
-                        child: Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            size: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildCategoryIcon(CategoryItem category, int index) {
-    return TweenAnimationBuilder<double>(
-      duration: const Duration(seconds: 2),
-      tween: Tween(begin: 0, end: 1),
-      builder: (context, value, child) {
-        return Container(
-          width: 70,
-          height: 70,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withOpacity(0.2),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.3),
-              width: 2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // حلقة دائرية متحركة
-              CustomPaint(
-                size: const Size(70, 70),
-                painter: CircularProgressPainter(
-                  progress: value,
-                  color: Colors.white.withOpacity(0.3),
-                ),
-              ),
-              
-              // الأيقونة
-              Icon(
-                category.icon,
-                color: Colors.white,
-                size: 32,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCategoryIndicator(CategoryItem category) {
-    // يمكن استخدام هذا لعرض معلومات إضافية مثل عدد الأذكار المقروءة
-    return Container(
-      height: 4,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(2),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 7, // نسبة الإنجاز المؤقتة
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(2),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.white.withOpacity(0.5),
-                    blurRadius: 4,
-                    offset: const Offset(0, 0),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Container(),
-          ),
-        ],
       ),
     );
   }
@@ -433,7 +276,6 @@ class _CategoryGridState extends State<CategoryGrid> with TickerProviderStateMix
 class CategoryItem {
   final String id;
   final String title;
-  final String subtitle;
   final IconData icon;
   final List<Color> gradient;
   final String? routeName;
@@ -442,7 +284,6 @@ class CategoryItem {
   const CategoryItem({
     required this.id,
     required this.title,
-    required this.subtitle,
     required this.icon,
     required this.gradient,
     this.routeName,
@@ -535,16 +376,16 @@ class CategoryPatternPainter extends CustomPainter {
 
   void _drawCompassPattern(Canvas canvas, Size size, Paint paint) {
     final center = Offset(size.width * 0.8, size.height * 0.3);
-    canvas.drawCircle(center, 25, paint);
+    canvas.drawCircle(center, 20, paint);
     for (int i = 0; i < 4; i++) {
       final angle = (i * math.pi / 2);
       final start = Offset(
-        center.dx + 15 * math.cos(angle),
-        center.dy + 15 * math.sin(angle),
+        center.dx + 10 * math.cos(angle),
+        center.dy + 10 * math.sin(angle),
       );
       final end = Offset(
-        center.dx + 25 * math.cos(angle),
-        center.dy + 25 * math.sin(angle),
+        center.dx + 20 * math.cos(angle),
+        center.dy + 20 * math.sin(angle),
       );
       canvas.drawLine(start, end, paint);
     }
@@ -583,40 +424,4 @@ class CategoryPatternPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-// رسام مؤشر التقدم الدائري
-class CircularProgressPainter extends CustomPainter {
-  final double progress;
-  final Color color;
-
-  CircularProgressPainter({
-    required this.progress,
-    required this.color,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-    
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-    
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius - 2),
-      -math.pi / 2,
-      2 * math.pi * progress,
-      false,
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CircularProgressPainter oldDelegate) {
-    return oldDelegate.progress != progress;
-  }
 }
