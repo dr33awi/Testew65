@@ -10,7 +10,6 @@ import '../../../core/infrastructure/services/notifications/notification_manager
 import '../services/athkar_service.dart';
 import '../models/athkar_model.dart';
 import '../widgets/athkar_category_card.dart';
-import '../widgets/athkar_stats_card.dart';
 
 class AthkarCategoriesScreen extends StatefulWidget {
   const AthkarCategoriesScreen({super.key});
@@ -28,8 +27,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
   late Future<List<AthkarCategory>> _futureCategories;
   final Map<String, int> _progress = {};
   bool _notificationsEnabled = false;
-  int _todayCompleted = 0;
-  int _streak = 0;
 
   @override
   void initState() {
@@ -49,7 +46,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     super.didChangeDependencies();
     // تحديث البيانات عند العودة من صفحة التفاصيل
     _loadProgress();
-    _loadStats();
   }
 
   @override
@@ -62,7 +58,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     _futureCategories = _service.loadCategories();
     _checkNotificationPermission();
     _loadProgress();
-    _loadStats();
     _animationController.forward();
   }
 
@@ -95,22 +90,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
       }
     } catch (e) {
       debugPrint('Error loading progress: $e');
-    }
-  }
-
-  Future<void> _loadStats() async {
-    try {
-      final completed = await _service.getCompletedCategoriesToday();
-      final currentStreak = await _service.getStreak();
-      
-      if (mounted) {
-        setState(() {
-          _todayCompleted = completed;
-          _streak = currentStreak;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading stats: $e');
     }
   }
 
@@ -148,41 +127,13 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
       body: RefreshIndicator(
         onRefresh: () async {
           await _loadProgress();
-          await _loadStats();
         },
         child: CustomScrollView(
           slivers: [
             // AppBar مخصص مع ألوان الثيم
             _buildSliverAppBar(context),
             
-            // إحصائيات الأذكار
-            SliverToBoxAdapter(
-              child: AnimatedBuilder(
-                animation: _animationController,
-                builder: (context, child) {
-                  return SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0, -0.5),
-                      end: Offset.zero,
-                    ).animate(CurvedAnimation(
-                      parent: _animationController,
-                      curve: ThemeConstants.curveDefault,
-                    )),
-                    child: FadeTransition(
-                      opacity: _animationController,
-                      child: AthkarStatsCard(
-                        totalCategories: 4,
-                        completedToday: _todayCompleted,
-                        streak: _streak,
-                        onViewDetails: () {
-                          Navigator.pushNamed(context, AppRouter.progress);
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+
             
             // العنوان
             SliverToBoxAdapter(
@@ -417,7 +368,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     ).then((_) {
       // تحديث البيانات عند العودة
       _loadProgress();
-      _loadStats();
     });
   }
 

@@ -1,5 +1,6 @@
 // lib/features/athkar/models/athkar_model.dart
 import 'package:flutter/material.dart';
+import '../utils/category_utils.dart';
 
 /// نموذج الذكر الفردي
 class AthkarItem {
@@ -62,31 +63,7 @@ class AthkarCategory {
   }
 
   static IconData _iconFromString(String data, String categoryId) {
-    // استخدام أيقونات مناسبة بناءً على ID الفئة
-    switch (categoryId) {
-      case 'morning':
-        return Icons.wb_sunny;
-      case 'evening':
-        return Icons.wb_twilight;
-      case 'sleep':
-        return Icons.nights_stay;
-      case 'wakeup':
-        return Icons.alarm;
-      default:
-        // إذا كان هناك أيقونة محددة في البيانات
-        switch (data) {
-          case 'Icons.wb_sunny':
-            return Icons.wb_sunny;
-          case 'Icons.nights_stay':
-            return Icons.nights_stay;
-          case 'Icons.nightlight_round':
-            return Icons.nightlight_round;
-          case 'Icons.bedtime':
-            return Icons.bedtime;
-          default:
-            return Icons.auto_awesome;
-        }
-    }
+    return CategoryUtils.getCategoryIcon(categoryId);
   }
 
   static Color _colorFromHex(String hex) {

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/themes/widgets/animations/animated_press.dart';
 import '../models/athkar_model.dart';
+import '../utils/category_utils.dart';
 
 class AthkarCategoryCard extends StatelessWidget {
   final AthkarCategory category;
@@ -24,7 +25,7 @@ class AthkarCategoryCard extends StatelessWidget {
     final isCompleted = progress >= 100;
     
     // استخدام ألوان الثيم بناءً على نوع الفئة
-    final themeColor = _getCategoryThemeColor(category.id);
+    final themeColor = CategoryUtils.getCategoryThemeColor(category.id);
     
     return AnimatedPress(
       onTap: onTap,
@@ -78,7 +79,7 @@ class AthkarCategoryCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                         ),
                         child: Icon(
-                          _getCategoryIcon(category.id),
+                          CategoryUtils.getCategoryIcon(category.id),
                           color: Colors.white,
                           size: ThemeConstants.iconMd,
                         ),
@@ -204,37 +205,6 @@ class AthkarCategoryCard extends StatelessWidget {
     );
   }
   
-  // الحصول على أيقونة مناسبة لكل فئة
-  IconData _getCategoryIcon(String categoryId) {
-    switch (categoryId) {
-      case 'morning':
-        return Icons.wb_sunny;
-      case 'evening':
-        return Icons.wb_twilight;
-      case 'sleep':
-        return Icons.nights_stay;
-      case 'wakeup':
-        return Icons.alarm;
-      default:
-        return Icons.auto_awesome;
-    }
-  }
-  
-  // الحصول على لون من الثيم بناءً على نوع الفئة
-  Color _getCategoryThemeColor(String categoryId) {
-    switch (categoryId) {
-      case 'morning':
-        return ThemeConstants.primary; // أخضر زيتي
-      case 'evening':
-        return ThemeConstants.primaryDark; // أخضر زيتي داكن
-      case 'sleep':
-        return ThemeConstants.tertiary; // بني دافئ
-      case 'wakeup':
-        return ThemeConstants.accent; // ذهبي دافئ
-      default:
-        return ThemeConstants.primary;
-    }
-  }
 }
 
 // زر التنبيه
