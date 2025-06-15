@@ -8,7 +8,6 @@ import '../../../core/infrastructure/services/notifications/notification_manager
 import '../../../core/infrastructure/services/notifications/models/notification_models.dart';
 import '../models/athkar_model.dart';
 import '../models/athkar_progress.dart';
-import '../models/athkar_stats.dart';
 
 /// خدمة شاملة لإدارة الأذكار
 class AthkarService {
@@ -20,14 +19,10 @@ class AthkarService {
   static const String _progressKey = AppConstants.athkarProgressKey;
   static const String _reminderKey = AppConstants.athkarReminderKey;
   static const String _favoritesKey = '${AppConstants.favoritesKey}_athkar';
-  static const String _statsKey = 'athkar_stats';
-  static const String _streakKey = 'athkar_streak';
-  static const String _lastCompletedKey = 'athkar_last_completed';
 
   // كاش البيانات
   List<AthkarCategory>? _categories;
   final Map<String, AthkarProgress> _progressCache = {};
-  AthkarStats? _statsCache;
 
   AthkarService({
     required LoggerService logger,
@@ -156,8 +151,6 @@ class AthkarService {
       // تحديث الكاش
       _progressCache[categoryId] = progress;
 
-      // تحديث الإحصائيات
-      await _updateStats(categoryId);
 
       _logger.debug(
         message: '[AthkarService] تم تحديث التقدم',
@@ -369,129 +362,7 @@ class AthkarService {
     return getFavoriteItems().contains(key);
   }
 
-  // ==================== الإحصائيات ====================
 
-  /// الحصول على إحصائيات الأذكار
-  Future<AthkarStats> getStats() async {
-    // التحقق من الكاش
-    if (_statsCache != null) {
-      return _statsCache!;
-    }
-
-    // تحميل من التخزين
-    final data = _storage.getMap(_statsKey);
-    if (data != null) {
-      _statsCache = AthkarStats.fromJson(data);
-      return _statsCache!;
-    }
-
-    // إنشاء إحصائيات جديدة
-    _statsCache = AthkarStats(
-      totalCompleted: 0,
-      dailyStats: {},
-      categoryStats: {},
-      lastUpdated: DateTime.now(),
-    );
-    
-    return _statsCache!;
-  }
-
-  /// تحديث الإحصائيات
-  Future<void> _updateStats(String categoryId) async {
-    try {
-      final stats = await getStats();
-      final today = DateTime.now().toIso8601String().split('T')[0];
-
-      // تحديث الإحصائيات اليومية
-      final dailyCount = stats.dailyStats[today] ?? 0;
-      stats.dailyStats[today] = dailyCount + 1;
-
-      // تحديث إحصائيات الفئة
-      final categoryCount = stats.categoryStats[categoryId] ?? 0;
-      stats.categoryStats[categoryId] = categoryCount + 1;
-
-      // تحديث الإجمالي
-      stats.totalCompleted++;
-      stats.lastUpdated = DateTime.now();
-
-      // حفظ
-      await _storage.setMap(_statsKey, stats.toJson());
-      _statsCache = stats;
-
-      // تحديث سلسلة الأيام
-      await _updateStreak();
-    } catch (e) {
-      _logger.error(
-        message: '[AthkarService] فشل تحديث الإحصائيات',
-        error: e,
-      );
-    }
-  }
-
-  /// الحصول على سلسلة الأيام المتتالية
-  Future<int> getStreak() async {
-    return _storage.getInt(_streakKey) ?? 0;
-  }
-
-  /// تحديث سلسلة الأيام
-  Future<void> _updateStreak() async {
-    try {
-      final lastCompleted = _storage.getString(_lastCompletedKey);
-      final today = DateTime.now().toIso8601String().split('T')[0];
-      
-      if (lastCompleted == null) {
-        // أول يوم
-        await _storage.setInt(_streakKey, 1);
-        await _storage.setString(_lastCompletedKey, today);
-      } else if (lastCompleted == today) {
-        // نفس اليوم، لا تغيير
-        return;
-      } else {
-        // التحقق من الاستمرارية
-        final lastDate = DateTime.parse(lastCompleted);
-        final difference = DateTime.now().difference(lastDate).inDays;
-        
-        if (difference == 1) {
-          // يوم متتالي
-          final streak = await getStreak();
-          await _storage.setInt(_streakKey, streak + 1);
-        } else {
-          // انقطاع، إعادة البدء
-          await _storage.setInt(_streakKey, 1);
-        }
-        
-        await _storage.setString(_lastCompletedKey, today);
-      }
-    } catch (e) {
-      _logger.error(
-        message: '[AthkarService] فشل تحديث سلسلة الأيام',
-        error: e,
-      );
-    }
-  }
-
-  /// الحصول على عدد الفئات المكتملة اليوم
-  Future<int> getCompletedCategoriesToday() async {
-    try {
-      final categories = await loadCategories();
-      int completed = 0;
-
-      for (final category in categories) {
-        final percentage = await getCategoryCompletionPercentage(category.id);
-        if (percentage >= 100) {
-          completed++;
-        }
-      }
-
-      return completed;
-    } catch (e) {
-      _logger.error(
-        message: '[AthkarService] فشل حساب الفئات المكتملة',
-        error: e,
-      );
-      return 0;
-    }
-  }
 
   // ==================== البحث ====================
 
@@ -562,17 +433,11 @@ class AthkarService {
         await resetCategoryProgress(category.id);
       }
 
-      // مسح الإحصائيات
-      await _storage.remove(_statsKey);
-      await _storage.remove(_streakKey);
-      await _storage.remove(_lastCompletedKey);
-
       // مسح المفضلة
       await _storage.remove(_favoritesKey);
 
       // مسح الكاش
       _progressCache.clear();
-      _statsCache = null;
 
       _logger.info(message: '[AthkarService] تم مسح جميع البيانات');
     } catch (e) {
@@ -588,7 +453,6 @@ class AthkarService {
   void dispose() {
     _progressCache.clear();
     _categories = null;
-    _statsCache = null;
     _logger.debug(message: '[AthkarService] تم التنظيف');
   }
 }
