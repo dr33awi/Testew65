@@ -314,7 +314,7 @@ ${_category!.athkar.map((item) => '✓ ${item.text.truncate(50)}').join('\n')}
 
   Widget _buildSliverAppBar(BuildContext context, AthkarCategory category) {
     // استخدام ألوان من الثيم بناءً على نوع الفئة
-    final categoryColor = _getCategoryThemeColor(category.id);
+    final categoryColor = ThemeConstants.getPrayerColor(category.id);
     
     return SliverAppBar(
       expandedHeight: 200,

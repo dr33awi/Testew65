@@ -203,6 +203,22 @@ class AthkarCategoryCard extends StatelessWidget {
       ),
     );
   }
+  
+  // الحصول على لون من الثيم بناءً على نوع الفئة
+  Color _getCategoryThemeColor(String categoryId) {
+    switch (categoryId) {
+      case 'morning':
+        return ThemeConstants.primary; // أخضر زيتي
+      case 'evening':
+        return ThemeConstants.primaryDark; // أخضر زيتي داكن
+      case 'sleep':
+        return ThemeConstants.tertiary; // بني دافئ
+      case 'wakeup':
+        return ThemeConstants.accent; // ذهبي دافئ
+      default:
+        return ThemeConstants.primary;
+    }
+  }
 }
 
 // زر التنبيه
