@@ -50,7 +50,7 @@ class AthkarCategoryCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // نمط في الخلفية
+            // نمط في الخلفية - خطوط بسيطة بدون فقاعات
             Positioned.fill(
               child: CustomPaint(
                 painter: _PatternPainter(
@@ -78,7 +78,7 @@ class AthkarCategoryCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                         ),
                         child: Icon(
-                          category.icon,
+                          _getCategoryIcon(category.id),
                           color: Colors.white,
                           size: ThemeConstants.iconMd,
                         ),
@@ -193,7 +193,7 @@ class AthkarCategoryCard extends StatelessWidget {
                   ),
                   child: Icon(
                     Icons.check,
-                    color: category.color,
+                    color: themeColor,
                     size: ThemeConstants.iconSm,
                   ),
                 ),
@@ -202,6 +202,22 @@ class AthkarCategoryCard extends StatelessWidget {
         ),
       ),
     );
+  }
+  
+  // الحصول على أيقونة مناسبة لكل فئة
+  IconData _getCategoryIcon(String categoryId) {
+    switch (categoryId) {
+      case 'morning':
+        return Icons.wb_sunny;
+      case 'evening':
+        return Icons.wb_twilight;
+      case 'sleep':
+        return Icons.nights_stay;
+      case 'wakeup':
+        return Icons.alarm;
+      default:
+        return Icons.auto_awesome;
+    }
   }
   
   // الحصول على لون من الثيم بناءً على نوع الفئة
@@ -319,7 +335,7 @@ class _ProgressBar extends StatelessWidget {
   }
 }
 
-// رسام النمط
+// رسام النمط - بدون فقاعات
 class _PatternPainter extends CustomPainter {
   final Color color;
 
@@ -329,28 +345,19 @@ class _PatternPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = color
-      ..style = PaintingStyle.fill;
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
 
-    const radius = 40.0;
+    // رسم خطوط مائلة بسيطة
+    const spacing = 20.0;
     
-    // رسم دوائر منتشرة
-    canvas.drawCircle(
-      Offset(size.width * 0.9, size.height * 0.1),
-      radius,
-      paint,
-    );
-    
-    canvas.drawCircle(
-      Offset(size.width * 0.1, size.height * 0.8),
-      radius * 0.7,
-      paint,
-    );
-    
-    canvas.drawCircle(
-      Offset(size.width * 0.5, size.height * 0.5),
-      radius * 0.5,
-      paint..color = color.withValues(alpha: 0.05),
-    );
+    for (double i = -size.width; i < size.width + size.height; i += spacing) {
+      canvas.drawLine(
+        Offset(i, 0),
+        Offset(i + size.height, size.height),
+        paint,
+      );
+    }
   }
 
   @override

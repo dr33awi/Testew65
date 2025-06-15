@@ -28,6 +28,8 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
   late Future<List<AthkarCategory>> _futureCategories;
   final Map<String, int> _progress = {};
   bool _notificationsEnabled = false;
+  int _todayCompleted = 0;
+  int _streak = 0;
 
   @override
   void initState() {
@@ -43,6 +45,14 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // تحديث البيانات عند العودة من صفحة التفاصيل
+    _loadProgress();
+    _loadStats();
+  }
+
+  @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
@@ -52,6 +62,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     _futureCategories = _service.loadCategories();
     _checkNotificationPermission();
     _loadProgress();
+    _loadStats();
     _animationController.forward();
   }
 
@@ -67,7 +78,40 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
   }
 
   Future<void> _loadProgress() async {
-    // TODO: تحميل تقدم المستخدم في كل فئة
+    try {
+      final categories = await _futureCategories;
+      final progressMap = <String, int>{};
+      
+      for (final category in categories) {
+        final percentage = await _service.getCategoryCompletionPercentage(category.id);
+        progressMap[category.id] = percentage;
+      }
+      
+      if (mounted) {
+        setState(() {
+          _progress.clear();
+          _progress.addAll(progressMap);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading progress: $e');
+    }
+  }
+
+  Future<void> _loadStats() async {
+    try {
+      final completed = await _service.getCompletedCategoriesToday();
+      final currentStreak = await _service.getStreak();
+      
+      if (mounted) {
+        setState(() {
+          _todayCompleted = completed;
+          _streak = currentStreak;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading stats: $e');
+    }
   }
 
   Future<void> _requestNotificationPermission() async {
@@ -101,160 +145,151 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      body: CustomScrollView(
-        slivers: [
-          // AppBar مخصص مع ألوان الثيم
-          _buildSliverAppBar(context),
-          
-          // إحصائيات الأذكار
-          SliverToBoxAdapter(
-            child: AnimatedBuilder(
-              animation: _animationController,
-              builder: (context, child) {
-                return SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0, -0.5),
-                    end: Offset.zero,
-                  ).animate(CurvedAnimation(
-                    parent: _animationController,
-                    curve: ThemeConstants.curveDefault,
-                  )),
-                  child: FadeTransition(
-                    opacity: _animationController,
-                    child: AthkarStatsCard(
-                      totalCategories: 4,
-                      completedToday: 2,
-                      streak: 7,
-                      onViewDetails: () {
-                        Navigator.pushNamed(context, AppRouter.progress);
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await _loadProgress();
+          await _loadStats();
+        },
+        child: CustomScrollView(
+          slivers: [
+            // AppBar مخصص مع ألوان الثيم
+            _buildSliverAppBar(context),
+            
+            // إحصائيات الأذكار
+            SliverToBoxAdapter(
+              child: AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0, -0.5),
+                      end: Offset.zero,
+                    ).animate(CurvedAnimation(
+                      parent: _animationController,
+                      curve: ThemeConstants.curveDefault,
+                    )),
+                    child: FadeTransition(
+                      opacity: _animationController,
+                      child: AthkarStatsCard(
+                        totalCategories: 4,
+                        completedToday: _todayCompleted,
+                        streak: _streak,
+                        onViewDetails: () {
+                          Navigator.pushNamed(context, AppRouter.progress);
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            
+            // العنوان
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  ThemeConstants.space4,
+                  ThemeConstants.space4,
+                  ThemeConstants.space4,
+                  ThemeConstants.space2,
+                ),
+                child: Text(
+                  'فئات الأذكار',
+                  style: context.titleLarge?.copyWith(
+                    fontWeight: ThemeConstants.bold,
+                    color: context.textPrimaryColor,
+                  ),
+                ),
+              ),
+            ),
+            
+            // قائمة الفئات
+            FutureBuilder<List<AthkarCategory>>(
+              future: _futureCategories,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return SliverFillRemaining(
+                    child: Center(
+                      child: AppLoading.page(
+                        message: 'جاري تحميل الأذكار...',
+                      ),
+                    ),
+                  );
+                }
+                
+                if (snapshot.hasError) {
+                  return SliverFillRemaining(
+                    child: AppEmptyState.error(
+                      message: 'حدث خطأ في تحميل البيانات',
+                      onRetry: () {
+                        setState(() {
+                          _futureCategories = _service.loadCategories();
+                        });
                       },
+                    ),
+                  );
+                }
+                
+                final categories = snapshot.data ?? [];
+                
+                if (categories.isEmpty) {
+                  return SliverFillRemaining(
+                    child: AppEmptyState.noData(
+                      message: 'لا توجد أذكار متاحة حالياً',
+                    ),
+                  );
+                }
+                
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: ThemeConstants.space4,
+                    vertical: ThemeConstants.space2,
+                  ),
+                  sliver: AnimationLimiter(
+                    child: SliverGrid(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: ThemeConstants.space3,
+                        crossAxisSpacing: ThemeConstants.space3,
+                        childAspectRatio: 0.85,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final category = categories[index];
+                          final progress = _progress[category.id] ?? 0;
+                          
+                          return AnimationConfiguration.staggeredGrid(
+                            position: index,
+                            duration: ThemeConstants.durationNormal,
+                            columnCount: 2,
+                            child: ScaleAnimation(
+                              child: FadeInAnimation(
+                                child: AthkarCategoryCard(
+                                  category: category,
+                                  progress: progress,
+                                  onTap: () => _openCategoryDetails(category),
+                                  onNotificationToggle: _notificationsEnabled
+                                      ? () => _toggleCategoryNotification(category)
+                                      : null,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        childCount: categories.length,
+                      ),
                     ),
                   ),
                 );
               },
             ),
-          ),
-          
-          // العنوان
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                ThemeConstants.space4,
-                ThemeConstants.space4,
-                ThemeConstants.space4,
-                ThemeConstants.space2,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'فئات الأذكار',
-                    style: context.titleLarge?.copyWith(
-                      fontWeight: ThemeConstants.bold,
-                      color: context.textPrimaryColor,
-                    ),
-                  ),
-                  
-                  // زر الفلترة
-                  IconButton(
-                    onPressed: _showFilterOptions,
-                    icon: Icon(
-                      Icons.filter_list_rounded,
-                      color: ThemeConstants.primary,
-                    ),
-                    tooltip: 'ترتيب وفلترة',
-                  ),
-                ],
-              ),
+            
+            // مساحة إضافية
+            const SliverPadding(
+              padding: EdgeInsets.only(bottom: ThemeConstants.space8),
             ),
-          ),
-          
-          // قائمة الفئات
-          FutureBuilder<List<AthkarCategory>>(
-            future: _futureCategories,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return SliverFillRemaining(
-                  child: Center(
-                    child: AppLoading.page(
-                      message: 'جاري تحميل الأذكار...',
-                    ),
-                  ),
-                );
-              }
-              
-              if (snapshot.hasError) {
-                return SliverFillRemaining(
-                  child: AppEmptyState.error(
-                    message: 'حدث خطأ في تحميل البيانات',
-                    onRetry: () {
-                      setState(() {
-                        _futureCategories = _service.loadCategories();
-                      });
-                    },
-                  ),
-                );
-              }
-              
-              final categories = snapshot.data ?? [];
-              
-              if (categories.isEmpty) {
-                return SliverFillRemaining(
-                  child: AppEmptyState.noData(
-                    message: 'لا توجد أذكار متاحة حالياً',
-                  ),
-                );
-              }
-              
-              return SliverPadding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: ThemeConstants.space4,
-                  vertical: ThemeConstants.space2,
-                ),
-                sliver: AnimationLimiter(
-                  child: SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: ThemeConstants.space3,
-                      crossAxisSpacing: ThemeConstants.space3,
-                      childAspectRatio: 0.85,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final category = categories[index];
-                        final progress = _progress[category.id] ?? 0;
-                        
-                        return AnimationConfiguration.staggeredGrid(
-                          position: index,
-                          duration: ThemeConstants.durationNormal,
-                          columnCount: 2,
-                          child: ScaleAnimation(
-                            child: FadeInAnimation(
-                              child: AthkarCategoryCard(
-                                category: category,
-                                progress: progress,
-                                onTap: () => _openCategoryDetails(category),
-                                onNotificationToggle: _notificationsEnabled
-                                    ? () => _toggleCategoryNotification(category)
-                                    : null,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                      childCount: categories.length,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-          
-          // مساحة إضافية
-          const SliverPadding(
-            padding: EdgeInsets.only(bottom: ThemeConstants.space8),
-          ),
-        ],
+          ],
+        ),
       ),
       
       // زر الإشعارات العائم
@@ -328,17 +363,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
         ),
       ),
       actions: [
-        // زر البحث
-        AppBarAction(
-          icon: Icons.search,
-          color: Colors.white,
-          onPressed: () {
-            // TODO: تنفيذ البحث في الأذكار
-            context.showInfoSnackBar('البحث قيد التطوير');
-          },
-          tooltip: 'بحث',
-        ),
-        
         // زر المفضلة
         AppBarAction(
           icon: Icons.favorite_outline,
@@ -390,7 +414,11 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
       context,
       AppRouter.athkarDetails,
       arguments: category.id,
-    );
+    ).then((_) {
+      // تحديث البيانات عند العودة
+      _loadProgress();
+      _loadStats();
+    });
   }
 
   Future<void> _toggleCategoryNotification(AthkarCategory category) async {
@@ -401,8 +429,8 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
       return;
     }
     
-    // TODO: تنفيذ تبديل حالة التنبيه للفئة
-    final isEnabled = false; // TODO: الحصول على الحالة الحالية
+    final enabledIds = _service.getEnabledReminderCategories();
+    final isEnabled = enabledIds.contains(category.id);
     
     if (!isEnabled) {
       await NotificationManager.instance.scheduleAthkarReminder(
@@ -415,218 +443,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
       await NotificationManager.instance.cancelAthkarReminder(category.id);
       context.showInfoSnackBar('تم إيقاف تذكير ${category.title}');
     }
-  }
-
-  void _showFilterOptions() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: context.backgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(ThemeConstants.radiusXl),
-        ),
-      ),
-      builder: (context) => _FilterOptionsSheet(
-        onSortChanged: (sort) {
-          Navigator.pop(context);
-          // TODO: تطبيق الترتيب
-          context.showInfoSnackBar('تم تغيير الترتيب');
-        },
-        onFilterChanged: (filter) {
-          Navigator.pop(context);
-          // TODO: تطبيق الفلترة
-          context.showInfoSnackBar('تم تطبيق الفلتر');
-        },
-      ),
-    );
-  }
-}
-
-// Widget لخيارات الفلترة والترتيب
-class _FilterOptionsSheet extends StatelessWidget {
-  final Function(String) onSortChanged;
-  final Function(String) onFilterChanged;
-
-  const _FilterOptionsSheet({
-    required this.onSortChanged,
-    required this.onFilterChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // المقبض
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: ThemeConstants.space4),
-              decoration: BoxDecoration(
-                color: context.dividerColor,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          
-          // العنوان
-          Text(
-            'الترتيب والفلترة',
-            style: context.titleLarge?.copyWith(
-              color: ThemeConstants.primary,
-            ),
-          ),
-          
-          ThemeConstants.space4.h,
-          
-          // خيارات الترتيب
-          Text(
-            'ترتيب حسب',
-            style: context.titleMedium?.copyWith(
-              fontWeight: ThemeConstants.semiBold,
-              color: ThemeConstants.tertiary,
-            ),
-          ),
-          
-          ThemeConstants.space2.h,
-          
-          _SortOption(
-            title: 'الافتراضي',
-            value: 'default',
-            onTap: onSortChanged,
-          ),
-          
-          _SortOption(
-            title: 'الأكثر استخداماً',
-            value: 'most_used',
-            onTap: onSortChanged,
-          ),
-          
-          _SortOption(
-            title: 'التقدم',
-            value: 'progress',
-            onTap: onSortChanged,
-          ),
-          
-          const Divider(height: ThemeConstants.space6),
-          
-          // خيارات الفلترة
-          Text(
-            'عرض',
-            style: context.titleMedium?.copyWith(
-              fontWeight: ThemeConstants.semiBold,
-              color: ThemeConstants.tertiary,
-            ),
-          ),
-          
-          ThemeConstants.space2.h,
-          
-          _FilterOption(
-            title: 'جميع الأذكار',
-            value: 'all',
-            onTap: onFilterChanged,
-          ),
-          
-          _FilterOption(
-            title: 'المكتملة فقط',
-            value: 'completed',
-            onTap: onFilterChanged,
-          ),
-          
-          _FilterOption(
-            title: 'غير المكتملة',
-            value: 'incomplete',
-            onTap: onFilterChanged,
-          ),
-          
-          ThemeConstants.space4.h,
-        ],
-      ),
-    );
-  }
-}
-
-class _SortOption extends StatelessWidget {
-  final String title;
-  final String value;
-  final Function(String) onTap;
-
-  const _SortOption({
-    required this.title,
-    required this.value,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => onTap(value),
-      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: ThemeConstants.space3,
-          vertical: ThemeConstants.space3,
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.sort,
-              size: ThemeConstants.iconSm,
-              color: ThemeConstants.accent,
-            ),
-            ThemeConstants.space3.w,
-            Text(
-              title,
-              style: context.bodyLarge,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FilterOption extends StatelessWidget {
-  final String title;
-  final String value;
-  final Function(String) onTap;
-
-  const _FilterOption({
-    required this.title,
-    required this.value,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () => onTap(value),
-      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: ThemeConstants.space3,
-          vertical: ThemeConstants.space3,
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.filter_alt_outlined,
-              size: ThemeConstants.iconSm,
-              color: ThemeConstants.accent,
-            ),
-            ThemeConstants.space3.w,
-            Text(
-              title,
-              style: context.bodyLarge,
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 

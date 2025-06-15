@@ -3,6 +3,7 @@ import 'package:athkar_app/app/routes/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../app/themes/widgets/animations/animated_press.dart';
@@ -35,6 +36,7 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
   AthkarCategory? _category;
   final Map<int, int> _counts = {};
   final Set<int> _completedItems = {};
+  List<AthkarItem> _visibleItems = [];
   int _totalProgress = 0;
   bool _loading = true;
   bool _allCompleted = false;
@@ -76,6 +78,7 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
               _completedItems.add(item.id);
             }
           }
+          _updateVisibleItems();
           _calculateProgress();
         }
         _loading = false;
@@ -88,6 +91,15 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
       setState(() => _loading = false);
       context.showErrorSnackBar('حدث خطأ في تحميل الأذكار');
     }
+  }
+
+  void _updateVisibleItems() {
+    if (_category == null) return;
+    
+    // عرض فقط الأذكار غير المكتملة
+    _visibleItems = _category!.athkar
+        .where((item) => !_completedItems.contains(item.id))
+        .toList();
   }
 
   Map<int, int> _loadSavedProgress() {
@@ -134,6 +146,7 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
         if (_counts[item.id]! >= item.count) {
           _completedItems.add(item.id);
           HapticFeedback.mediumImpact();
+          _updateVisibleItems(); // إخفاء الذكر المكتمل
         }
       }
       _calculateProgress();
@@ -154,6 +167,7 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
     setState(() {
       _counts[item.id] = 0;
       _completedItems.remove(item.id);
+      _updateVisibleItems();
       _calculateProgress();
     });
     
@@ -184,8 +198,7 @@ ${_category!.athkar.map((item) => '✓ ${item.text.truncate(50)}').join('\n')}
 تطبيق الأذكار
     ''';
     
-    // TODO: استخدام share_plus لمشاركة النص
-    context.showSuccessSnackBar('تم نسخ النص للمشاركة');
+    await Share.share(text);
   }
 
   void _resetAll() {
@@ -194,8 +207,22 @@ ${_category!.athkar.map((item) => '✓ ${item.text.truncate(50)}').join('\n')}
       _completedItems.clear();
       _allCompleted = false;
       _totalProgress = 0;
+      _updateVisibleItems();
     });
     _saveProgress();
+  }
+
+  Future<void> _shareItem(AthkarItem item) async {
+    final text = '''
+${item.text}
+
+${item.fadl != null ? 'الفضل: ${item.fadl}\n' : ''}
+${item.source != null ? 'المصدر: ${item.source}' : ''}
+
+تطبيق الأذكار
+''';
+    
+    await Share.share(text);
   }
 
   @override
@@ -256,49 +283,90 @@ ${_category!.athkar.map((item) => '✓ ${item.text.truncate(50)}').join('\n')}
           ),
           
           // قائمة الأذكار
-          SliverPadding(
-            padding: const EdgeInsets.all(ThemeConstants.space4),
-            sliver: AnimationLimiter(
-              child: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final item = category.athkar[index];
-                    final currentCount = _counts[item.id] ?? 0;
-                    final isCompleted = _completedItems.contains(item.id);
-                    
-                    return AnimationConfiguration.staggeredList(
-                      position: index,
-                      duration: ThemeConstants.durationNormal,
-                      child: SlideAnimation(
-                        verticalOffset: 50.0,
-                        child: FadeInAnimation(
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              bottom: index < category.athkar.length - 1
-                                  ? ThemeConstants.space3
-                                  : 0,
-                            ),
-                            child: AthkarItemCard(
-                              item: item,
-                              currentCount: currentCount,
-                              isCompleted: isCompleted,
-                              number: index + 1,
-                              color: category.color,
-                              onTap: () => _onItemTap(item),
-                              onLongPress: () => _onItemLongPress(item),
-                              onFavoriteToggle: () => _toggleFavorite(item),
-                              onShare: () => _shareItem(item),
+          if (_visibleItems.isEmpty && _completedItems.isNotEmpty)
+            SliverFillRemaining(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      size: 80,
+                      color: ThemeConstants.success,
+                    ),
+                    ThemeConstants.space4.h,
+                    Text(
+                      'أحسنت! أكملت جميع الأذكار',
+                      style: context.headlineSmall?.copyWith(
+                        color: ThemeConstants.success,
+                        fontWeight: ThemeConstants.bold,
+                      ),
+                    ),
+                    ThemeConstants.space2.h,
+                    Text(
+                      'جعله الله في ميزان حسناتك',
+                      style: context.bodyLarge?.copyWith(
+                        color: context.textSecondaryColor,
+                      ),
+                    ),
+                    ThemeConstants.space6.h,
+                    AppButton.primary(
+                      text: 'البدء من جديد',
+                      icon: Icons.refresh,
+                      onPressed: _resetAll,
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.all(ThemeConstants.space4),
+              sliver: AnimationLimiter(
+                child: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final item = _visibleItems[index];
+                      final currentCount = _counts[item.id] ?? 0;
+                      final isCompleted = _completedItems.contains(item.id);
+                      
+                      // إيجاد الفهرس الأصلي
+                      final originalIndex = category.athkar.indexOf(item);
+                      final number = originalIndex + 1;
+                      
+                      return AnimationConfiguration.staggeredList(
+                        position: index,
+                        duration: ThemeConstants.durationNormal,
+                        child: SlideAnimation(
+                          verticalOffset: 50.0,
+                          child: FadeInAnimation(
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                bottom: index < _visibleItems.length - 1
+                                    ? ThemeConstants.space3
+                                    : 0,
+                              ),
+                              child: AthkarItemCard(
+                                item: item,
+                                currentCount: currentCount,
+                                isCompleted: isCompleted,
+                                number: number,
+                                color: category.color,
+                                onTap: () => _onItemTap(item),
+                                onLongPress: () => _onItemLongPress(item),
+                                onFavoriteToggle: () => _toggleFavorite(item),
+                                onShare: () => _shareItem(item),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  },
-                  childCount: category.athkar.length,
+                      );
+                    },
+                    childCount: _visibleItems.length,
+                  ),
                 ),
               ),
             ),
-          ),
           
           // مساحة إضافية في الأسفل
           const SliverPadding(
@@ -314,7 +382,7 @@ ${_category!.athkar.map((item) => '✓ ${item.text.truncate(50)}').join('\n')}
 
   Widget _buildSliverAppBar(BuildContext context, AthkarCategory category) {
     // استخدام ألوان من الثيم بناءً على نوع الفئة
-    final categoryColor = ThemeConstants.getPrayerColor(category.id);
+    final categoryColor = _getCategoryThemeColor(category.id);
     
     return SliverAppBar(
       expandedHeight: 200,
@@ -389,7 +457,7 @@ ${_category!.athkar.map((item) => '✓ ${item.text.truncate(50)}').join('\n')}
               // أيقونة الفئة
               Center(
                 child: Icon(
-                  category.icon,
+                  _getCategoryIcon(category.id),
                   size: 80,
                   color: Colors.white.withValues(alpha: 0.3),
                 ),
@@ -399,6 +467,22 @@ ${_category!.athkar.map((item) => '✓ ${item.text.truncate(50)}').join('\n')}
         ),
       ),
     );
+  }
+
+  // الحصول على أيقونة مناسبة لكل فئة
+  IconData _getCategoryIcon(String categoryId) {
+    switch (categoryId) {
+      case 'morning':
+        return Icons.wb_sunny;
+      case 'evening':
+        return Icons.wb_twilight;
+      case 'sleep':
+        return Icons.nights_stay;
+      case 'wakeup':
+        return Icons.alarm;
+      default:
+        return Icons.auto_awesome;
+    }
   }
 
   // الحصول على لون من الثيم بناءً على نوع الفئة
@@ -470,7 +554,7 @@ ${_category!.athkar.map((item) => '✓ ${item.text.truncate(50)}').join('\n')}
       builder: (context) => _MoreOptionsSheet(
         onNotificationSettings: () {
           Navigator.pop(context);
-          // TODO: فتح إعدادات التنبيهات
+          Navigator.pushNamed(context, AppRouter.appSettings);
         },
         onTextSize: () {
           Navigator.pop(context);
@@ -483,11 +567,6 @@ ${_category!.athkar.map((item) => '✓ ${item.text.truncate(50)}').join('\n')}
   void _toggleFavorite(AthkarItem item) {
     // TODO: تنفيذ المفضلة
     context.showInfoSnackBar('سيتم إضافة ميزة المفضلة قريباً');
-  }
-
-  void _shareItem(AthkarItem item) {
-    // TODO: مشاركة الذكر
-    context.showSuccessSnackBar('تم نسخ الذكر');
   }
 }
 

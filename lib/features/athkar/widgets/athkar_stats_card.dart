@@ -33,7 +33,7 @@ class AthkarStatsCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // نمط في الخلفية
+          // نمط في الخلفية - بدون فقاعات
           Positioned.fill(
             child: CustomPaint(
               painter: _BackgroundPainter(),
@@ -229,50 +229,31 @@ class _StatItem extends StatelessWidget {
   }
 }
 
+// رسام الخلفية - بدون فقاعات
 class _BackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = Colors.white.withValues(alpha: 0.1)
-      ..style = PaintingStyle.fill;
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
 
-    // رسم أشكال هندسية
-    final path = Path();
+    // رسم خطوط قطرية
+    const spacing = 30.0;
     
-    // شكل في الأعلى اليمين
-    path.moveTo(size.width * 0.7, 0);
-    path.quadraticBezierTo(
-      size.width * 0.9, size.height * 0.1,
-      size.width, size.height * 0.3,
-    );
-    path.lineTo(size.width, 0);
-    path.close();
+    for (double i = -size.height; i < size.width + size.height; i += spacing) {
+      canvas.drawLine(
+        Offset(i, 0),
+        Offset(i - size.height, size.height),
+        paint,
+      );
+    }
     
-    canvas.drawPath(path, paint);
-    
-    // شكل في الأسفل اليسار
-    final path2 = Path();
-    path2.moveTo(0, size.height * 0.7);
-    path2.quadraticBezierTo(
-      size.width * 0.1, size.height * 0.9,
-      size.width * 0.3, size.height,
-    );
-    path2.lineTo(0, size.height);
-    path2.close();
-    
-    canvas.drawPath(path2, paint..color = Colors.white.withValues(alpha: 0.05));
-    
-    // دوائر زخرفية
-    canvas.drawCircle(
-      Offset(size.width * 0.85, size.height * 0.8),
-      30,
-      paint..color = Colors.white.withValues(alpha: 0.08),
-    );
-    
-    canvas.drawCircle(
-      Offset(size.width * 0.15, size.height * 0.2),
-      20,
-      paint..color = Colors.white.withValues(alpha: 0.06),
+    // رسم إطار خفيف
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, const Radius.circular(ThemeConstants.radiusXl)),
+      paint..style = PaintingStyle.stroke,
     );
   }
 

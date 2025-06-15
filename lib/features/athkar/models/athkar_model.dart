@@ -54,25 +54,38 @@ class AthkarCategory {
       id: json['id'] ?? '',
       title: json['title'] ?? '',
       description: json['description'],
-      icon: _iconFromString(json['icon'] ?? ''),
+      icon: _iconFromString(json['icon'] ?? '', json['id'] ?? ''),
       color: _colorFromHex(json['color'] ?? '#ffffff'),
       notifyTime: _timeOfDayFromString(json['notify_time']),
       athkar: items.map((e) => AthkarItem.fromJson(e)).toList(),
     );
   }
 
-  static IconData _iconFromString(String data) {
-    switch (data) {
-      case 'Icons.wb_sunny':
+  static IconData _iconFromString(String data, String categoryId) {
+    // استخدام أيقونات مناسبة بناءً على ID الفئة
+    switch (categoryId) {
+      case 'morning':
         return Icons.wb_sunny;
-      case 'Icons.nights_stay':
+      case 'evening':
+        return Icons.wb_twilight;
+      case 'sleep':
         return Icons.nights_stay;
-      case 'Icons.nightlight_round':
-        return Icons.nightlight_round;
-      case 'Icons.bedtime':
-        return Icons.bedtime;
+      case 'wakeup':
+        return Icons.alarm;
       default:
-        return Icons.auto_awesome;
+        // إذا كان هناك أيقونة محددة في البيانات
+        switch (data) {
+          case 'Icons.wb_sunny':
+            return Icons.wb_sunny;
+          case 'Icons.nights_stay':
+            return Icons.nights_stay;
+          case 'Icons.nightlight_round':
+            return Icons.nightlight_round;
+          case 'Icons.bedtime':
+            return Icons.bedtime;
+          default:
+            return Icons.auto_awesome;
+        }
     }
   }
 
