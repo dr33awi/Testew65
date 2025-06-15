@@ -111,52 +111,50 @@ class LoggerServiceImpl implements LoggerService {
   
   /// Log to production service (e.g., Sentry, Crashlytics)
   void _logToProduction(String level, String message, dynamic data) {
-    // TODO: Implement production logging
-    // Example:
-    // if (!kDebugMode) {
-    //   FirebaseCrashlytics.instance.log('[$level] $message');
-    // }
+    if (kDebugMode) return;
+
+    // Replace the following with calls to a real production logging service
+    print('[$_tag][$level] $message');
+    if (data != null) {
+      print('[$_tag][$level] Data: $data');
+    }
   }
   
   /// Log error to production crash reporting service
   void _logErrorToProduction(String message, dynamic error, StackTrace? stackTrace) {
-    // TODO: Implement production error logging
-    // Example:
-    // if (!kDebugMode) {
-    //   FirebaseCrashlytics.instance.recordError(
-    //     error,
-    //     stackTrace,
-    //     reason: message,
-    //   );
-    // }
+    if (kDebugMode) return;
+
+    // Replace the following with calls to a crash reporting service
+    print('[$_tag] ERROR: $message');
+    print('[$_tag]   ├─ Error: $error');
+    if (stackTrace != null) {
+      print('[$_tag]   └─ StackTrace: $stackTrace');
+    }
   }
   
   /// Log event to analytics service
   void _logEventToAnalytics(String eventName, Map<String, dynamic>? parameters) {
-    // TODO: Implement analytics logging
-    // Example:
-    // if (!kDebugMode) {
-    //   FirebaseAnalytics.instance.logEvent(
-    //     name: eventName,
-    //     parameters: parameters,
-    //   );
-    // }
+    if (kDebugMode) return;
+
+    // Replace the following with calls to an analytics service
+    print('[$_tag] EVENT: $eventName');
+    if (parameters != null && parameters.isNotEmpty) {
+      print('[$_tag]   Parameters: $parameters');
+    }
   }
   
   /// Set user property in analytics service
   void _setAnalyticsUserProperty(String name, String value) {
-    // TODO: Implement analytics user property
-    // Example:
-    // if (!kDebugMode) {
-    //   FirebaseAnalytics.instance.setUserProperty(
-    //     name: name,
-    //     value: value,
-    //   );
-    // }
+    if (kDebugMode) return;
+
+    // Replace the following with calls to an analytics service
+    print('[$_tag] USER_PROPERTY: $name = $value');
   }
   
   /// Clear persisted logs
   Future<void> _clearPersistedLogs() async {
-    // TODO: Implement if you have local log persistence
+    if (kDebugMode) return;
+
+    // Clear logs from persistence layer if implemented
   }
 }

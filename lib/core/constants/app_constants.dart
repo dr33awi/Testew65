@@ -23,6 +23,7 @@ class AppConstants {
   static const String onboardingKey = '${storagePrefix}onboarding_completed';
   static const String favoritesKey = '${storagePrefix}favorites';
   static const String athkarProgressKey = '${storagePrefix}athkar_progress';
+  static const String athkarReminderKey = '${storagePrefix}athkar_reminders';
   static const String lastReadKey = '${storagePrefix}last_read';
   static const String tasbihCounterKey = '${storagePrefix}tasbih_counter';
   static const String bookmarksKey = '${storagePrefix}bookmarks';
