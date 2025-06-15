@@ -286,148 +286,80 @@ class _QiblaScreenState extends State<QiblaScreen>
     );
   }
 
-Widget _buildNoCompassState(QiblaService service) {
-  return Container(
-    // الحاوية الخارجية بخلفية صفراء خفيفة
-    decoration: BoxDecoration(
-      color: Colors.amber.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-      border: Border.all(
-        color: Colors.amber.withOpacity(0.3),
-        width: ThemeConstants.borderLight,
-      ),
-    ),
-    padding: const EdgeInsets.all(ThemeConstants.space6),
-    child: Column(
-      children: [
-        // الأيقونة
-        Container(
-          padding: const EdgeInsets.all(ThemeConstants.space4),
-          decoration: BoxDecoration(
-            color: Colors.amber.withOpacity(0.2),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
+  Widget _buildNoCompassState(QiblaService service) {
+    return AppCard( // This is a fallback card for when compass is not available, not the main compass background.
+      backgroundColor: Colors.amber.withOpacity(0.1),
+      padding: const EdgeInsets.all(ThemeConstants.space6),
+      child: Column(
+        children: [
+          Icon(
             Icons.compass_calibration_outlined,
             size: ThemeConstants.icon2xl,
             color: Colors.amber[700],
           ),
-        ),
-        
-        ThemeConstants.space4.h,
-        
-        // العنوان
-        Text(
-          'البوصلة غير متوفرة',
-          style: context.titleLarge?.bold,
-        ),
-        
-        ThemeConstants.space2.h,
-        
-        // الوصف
-        Text(
-          'جهازك لا يدعم البوصلة أو أنها معطلة حالياً. يمكنك استخدام اتجاه القبلة من موقعك.',
-          textAlign: TextAlign.center,
-          style: context.bodyMedium,
-        ),
-        
-        // معلومات القبلة إن وجدت
-        if (service.qiblaData != null) ...[
-          ThemeConstants.space5.h,
-          
-          // بطاقة معلومات القبلة
-          Container(
-            decoration: BoxDecoration(
-              color: context.cardColor,
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-              boxShadow: ThemeConstants.shadowMd,
-            ),
-            padding: const EdgeInsets.all(ThemeConstants.space4),
-            child: Column(
-              children: [
-                Text(
-                  'اتجاه القبلة من موقعك',
-                  style: context.titleMedium?.semiBold,
-                ),
-                
-                ThemeConstants.space3.h,
-                
-                // الاتجاه بالدرجات
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(ThemeConstants.space2),
-                      decoration: BoxDecoration(
-                        color: context.primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                      ),
-                      child: Icon(
+          ThemeConstants.space4.h,
+          Text(
+            'البوصلة غير متوفرة',
+            style: context.titleLarge?.bold,
+          ),
+          ThemeConstants.space2.h,
+          Text(
+            'جهازك لا يدعم البوصلة أو أنها معطلة حالياً. يمكنك استخدام اتجاه القبلة من موقعك.',
+            textAlign: TextAlign.center,
+            style: context.bodyMedium,
+          ),
+          if (service.qiblaData != null) ...[
+            ThemeConstants.space5.h,
+            AppCard(
+              backgroundColor: context.cardColor,
+              elevation: ThemeConstants.elevation2,
+              padding: const EdgeInsets.all(ThemeConstants.space4),
+              child: Column(
+                children: [
+                  Text(
+                    'اتجاه القبلة من موقعك',
+                    style: context.titleMedium?.semiBold,
+                  ),
+                  ThemeConstants.space3.h,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
                         Icons.navigation,
                         size: ThemeConstants.iconXl,
                         color: context.primaryColor,
                       ),
-                    ),
-                    ThemeConstants.space3.w,
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${service.qiblaData!.qiblaDirection.toStringAsFixed(1)}°',
-                          style: context.headlineMedium?.copyWith(
-                            fontWeight: ThemeConstants.bold,
-                            color: context.primaryColor,
-                          ),
-                        ),
-                        Text(
-                          service.qiblaData!.directionDescription,
-                          style: context.bodyMedium?.medium,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                
-                ThemeConstants.space4.h,
-                
-                // ملاحظة
-                Container(
-                  padding: const EdgeInsets.all(ThemeConstants.space3),
-                  decoration: BoxDecoration(
-                    color: context.primaryColor.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                    border: Border.all(
-                      color: context.primaryColor.withOpacity(0.2),
-                      width: ThemeConstants.borderLight,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        size: ThemeConstants.iconSm,
-                        color: context.primaryColor,
-                      ),
                       ThemeConstants.space2.w,
-                      Expanded(
-                        child: Text(
-                          'استخدم بوصلة خارجية للتوجه إلى هذا الاتجاه',
-                          style: context.bodySmall?.copyWith(
-                            color: context.primaryColor,
-                          ),
+                      Text(
+                        '${service.qiblaData!.qiblaDirection.toStringAsFixed(1)}°',
+                        style: context.headlineMedium?.copyWith(
+                          fontWeight: ThemeConstants.bold,
+                          color: context.primaryColor,
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  ThemeConstants.space2.h,
+                  Text(
+                    service.qiblaData!.directionDescription,
+                    style: context.bodyLarge?.medium,
+                  ),
+                  ThemeConstants.space3.h,
+                  Text(
+                    'استخدم بوصلة خارجية للتوجه إلى هذا الاتجاه',
+                    style: context.bodySmall?.copyWith(
+                      color: context.textSecondaryColor,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ],
-      ],
-    ),
-  );
-}
+      ),
+    );
+  }
 
   Widget _buildInitialState() {
     return SizedBox(

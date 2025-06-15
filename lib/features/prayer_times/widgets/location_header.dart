@@ -19,7 +19,7 @@ class LocationHeader extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.all(ThemeConstants.space4),
       child: AppCard(
-        type: CardType.normal,
+        style: CardStyle.normal,
         onTap: onTap,
         child: Row(
           children: [
