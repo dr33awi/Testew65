@@ -4,23 +4,20 @@ import '../../../app/themes/app_theme.dart';
 
 class AthkarProgressBar extends StatelessWidget {
   final int progress;
-  final Color? color;
+  final Color color;
   final int completedCount;
   final int totalCount;
 
   const AthkarProgressBar({
     super.key,
     required this.progress,
-    this.color,
+    required this.color,
     required this.completedCount,
     required this.totalCount,
   });
 
   @override
   Widget build(BuildContext context) {
-    // استخدام اللون من الثيم إذا لم يتم تمرير لون
-    final effectiveColor = color ?? ThemeConstants.primary;
-    
     return Container(
       margin: const EdgeInsets.all(ThemeConstants.space4),
       padding: const EdgeInsets.all(ThemeConstants.space4),
@@ -39,7 +36,7 @@ class AthkarProgressBar extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.timeline_rounded,
-                    color: effectiveColor,
+                    color: color,
                     size: ThemeConstants.iconMd,
                   ),
                   ThemeConstants.space2.w,
@@ -59,13 +56,13 @@ class AthkarProgressBar extends StatelessWidget {
                   vertical: ThemeConstants.space1,
                 ),
                 decoration: BoxDecoration(
-                  color: effectiveColor.withValues(alpha: 0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
                 ),
                 child: Text(
                   '$progress%',
                   style: context.labelLarge?.copyWith(
-                    color: effectiveColor,
+                    color: color,
                     fontWeight: ThemeConstants.bold,
                   ),
                 ),
@@ -84,7 +81,7 @@ class AthkarProgressBar extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: progress / 100,
                 backgroundColor: context.dividerColor.withValues(alpha: 0.3),
-                valueColor: AlwaysStoppedAnimation<Color>(effectiveColor),
+                valueColor: AlwaysStoppedAnimation<Color>(color),
                 minHeight: 8,
               ),
             ),
@@ -113,7 +110,7 @@ class AthkarProgressBar extends StatelessWidget {
                 icon: Icons.pending_outlined,
                 label: 'متبقي',
                 value: '${totalCount - completedCount}',
-                color: ThemeConstants.accent,
+                color: ThemeConstants.warning,
               ),
               
               Container(
@@ -126,7 +123,7 @@ class AthkarProgressBar extends StatelessWidget {
                 icon: Icons.format_list_numbered,
                 label: 'الكل',
                 value: '$totalCount',
-                color: ThemeConstants.tertiary,
+                color: context.primaryColor,
               ),
             ],
           ),
