@@ -76,7 +76,7 @@ flutter:
   assets:
     - assets/images/                       # صور التطبيق
     - assets/data/
-    - assets/data/daily_quotes.json
+    
     
   fonts:
     - family: Cairo

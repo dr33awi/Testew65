@@ -2,8 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
-import 'dart:math' as math;
-import 'dart:ui';
+import 'dart:math';
 import '../../../app/themes/app_theme.dart';
 
 class DailyQuotesCard extends StatefulWidget {
@@ -13,8 +12,7 @@ class DailyQuotesCard extends StatefulWidget {
   State<DailyQuotesCard> createState() => _DailyQuotesCardState();
 }
 
-class _DailyQuotesCardState extends State<DailyQuotesCard>
-    with TickerProviderStateMixin {
+class _DailyQuotesCardState extends State<DailyQuotesCard> {
   Map<String, dynamic>? _todayVerse;
   Map<String, dynamic>? _todayHadith;
   bool _isLoading = true;
@@ -22,49 +20,16 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
   PageController? _pageController;
   int _currentPage = 0;
   
-  late AnimationController _fadeController;
-  late AnimationController _floatingController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _floatingAnimation;
-  
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: 0);
-    
-    // Setup animations
-    _fadeController = AnimationController(
-      duration: ThemeConstants.durationSlow,
-      vsync: this,
-    );
-    
-    _floatingController = AnimationController(
-      duration: const Duration(seconds: 3),
-      vsync: this,
-    )..repeat(reverse: true);
-    
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: ThemeConstants.curveSmooth,
-    );
-    
-    _floatingAnimation = Tween<double>(
-      begin: -5.0,
-      end: 5.0,
-    ).animate(CurvedAnimation(
-      parent: _floatingController,
-      curve: Curves.easeInOut,
-    ));
-    
     _loadDailyQuotes();
-    _fadeController.forward();
   }
   
   @override
   void dispose() {
     _pageController?.dispose();
-    _fadeController.dispose();
-    _floatingController.dispose();
     super.dispose();
   }
   
@@ -75,48 +40,74 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
         _error = null;
       });
       
+      // محاولة تحميل الملف
+      print('محاولة تحميل الملف من: assets/data/daily_quotes.json');
+      
       String jsonString;
       try {
         jsonString = await rootBundle.loadString('assets/data/daily_quotes.json');
+        print('تم تحميل الملف بنجاح. حجم المحتوى: ${jsonString.length} حرف');
       } catch (e) {
-        throw Exception('لا يمكن العثور على ملف daily_quotes.json');
+        print('خطأ في تحميل الملف: $e');
+        throw Exception('لا يمكن العثور على ملف daily_quotes.json. تأكد من إضافته في pubspec.yaml');
       }
       
+      // محاولة تحليل JSON
       Map<String, dynamic> data;
       try {
         data = json.decode(jsonString);
+        print('تم تحليل JSON بنجاح');
       } catch (e) {
-        throw Exception('خطأ في تنسيق ملف JSON');
+        print('خطأ في تحليل JSON: $e');
+        print('أول 100 حرف من المحتوى: ${jsonString.substring(0, min(100, jsonString.length))}');
+        throw Exception('خطأ في تنسيق ملف JSON. تأكد من صحة التنسيق');
       }
       
+      // التحقق من وجود البيانات المطلوبة
       final List<dynamic>? quranVerses = data['quran_verses'];
       final List<dynamic>? hadiths = data['hadiths'];
       
-      if (quranVerses == null || hadiths == null || quranVerses.isEmpty || hadiths.isEmpty) {
-        throw Exception('البيانات غير مكتملة');
+      if (quranVerses == null || hadiths == null) {
+        throw Exception('لا يحتوي الملف على البيانات المطلوبة (quran_verses أو hadiths)');
       }
       
+      if (quranVerses.isEmpty || hadiths.isEmpty) {
+        throw Exception('مصفوفة الآيات أو الأحاديث فارغة');
+      }
+      
+      print('عدد الآيات: ${quranVerses.length}');
+      print('عدد الأحاديث: ${hadiths.length}');
+      
+      // الحصول على آية وحديث اليوم بناءً على تاريخ اليوم
       final int dayOfYear = DateTime.now().difference(DateTime(DateTime.now().year, 1, 1)).inDays;
       final int verseIndex = dayOfYear % quranVerses.length;
       final int hadithIndex = dayOfYear % hadiths.length;
       
+      // تحديد آية اليوم
       _todayVerse = {
         'type': 'verse',
         'content': quranVerses[verseIndex]['text'] ?? '',
         'source': quranVerses[verseIndex]['source'] ?? '',
       };
       
+      // تحديد حديث اليوم
       _todayHadith = {
         'type': 'hadith',
         'content': hadiths[hadithIndex]['text'] ?? '',
         'source': hadiths[hadithIndex]['source'] ?? '',
       };
       
+      print('تم اختيار الآية رقم: $verseIndex');
+      print('تم اختيار الحديث رقم: $hadithIndex');
+      
       setState(() {
         _isLoading = false;
       });
       
+      print('تم تحميل الاقتباسات بنجاح');
+      
     } catch (e) {
+      print('خطأ نهائي: $e');
       setState(() {
         _isLoading = false;
         _error = e.toString();
@@ -138,44 +129,46 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
       return const SizedBox.shrink();
     }
     
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 300,
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentPage = index;
-                  });
-                },
-                children: [
-                  _buildQuoteCard(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 280,
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentPage = index;
+                });
+              },
+              children: [
+                // آية اليوم
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space2),
+                  child: _buildQuoteCard(
                     context: context,
                     quote: _todayVerse!,
                     title: 'آية اليوم',
-                    gradient: ThemeConstants.primaryGradient,
-                    icon: Icons.menu_book,
                   ),
-                  _buildQuoteCard(
+                ),
+                // حديث اليوم
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space2),
+                  child: _buildQuoteCard(
                     context: context,
                     quote: _todayHadith!,
                     title: 'حديث اليوم',
-                    gradient: ThemeConstants.secondaryGradient,
-                    icon: Icons.auto_stories,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            
-            ThemeConstants.space3.h,
-            _buildPageIndicator(),
-          ],
-        ),
+          ),
+          
+          // مؤشر الصفحات
+          ThemeConstants.space3.h,
+          _buildPageIndicator(),
+        ],
       ),
     );
   }
@@ -184,165 +177,168 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
     required BuildContext context,
     required Map<String, dynamic> quote,
     required String title,
-    required List<Color> gradient,
-    required IconData icon,
   }) {
-    return AnimatedBuilder(
-      animation: _floatingAnimation,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, _floatingAnimation.value),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space2),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-              boxShadow: [
-                BoxShadow(
-                  color: gradient[0].withValues(alpha: ThemeConstants.opacity25),
-                  blurRadius: 30,
-                  offset: const Offset(0, 15),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => _showQuoteActions(context, quote['content'], quote['source']),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-                    child: Container(
+    final bool isVerse = quote['type'] == 'verse';
+    final gradient = isVerse
+        ? [
+            context.primaryColor,
+            context.primaryColor.withOpacity(0.8),
+          ]
+        : [
+            const Color(0xFF6B46C1),
+            const Color(0xFF9333EA),
+          ];
+    
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: gradient,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        boxShadow: [
+          BoxShadow(
+            color: gradient[0].withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        child: InkWell(
+          onTap: () {
+            _showQuoteActions(context, quote['content'], quote['source']);
+          },
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+          child: Padding(
+            padding: const EdgeInsets.all(ThemeConstants.space5),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(ThemeConstants.space3),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            gradient[0].withValues(alpha: context.isDarkMode ? ThemeConstants.opacity80 : ThemeConstants.opacity90),
-                            gradient[1].withValues(alpha: context.isDarkMode ? ThemeConstants.opacity70 : ThemeConstants.opacity80),
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                      ),
+                      child: Icon(
+                        isVerse ? Icons.menu_book_rounded : Icons.auto_stories_rounded,
+                        color: Colors.white,
+                        size: ThemeConstants.iconLg,
+                      ),
+                    ),
+                    ThemeConstants.space3.w,
+                    Text(
+                      title,
+                      style: context.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                
+                ThemeConstants.space4.h,
+                
+                // Content
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(ThemeConstants.space4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.2),
+                        width: ThemeConstants.borderThin,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // علامة اقتباس البداية
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.format_quote,
+                              color: Colors.white.withOpacity(0.5),
+                              size: ThemeConstants.iconSm,
+                            ),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
-                          width: ThemeConstants.borderLight,
+                        
+                        const Spacer(),
+                        
+                        // النص
+                        SingleChildScrollView(
+                          child: Text(
+                            quote['content'],
+                            style: context.bodyLarge?.copyWith(
+                              color: Colors.white,
+                              fontSize: 16,
+                              height: 1.8,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
-                      ),
-                      child: Stack(
-                        children: [
-                          // نمط زخرفي إسلامي
-                          Positioned.fill(
-                            child: CustomPaint(
-                              painter: IslamicPatternPainter(
-                                color: Colors.white.withValues(alpha: ThemeConstants.opacity5),
+                        
+                        const Spacer(),
+                        
+                        // علامة اقتباس النهاية
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Transform.rotate(
+                              angle: pi,
+                              child: Icon(
+                                Icons.format_quote,
+                                color: Colors.white.withOpacity(0.5),
+                                size: ThemeConstants.iconSm,
                               ),
                             ),
-                          ),
-                          
-                          // المحتوى
-                          Padding(
-                            padding: const EdgeInsets.all(ThemeConstants.space5),
-                            child: Column(
-                              children: [
-                                // الهيدر
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(ThemeConstants.space3),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
-                                        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                                      ),
-                                      child: Icon(
-                                        icon,
-                                        color: Colors.white,
-                                        size: ThemeConstants.iconMd,
-                                      ),
-                                    ),
-                                    Text(
-                                      title,
-                                      style: context.titleLarge?.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: ThemeConstants.bold,
-                                      ),
-                                    ),
-                                    Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: ThemeConstants.opacity10),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        Icons.format_quote,
-                                        color: Colors.white.withValues(alpha: ThemeConstants.opacity50),
-                                        size: ThemeConstants.iconSm,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                
-                                // المحتوى
-                                Expanded(
-                                  child: Center(
-                                    child: SingleChildScrollView(
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            quote['content'],
-                                            style: context.bodyLarge?.copyWith(
-                                              color: Colors.white,
-                                              fontSize: 18,
-                                              height: 1.8,
-                                              fontWeight: ThemeConstants.medium,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                
-                                // المصدر
-                                if (quote['source'].isNotEmpty)
-                                  Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: ThemeConstants.space4,
-                                      vertical: ThemeConstants.space2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
-                                      borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                                      border: Border.all(
-                                        color: Colors.white.withValues(alpha: ThemeConstants.opacity30),
-                                        width: ThemeConstants.borderLight,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      quote['source'],
-                                      style: context.bodySmall?.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: ThemeConstants.semiBold,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ),
+                
+                // Source
+                if (quote['source'].isNotEmpty) ...[
+                  ThemeConstants.space3.h,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: ThemeConstants.space3,
+                          vertical: ThemeConstants.space1,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                        ),
+                        child: Text(
+                          quote['source'],
+                          style: context.labelSmall?.copyWith(
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
   
@@ -351,16 +347,15 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
         2,
-        (index) => AnimatedContainer(
-          duration: ThemeConstants.durationFast,
-          width: _currentPage == index ? 24 : 8,
+        (index) => Container(
+          width: 8,
           height: 8,
           margin: const EdgeInsets.symmetric(horizontal: 4),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(4),
+            shape: BoxShape.circle,
             color: _currentPage == index
                 ? context.primaryColor
-                : context.primaryColor.withValues(alpha: ThemeConstants.opacity30),
+                : context.primaryColor.withOpacity(0.3),
           ),
         ),
       ),
@@ -368,63 +363,73 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
   }
   
   Widget _buildLoadingCard(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      child: _buildShimmerCard(),
+    );
+  }
+  
+  Widget _buildShimmerCard() {
     return Container(
-      height: 300,
-      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      height: 280,
       decoration: BoxDecoration(
-        color: context.surfaceVariant,
-        borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+        color: Colors.grey.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
       ),
-      child: Center(
-        child: AppLoading.circular(size: LoadingSize.large),
+      child: const Center(
+        child: CircularProgressIndicator(),
       ),
     );
   }
   
   Widget _buildErrorCard(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      decoration: BoxDecoration(
-        color: ThemeConstants.error.withValues(alpha: ThemeConstants.opacity10),
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        border: Border.all(
-          color: ThemeConstants.error.withValues(alpha: ThemeConstants.opacity30),
-          width: ThemeConstants.borderLight,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      child: Container(
+        padding: const EdgeInsets.all(ThemeConstants.space4),
+        decoration: BoxDecoration(
+          color: Colors.red.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+          border: Border.all(
+            color: Colors.red.withOpacity(0.3),
+            width: ThemeConstants.borderThin,
+          ),
         ),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.error_outline,
-            color: ThemeConstants.error,
-            size: ThemeConstants.iconXl,
-          ),
-          ThemeConstants.space2.h,
-          Text(
-            'خطأ في تحميل الاقتباسات',
-            style: context.titleMedium?.copyWith(
-              color: ThemeConstants.error,
-              fontWeight: ThemeConstants.bold,
+        child: Column(
+          children: [
+            Icon(
+              Icons.error_outline,
+              color: Colors.red,
+              size: ThemeConstants.iconXl,
             ),
-          ),
-          ThemeConstants.space2.h,
-          Text(
-            _error ?? 'حدث خطأ غير معروف',
-            style: context.bodySmall?.copyWith(
-              color: ThemeConstants.error.darken(0.2),
+            ThemeConstants.space2.h,
+            Text(
+              'خطأ في تحميل الاقتباسات',
+              style: context.titleMedium?.copyWith(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            textAlign: TextAlign.center,
-          ),
-          ThemeConstants.space3.h,
-          AppButton.primary(
-            text: 'إعادة المحاولة',
-            onPressed: _loadDailyQuotes,
-            icon: Icons.refresh,
-            size: ButtonSize.small,
-            backgroundColor: ThemeConstants.error,
-          ),
-        ],
+            ThemeConstants.space2.h,
+            Text(
+              _error ?? 'حدث خطأ غير معروف',
+              style: context.bodySmall?.copyWith(
+                color: Colors.red.shade700,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            ThemeConstants.space3.h,
+            ElevatedButton.icon(
+              onPressed: _loadDailyQuotes,
+              icon: const Icon(Icons.refresh),
+              label: const Text('إعادة المحاولة'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -437,35 +442,30 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
         decoration: BoxDecoration(
           color: context.backgroundColor,
           borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(ThemeConstants.radius2xl),
+            top: Radius.circular(ThemeConstants.radiusXl),
           ),
         ),
         padding: const EdgeInsets.all(ThemeConstants.space4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Handle bar
             Container(
               width: 40,
               height: 4,
               decoration: BoxDecoration(
                 color: context.dividerColor,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
               ),
             ),
             
             ThemeConstants.space4.h,
             
+            // Actions
             ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(ThemeConstants.space2),
-                decoration: BoxDecoration(
-                  color: context.primaryColor.withValues(alpha: ThemeConstants.opacity10),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                ),
-                child: Icon(
-                  Icons.copy_rounded,
-                  color: context.primaryColor,
-                ),
+              leading: Icon(
+                Icons.copy_rounded,
+                color: context.primaryColor,
               ),
               title: const Text('نسخ النص'),
               onTap: () {
@@ -473,26 +473,25 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
                 Clipboard.setData(ClipboardData(text: fullText));
                 Navigator.pop(context);
                 
-                context.showSuccessSnackBar('تم نسخ النص');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('تم نسخ النص'),
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: context.primaryColor,
+                  ),
+                );
               },
             ),
             
             ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(ThemeConstants.space2),
-                decoration: BoxDecoration(
-                  color: context.secondaryColor.withValues(alpha: ThemeConstants.opacity10),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                ),
-                child: Icon(
-                  Icons.share_rounded,
-                  color: context.secondaryColor,
-                ),
+              leading: Icon(
+                Icons.share_rounded,
+                color: context.primaryColor,
               ),
               title: const Text('مشاركة'),
               onTap: () {
                 Navigator.pop(context);
-                // يمكن إضافة وظيفة المشاركة هنا
+                // يمكن إضافة وظيفة المشاركة هنا باستخدام share package
               },
             ),
             
@@ -502,40 +501,4 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
       ),
     );
   }
-}
-
-// رسام النمط الإسلامي
-class IslamicPatternPainter extends CustomPainter {
-  final Color color;
-
-  IslamicPatternPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    // رسم نمط هندسي إسلامي بسيط
-    final centerX = size.width / 2;
-    final centerY = size.height / 2;
-    final radius = math.min(size.width, size.height) / 3;
-
-    for (int i = 0; i < 8; i++) {
-      final angle = (i * math.pi / 4);
-      final x1 = centerX + radius * math.cos(angle);
-      final y1 = centerY + radius * math.sin(angle);
-      final x2 = centerX + radius * math.cos(angle + math.pi);
-      final y2 = centerY + radius * math.sin(angle + math.pi);
-      
-      canvas.drawLine(Offset(x1, y1), Offset(x2, y2), paint);
-    }
-
-    // رسم دائرة مركزية
-    canvas.drawCircle(Offset(centerX, centerY), radius / 2, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
