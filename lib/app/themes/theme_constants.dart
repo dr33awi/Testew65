@@ -205,6 +205,37 @@ class ThemeConstants {
     end: Alignment.bottomCenter,
   );
 
+  // ===== خرائط الألوان والأيقونات للصلوات =====
+  static const Map<String, Color> _prayerColorMap = {
+    'fajr': Color(0xFF1A237E),
+    'dhuhr': Color(0xFFFF6F00),
+    'asr': Color(0xFF00897B),
+    'maghrib': Color(0xFFE65100),
+    'isha': Color(0xFF4A148C),
+    'sunrise': Color(0xFFFFB300),
+    'الفجر': Color(0xFF1A237E),
+    'الظهر': Color(0xFFFF6F00),
+    'العصر': Color(0xFF00897B),
+    'المغرب': Color(0xFFE65100),
+    'العشاء': Color(0xFF4A148C),
+    'الشروق': Color(0xFFFFB300),
+  };
+
+  static const Map<String, IconData> _prayerIconMap = {
+    'fajr': Icons.dark_mode,
+    'dhuhr': Icons.light_mode,
+    'asr': Icons.wb_cloudy,
+    'maghrib': Icons.wb_twilight,
+    'isha': Icons.bedtime,
+    'sunrise': Icons.wb_sunny,
+    'الفجر': Icons.dark_mode,
+    'الظهر': Icons.light_mode,
+    'العصر': Icons.wb_cloudy,
+    'المغرب': Icons.wb_twilight,
+    'العشاء': Icons.bedtime,
+    'الشروق': Icons.wb_sunny,
+  };
+
   // ===== الظلال الجاهزة =====
   static List<BoxShadow> shadowSm = [
     BoxShadow(
@@ -342,54 +373,12 @@ class ThemeConstants {
 
   /// الحصول على لون حسب اسم الصلاة
   static Color getPrayerColor(String name) {
-    switch (name.toLowerCase()) {
-      case 'fajr':
-      case 'الفجر':
-        return const Color(0xFF1A237E); // Deep blue
-      case 'dhuhr':
-      case 'الظهر':
-        return const Color(0xFFFF6F00); // Orange
-      case 'asr':
-      case 'العصر':
-        return const Color(0xFF00897B); // Teal
-      case 'maghrib':
-      case 'المغرب':
-        return const Color(0xFFE65100); // Deep orange
-      case 'isha':
-      case 'العشاء':
-        return const Color(0xFF4A148C); // Purple
-      case 'sunrise':
-      case 'الشروق':
-        return const Color(0xFFFFB300); // Amber
-      default:
-        return const Color(0xFF607D8B); // Blue grey
-    }
+    return _prayerColorMap[name.toLowerCase()] ?? const Color(0xFF607D8B);
   }
 
   /// الحصول على أيقونة حسب اسم الصلاة
   static IconData getPrayerIcon(String name) {
-    switch (name.toLowerCase()) {
-      case 'fajr':
-      case 'الفجر':
-        return Icons.dark_mode;
-      case 'dhuhr':
-      case 'الظهر':
-        return Icons.light_mode;
-      case 'asr':
-      case 'العصر':
-        return Icons.wb_cloudy;
-      case 'maghrib':
-      case 'المغرب':
-        return Icons.wb_twilight;
-      case 'isha':
-      case 'العشاء':
-        return Icons.bedtime;
-      case 'sunrise':
-      case 'الشروق':
-        return Icons.wb_sunny;
-      default:
-        return Icons.access_time;
-    }
+    return _prayerIconMap[name.toLowerCase()] ?? Icons.access_time;
   }
 
   /// إنشاء تدرج مخصص
