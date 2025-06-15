@@ -1,6 +1,7 @@
 // lib/features/home/widgets/category_grid.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/routes/app_router.dart';
 import '../../../app/di/service_locator.dart';
@@ -23,7 +24,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'مواقيت الصلاة',
       subtitle: 'أوقات الصلوات الخمس',
       icon: ThemeConstants.iconPrayer,
-      gradient: [ThemeConstants.primaryDark, ThemeConstants.primary],
+      gradient: [ThemeConstants.primary, ThemeConstants.primaryDark],
       routeName: AppRouter.prayerTimes,
     ),
     CategoryItem(
@@ -31,7 +32,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'الأذكار',
       subtitle: 'أذكار الصباح والمساء',
       icon: ThemeConstants.iconAthkar,
-      gradient: [ThemeConstants.primary, ThemeConstants.primaryLight],
+      gradient: [ThemeConstants.secondary, ThemeConstants.secondaryDark],
       routeName: AppRouter.athkar,
     ),
     CategoryItem(
@@ -39,7 +40,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'القرآن الكريم',
       subtitle: 'تلاوة وحفظ وتدبر',
       icon: Icons.book,
-      gradient: [ThemeConstants.info, ThemeConstants.info.darken(0.2)],
+      gradient: [ThemeConstants.success, ThemeConstants.successDark],
       routeName: '/quran',
     ),
     CategoryItem(
@@ -47,7 +48,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'اتجاه القبلة',
       subtitle: 'البوصلة الذكية',
       icon: ThemeConstants.iconQibla,
-      gradient: [ThemeConstants.warning, ThemeConstants.warning.darken(0.2)],
+      gradient: [ThemeConstants.tertiary, ThemeConstants.tertiaryDark],
       routeName: AppRouter.qibla,
     ),
     CategoryItem(
@@ -55,7 +56,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'المسبحة الرقمية',
       subtitle: 'عداد التسبيح الذكي',
       icon: Icons.radio_button_checked,
-      gradient: [ThemeConstants.success, ThemeConstants.success.darken(0.2)],
+      gradient: [ThemeConstants.info, ThemeConstants.infoDark],
       routeName: '/tasbih',
     ),
     CategoryItem(
@@ -63,7 +64,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'الأدعية',
       subtitle: 'أدعية من القرآن والسنة',
       icon: Icons.pan_tool,
-      gradient: [ThemeConstants.primaryLight, ThemeConstants.primary],
+      gradient: [ThemeConstants.warning, ThemeConstants.warningDark],
       routeName: '/dua',
     ),
   ];
@@ -108,30 +109,34 @@ class _CategoryGridState extends State<CategoryGrid> {
   Widget build(BuildContext context) {
     return SliverPadding(
       padding: ThemeConstants.space4.horizontal,
-      sliver: SliverList(
+      sliver: SliverGrid(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             if (index >= _categories.length) return null;
             
-            return AnimationConfiguration.staggeredList(
+            return AnimationConfiguration.staggeredGrid(
               position: index,
               duration: ThemeConstants.durationNormal,
-              child: SlideAnimation(
-                verticalOffset: 30.0,
+              columnCount: 2,
+              child: ScaleAnimation(
+                scale: 0.95,
                 child: FadeInAnimation(
-                  child: Padding(
-                    padding: ThemeConstants.space3.bottom,
-                    child: _buildCategoryItem(
-                      context,
-                      _categories[index],
-                      index,
-                    ),
+                  child: _buildCategoryItem(
+                    context,
+                    _categories[index],
+                    index,
                   ),
                 ),
               ),
             );
           },
           childCount: _categories.length,
+        ),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: ThemeConstants.space3,
+          crossAxisSpacing: ThemeConstants.space3,
+          childAspectRatio: 1.1,
         ),
       ),
     );
@@ -144,119 +149,140 @@ class _CategoryGridState extends State<CategoryGrid> {
       scale: isSelected ? 0.95 : 1.0,
       duration: ThemeConstants.durationFast,
       child: Container(
-        height: 100,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: category.gradient,
-          ),
+          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
           boxShadow: [
             BoxShadow(
-              color: category.gradient[0].withValues(alpha: ThemeConstants.opacity30),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
+              color: category.gradient[0].withValues(alpha: ThemeConstants.opacity20),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
           ],
         ),
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-          child: InkWell(
-            onTap: () => _onCategoryTap(category, index),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-            child: Container(
-              padding: ThemeConstants.space3.all,
-              child: Row(
-                children: [
-                  // الأيقونة الرئيسية
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: ThemeConstants.opacity30),
-                        width: ThemeConstants.borderMedium,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: ThemeConstants.opacity10),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _onCategoryTap(category, index),
+                borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        category.gradient[0].withValues(alpha: context.isDarkMode ? ThemeConstants.opacity80 : ThemeConstants.opacity90),
+                        category.gradient[1].withValues(alpha: context.isDarkMode ? ThemeConstants.opacity70 : ThemeConstants.opacity80),
                       ],
                     ),
-                    child: Icon(
-                      category.icon,
-                      color: Colors.white,
-                      size: ThemeConstants.iconLg,
+                    borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
+                      width: ThemeConstants.borderLight,
                     ),
                   ),
-                  
-                  ThemeConstants.space4.w,
-                  
-                  // المعلومات
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          category.title,
-                          style: context.titleMedium?.copyWith(
-                            fontWeight: ThemeConstants.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        
-                        ThemeConstants.space1.h,
-                        
-                        Text(
-                          category.subtitle,
-                          style: context.bodySmall?.copyWith(
-                            color: Colors.white.withValues(alpha: ThemeConstants.opacity70),
-                          ),
-                        ),
-                        
-                        ThemeConstants.space2.h,
-                        
-                        // شريط التقدم
-                        Container(
-                          height: 4,
+                  child: Stack(
+                    children: [
+                      // نمط زخرفي
+                      Positioned(
+                        right: -20,
+                        top: -20,
+                        child: Container(
+                          width: 80,
+                          height: 80,
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(ThemeConstants.radiusXs),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.white.withValues(alpha: ThemeConstants.opacity50),
-                                blurRadius: 4,
-                                offset: const Offset(0, 0),
-                              ),
-                            ],
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: ThemeConstants.opacity10),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      
+                      // المحتوى
+                      Padding(
+                        padding: const EdgeInsets.all(ThemeConstants.space4),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // الأيقونة
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
+                                borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: ThemeConstants.opacity30),
+                                  width: ThemeConstants.borderMedium,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: ThemeConstants.opacity10),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                category.icon,
+                                color: Colors.white,
+                                size: ThemeConstants.iconLg,
+                              ),
+                            ),
+                            
+                            ThemeConstants.space3.h,
+                            
+                            // العنوان
+                            Text(
+                              category.title,
+                              style: context.titleMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: ThemeConstants.bold,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withValues(alpha: ThemeConstants.opacity20),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            
+                            ThemeConstants.space1.h,
+                            
+                            // الوصف
+                            Text(
+                              category.subtitle,
+                              style: context.bodySmall?.copyWith(
+                                color: Colors.white.withValues(alpha: ThemeConstants.opacity80),
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      // مؤشر الحالة
+                      if (isSelected)
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+                              border: Border.all(
+                                color: Colors.white,
+                                width: ThemeConstants.borderThick,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                  
-                  // رمز السهم
-                  Container(
-                    width: 30,
-                    height: 30,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                    ),
-                    child: Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: ThemeConstants.iconSm,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),

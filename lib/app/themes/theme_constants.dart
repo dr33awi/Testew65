@@ -1,90 +1,90 @@
 // lib/app/themes/theme_constants.dart
 import 'package:flutter/material.dart';
 
-/// ثوابت الثيم الموحد - تصميم عصري 2025
+/// ثوابت الثيم الموحد - تصميم احترافي بالأخضر الزيتي
 class ThemeConstants {
   ThemeConstants._();
 
-  // ===== الألوان الأساسية - نظام لوني حديث =====
-  // اللون الأساسي - أخضر عصري مع تدرجات ناعمة
-  static const Color primary = Color(0xFF00C896); // أخضر نابض بالحياة
-  static const Color primaryLight = Color(0xFF5EFFC1);
-  static const Color primaryDark = Color(0xFF00A076);
-  static const Color primaryContainer = Color(0xFFE8FFF7);
-  static const Color onPrimaryContainer = Color(0xFF002117);
+  // ===== الألوان الأساسية - الأخضر الزيتي الاحترافي =====
+  // اللون الأساسي - أخضر زيتي أنيق
+  static const Color primary = Color(0xFF5D7052); // أخضر زيتي رئيسي
+  static const Color primaryLight = Color(0xFF8B9F7E); // أخضر زيتي فاتح
+  static const Color primaryDark = Color(0xFF3E4A36); // أخضر زيتي داكن
+  static const Color primaryContainer = Color(0xFFF0F4ED); // خلفية فاتحة بلمسة خضراء
+  static const Color onPrimaryContainer = Color(0xFF1A2016); // نص على الخلفية الفاتحة
   
-  // اللون الثانوي - بنفسجي عصري
-  static const Color secondary = Color(0xFF7C4DFF);
-  static const Color secondaryLight = Color(0xFFB47CFF);
-  static const Color secondaryDark = Color(0xFF3700B3);
-  static const Color secondaryContainer = Color(0xFFF3E5FF);
-  static const Color onSecondaryContainer = Color(0xFF21005D);
+  // اللون الثانوي - ذهبي دافئ مكمل للأخضر الزيتي
+  static const Color secondary = Color(0xFFB8860B); // ذهبي داكن
+  static const Color secondaryLight = Color(0xFFDAA520); // ذهبي فاتح
+  static const Color secondaryDark = Color(0xFF8B6914); // ذهبي عميق
+  static const Color secondaryContainer = Color(0xFFFFF8E7); // خلفية ذهبية فاتحة
+  static const Color onSecondaryContainer = Color(0xFF2A1F00); // نص على الخلفية الذهبية
   
-  // اللون الثالث - برتقالي دافئ
-  static const Color tertiary = Color(0xFFFF6B6B);
-  static const Color tertiaryLight = Color(0xFFFF9999);
-  static const Color tertiaryDark = Color(0xFFCC5555);
-  static const Color tertiaryContainer = Color(0xFFFFE5E5);
-  static const Color onTertiaryContainer = Color(0xFF410E0B);
+  // اللون الثالث - بني دافئ
+  static const Color tertiary = Color(0xFF8B6F47); // بني دافئ
+  static const Color tertiaryLight = Color(0xFFA0826D); // بني فاتح
+  static const Color tertiaryDark = Color(0xFF5D4E37); // بني داكن
+  static const Color tertiaryContainer = Color(0xFFF5E6D3); // خلفية بنية فاتحة
+  static const Color onTertiaryContainer = Color(0xFF1F1710); // نص على الخلفية البنية
 
-  // ===== الألوان المحايدة - درجات رمادية حديثة =====
+  // ===== الألوان المحايدة - درجات طبيعية =====
   static const Color neutral0 = Color(0xFFFFFFFF);
-  static const Color neutral50 = Color(0xFFFAFBFC); // خلفية فاتحة جداً
-  static const Color neutral100 = Color(0xFFF4F6F8);
-  static const Color neutral200 = Color(0xFFE9ECEF);
-  static const Color neutral300 = Color(0xFFDEE2E6);
-  static const Color neutral400 = Color(0xFFCED4DA);
-  static const Color neutral500 = Color(0xFFADB5BD);
-  static const Color neutral600 = Color(0xFF6C757D);
-  static const Color neutral700 = Color(0xFF495057);
-  static const Color neutral800 = Color(0xFF343A40);
-  static const Color neutral900 = Color(0xFF212529);
-  static const Color neutral950 = Color(0xFF0A0D10); // أسود عميق
+  static const Color neutral50 = Color(0xFFFAFBF8); // خلفية فاتحة بلمسة دافئة
+  static const Color neutral100 = Color(0xFFF5F6F3);
+  static const Color neutral200 = Color(0xFFEBEDE8);
+  static const Color neutral300 = Color(0xFFDFE2DB);
+  static const Color neutral400 = Color(0xFFCED3C7);
+  static const Color neutral500 = Color(0xFFADB5A3);
+  static const Color neutral600 = Color(0xFF7C8471);
+  static const Color neutral700 = Color(0xFF545B4B);
+  static const Color neutral800 = Color(0xFF3A4034);
+  static const Color neutral900 = Color(0xFF252921);
+  static const Color neutral950 = Color(0xFF141613); // أسود بلمسة خضراء
 
-  // ===== الألوان الدلالية - ألوان حديثة =====
-  static const Color success = Color(0xFF10B981); // أخضر زمردي
-  static const Color successLight = Color(0xFF34D399);
-  static const Color successDark = Color(0xFF059669);
-  static const Color successContainer = Color(0xFFD1FAE5);
+  // ===== الألوان الدلالية - ألوان طبيعية =====
+  static const Color success = Color(0xFF4A7C59); // أخضر نجاح طبيعي
+  static const Color successLight = Color(0xFF6B9B7B);
+  static const Color successDark = Color(0xFF2F5233);
+  static const Color successContainer = Color(0xFFE8F5E9);
   
-  static const Color error = Color(0xFFEF4444); // أحمر حديث
-  static const Color errorLight = Color(0xFFF87171);
-  static const Color errorDark = Color(0xFFDC2626);
-  static const Color errorContainer = Color(0xFFFEE2E2);
+  static const Color error = Color(0xFFB74C4C); // أحمر طبيعي
+  static const Color errorLight = Color(0xFFD47070);
+  static const Color errorDark = Color(0xFF8B3A3A);
+  static const Color errorContainer = Color(0xFFFDEDED);
   
-  static const Color warning = Color(0xFFF59E0B); // برتقالي كهرماني
-  static const Color warningLight = Color(0xFFFBBF24);
-  static const Color warningDark = Color(0xFFD97706);
-  static const Color warningContainer = Color(0xFFFEF3C7);
+  static const Color warning = Color(0xFFCC9900); // برتقالي ذهبي
+  static const Color warningLight = Color(0xFFE6B333);
+  static const Color warningDark = Color(0xFF996600);
+  static const Color warningContainer = Color(0xFFFFF4CC);
   
-  static const Color info = Color(0xFF3B82F6); // أزرق سماوي
-  static const Color infoLight = Color(0xFF60A5FA);
-  static const Color infoDark = Color(0xFF2563EB);
-  static const Color infoContainer = Color(0xFFDBEAFE);
+  static const Color info = Color(0xFF5C7893); // أزرق رمادي
+  static const Color infoLight = Color(0xFF7A95AF);
+  static const Color infoDark = Color(0xFF3E5266);
+  static const Color infoContainer = Color(0xFFE8F0F7);
 
   // ===== ألوان الوضع الفاتح =====
-  static const Color lightBackground = neutral50;
-  static const Color lightSurface = neutral0;
-  static const Color lightSurfaceVariant = neutral100;
-  static const Color lightCard = neutral0;
-  static const Color lightDivider = Color(0x1A212529); // 10% opacity
-  static const Color lightOutline = neutral300;
-  static const Color lightTextPrimary = neutral900;
-  static const Color lightTextSecondary = neutral600;
-  static const Color lightTextHint = neutral500;
-  static const Color lightTextDisabled = neutral400;
+  static const Color lightBackground = Color(0xFFFAFBF8);
+  static const Color lightSurface = Color(0xFFFFFFFF);
+  static const Color lightSurfaceVariant = Color(0xFFF5F6F3);
+  static const Color lightCard = Color(0xFFFFFFFF);
+  static const Color lightDivider = Color(0x1A252921); // 10% opacity
+  static const Color lightOutline = Color(0xFFDFE2DB);
+  static const Color lightTextPrimary = Color(0xFF252921);
+  static const Color lightTextSecondary = Color(0xFF545B4B);
+  static const Color lightTextHint = Color(0xFF7C8471);
+  static const Color lightTextDisabled = Color(0xFFADB5A3);
 
   // ===== ألوان الوضع الداكن =====
-  static const Color darkBackground = Color(0xFF0F1419); // خلفية داكنة حديثة
-  static const Color darkSurface = Color(0xFF1A1F26);
-  static const Color darkSurfaceVariant = Color(0xFF22272E);
-  static const Color darkCard = Color(0xFF1C2128);
+  static const Color darkBackground = Color(0xFF0E110D); // خلفية داكنة بلمسة خضراء
+  static const Color darkSurface = Color(0xFF1A1D18);
+  static const Color darkSurfaceVariant = Color(0xFF232621);
+  static const Color darkCard = Color(0xFF1F221C);
   static const Color darkDivider = Color(0x1AFFFFFF); // 10% opacity
-  static const Color darkOutline = Color(0xFF373E47);
-  static const Color darkTextPrimary = Color(0xFFF7F9FB);
-  static const Color darkTextSecondary = Color(0xFFADBBC6);
-  static const Color darkTextHint = Color(0xFF8B98A5);
-  static const Color darkTextDisabled = Color(0xFF636E7B);
+  static const Color darkOutline = Color(0xFF3A4034);
+  static const Color darkTextPrimary = Color(0xFFF5F6F3);
+  static const Color darkTextSecondary = Color(0xFFCED3C7);
+  static const Color darkTextHint = Color(0xFFADB5A3);
+  static const Color darkTextDisabled = Color(0xFF7C8471);
 
   // ===== الخطوط =====
   static const String fontFamilyArabic = 'Cairo';
@@ -103,7 +103,7 @@ class ThemeConstants {
   static const FontWeight extraBold = FontWeight.w800;
   static const FontWeight black = FontWeight.w900;
 
-  // ===== أحجام النصوص - نظام حديث =====
+  // ===== أحجام النصوص - نظام متدرج =====
   static const double textSizeXs = 11.0;
   static const double textSizeSm = 13.0;
   static const double textSizeMd = 15.0;
@@ -116,7 +116,7 @@ class ThemeConstants {
   static const double textSize6xl = 60.0;
   static const double textSize7xl = 72.0;
 
-  // ===== المسافات - نظام 4pt محدث =====
+  // ===== المسافات - نظام 4pt =====
   static const double space0 = 0.0;
   static const double space0_5 = 2.0;
   static const double space1 = 4.0;
@@ -137,7 +137,7 @@ class ThemeConstants {
   static const double space16 = 64.0;
   static const double space20 = 80.0;
 
-  // ===== نصف القطر - أشكال أكثر نعومة =====
+  // ===== نصف القطر - أشكال ناعمة =====
   static const double radiusNone = 0.0;
   static const double radiusXs = 4.0;
   static const double radiusSm = 8.0;
@@ -157,7 +157,7 @@ class ThemeConstants {
   static const double borderHeavy = 3.0;
 
   // ===== نقاط التوقف =====
-  static const double breakpointMobile = 428.0; // iPhone 14 Pro Max
+  static const double breakpointMobile = 428.0;
   static const double breakpointTablet = 768.0;
   static const double breakpointDesktop = 1280.0;
   static const double breakpointWide = 1920.0;
@@ -192,7 +192,7 @@ class ThemeConstants {
   static const double avatarLg = 56.0;
   static const double avatarXl = 72.0;
 
-  // ===== الظلال - نظام حديث =====
+  // ===== الظلال =====
   static const double elevationNone = 0.0;
   static const double elevationXs = 1.0;
   static const double elevationSm = 2.0;
@@ -200,21 +200,22 @@ class ThemeConstants {
   static const double elevationLg = 8.0;
   static const double elevationXl = 16.0;
   static const double elevation2xl = 24.0;
-  
-  // Aliases for compatibility
   static const double elevation2 = elevationSm;
 
   // ===== الشفافية =====
   static const double opacity0 = 0.0;
   static const double opacity5 = 0.05;
   static const double opacity10 = 0.10;
+  static const double opacity15 = 0.15;
   static const double opacity20 = 0.20;
+  static const double opacity25 = 0.25;
   static const double opacity30 = 0.30;
   static const double opacity40 = 0.40;
   static const double opacity50 = 0.50;
   static const double opacity60 = 0.60;
   static const double opacity70 = 0.70;
   static const double opacity80 = 0.80;
+  static const double opacity85 = 0.85;
   static const double opacity90 = 0.90;
   static const double opacity95 = 0.95;
   static const double opacity100 = 1.0;
@@ -233,7 +234,7 @@ class ThemeConstants {
   static const Curve curveBounce = Curves.elasticOut;
   static const Curve curveOvershoot = Curves.elasticOut;
 
-  // ===== الظلال الجاهزة - نظام حديث =====
+  // ===== الظلال الجاهزة - أنيقة وناعمة =====
   static List<BoxShadow> get shadowXs => [
     BoxShadow(
       color: const Color(0x0A000000),
@@ -385,14 +386,14 @@ class ThemeConstants {
         : lightOutline;
   }
 
-  /// ألوان الصلوات - نظام لوني موحد
+  /// ألوان الصلوات - ألوان طبيعية متناسقة
   static const Map<String, Color> prayerColors = {
-    'fajr': Color(0xFF4F46E5), // Indigo
-    'sunrise': Color(0xFFF59E0B), // Amber
-    'dhuhr': Color(0xFFEAB308), // Yellow
-    'asr': Color(0xFF14B8A6), // Teal
-    'maghrib': Color(0xFFF97316), // Orange
-    'isha': Color(0xFF8B5CF6), // Purple
+    'fajr': Color(0xFF4A7C59), // أخضر فجر
+    'sunrise': Color(0xFFCC9900), // ذهبي شروق
+    'dhuhr': Color(0xFFB8860B), // ذهبي ظهر
+    'asr': Color(0xFF8B6F47), // بني عصر
+    'maghrib': Color(0xFFB74C4C), // أحمر مغرب
+    'isha': Color(0xFF5C7893), // أزرق عشاء
   };
 
   static Color getPrayerColor(String name) {
@@ -436,7 +437,7 @@ class ThemeConstants {
     return shadow2xl;
   }
 
-  /// ألوان التدرج الحديثة
+  /// ألوان التدرج الأنيقة
   static List<Color> get primaryGradient => [primary, primaryDark];
   static List<Color> get secondaryGradient => [secondary, secondaryDark];
   static List<Color> get successGradient => [success, successDark];
@@ -444,24 +445,24 @@ class ThemeConstants {
   static List<Color> get warningGradient => [warning, warningDark];
   static List<Color> get infoGradient => [info, infoDark];
   
-  /// تدرجات خاصة
+  /// تدرجات خاصة بتصميم احترافي
   static List<Color> get sunriseGradient => [
-    const Color(0xFFFF6B6B),
-    const Color(0xFFFFD93D),
+    const Color(0xFFDAA520),
+    const Color(0xFFCC9900),
   ];
   
   static List<Color> get sunsetGradient => [
-    const Color(0xFFFF6B6B),
-    const Color(0xFF4ECDC4),
+    const Color(0xFFB74C4C),
+    const Color(0xFF8B3A3A),
   ];
   
   static List<Color> get nightGradient => [
-    const Color(0xFF2C3E50),
-    const Color(0xFF3498DB),
+    const Color(0xFF3E4A36),
+    const Color(0xFF252921),
   ];
   
-  static List<Color> get oceanGradient => [
-    const Color(0xFF2E3192),
-    const Color(0xFF1BFFFF),
+  static List<Color> get natureGradient => [
+    const Color(0xFF5D7052),
+    const Color(0xFF3E4A36),
   ];
 }
