@@ -26,6 +26,9 @@ import 'package:athkar_app/core/infrastructure/services/permissions/permission_s
 import 'package:athkar_app/core/infrastructure/services/device/battery/battery_service.dart';
 import 'package:athkar_app/core/infrastructure/services/device/battery/battery_service_impl.dart';
 
+// إدارة الثيم
+import 'package:athkar_app/app/themes/core/theme_notifier.dart';
+
 // معالج الأخطاء
 import '../../core/error/error_handler.dart';
 
@@ -68,22 +71,25 @@ class ServiceLocator {
       // 2. خدمات التخزين
       await _registerStorageServices();
 
-      // 3. خدمات السجلات
+      // 3. إدارة الثيم
+      _registerThemeServices();
+
+      // 4. خدمات السجلات
       _registerLoggingServices();
 
-      // 4. خدمات الأذونات
+      // 5. خدمات الأذونات
       _registerPermissionServices();
 
-      // 5. خدمات الإشعارات
+      // 6. خدمات الإشعارات
       await _registerNotificationServices();
 
-      // 6. خدمات الجهاز
+      // 7. خدمات الجهاز
       _registerDeviceServices();
 
-      // 7. معالج الأخطاء
+      // 8. معالج الأخطاء
       _registerErrorHandler();
 
-      // 8. خدمات الميزات
+      // 9. خدمات الميزات
       _registerFeatureServices();
 
       _isInitialized = true;
@@ -129,6 +135,17 @@ class ServiceLocator {
           getIt<SharedPreferences>(),
           logger: getIt.isRegistered<LoggerService>() ? getIt<LoggerService>() : null,
         ),
+      );
+    }
+  }
+
+  /// تسجيل إدارة الثيم
+  void _registerThemeServices() {
+    debugPrint('ServiceLocator: تسجيل خدمات الثيم...');
+    
+    if (!getIt.isRegistered<ThemeNotifier>()) {
+      getIt.registerLazySingleton<ThemeNotifier>(
+        () => ThemeNotifier(getIt<StorageService>()),
       );
     }
   }
@@ -290,6 +307,11 @@ class ServiceLocator {
     debugPrint('ServiceLocator: تنظيف الموارد...');
 
     try {
+      // تنظيف إدارة الثيم
+      if (getIt.isRegistered<ThemeNotifier>()) {
+        getIt<ThemeNotifier>().dispose();
+      }
+
       // تنظيف خدمات الميزات
       if (getIt.isRegistered<PrayerTimesService>()) {
         getIt<PrayerTimesService>().dispose();
@@ -363,4 +385,7 @@ extension ServiceLocatorExtensions on BuildContext {
   
   /// الحصول على خدمة القبلة
   QiblaService get qiblaService => getIt<QiblaService>();
+  
+  /// الحصول على إدارة الثيم
+  ThemeNotifier get themeNotifier => getIt<ThemeNotifier>();
 }

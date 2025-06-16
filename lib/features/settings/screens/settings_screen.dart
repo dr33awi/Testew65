@@ -1,4 +1,4 @@
-// lib/features/settings/screens/settings_screen.dart (محدث مع إزالة اللغة وحجم الخط وتفعيل الثيم)
+// lib/features/settings/screens/settings_screen.dart (محدث مع مواقيت الصلاة)
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -10,6 +10,9 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
+import 'package:athkar_app/app/themes/core/theme_notifier.dart';
+import '../../../features/prayer_times/services/prayer_times_service.dart';
+import '../../../features/prayer_times/models/prayer_time_model.dart';
 import '../models/app_settings.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/settings_tile.dart';
@@ -25,9 +28,12 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
   late final StorageService _storage;
   late final PermissionService _permissionService;
   late final LoggerService _logger;
+  late final ThemeNotifier _themeNotifier;
+  late final PrayerTimesService _prayerService;
   late final AnimationController _animationController;
   
   AppSettings _settings = const AppSettings();
+  PrayerLocation? _currentLocation;
   bool _loading = true;
   
   @override
@@ -36,6 +42,8 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
     _storage = getIt<StorageService>();
     _permissionService = getIt<PermissionService>();
     _logger = getIt<LoggerService>();
+    _themeNotifier = getIt<ThemeNotifier>();
+    _prayerService = getIt<PrayerTimesService>();
     _animationController = AnimationController(
       vsync: this,
       duration: ThemeConstants.durationNormal,
@@ -52,14 +60,16 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
   Future<void> _loadSettings() async {
     try {
       final settings = AppSettings(
-        isDarkMode: _storage.getBool('theme_mode') ?? false,
+        isDarkMode: _themeNotifier.isDarkMode,
         notificationsEnabled: await _permissionService.checkNotificationPermission(),
         soundEnabled: _storage.getBool('sound_enabled') ?? false,
         vibrationEnabled: _storage.getBool('vibration_enabled') ?? true,
+        locationEnabled: _prayerService.currentLocation != null,
       );
       
       setState(() {
         _settings = settings;
+        _currentLocation = _prayerService.currentLocation;
         _loading = false;
       });
       
@@ -81,7 +91,6 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
   
   Future<void> _saveSettings() async {
     try {
-      await _storage.setBool('theme_mode', _settings.isDarkMode);
       await _storage.setBool('sound_enabled', _settings.soundEnabled);
       await _storage.setBool('vibration_enabled', _settings.vibrationEnabled);
       
@@ -101,38 +110,26 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
   Future<void> _toggleTheme(bool value) async {
     HapticFeedback.lightImpact();
     
-    // تحديث الحالة المحلية
-    setState(() {
-      _settings = _settings.copyWith(isDarkMode: value);
-    });
-    
-    // حفظ الإعدادات
-    await _saveSettings();
-    
-    // تطبيق الثيم فوراً - هذا يتطلب إعادة بناء التطبيق بالكامل
-    // يمكنك استخدام Provider أو Bloc لإدارة الثيم بشكل أفضل
-    if (mounted) {
-      // إشعار المستخدم بالتغيير
+    try {
+      await _themeNotifier.setTheme(value);
+      setState(() {
+        _settings = _settings.copyWith(isDarkMode: value);
+      });
+      
       context.showSuccessSnackBar(
         value ? 'تم تفعيل الوضع الليلي' : 'تم تفعيل الوضع النهاري'
       );
       
-      // لتطبيق الثيم فوراً، يمكنك إرسال إشعار للتطبيق الرئيسي
-      // أو استخدام حلول أخرى مثل Provider
-      
-      // مثال بسيط: إعادة تشغيل التطبيق
-      final shouldRestart = await AppInfoDialog.showConfirmation(
-        context: context,
-        title: 'تغيير المظهر',
-        content: 'لتطبيق التغيير بشكل كامل، يُنصح بإعادة تشغيل التطبيق. هل تريد إعادة التشغيل الآن؟',
-        confirmText: 'إعادة التشغيل',
-        cancelText: 'لاحقاً',
-        icon: value ? Icons.dark_mode : Icons.light_mode,
+      _logger.info(
+        message: '[Settings] تم تغيير الثيم',
+        data: {'isDarkMode': value},
       );
-      
-      if (shouldRestart == true) {
-        SystemNavigator.pop(); // خروج مؤقت - في التطبيق الحقيقي ستحتاج لحل أفضل
-      }
+    } catch (e) {
+      _logger.error(
+        message: '[Settings] فشل تغيير الثيم',
+        error: e,
+      );
+      context.showErrorSnackBar('فشل تغيير المظهر');
     }
   }
   
@@ -154,6 +151,50 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
       context.showSuccessSnackBar('تم منح إذن الإشعارات');
     } else {
       context.showErrorSnackBar('تم رفض إذن الإشعارات');
+    }
+  }
+  
+  Future<void> _updateLocation() async {
+    HapticFeedback.lightImpact();
+    
+    try {
+      context.showInfoSnackBar('جاري تحديث الموقع...');
+      
+      final location = await _prayerService.getCurrentLocation();
+      await _prayerService.updatePrayerTimes();
+      
+      setState(() {
+        _currentLocation = location;
+        _settings = _settings.copyWith(locationEnabled: true);
+      });
+      
+      context.showSuccessSnackBar('تم تحديث الموقع بنجاح');
+      
+      _logger.info(
+        message: '[Settings] تم تحديث الموقع',
+        data: {
+          'city': location.cityName,
+          'country': location.countryName,
+        },
+      );
+    } catch (e) {
+      _logger.error(
+        message: '[Settings] فشل تحديث الموقع',
+        error: e,
+      );
+      
+      final shouldOpenSettings = await AppInfoDialog.showConfirmation(
+        context: context,
+        title: 'فشل تحديث الموقع',
+        content: 'لم نتمكن من تحديد موقعك. يرجى التحقق من إعدادات الموقع والمحاولة مرة أخرى.',
+        confirmText: 'فتح الإعدادات',
+        cancelText: 'إلغاء',
+        icon: Icons.location_off,
+      );
+      
+      if (shouldOpenSettings == true) {
+        await _permissionService.openAppSettings();
+      }
     }
   }
   
@@ -196,38 +237,6 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
     }
   }
   
-  Future<void> _openLocationSettings() async {
-    HapticFeedback.lightImpact();
-    final hasPermission = await _permissionService.checkPermissionStatus(
-      AppPermissionType.location,
-    );
-    
-    if (hasPermission == AppPermissionStatus.granted) {
-      context.showSuccessSnackBar('إذن الموقع ممنوح بالفعل');
-    } else {
-      final result = await _permissionService.requestPermission(
-        AppPermissionType.location,
-      );
-      
-      if (result == AppPermissionStatus.granted) {
-        context.showSuccessSnackBar('تم منح إذن الموقع');
-      } else if (result == AppPermissionStatus.permanentlyDenied) {
-        final shouldOpenSettings = await AppInfoDialog.showConfirmation(
-          context: context,
-          title: 'إذن الموقع مطلوب',
-          content: 'يرجى منح إذن الموقع من إعدادات التطبيق لحساب أوقات الصلاة بدقة',
-          confirmText: 'فتح الإعدادات',
-          cancelText: 'إلغاء',
-          icon: Icons.location_off,
-        );
-        
-        if (shouldOpenSettings == true) {
-          await _permissionService.openAppSettings();
-        }
-      }
-    }
-  }
-  
   Future<void> _openBatterySettings() async {
     HapticFeedback.lightImpact();
     final hasPermission = await _permissionService.checkPermissionStatus(
@@ -266,11 +275,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
     
     if (shouldClear == true) {
       try {
-        // مسح الكاش
         _permissionService.clearPermissionCache();
-        
-        // TODO: مسح كاش الصور والبيانات الأخرى
-        
         context.showSuccessSnackBar('تم مسح البيانات المؤقتة');
         _logger.logEvent('cache_cleared');
       } catch (e) {
@@ -341,9 +346,7 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
             ThemeConstants.space3.h,
             Text(
               'تطبيق شامل للمسلم يحتوي على الأذكار اليومية ومواقيت الصلاة واتجاه القبلة والمزيد من الميزات الإسلامية.',
-              style: context.bodyMedium?.copyWith(
-                height: 1.6,
-              ),
+              style: context.bodyMedium?.copyWith(height: 1.6),
             ),
             ThemeConstants.space3.h,
             Container(
@@ -461,7 +464,36 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
   Widget _buildContent() {
     return Column(
       children: [
-        // إعدادات الإشعارات
+        // إعدادات مواقيت الصلاة (الجديد)
+        SettingsSection(
+          title: 'مواقيت الصلاة',
+          icon: Icons.mosque_outlined,
+          children: [
+            SettingsTile(
+              icon: Icons.location_on_outlined,
+              title: 'الموقع الحالي',
+              subtitle: _currentLocation?.displayName ?? 'لم يتم تحديد الموقع',
+              onTap: _updateLocation,
+              trailing: _currentLocation != null 
+                  ? Icon(Icons.check_circle, color: ThemeConstants.success)
+                  : Icon(Icons.refresh, color: context.primaryColor),
+            ),
+            SettingsTile(
+              icon: Icons.calculate_outlined,
+              title: 'طريقة الحساب',
+              subtitle: 'أم القرى (المملكة العربية السعودية)',
+              onTap: () => Navigator.pushNamed(context, AppRouter.prayerSettings),
+            ),
+            SettingsTile(
+              icon: Icons.notifications_outlined,
+              title: 'إشعارات الصلاة',
+              subtitle: 'تخصيص تنبيهات أوقات الصلاة',
+              onTap: () => Navigator.pushNamed(context, AppRouter.prayerNotificationsSettings),
+            ),
+          ],
+        ),
+        
+        // إعدادات الإشعارات والتنبيهات
         SettingsSection(
           title: 'الإشعارات والتنبيهات',
           icon: Icons.notifications_outlined,
@@ -478,15 +510,6 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                       onPressed: _requestNotificationPermission,
                       child: const Text('تفعيل'),
                     ),
-            ),
-            SettingsTile(
-              icon: Icons.mosque_outlined,
-              title: 'إشعارات الصلاة',
-              subtitle: 'تخصيص تنبيهات أوقات الصلاة',
-              onTap: () => Navigator.pushNamed(
-                context, 
-                AppRouter.prayerNotificationsSettings,
-              ),
             ),
             SettingsTile(
               icon: Icons.menu_book_outlined,
@@ -533,12 +556,6 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
           title: 'الإعدادات العامة',
           icon: Icons.tune_outlined,
           children: [
-            SettingsTile(
-              icon: Icons.location_on_outlined,
-              title: 'الموقع',
-              subtitle: 'إعدادات الموقع لحساب أوقات الصلاة',
-              onTap: _openLocationSettings,
-            ),
             SettingsTile(
               icon: Icons.battery_saver_outlined,
               title: 'تحسين البطارية',
@@ -623,5 +640,20 @@ class _InfoRow extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+// Extension للموقع
+extension on PrayerLocation {
+  String get displayName {
+    if (cityName != null && countryName != null) {
+      return '$cityName، $countryName';
+    } else if (cityName != null) {
+      return cityName!;
+    } else if (countryName != null) {
+      return countryName!;
+    } else {
+      return 'موقع غير محدد';
+    }
   }
 }

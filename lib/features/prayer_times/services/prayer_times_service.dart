@@ -1,4 +1,4 @@
-// lib/features/prayer_times/services/prayer_times_service.dart
+// lib/features/prayer_times/services/prayer_times_service.dart (محدث)
 
 import 'dart:async';
 import 'dart:io';
@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
 import 'package:adhan/adhan.dart' as adhan;
-import 'package:rxdart/rxdart.dart';
 
 import '../../../core/infrastructure/services/logging/logger_service.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
@@ -41,6 +40,7 @@ class PrayerTimesService {
   
   // Cache
   final Map<String, DailyPrayerTimes> _timesCache = {};
+  DailyPrayerTimes? _currentTimes; // لحفظ المواقيت الحالية
 
   PrayerTimesService({
     required LoggerService logger,
@@ -56,18 +56,25 @@ class PrayerTimesService {
   Future<void> _initialize() async {
     _logger.debug(message: '[PrayerTimesService] تهيئة خدمة مواقيت الصلاة');
     
-    // تحميل الإعدادات المحفوظة
-    await _loadSavedSettings();
-    
-    // تحميل الموقع المحفوظ
-    await _loadSavedLocation();
-    
-    // بدء المؤقتات
-    _startTimers();
-    
-    // تحديث المواقيت
-    if (_currentLocation != null) {
-      await updatePrayerTimes();
+    try {
+      // تحميل الإعدادات المحفوظة
+      await _loadSavedSettings();
+      
+      // تحميل الموقع المحفوظ
+      await _loadSavedLocation();
+      
+      // بدء المؤقتات
+      _startTimers();
+      
+      // تحديث المواقيت إذا كان هناك موقع محفوظ
+      if (_currentLocation != null) {
+        await updatePrayerTimes();
+      }
+    } catch (e) {
+      _logger.error(
+        message: '[PrayerTimesService] خطأ في تهيئة الخدمة',
+        error: e,
+      );
     }
   }
 
@@ -85,6 +92,14 @@ class PrayerTimesService {
       if (notifJson != null) {
         _notificationSettings = PrayerNotificationSettings.fromJson(notifJson);
       }
+      
+      _logger.debug(
+        message: '[PrayerTimesService] تم تحميل الإعدادات',
+        data: {
+          'method': _settings.method.toString(),
+          'notifications_enabled': _notificationSettings.enabled,
+        },
+      );
     } catch (e) {
       _logger.error(
         message: '[PrayerTimesService] خطأ في تحميل الإعدادات',
@@ -128,9 +143,8 @@ class PrayerTimesService {
     // مؤقت العد التنازلي كل ثانية
     _countdownTimer?.cancel();
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      final times = _prayerTimesController.valueOrNull;
-      if (times != null) {
-        _nextPrayerController.add(times.nextPrayer);
+      if (_currentTimes != null) {
+        _nextPrayerController.add(_currentTimes!.nextPrayer);
       }
     });
   }
@@ -152,15 +166,14 @@ class PrayerTimesService {
         throw LocationException('خدمة الموقع غير مفعلة في الجهاز', code: 'SERVICE_DISABLED');
       }
       
-      // الحصول على الموقع - محاولة دقيقة أولاً
+      // الحصول على الموقع
       Position position;
       try {
         position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high,
-          timeLimit: const Duration(seconds: 10),
+          timeLimit: const Duration(seconds: 15),
         );
       } catch (timeoutError) {
-        // إذا استغرق وقتاً طويلاً، نستخدم دقة أقل
         _logger.warning(message: 'تعذر الحصول على موقع دقيق، محاولة الحصول على موقع تقريبي');
         position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.low,
@@ -168,10 +181,8 @@ class PrayerTimesService {
         );
       }
       
-      // الحصول على معلومات المنطقة الزمنية
+      // الحصول على معلومات المنطقة الزمنية والمدينة
       final timezone = await _getTimezone(position.latitude, position.longitude);
-      
-      // الحصول على اسم المدينة والدولة
       final cityInfo = await _getCityInfo(position.latitude, position.longitude);
       
       final location = PrayerLocation(
@@ -206,7 +217,6 @@ class PrayerTimesService {
       
       // إذا فشل الحصول على الموقع وليس لدينا موقع محفوظ، نستخدم موقع افتراضي
       if (_currentLocation == null) {
-        // موقع الرياض كموقع افتراضي
         const defaultLocation = PrayerLocation(
           latitude: 24.7136,
           longitude: 46.6753,
@@ -215,14 +225,7 @@ class PrayerTimesService {
           timezone: 'Asia/Riyadh',
         );
         
-        _logger.warning(
-          message: '[PrayerTimesService] استخدام موقع افتراضي',
-          data: {
-            'latitude': defaultLocation.latitude,
-            'longitude': defaultLocation.longitude,
-            'city': defaultLocation.cityName,
-          },
-        );
+        _logger.warning(message: '[PrayerTimesService] استخدام موقع افتراضي (الرياض)');
         
         _currentLocation = defaultLocation;
         await _saveLocation(defaultLocation);
@@ -251,11 +254,8 @@ class PrayerTimesService {
 
   /// الحصول على المنطقة الزمنية
   Future<String> _getTimezone(double latitude, double longitude) async {
-    // في الإصدار الحقيقي يمكن استخدام API خارجية للحصول على المنطقة الزمنية
-    // حسب الموقع الجغرافي
-    
-    // لكن هنا سنستخدم تخمين بسيط للمنطقة الزمنية
     try {
+      // تخمين بسيط للمنطقة الزمنية حسب خط الطول
       if (longitude >= 20 && longitude <= 60) {
         return 'Asia/Riyadh'; // غرب آسيا والشرق الأوسط
       } else if (longitude >= 60 && longitude <= 90) {
@@ -274,7 +274,7 @@ class PrayerTimesService {
         message: '[PrayerTimesService] خطأ في تحديد المنطقة الزمنية',
         error: e,
       );
-      return 'UTC'; // قيمة افتراضية
+      return 'UTC';
     }
   }
 
@@ -286,17 +286,19 @@ class PrayerTimesService {
         
         if (placemarks.isNotEmpty) {
           final placemark = placemarks.first;
-          final city = placemark.locality ?? placemark.subAdministrativeArea ?? placemark.administrativeArea;
-          final country = placemark.country;
+          final city = placemark.locality ?? 
+                      placemark.subAdministrativeArea ?? 
+                      placemark.administrativeArea ?? 
+                      'غير معروف';
+          final country = placemark.country ?? 'غير معروف';
           
           return {
-            'city': city ?? 'غير معروف',
-            'country': country ?? 'غير معروف',
+            'city': city,
+            'country': country,
           };
         }
       }
       
-      // في حالة عدم وجود معلومات
       return {
         'city': 'غير معروف',
         'country': 'غير معروف',
@@ -340,33 +342,28 @@ class PrayerTimesService {
     try {
       // تحقق من وجود المواقيت في الذاكرة المؤقتة
       if (_timesCache.containsKey(dateKey)) {
-        final cachedTimes = _timesCache[dateKey]!;
-        
-        // تحديث حالات الصلوات
-        final updatedTimes = cachedTimes.updatePrayerStates();
+        final cachedTimes = _timesCache[dateKey]!.updatePrayerStates();
+        _currentTimes = cachedTimes;
         
         // إرسال إلى Stream
-        _prayerTimesController.add(updatedTimes);
-        _nextPrayerController.add(updatedTimes.nextPrayer);
+        _prayerTimesController.add(cachedTimes);
+        _nextPrayerController.add(cachedTimes.nextPrayer);
         
-        _logger.info(
-          message: '[PrayerTimesService] استخدام المواقيت من الذاكرة المؤقتة',
-          data: {'date': dateKey},
-        );
-        
-        return updatedTimes;
+        return cachedTimes;
       }
       
       // حساب المواقيت باستخدام مكتبة adhan
       final prayers = _calculatePrayerTimes(targetDate, _currentLocation!);
       
-      // تحديث حالات الصلوات
+      // إنشاء نموذج المواقيت اليومية
       final dailyTimes = DailyPrayerTimes(
         date: targetDate,
         prayers: prayers,
         location: _currentLocation!,
         settings: _settings,
       ).updatePrayerStates();
+      
+      _currentTimes = dailyTimes;
       
       // حفظ في الكاش
       await _cachePrayerTimes(dailyTimes);
@@ -385,7 +382,7 @@ class PrayerTimesService {
         message: '[PrayerTimesService] تم حساب المواقيت',
         data: {
           'nextPrayer': dailyTimes.nextPrayer?.nameAr,
-          'remainingTime': dailyTimes.nextPrayer?.remainingTimeText,
+          'prayerCount': prayers.length,
         },
       );
       
@@ -401,69 +398,77 @@ class PrayerTimesService {
 
   /// حساب مواقيت الصلاة
   List<PrayerTime> _calculatePrayerTimes(DateTime date, PrayerLocation location) {
-    // إعداد الإحداثيات
-    final coordinates = adhan.Coordinates(
-      location.latitude,
-      location.longitude,
-    );
-    
-    // إعداد طريقة الحساب
-    final params = _getCalculationParameters();
-    
-    // إعداد التاريخ
-    final components = adhan.DateComponents.from(date);
-    
-    // حساب المواقيت
-    final prayerTimes = adhan.PrayerTimes(coordinates, components, params);
-    
-    // تطبيق التعديلات اليدوية
-    final Map<String, int> adjustments = _settings.manualAdjustments;
-    
-    // تحويل إلى نموذج التطبيق
-    return [
-      PrayerTime(
-        id: 'fajr',
-        nameAr: 'الفجر',
-        nameEn: 'Fajr',
-        time: _applyAdjustment(prayerTimes.fajr, adjustments['fajr'] ?? 0),
-        type: PrayerType.fajr,
-      ),
-      PrayerTime(
-        id: 'sunrise',
-        nameAr: 'الشروق',
-        nameEn: 'Sunrise',
-        time: _applyAdjustment(prayerTimes.sunrise, adjustments['sunrise'] ?? 0),
-        type: PrayerType.sunrise,
-      ),
-      PrayerTime(
-        id: 'dhuhr',
-        nameAr: 'الظهر',
-        nameEn: 'Dhuhr',
-        time: _applyAdjustment(prayerTimes.dhuhr, adjustments['dhuhr'] ?? 0),
-        type: PrayerType.dhuhr,
-      ),
-      PrayerTime(
-        id: 'asr',
-        nameAr: 'العصر',
-        nameEn: 'Asr',
-        time: _applyAdjustment(prayerTimes.asr, adjustments['asr'] ?? 0),
-        type: PrayerType.asr,
-      ),
-      PrayerTime(
-        id: 'maghrib',
-        nameAr: 'المغرب',
-        nameEn: 'Maghrib',
-        time: _applyAdjustment(prayerTimes.maghrib, adjustments['maghrib'] ?? 0),
-        type: PrayerType.maghrib,
-      ),
-      PrayerTime(
-        id: 'isha',
-        nameAr: 'العشاء',
-        nameEn: 'Isha',
-        time: _applyAdjustment(prayerTimes.isha, adjustments['isha'] ?? 0),
-        type: PrayerType.isha,
-      ),
-    ];
+    try {
+      // إعداد الإحداثيات
+      final coordinates = adhan.Coordinates(
+        location.latitude,
+        location.longitude,
+      );
+      
+      // إعداد طريقة الحساب
+      final params = _getCalculationParameters();
+      
+      // إعداد التاريخ
+      final components = adhan.DateComponents.from(date);
+      
+      // حساب المواقيت
+      final prayerTimes = adhan.PrayerTimes(coordinates, components, params);
+      
+      // تطبيق التعديلات اليدوية
+      final adjustments = _settings.manualAdjustments;
+      
+      // تحويل إلى نموذج التطبيق
+      return [
+        PrayerTime(
+          id: 'fajr',
+          nameAr: 'الفجر',
+          nameEn: 'Fajr',
+          time: _applyAdjustment(prayerTimes.fajr, adjustments['fajr'] ?? 0),
+          type: PrayerType.fajr,
+        ),
+        PrayerTime(
+          id: 'sunrise',
+          nameAr: 'الشروق',
+          nameEn: 'Sunrise',
+          time: _applyAdjustment(prayerTimes.sunrise, adjustments['sunrise'] ?? 0),
+          type: PrayerType.sunrise,
+        ),
+        PrayerTime(
+          id: 'dhuhr',
+          nameAr: 'الظهر',
+          nameEn: 'Dhuhr',
+          time: _applyAdjustment(prayerTimes.dhuhr, adjustments['dhuhr'] ?? 0),
+          type: PrayerType.dhuhr,
+        ),
+        PrayerTime(
+          id: 'asr',
+          nameAr: 'العصر',
+          nameEn: 'Asr',
+          time: _applyAdjustment(prayerTimes.asr, adjustments['asr'] ?? 0),
+          type: PrayerType.asr,
+        ),
+        PrayerTime(
+          id: 'maghrib',
+          nameAr: 'المغرب',
+          nameEn: 'Maghrib',
+          time: _applyAdjustment(prayerTimes.maghrib, adjustments['maghrib'] ?? 0),
+          type: PrayerType.maghrib,
+        ),
+        PrayerTime(
+          id: 'isha',
+          nameAr: 'العشاء',
+          nameEn: 'Isha',
+          time: _applyAdjustment(prayerTimes.isha, adjustments['isha'] ?? 0),
+          type: PrayerType.isha,
+        ),
+      ];
+    } catch (e) {
+      _logger.error(
+        message: '[PrayerTimesService] خطأ في حساب المواقيت',
+        error: e,
+      );
+      rethrow;
+    }
   }
 
   /// تطبيق تعديل الوقت
@@ -520,8 +525,15 @@ class PrayerTimesService {
 
   /// حفظ المواقيت في الكاش
   Future<void> _cachePrayerTimes(DailyPrayerTimes times) async {
-    final key = '${_cachedTimesKey}_${times.date.toIso8601String().split('T')[0]}';
-    await _storage.setMap(key, times.toJson());
+    try {
+      final key = '${_cachedTimesKey}_${times.date.toIso8601String().split('T')[0]}';
+      await _storage.setMap(key, times.toJson());
+    } catch (e) {
+      _logger.error(
+        message: '[PrayerTimesService] خطأ في حفظ الكاش',
+        error: e,
+      );
+    }
   }
 
   /// الحصول على المواقيت المحفوظة
@@ -547,28 +559,20 @@ class PrayerTimesService {
   Future<void> _scheduleNotifications(DailyPrayerTimes times) async {
     if (!_notificationSettings.enabled) return;
     
-    _logger.info(message: '[PrayerTimesService] جدولة تنبيهات الصلاة');
-    
     try {
       // إلغاء التنبيهات السابقة
       await NotificationManager.instance.cancelAllPrayerNotifications();
       
       // جدولة تنبيهات جديدة
       for (final prayer in times.prayers) {
-        // تخطي الشروق لأنه ليس صلاة
-        if (prayer.type == PrayerType.sunrise) {
-          continue;
-        }
+        // تخطي الشروق
+        if (prayer.type == PrayerType.sunrise) continue;
         
         // التحقق من تفعيل التنبيه لهذه الصلاة
-        if (_notificationSettings.enabledPrayers[prayer.type] != true) {
-          continue;
-        }
+        if (_notificationSettings.enabledPrayers[prayer.type] != true) continue;
         
         // التحقق من أن الصلاة لم تمر بعد
-        if (prayer.isPassed) {
-          continue;
-        }
+        if (prayer.isPassed) continue;
         
         // تنبيه قبل الصلاة
         final minutesBefore = _notificationSettings.minutesBefore[prayer.type] ?? 0;
@@ -590,10 +594,7 @@ class PrayerTimesService {
         );
       }
       
-      _logger.info(
-        message: '[PrayerTimesService] تم جدولة التنبيهات',
-        data: {'count': times.prayers.length},
-      );
+      _logger.info(message: '[PrayerTimesService] تم جدولة التنبيهات');
     } catch (e) {
       _logger.error(
         message: '[PrayerTimesService] خطأ في جدولة التنبيهات',
@@ -604,9 +605,9 @@ class PrayerTimesService {
 
   /// تحديث حالات الصلوات
   void _updatePrayerStates() {
-    final currentTimes = _prayerTimesController.valueOrNull;
-    if (currentTimes != null) {
-      final updated = currentTimes.updatePrayerStates();
+    if (_currentTimes != null) {
+      final updated = _currentTimes!.updatePrayerStates();
+      _currentTimes = updated;
       _prayerTimesController.add(updated);
       _nextPrayerController.add(updated.nextPrayer);
     }
@@ -622,16 +623,13 @@ class PrayerTimesService {
     
     // إعادة حساب المواقيت
     if (_currentLocation != null) {
-      // عرض المواقيت المخزنة سابقاً أثناء إعادة الحساب
-      final cachedTimes = await getCachedPrayerTimes(DateTime.now());
-      if (cachedTimes != null) {
-        _prayerTimesController.add(cachedTimes);
-        _nextPrayerController.add(cachedTimes.nextPrayer);
-      }
-      
-      // حساب المواقيت الجديدة
       await updatePrayerTimes();
     }
+    
+    _logger.info(
+      message: '[PrayerTimesService] تم تحديث إعدادات الحساب',
+      data: {'method': settings.method.toString()},
+    );
   }
 
   /// تحديث إعدادات التنبيهات
@@ -640,10 +638,14 @@ class PrayerTimesService {
     await _storage.setMap(_notificationSettingsKey, settings.toJson());
     
     // إعادة جدولة التنبيهات
-    final currentTimes = _prayerTimesController.valueOrNull;
-    if (currentTimes != null) {
-      await _scheduleNotifications(currentTimes);
+    if (_currentTimes != null) {
+      await _scheduleNotifications(_currentTimes!);
     }
+    
+    _logger.info(
+      message: '[PrayerTimesService] تم تحديث إعدادات التنبيهات',
+      data: {'enabled': settings.enabled},
+    );
   }
 
   /// تعيين موقع مخصص
@@ -655,6 +657,15 @@ class PrayerTimesService {
     _timesCache.clear();
     
     await updatePrayerTimes();
+    
+    _logger.info(
+      message: '[PrayerTimesService] تم تعيين موقع مخصص',
+      data: {
+        'city': location.cityName,
+        'latitude': location.latitude,
+        'longitude': location.longitude,
+      },
+    );
   }
 
   // Getters
@@ -672,22 +683,5 @@ class PrayerTimesService {
     _nextPrayerController.close();
     
     _logger.info(message: '[PrayerTimesService] تم تنظيف الموارد');
-  }
-}
-
-// Extension for nullable stream value
-extension _StreamControllerExtension<T> on StreamController<T> {
-  T? get valueOrNull {
-    try {
-      if (hasListener && !isClosed && isPaused == false) {
-        final stream = this.stream;
-        if (stream is BehaviorSubject<T>) {
-          return stream.value;
-        }
-      }
-      return null;
-    } catch (_) {
-      return null;
-    }
   }
 }

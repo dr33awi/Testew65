@@ -1,14 +1,17 @@
-// lib/main.dart
+// lib/main.dart (محدث)
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'app/di/service_locator.dart';
-import 'app/app.dart';
-import 'core/infrastructure/services/notifications/notification_service.dart';
+import 'package:athkar_app/app/themes/core/theme_notifier.dart';import 'core/infrastructure/services/notifications/notification_service.dart';
 import 'core/infrastructure/services/storage/storage_service.dart';
 import 'core/constants/app_constants.dart';
+// استيراد الثيمات
+import 'app/themes/app_theme.dart';
+import 'app/routes/app_router.dart';
 
 Future<void> main() async {
   // تهيئة ربط Flutter
@@ -33,18 +36,12 @@ Future<void> main() async {
     // تهيئة جميع الخدمات
     await _initAllServices();
     
-    // Get saved preferences
+    // Get saved preferences  
     final storageService = getIt<StorageService>();
-    final isDarkMode = storageService.getBool('isDarkMode') ?? false;
     final language = storageService.getString('language') ?? AppConstants.defaultLanguage;
     
-    // إنشاء التطبيق
-    final app = AthkarApp(
-      isDarkMode: isDarkMode,
-      language: language,
-    );
-    
-    runApp(app);
+    // إنشاء التطبيق مع ThemeNotifier
+    runApp(MyApp(language: language));
     
     // طلب أذونات الإشعارات عند بدء التطبيق
     await _requestNotificationPermissions();
@@ -60,6 +57,43 @@ Future<void> main() async {
           ),
         ),
       ),
+    );
+  }
+}
+
+// التطبيق الجديد مع إدارة الثيم
+class MyApp extends StatelessWidget {
+  final String language;
+  
+  const MyApp({super.key, required this.language});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: getIt<ThemeNotifier>(),
+      builder: (context, themeMode, child) {
+        return MaterialApp(
+          title: AppConstants.appName,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeMode,
+          locale: Locale(language),
+          supportedLocales: const [
+            Locale('ar'), // العربية
+            Locale('en'), // الإنجليزية
+          ],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          // إضافة navigatorKey
+          navigatorKey: NavigationService.navigatorKey,
+          // استخدام AppRouter
+          initialRoute: AppRouter.initialRoute,
+          onGenerateRoute: AppRouter.onGenerateRoute,
+        );
+      },
     );
   }
 }
