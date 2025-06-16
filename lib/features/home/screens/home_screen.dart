@@ -6,6 +6,7 @@ import '../widgets/category_grid.dart';
 import '../../prayer_times/widgets/home_prayer_times_card.dart';
 import '../widgets/welcome_message.dart';
 import '../widgets/daily_quotes_card.dart';
+import '../widgets/quick_stats_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +18,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
+
+  final int _dailyProgress = 75;
+  final String? _lastReadTime = '10:30';
 
   @override
   void initState() {
@@ -62,7 +66,19 @@ class _HomeScreenState extends State<HomeScreen> {
               const SliverToBoxAdapter(
                 child: WelcomeMessage(),
               ),
-              
+
+              // بطاقة الإحصائيات السريعة
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: ThemeConstants.space4),
+                  child: QuickStatsCard(
+                    dailyProgress: _dailyProgress,
+                    lastReadTime: _lastReadTime,
+                    onStatTap: _onStatTap,
+                  ),
+                ),
+              ),
+
               // بطاقة مواقيت الصلاة
               const SliverToBoxAdapter(
                 child: PrayerTimesCard(),
@@ -225,6 +241,23 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  void _onStatTap(String stat) {
+    switch (stat) {
+      case 'favorites':
+        Navigator.pushNamed(context, '/favorites');
+        break;
+      case 'achievements':
+        Navigator.pushNamed(context, '/achievements');
+        break;
+      case 'all_stats':
+      case 'daily_progress':
+        Navigator.pushNamed(context, '/progress');
+        break;
+      default:
+        context.showWarningSnackBar('هذه الميزة قيد التطوير');
+    }
   }
 
   Widget _buildFloatingButtons() {
