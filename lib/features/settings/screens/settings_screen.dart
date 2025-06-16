@@ -1,4 +1,4 @@
-// lib/features/settings/screens/settings_screen.dart (نسخة محسنة ومقاومة للأخطاء)
+// lib/features/settings/screens/settings_screen.dart (نسخة مُصلحة كاملة)
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,166 +18,7 @@ import '../widgets/settings_tile.dart';
 import '../models/app_settings.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key}
-
-// ==================== Dialogs مساعدة ====================
-
-class _AboutDialog extends StatelessWidget {
-  final SettingsServicesManager? servicesManager;
-  final VoidCallback onContactSupport;
-
-  const _AboutDialog({
-    required this.servicesManager,
-    required this.onContactSupport,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-      ),
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.all(ThemeConstants.space6),
-              decoration: BoxDecoration(
-                gradient: ThemeConstants.primaryGradient,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(ThemeConstants.radiusXl),
-                  topRight: Radius.circular(ThemeConstants.radiusXl),
-                ),
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                    ),
-                    child: const Icon(
-                      Icons.auto_awesome,
-                      color: Colors.white,
-                      size: 32,
-                    ),
-                  ),
-                  ThemeConstants.space3.h,
-                  Text(
-                    AppConstants.appName,
-                    style: context.headlineSmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: ThemeConstants.bold,
-                    ),
-                  ),
-                  Text(
-                    'حصن المسلم',
-                    style: context.bodyMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.9),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Content
-            Padding(
-              padding: const EdgeInsets.all(ThemeConstants.space6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _InfoRow(
-                    icon: Icons.info_outline,
-                    label: 'الإصدار',
-                    value: AppConstants.appVersion,
-                  ),
-                  ThemeConstants.space2.h,
-                  _InfoRow(
-                    icon: Icons.build_outlined,
-                    label: 'رقم البناء',
-                    value: AppConstants.appBuildNumber,
-                  ),
-                  ThemeConstants.space4.h,
-                  Text(
-                    'تطبيق شامل للمسلم يحتوي على الأذكار اليومية ومواقيت الصلاة واتجاه القبلة والمزيد من الميزات الإسلامية المفيدة.',
-                    style: context.bodyMedium?.copyWith(height: 1.6),
-                    textAlign: TextAlign.justify,
-                  ),
-                  ThemeConstants.space4.h,
-                  Container(
-                    padding: const EdgeInsets.all(ThemeConstants.space4),
-                    decoration: BoxDecoration(
-                      color: context.primaryColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.favorite,
-                          color: ThemeConstants.error,
-                          size: ThemeConstants.iconSm,
-                        ),
-                        ThemeConstants.space2.w,
-                        Expanded(
-                          child: Text(
-                            'صُنع بحب لخدمة المسلمين في جميع أنحاء العالم',
-                            style: context.labelMedium?.copyWith(
-                              color: context.primaryColor,
-                              fontWeight: ThemeConstants.semiBold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  ThemeConstants.space4.h,
-                  Center(
-                    child: Text(
-                      '© 2024 جميع الحقوق محفوظة',
-                      style: context.labelSmall?.copyWith(
-                        color: context.textSecondaryColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Actions
-            Padding(
-              padding: const EdgeInsets.all(ThemeConstants.space4),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('إغلاق'),
-                    ),
-                  ),
-                  ThemeConstants.space3.w,
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        onContactSupport();
-                      },
-                      icon: const Icon(Icons.support_agent, size: 18),
-                      label: const Text('تواصل معنا'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  });
+  const SettingsScreen({super.key});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -682,7 +523,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => _PermissionProgressDialog(),
+        builder: (context) => const _PermissionProgressDialog(),
       );
       
       final result = await _servicesManager!.requestMultiplePermissions(
@@ -718,18 +559,65 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
   }
   
-  // ==================== باقي الدوال (نفس النسخة السابقة مع معالجة أخطاء محسنة) ====================
+  // ==================== باقي الدوال ====================
   
   Future<void> _shareApp() async {
-    // ... نفس الكود السابق مع try-catch
+    try {
+      const appUrl = 'https://play.google.com/store/apps/details?id=com.athkar.app'; // يجب تغييرها للرابط الحقيقي
+      const shareText = '''
+🕌 ${AppConstants.appName} - ${AppConstants.appVersion}
+
+تطبيق شامل للأذكار والأدعية الإسلامية مع مواقيت الصلاة واتجاه القبلة.
+
+📱 حمل التطبيق الآن:
+$appUrl
+
+#الأذكار #القرآن #الصلاة #اسلامي
+      ''';
+      
+      await Share.share(shareText);
+      _logger?.logEvent('app_shared');
+    } catch (e) {
+      _logger?.error(message: '[Settings] فشل مشاركة التطبيق', error: e);
+      _showErrorMessage('فشل في مشاركة التطبيق');
+    }
   }
   
   Future<void> _rateApp() async {
-    // ... نفس الكود السابق مع try-catch
+    try {
+      const appUrl = 'https://play.google.com/store/apps/details?id=com.athkar.app'; // يجب تغييرها
+      if (await canLaunchUrl(Uri.parse(appUrl))) {
+        await launchUrl(Uri.parse(appUrl));
+        _logger?.logEvent('app_rated');
+      } else {
+        _showErrorMessage('لا يمكن فتح متجر التطبيقات');
+      }
+    } catch (e) {
+      _logger?.error(message: '[Settings] فشل فتح تقييم التطبيق', error: e);
+      _showErrorMessage('فشل في فتح صفحة التقييم');
+    }
   }
   
   Future<void> _contactSupport() async {
-    // ... نفس الكود السابق مع try-catch
+    try {
+      final emailUrl = Uri(
+        scheme: 'mailto',
+        path: AppConstants.supportEmail,
+        query: 'subject=استفسار حول ${AppConstants.appName} - الإصدار ${AppConstants.appVersion}',
+      );
+      
+      if (await canLaunchUrl(emailUrl)) {
+        await launchUrl(emailUrl);
+        _logger?.logEvent('support_contacted');
+      } else {
+        // نسخ الإيميل للحافظة كبديل
+        await Clipboard.setData(const ClipboardData(text: AppConstants.supportEmail));
+        _showSuccessMessage('تم نسخ البريد الإلكتروني للدعم');
+      }
+    } catch (e) {
+      _logger?.error(message: '[Settings] فشل فتح الدعم', error: e);
+      _showErrorMessage('فشل في فتح البريد الإلكتروني');
+    }
   }
   
   String _getPermissionsSummary() {
@@ -741,7 +629,30 @@ class _SettingsScreenState extends State<SettingsScreen>
   }
   
   void _showAboutDialog() {
-    // ... نفس الكود السابق
+    showDialog(
+      context: context,
+      builder: (context) => _AboutDialog(
+        servicesManager: _servicesManager,
+        onContactSupport: _contactSupport,
+      ),
+    );
+  }
+  
+  String _getPermissionDisplayName(AppPermissionType permission) {
+    switch (permission) {
+      case AppPermissionType.notification:
+        return 'الإشعارات';
+      case AppPermissionType.location:
+        return 'الموقع';
+      case AppPermissionType.batteryOptimization:
+        return 'تحسين البطارية';
+      case AppPermissionType.storage:
+        return 'التخزين';
+      case AppPermissionType.doNotDisturb:
+        return 'عدم الإزعاج';
+      case AppPermissionType.unknown:
+        return 'غير معروف';
+    }
   }
   
   // ==================== Helper Methods ====================
@@ -956,11 +867,36 @@ class _SettingsScreenState extends State<SettingsScreen>
   }
   
   void _showPartialPermissionDialog(BatchPermissionResult result) {
-    // ... نفس الكود السابق
-  }
-  
-  String _getPermissionDisplayName(AppPermissionType permission) {
-    // ... نفس الكود السابق
+    if (!mounted) return;
+    
+    final deniedPermissions = result.deniedPermissions
+        .map((p) => _getPermissionDisplayName(p))
+        .join('، ');
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('أذونات مفقودة'),
+        content: Text(
+          'تم منح بعض الأذونات بنجاح، لكن الأذونات التالية لم يتم منحها:\n\n$deniedPermissions\n\nيمكنك منحها لاحقاً من إعدادات التطبيق.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('موافق'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              if (_servicesManager != null) {
+                await _servicesManager!.openAppSettings();
+              }
+            },
+            child: const Text('فتح الإعدادات'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -1391,7 +1327,167 @@ class _SettingsScreenState extends State<SettingsScreen>
 
 // ==================== Dialogs مساعدة ====================
 
+class _AboutDialog extends StatelessWidget {
+  final SettingsServicesManager? servicesManager;
+  final VoidCallback onContactSupport;
+
+  const _AboutDialog({
+    required this.servicesManager,
+    required this.onContactSupport,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+      ),
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 400),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(ThemeConstants.space6),
+              decoration: BoxDecoration(
+                gradient: ThemeConstants.primaryGradient,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(ThemeConstants.radiusXl),
+                  topRight: Radius.circular(ThemeConstants.radiusXl),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                    ),
+                    child: const Icon(
+                      Icons.auto_awesome,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                  ),
+                  ThemeConstants.space3.h,
+                  Text(
+                    AppConstants.appName,
+                    style: context.headlineSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: ThemeConstants.bold,
+                    ),
+                  ),
+                  Text(
+                    'حصن المسلم',
+                    style: context.bodyMedium?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(ThemeConstants.space6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _InfoRow(
+                    icon: Icons.info_outline,
+                    label: 'الإصدار',
+                    value: AppConstants.appVersion,
+                  ),
+                  ThemeConstants.space2.h,
+                  _InfoRow(
+                    icon: Icons.build_outlined,
+                    label: 'رقم البناء',
+                    value: AppConstants.appBuildNumber,
+                  ),
+                  ThemeConstants.space4.h,
+                  Text(
+                    'تطبيق شامل للمسلم يحتوي على الأذكار اليومية ومواقيت الصلاة واتجاه القبلة والمزيد من الميزات الإسلامية المفيدة.',
+                    style: context.bodyMedium?.copyWith(height: 1.6),
+                    textAlign: TextAlign.justify,
+                  ),
+                  ThemeConstants.space4.h,
+                  Container(
+                    padding: const EdgeInsets.all(ThemeConstants.space4),
+                    decoration: BoxDecoration(
+                      color: context.primaryColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.favorite,
+                          color: ThemeConstants.error,
+                          size: ThemeConstants.iconSm,
+                        ),
+                        ThemeConstants.space2.w,
+                        Expanded(
+                          child: Text(
+                            'صُنع بحب لخدمة المسلمين في جميع أنحاء العالم',
+                            style: context.labelMedium?.copyWith(
+                              color: context.primaryColor,
+                              fontWeight: ThemeConstants.semiBold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ThemeConstants.space4.h,
+                  Center(
+                    child: Text(
+                      '© 2024 جميع الحقوق محفوظة',
+                      style: context.labelSmall?.copyWith(
+                        color: context.textSecondaryColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Actions
+            Padding(
+              padding: const EdgeInsets.all(ThemeConstants.space4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('إغلاق'),
+                    ),
+                  ),
+                  ThemeConstants.space3.w,
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        onContactSupport();
+                      },
+                      icon: const Icon(Icons.support_agent, size: 18),
+                      label: const Text('تواصل معنا'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _PermissionProgressDialog extends StatelessWidget {
+  const _PermissionProgressDialog();
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
