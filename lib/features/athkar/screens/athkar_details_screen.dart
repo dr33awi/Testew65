@@ -375,9 +375,6 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
           ),
         ],
       ),
-      
-      // زر عائم للإجراءات
-      floatingActionButton: _buildFAB(context),
     );
   }
 
@@ -413,14 +410,6 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
             Navigator.pushNamed(context, AppRouter.appSettings);
           },
           tooltip: 'الإعدادات',
-        ),
-        
-        // زر المزيد
-        AppBarAction(
-          icon: Icons.more_vert,
-          color: Colors.white,
-          onPressed: () => _showMoreOptions(context),
-          tooltip: 'المزيد',
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
@@ -470,185 +459,9 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     );
   }
 
-
-  Widget _buildFAB(BuildContext context) {
-    if (_allCompleted) {
-      return FloatingActionButton.extended(
-        onPressed: _showCompletionDialog,
-        backgroundColor: ThemeConstants.success,
-        icon: const Icon(Icons.check_circle),
-        label: const Text('مكتمل'),
-      );
-    }
-    
-    return AnimatedPress(
-      onTap: _showQuickActions,
-      child: FloatingActionButton(
-        onPressed: _showQuickActions,
-        backgroundColor: _category!.color,
-        child: const Icon(Icons.dashboard_rounded),
-      ),
-    );
-  }
-
-  void _showQuickActions() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(ThemeConstants.radiusXl),
-        ),
-      ),
-      builder: (context) => _QuickActionsSheet(
-        category: _category!,
-        onReset: () {
-          Navigator.pop(context);
-          _resetAll();
-        },
-        onShare: () {
-          Navigator.pop(context);
-          _shareProgress();
-        },
-      ),
-    );
-  }
-
-  void _showMoreOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(ThemeConstants.radiusXl),
-        ),
-      ),
-      builder: (context) => _MoreOptionsSheet(
-        onNotificationSettings: () {
-          Navigator.pop(context);
-          Navigator.pushNamed(context, AppRouter.appSettings);
-        },
-        onTextSize: () {
-          Navigator.pop(context);
-          // TODO: تغيير حجم الخط
-        },
-      ),
-    );
-  }
-
   void _toggleFavorite(AthkarItem item) {
     // TODO: تنفيذ المفضلة
     context.showInfoSnackBar('سيتم إضافة ميزة المفضلة قريباً');
-  }
-}
-
-// Widget للإجراءات السريعة
-class _QuickActionsSheet extends StatelessWidget {
-  final AthkarCategory category;
-  final VoidCallback onReset;
-  final VoidCallback onShare;
-
-  const _QuickActionsSheet({
-    required this.category,
-    required this.onReset,
-    required this.onShare,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // المقبض
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.only(bottom: ThemeConstants.space4),
-            decoration: BoxDecoration(
-              color: context.dividerColor,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          
-          // العنوان
-          Text(
-            'إجراءات سريعة',
-            style: context.titleLarge,
-          ),
-          
-          ThemeConstants.space4.h,
-          
-          // الإجراءات
-          ListTile(
-            leading: Icon(Icons.refresh, color: context.primaryColor),
-            title: const Text('إعادة تعيين الكل'),
-            subtitle: const Text('البدء من جديد'),
-            onTap: onReset,
-          ),
-          
-          ListTile(
-            leading: Icon(Icons.share, color: context.primaryColor),
-            title: const Text('مشاركة التقدم'),
-            subtitle: const Text('شارك إنجازك مع الآخرين'),
-            onTap: onShare,
-          ),
-          
-          ListTile(
-            leading: Icon(Icons.text_increase, color: context.primaryColor),
-            title: const Text('حجم النص'),
-            subtitle: const Text('تكبير أو تصغير النص'),
-            onTap: () {
-              Navigator.pop(context);
-              // TODO: تنفيذ تغيير حجم النص
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// Widget للخيارات الإضافية
-class _MoreOptionsSheet extends StatelessWidget {
-  final VoidCallback onNotificationSettings;
-  final VoidCallback onTextSize;
-
-  const _MoreOptionsSheet({
-    required this.onNotificationSettings,
-    required this.onTextSize,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.only(bottom: ThemeConstants.space4),
-            decoration: BoxDecoration(
-              color: context.dividerColor,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          
-          ListTile(
-            leading: const Icon(Icons.notifications_outlined),
-            title: const Text('إعدادات التنبيهات'),
-            onTap: onNotificationSettings,
-          ),
-          
-          ListTile(
-            leading: const Icon(Icons.text_fields),
-            title: const Text('حجم النص'),
-            onTap: onTextSize,
-          ),
-        ],
-      ),
-    );
   }
 }
 

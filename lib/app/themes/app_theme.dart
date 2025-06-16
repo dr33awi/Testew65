@@ -14,6 +14,7 @@ export 'core/theme_extensions.dart';
 export 'widgets/cards/app_card.dart';
 export 'widgets/dialogs/app_info_dialog.dart';
 export 'widgets/feedback/app_snackbar.dart';
+export 'widgets/feedback/app_notice_card.dart';
 export 'widgets/layout/app_bar.dart';
 export 'widgets/states/app_empty_state.dart';
 export 'widgets/core/app_button.dart';

@@ -9,6 +9,8 @@ import '../../features/prayer_times/screens/prayer_notifications_settings_screen
 import '../../features/qibla/screens/qibla_screen.dart';
 import '../../features/athkar/screens/athkar_categories_screen.dart';
 import '../../features/athkar/screens/athkar_details_screen.dart';
+import '../../features/athkar/screens/notification_settings_screen.dart';
+import '../../features/settings/screens/settings_screen.dart';
 
 class AppRouter {
   // Main Routes
@@ -35,6 +37,7 @@ class AppRouter {
   static const String duaDetails = '/dua-details';
   static const String prayerSettings = '/prayer-settings';
   static const String prayerNotificationsSettings = '/prayer-notifications-settings';
+  static const String athkarNotificationsSettings = '/athkar-notifications-settings';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     debugPrint('AppRouter: Generating route for ${settings.name}');
@@ -82,7 +85,7 @@ class AppRouter {
         return _slideRoute(_buildComingSoonScreen('المفضلة'), settings);
         
       case appSettings:
-        return _slideRoute(_buildComingSoonScreen('الإعدادات'), settings);
+        return _slideRoute(const SettingsScreen(), settings);
         
       case progress:
         return _slideRoute(_buildComingSoonScreen('التقدم اليومي'), settings);
@@ -101,6 +104,9 @@ class AppRouter {
         
       case prayerNotificationsSettings:
         return _slideRoute(const PrayerNotificationsSettingsScreen(), settings);
+        
+      case athkarNotificationsSettings:
+        return _slideRoute(const AthkarNotificationSettingsScreen(), settings);
         
       // Default
       default:

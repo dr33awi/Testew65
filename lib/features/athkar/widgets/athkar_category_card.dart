@@ -258,30 +258,7 @@ class _ProgressBar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // النسبة المئوية
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              isCompleted ? 'مكتمل' : 'التقدم',
-              style: context.labelSmall?.copyWith(
-                color: Colors.white.withValues(alpha: 0.8),
-                fontWeight: ThemeConstants.medium,
-              ),
-            ),
-            Text(
-              '$progress%',
-              style: context.labelSmall?.copyWith(
-                color: Colors.white,
-                fontWeight: ThemeConstants.bold,
-              ),
-            ),
-          ],
-        ),
-        
-        ThemeConstants.space1.h,
-        
-        // الشريط
+        // الشريط فقط بدون النسبة المئوية
         Container(
           height: 4,
           decoration: BoxDecoration(
