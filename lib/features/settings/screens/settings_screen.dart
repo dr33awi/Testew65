@@ -1,4 +1,4 @@
-// lib/features/settings/screens/settings_screen.dart (محسن ومطور)
+// lib/features/settings/screens/settings_screen.dart (محدث مع إزالة اللغة وحجم الخط وتفعيل الثيم)
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -53,11 +53,9 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
     try {
       final settings = AppSettings(
         isDarkMode: _storage.getBool('theme_mode') ?? false,
-        language: _storage.getString('app_language') ?? 'ar',
         notificationsEnabled: await _permissionService.checkNotificationPermission(),
         soundEnabled: _storage.getBool('sound_enabled') ?? false,
         vibrationEnabled: _storage.getBool('vibration_enabled') ?? true,
-        fontSize: _storage.getDouble('font_size') ?? 16.0,
       );
       
       setState(() {
@@ -84,10 +82,8 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
   Future<void> _saveSettings() async {
     try {
       await _storage.setBool('theme_mode', _settings.isDarkMode);
-      await _storage.setString('app_language', _settings.language);
       await _storage.setBool('sound_enabled', _settings.soundEnabled);
       await _storage.setBool('vibration_enabled', _settings.vibrationEnabled);
-      await _storage.setDouble('font_size', _settings.fontSize);
       
       _logger.info(
         message: '[Settings] تم حفظ الإعدادات',
@@ -104,38 +100,39 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
   
   Future<void> _toggleTheme(bool value) async {
     HapticFeedback.lightImpact();
+    
+    // تحديث الحالة المحلية
     setState(() {
       _settings = _settings.copyWith(isDarkMode: value);
     });
-    await _saveSettings();
-    // TODO: تطبيق تغيير الثيم فوراً
-    context.showSuccessSnackBar(
-      value ? 'تم تفعيل الوضع الليلي' : 'تم تفعيل الوضع النهاري'
-    );
-  }
-  
-  Future<void> _changeLanguage(String? value) async {
-    if (value == null || value == _settings.language) return;
     
-    HapticFeedback.lightImpact();
-    setState(() {
-      _settings = _settings.copyWith(language: value);
-    });
+    // حفظ الإعدادات
     await _saveSettings();
     
-    // عرض رسالة تأكيد
-    final shouldRestart = await AppInfoDialog.showConfirmation(
-      context: context,
-      title: 'تغيير اللغة',
-      content: 'يجب إعادة تشغيل التطبيق لتطبيق تغيير اللغة. هل تريد إعادة التشغيل الآن؟',
-      confirmText: 'إعادة التشغيل',
-      cancelText: 'لاحقاً',
-      icon: Icons.language,
-    );
-    
-    if (shouldRestart == true) {
-      // TODO: إعادة تشغيل التطبيق
-      SystemNavigator.pop(); // خروج مؤقت
+    // تطبيق الثيم فوراً - هذا يتطلب إعادة بناء التطبيق بالكامل
+    // يمكنك استخدام Provider أو Bloc لإدارة الثيم بشكل أفضل
+    if (mounted) {
+      // إشعار المستخدم بالتغيير
+      context.showSuccessSnackBar(
+        value ? 'تم تفعيل الوضع الليلي' : 'تم تفعيل الوضع النهاري'
+      );
+      
+      // لتطبيق الثيم فوراً، يمكنك إرسال إشعار للتطبيق الرئيسي
+      // أو استخدام حلول أخرى مثل Provider
+      
+      // مثال بسيط: إعادة تشغيل التطبيق
+      final shouldRestart = await AppInfoDialog.showConfirmation(
+        context: context,
+        title: 'تغيير المظهر',
+        content: 'لتطبيق التغيير بشكل كامل، يُنصح بإعادة تشغيل التطبيق. هل تريد إعادة التشغيل الآن؟',
+        confirmText: 'إعادة التشغيل',
+        cancelText: 'لاحقاً',
+        icon: value ? Icons.dark_mode : Icons.light_mode,
+      );
+      
+      if (shouldRestart == true) {
+        SystemNavigator.pop(); // خروج مؤقت - في التطبيق الحقيقي ستحتاج لحل أفضل
+      }
     }
   }
   
@@ -143,13 +140,6 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
     HapticFeedback.lightImpact();
     setState(() {
       _settings = _settings.copyWith(vibrationEnabled: value);
-    });
-    await _saveSettings();
-  }
-  
-  Future<void> _changeFontSize(double value) async {
-    setState(() {
-      _settings = _settings.copyWith(fontSize: value);
     });
     await _saveSettings();
   }
@@ -533,44 +523,6 @@ class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProvid
                 value: _settings.isDarkMode,
                 onChanged: _toggleTheme,
                 activeColor: context.primaryColor,
-              ),
-            ),
-            SettingsTile(
-              icon: Icons.language_outlined,
-              title: 'اللغة',
-              subtitle: _settings.language == 'ar' ? 'العربية' : 'English',
-              trailing: DropdownButton<String>(
-                value: _settings.language,
-                onChanged: _changeLanguage,
-                underline: const SizedBox(),
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'ar',
-                    child: Text('العربية'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'en',
-                    child: Text('English'),
-                  ),
-                ],
-              ),
-            ),
-            SettingsTile(
-              icon: Icons.text_fields_outlined,
-              title: 'حجم الخط',
-              subtitle: 'تخصيص حجم النصوص',
-              trailing: SizedBox(
-                width: 120,
-                child: Slider(
-                  value: _settings.fontSize,
-                  min: 12.0,
-                  max: 24.0,
-                  divisions: 6,
-                  label: '${_settings.fontSize.round()}',
-                  onChanged: _changeFontSize,
-                  activeColor: context.primaryColor,
-                ),
               ),
             ),
           ],
