@@ -10,6 +10,7 @@ import '../../features/qibla/screens/qibla_screen.dart';
 import '../../features/athkar/screens/athkar_categories_screen.dart';
 import '../../features/athkar/screens/athkar_details_screen.dart';
 import '../../features/athkar/screens/notification_settings_screen.dart';
+import '../../features/tasbih/screens/tasbih_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
 
 class AppRouter {
@@ -73,9 +74,9 @@ class AppRouter {
         
       case qibla:
         return _slideRoute(const QiblaScreen(), settings);
-        
+
       case tasbih:
-        return _slideRoute(_buildComingSoonScreen('التسبيح'), settings);
+        return _slideRoute(const TasbihScreen(), settings);
         
       case dua:
         return _slideRoute(_buildComingSoonScreen('الأدعية'), settings);

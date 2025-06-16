@@ -37,6 +37,9 @@ import '../../features/prayer_times/services/prayer_times_service.dart';
 import 'package:athkar_app/features/qibla/services/qibla_service.dart';
 import 'package:athkar_app/features/athkar/services/athkar_service.dart';
 
+// خدمات الإعدادات الموحدة
+import '../../features/settings/services/settings_services_manager.dart';
+
 final getIt = GetIt.instance;
 
 /// Service Locator لإدارة جميع الخدمات في التطبيق
@@ -254,6 +257,9 @@ class ServiceLocator {
     
     // تسجيل خدمة القبلة
     _registerQiblaServices();
+    
+    // تسجيل خدمات الإعدادات الموحدة
+    _registerSettingsServices();
   }
   
   /// تسجيل خدمات القبلة
@@ -271,12 +277,49 @@ class ServiceLocator {
     }
   }
 
+  /// تسجيل خدمات الإعدادات الموحدة
+  void _registerSettingsServices() {
+    debugPrint('ServiceLocator: تسجيل خدمات الإعدادات الموحدة...');
+    
+    if (!getIt.isRegistered<SettingsServicesManager>()) {
+      // استخدام registerSingleton بدلاً من registerLazySingleton 
+      // لضمان عدم إنشاء instances متعددة
+      final settingsManager = SettingsServicesManager(
+        storage: getIt<StorageService>(),
+        permissionService: getIt<PermissionService>(),
+        logger: getIt<LoggerService>(),
+        themeNotifier: getIt<ThemeNotifier>(),
+        notificationManager: NotificationManager.instance,
+        batteryService: getIt<BatteryService>(),
+        prayerService: getIt<PrayerTimesService>(),
+      );
+      
+      getIt.registerSingleton<SettingsServicesManager>(settingsManager);
+      debugPrint('ServiceLocator: تم تسجيل SettingsServicesManager كـ Singleton');
+    }
+  }
+
+  /// التحقق من تهيئة جميع الخدمات المطلوبة للإعدادات
+  static bool areSettingsServicesReady() {
+    return getIt.isRegistered<StorageService>() &&
+           getIt.isRegistered<PermissionService>() &&
+           getIt.isRegistered<LoggerService>() &&
+           getIt.isRegistered<ThemeNotifier>() &&
+           getIt.isRegistered<BatteryService>() &&
+           getIt.isRegistered<PrayerTimesService>() &&
+           getIt.isRegistered<SettingsServicesManager>();
+  }
+
   /// إعادة تعيين خدمة محددة
   static Future<void> resetService<T extends Object>() async {
     if (getIt.isRegistered<T>()) {
       // التنظيف إذا كانت الخدمة تحتاج ذلك
       if (T == PrayerTimesService && getIt.isRegistered<PrayerTimesService>()) {
         getIt<PrayerTimesService>().dispose();
+      }
+      
+      if (T == SettingsServicesManager && getIt.isRegistered<SettingsServicesManager>()) {
+        await getIt<SettingsServicesManager>().dispose();
       }
       
       await getIt.unregister<T>();
@@ -307,6 +350,11 @@ class ServiceLocator {
     debugPrint('ServiceLocator: تنظيف الموارد...');
 
     try {
+      // تنظيف مدير الإعدادات الموحد
+      if (getIt.isRegistered<SettingsServicesManager>()) {
+        await getIt<SettingsServicesManager>().dispose();
+      }
+
       // تنظيف إدارة الثيم
       if (getIt.isRegistered<ThemeNotifier>()) {
         getIt<ThemeNotifier>().dispose();
@@ -354,6 +402,26 @@ class ServiceLocator {
   }
 }
 
+// ==================== Helper Functions ====================
+
+/// دالة مساعدة للوصول السريع للخدمات (خارج BuildContext)
+T getService<T extends Object>() {
+  if (!getIt.isRegistered<T>()) {
+    throw Exception('Service $T is not registered. Make sure to call ServiceLocator.init() first.');
+  }
+  return getIt<T>();
+}
+
+/// دالة للحصول على خدمة مع التحقق من التهيئة
+T? getServiceSafe<T extends Object>() {
+  try {
+    return getIt.isRegistered<T>() ? getIt<T>() : null;
+  } catch (e) {
+    debugPrint('خطأ في الحصول على الخدمة $T: $e');
+    return null;
+  }
+}
+
 /// Extension methods لسهولة الوصول للخدمات
 extension ServiceLocatorExtensions on BuildContext {
   /// الحصول على خدمة بسهولة
@@ -388,4 +456,7 @@ extension ServiceLocatorExtensions on BuildContext {
   
   /// الحصول على إدارة الثيم
   ThemeNotifier get themeNotifier => getIt<ThemeNotifier>();
+  
+  /// الحصول على مدير الخدمات الموحد للإعدادات
+  SettingsServicesManager get settingsManager => getIt<SettingsServicesManager>();
 }
