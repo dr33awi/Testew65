@@ -10,303 +10,258 @@ class AthkarCategoryCard extends StatelessWidget {
   final AthkarCategory category;
   final int progress;
   final VoidCallback onTap;
-  final VoidCallback? onNotificationToggle;
 
   const AthkarCategoryCard({
     super.key,
     required this.category,
     required this.progress,
     required this.onTap,
-    this.onNotificationToggle,
   });
 
   @override
   Widget build(BuildContext context) {
     final isCompleted = progress >= 100;
-    
-    // استخدام ألوان الثيم بناءً على نوع الفئة
-    final themeColor = CategoryUtils.getCategoryThemeColor(category.id);
+    final categoryColor = CategoryUtils.getCategoryThemeColor(category.id);
+    final categoryIcon = CategoryUtils.getCategoryIcon(category.id);
+    final description = CategoryUtils.getCategoryDescription(category.id);
     
     return AnimatedPress(
-      onTap: onTap,
-      scaleFactor: 0.95,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      scaleFactor: 0.96,
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              themeColor.withValues(alpha: 0.9),
-              themeColor,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
           borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+          gradient: CategoryUtils.getCategoryGradient(category.id),
           boxShadow: [
             BoxShadow(
-              color: themeColor.withValues(alpha: 0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
+              color: categoryColor.withValues(alpha: 0.25),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+              spreadRadius: 1,
             ),
           ],
         ),
         child: Stack(
           children: [
-            // نمط في الخلفية - خطوط بسيطة بدون فقاعات
+            // نمط خلفية بسيط بدون خطوط أو دوائر
             Positioned.fill(
-              child: CustomPaint(
-                painter: _PatternPainter(
-                  color: Colors.white.withValues(alpha: 0.1),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white.withValues(alpha: 0.05),
+                        Colors.transparent,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
                 ),
               ),
             ),
             
-            // المحتوى
+            // محذوف - لا نريد عرض شارة الإكمال
+            
+            // المحتوى الرئيسي
             Padding(
               padding: const EdgeInsets.all(ThemeConstants.space4),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // الرأس
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // الأيقونة
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                        ),
-                        child: Icon(
-                          CategoryUtils.getCategoryIcon(category.id),
-                          color: Colors.white,
-                          size: ThemeConstants.iconMd,
-                        ),
+                  // الأيقونة
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 1,
                       ),
-                      
-                      // زر التنبيه
-                      if (onNotificationToggle != null && category.notifyTime != null)
-                        _NotificationButton(
-                          onTap: onNotificationToggle!,
-                          isEnabled: false, // TODO: الحصول على الحالة الفعلية
-                        ),
-                    ],
+                    ),
+                    child: Icon(
+                      categoryIcon,
+                      color: Colors.white,
+                      size: ThemeConstants.iconLg,
+                    ),
                   ),
                   
                   const Spacer(),
                   
-                  // العنوان
-                  Text(
-                    category.title,
-                    style: context.titleMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: ThemeConstants.bold,
-                    ),
-                  ),
-                  
-                  // الوصف
-                  if (category.description != null) ...[
-                    ThemeConstants.space1.h,
-                    Text(
-                      category.description!,
-                      style: context.bodySmall?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.8),
+                  // التقدم الدائري
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // معلومات الفئة
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              category.title,
+                              style: context.titleMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: ThemeConstants.bold,
+                                fontSize: 16,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            
+                            ThemeConstants.space1.h,
+                            
+                            Text(
+                              description,
+                              style: context.bodySmall?.copyWith(
+                                color: Colors.white.withValues(alpha: 0.85),
+                                fontSize: 12,
+                                height: 1.3,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                      
+                      ThemeConstants.space3.w,
+                      
+                      // دائرة التقدم
+                      SizedBox(
+                        width: 44,
+                        height: 44,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // الخلفية
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                            
+                            // دائرة التقدم
+                            SizedBox(
+                              width: 44,
+                              height: 44,
+                              child: CircularProgressIndicator(
+                                value: progress / 100,
+                                strokeWidth: 3,
+                                backgroundColor: Colors.transparent,
+                                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            ),
+                            
+                            // النسبة المئوية أو أيقونة الإكمال
+                            if (isCompleted)
+                              const Icon(
+                                Icons.check_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              )
+                            else
+                              Text(
+                                '$progress%',
+                                style: context.labelSmall?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: ThemeConstants.bold,
+                                  fontSize: 10,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                   
                   ThemeConstants.space3.h,
-                  
-                  // شريط التقدم
-                  _ProgressBar(
-                    progress: progress,
-                    isCompleted: isCompleted,
-                  ),
-                  
-                  ThemeConstants.space2.h,
                   
                   // معلومات إضافية
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       // عدد الأذكار
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.format_list_numbered,
-                            color: Colors.white.withValues(alpha: 0.7),
-                            size: ThemeConstants.iconXs,
-                          ),
-                          ThemeConstants.space1.w,
-                          Text(
-                            '${category.athkar.length} ذكر',
-                            style: context.labelSmall?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.7),
-                            ),
-                          ),
-                        ],
-                      ),
-                      
-                      // وقت التنبيه
-                      if (category.notifyTime != null)
-                        Row(
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: ThemeConstants.space2,
+                          vertical: ThemeConstants.space1,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              Icons.access_time,
-                              color: Colors.white.withValues(alpha: 0.7),
+                              Icons.format_list_numbered_rounded,
+                              color: Colors.white.withValues(alpha: 0.9),
                               size: ThemeConstants.iconXs,
                             ),
                             ThemeConstants.space1.w,
                             Text(
-                              category.notifyTime!.format(context),
+                              '${category.athkar.length} ذكر',
                               style: context.labelSmall?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.7),
+                                color: Colors.white.withValues(alpha: 0.9),
+                                fontSize: 11,
+                                fontWeight: ThemeConstants.medium,
                               ),
                             ),
                           ],
+                        ),
+                      ),
+                      
+                      // وقت التنبيه (إذا كان متوفر ومطلوب عرضه)
+                      if (category.notifyTime != null && CategoryUtils.shouldShowTime(category.id))
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: ThemeConstants.space2,
+                            vertical: ThemeConstants.space1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.access_time_rounded,
+                                color: Colors.white.withValues(alpha: 0.9),
+                                size: ThemeConstants.iconXs,
+                              ),
+                              ThemeConstants.space1.w,
+                              Text(
+                                category.notifyTime!.format(context),
+                                style: context.labelSmall?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  fontSize: 11,
+                                  fontWeight: ThemeConstants.medium,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                     ],
                   ),
                 ],
               ),
             ),
-            
-            // شارة الإكمال
-            if (isCompleted)
-              Positioned(
-                top: ThemeConstants.space2,
-                left: ThemeConstants.space2,
-                child: Container(
-                  padding: const EdgeInsets.all(ThemeConstants.space2),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.check,
-                    color: themeColor,
-                    size: ThemeConstants.iconSm,
-                  ),
-                ),
-              ),
           ],
         ),
       ),
     );
   }
-  
-}
-
-// زر التنبيه
-class _NotificationButton extends StatelessWidget {
-  final VoidCallback onTap;
-  final bool isEnabled;
-
-  const _NotificationButton({
-    required this.onTap,
-    required this.isEnabled,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white.withValues(alpha: 0.2),
-      borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onTap();
-        },
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-        child: Padding(
-          padding: const EdgeInsets.all(ThemeConstants.space2),
-          child: Icon(
-            isEnabled
-                ? Icons.notifications_active
-                : Icons.notifications_off_outlined,
-            color: Colors.white,
-            size: ThemeConstants.iconSm,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// شريط التقدم
-class _ProgressBar extends StatelessWidget {
-  final int progress;
-  final bool isCompleted;
-
-  const _ProgressBar({
-    required this.progress,
-    required this.isCompleted,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // الشريط فقط بدون النسبة المئوية
-        Container(
-          height: 4,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(2),
-          ),
-          child: AnimatedFractionallySizedBox(
-            duration: ThemeConstants.durationNormal,
-            widthFactor: progress / 100,
-            alignment: AlignmentDirectional.centerStart,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// رسام النمط - بدون فقاعات
-class _PatternPainter extends CustomPainter {
-  final Color color;
-
-  _PatternPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    // رسم خطوط مائلة بسيطة
-    const spacing = 20.0;
-    
-    for (double i = -size.width; i < size.width + size.height; i += spacing) {
-      canvas.drawLine(
-        Offset(i, 0),
-        Offset(i + size.height, size.height),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

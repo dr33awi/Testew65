@@ -1,7 +1,6 @@
 // lib/features/athkar/widgets/athkar_item_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/themes/widgets/animations/animated_press.dart';
 import '../models/athkar_model.dart';
@@ -32,7 +31,6 @@ class AthkarItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // استخدام اللون من الثيم إذا لم يتم تمرير لون
     final effectiveColor = color ?? ThemeConstants.primary;
     
     return AnimatedPress(
@@ -42,27 +40,77 @@ class AthkarItemCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: ThemeConstants.durationFast,
         decoration: BoxDecoration(
-          color: context.cardColor,
+          gradient: isCompleted 
+              ? LinearGradient(
+                  colors: [
+                    effectiveColor.withValues(alpha: 0.05),
+                    effectiveColor.withValues(alpha: 0.1),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: isCompleted ? null : context.cardColor,
           borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
           border: Border.all(
-            color: isCompleted
-                ? effectiveColor.withValues(alpha: 0.3)
-                : context.dividerColor.withValues(alpha: 0.5),
-            width: isCompleted ? 2 : 1,
+            color: effectiveColor.withValues(alpha: isCompleted ? 0.4 : 0.3),
+            width: isCompleted ? 2 : 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: isCompleted
-                  ? effectiveColor.withValues(alpha: 0.2)
-                  : Colors.black.withValues(alpha: 0.05),
-              blurRadius: isCompleted ? 20 : 10,
+              color: effectiveColor.withValues(alpha: isCompleted ? 0.2 : 0.1),
+              blurRadius: isCompleted ? 16 : 8,
               offset: const Offset(0, 4),
+              spreadRadius: isCompleted ? 1 : 0,
             ),
           ],
         ),
         child: Stack(
           children: [
-            // محتوى البطاقة
+            // خلفية بسيطة للبطاقات المكتملة
+            if (isCompleted)
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          effectiveColor.withValues(alpha: 0.05),
+                          effectiveColor.withValues(alpha: 0.1),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            
+            // مؤشر الإكمال العلوي
+            if (isCompleted)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: 4,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        effectiveColor.lighten(0.1),
+                        effectiveColor,
+                        effectiveColor.darken(0.1),
+                      ],
+                    ),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(ThemeConstants.radiusXl),
+                    ),
+                  ),
+                ),
+              ),
+            
+            // المحتوى الرئيسي
             Padding(
               padding: const EdgeInsets.all(ThemeConstants.space4),
               child: Column(
@@ -83,12 +131,35 @@ class AthkarItemCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // النص الرئيسي
-                            Text(
-                              item.text,
-                              style: context.bodyLarge?.copyWith(
-                                fontSize: 18,
-                                height: 1.8,
-                                fontFamily: ThemeConstants.fontFamilyArabic,
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(ThemeConstants.space4),
+                              decoration: BoxDecoration(
+                                color: isCompleted 
+                                    ? effectiveColor.withValues(alpha: 0.1)
+                                    : context.isDarkMode 
+                                        ? effectiveColor.withValues(alpha: 0.08)
+                                        : effectiveColor.withValues(alpha: 0.05),
+                                borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                                border: Border.all(
+                                  color: effectiveColor.withValues(alpha: 0.2),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                item.text,
+                                style: context.bodyLarge?.copyWith(
+                                  fontSize: 18,
+                                  height: 2.0,
+                                  fontFamily: ThemeConstants.fontFamilyArabic,
+                                  color: isCompleted 
+                                      ? effectiveColor.darken(0.2)
+                                      : context.textPrimaryColor,
+                                  fontWeight: isCompleted 
+                                      ? ThemeConstants.medium 
+                                      : ThemeConstants.regular,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
                             ),
                             
@@ -98,27 +169,48 @@ class AthkarItemCard extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.all(ThemeConstants.space3),
                                 decoration: BoxDecoration(
-                                  color: ThemeConstants.accentLight.withValues(alpha: 0.1),
+                                  color: ThemeConstants.accent.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                                   border: Border.all(
                                     color: ThemeConstants.accent.withValues(alpha: 0.2),
                                   ),
                                 ),
                                 child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Icon(
-                                      Icons.star_rounded,
-                                      size: ThemeConstants.iconSm,
-                                      color: ThemeConstants.accent,
+                                    Container(
+                                      padding: const EdgeInsets.all(ThemeConstants.space1),
+                                      decoration: BoxDecoration(
+                                        color: ThemeConstants.accent.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
+                                      ),
+                                      child: Icon(
+                                        Icons.star_rounded,
+                                        size: ThemeConstants.iconSm,
+                                        color: ThemeConstants.accent,
+                                      ),
                                     ),
                                     ThemeConstants.space2.w,
                                     Expanded(
-                                      child: Text(
-                                        item.fadl!,
-                                        style: context.bodySmall?.copyWith(
-                                          color: context.textSecondaryColor,
-                                          height: 1.5,
-                                        ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'الفضل',
+                                            style: context.labelMedium?.copyWith(
+                                              color: ThemeConstants.accent,
+                                              fontWeight: ThemeConstants.semiBold,
+                                            ),
+                                          ),
+                                          ThemeConstants.space1.h,
+                                          Text(
+                                            item.fadl!,
+                                            style: context.bodySmall?.copyWith(
+                                              color: context.textSecondaryColor,
+                                              height: 1.5,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
@@ -139,13 +231,42 @@ class AthkarItemCard extends StatelessWidget {
                       // المصدر
                       if (item.source != null) ...[
                         Expanded(
-                          child: Text(
-                            item.source!,
-                            style: context.labelSmall?.copyWith(
-                              color: context.textSecondaryColor,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: ThemeConstants.space3,
+                              vertical: ThemeConstants.space2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: context.textSecondaryColor.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                              border: Border.all(
+                                color: context.textSecondaryColor.withValues(alpha: 0.15),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.source_rounded,
+                                  size: ThemeConstants.iconXs,
+                                  color: context.textSecondaryColor,
+                                ),
+                                ThemeConstants.space1.w,
+                                Flexible(
+                                  child: Text(
+                                    item.source!,
+                                    style: context.labelSmall?.copyWith(
+                                      color: context.textSecondaryColor,
+                                      fontWeight: ThemeConstants.medium,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
+                        ThemeConstants.space3.w,
                       ] else
                         const Spacer(),
                       
@@ -162,23 +283,6 @@ class AthkarItemCard extends StatelessWidget {
                 ],
               ),
             ),
-            
-            // مؤشر الإكمال
-            if (isCompleted)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: effectiveColor,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(ThemeConstants.radiusXl),
-                    ),
-                  ),
-                ),
-              ),
           ],
         ),
       ),
@@ -189,27 +293,48 @@ class AthkarItemCard extends StatelessWidget {
     final effectiveColor = color ?? ThemeConstants.primary;
     
     return Container(
-      width: 36,
-      height: 36,
+      width: 44,
+      height: 44,
       decoration: BoxDecoration(
-        color: isCompleted
-            ? effectiveColor.withValues(alpha: 0.2)
-            : ThemeConstants.primaryLight.withValues(alpha: 0.1),
+        gradient: isCompleted
+            ? LinearGradient(
+                colors: [effectiveColor.lighten(0.1), effectiveColor],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null,
+        color: isCompleted ? null : effectiveColor.withValues(alpha: 0.1),
         shape: BoxShape.circle,
         border: Border.all(
-          color: isCompleted
-              ? effectiveColor.withValues(alpha: 0.3)
-              : ThemeConstants.primary.withValues(alpha: 0.2),
+          color: effectiveColor.withValues(alpha: isCompleted ? 0.6 : 0.3),
+          width: isCompleted ? 2 : 1,
         ),
-      ),
-      child: Center(
-        child: Text(
-          '$number',
-          style: context.labelLarge?.copyWith(
-            color: isCompleted ? effectiveColor : ThemeConstants.primary,
-            fontWeight: ThemeConstants.bold,
+        boxShadow: isCompleted ? [
+          BoxShadow(
+            color: effectiveColor.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-        ),
+        ] : null,
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (isCompleted)
+            Icon(
+              Icons.check_rounded,
+              color: Colors.white,
+              size: ThemeConstants.iconMd,
+            )
+          else
+            Text(
+              '$number',
+              style: context.labelLarge?.copyWith(
+                color: effectiveColor,
+                fontWeight: ThemeConstants.bold,
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -224,9 +349,15 @@ class AthkarItemCard extends StatelessWidget {
         vertical: ThemeConstants.space2,
       ),
       decoration: BoxDecoration(
-        color: isCompleted
-            ? effectiveColor.withValues(alpha: 0.1)
-            : context.surfaceColor,
+        gradient: isCompleted
+            ? LinearGradient(
+                colors: [
+                  effectiveColor.withValues(alpha: 0.15),
+                  effectiveColor.withValues(alpha: 0.1),
+                ],
+              )
+            : null,
+        color: isCompleted ? null : context.surfaceColor,
         borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
         border: Border.all(
           color: isCompleted
@@ -238,26 +369,54 @@ class AthkarItemCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // أيقونة التقدم
-          AnimatedContainer(
-            duration: ThemeConstants.durationFast,
-            width: 20,
-            height: 20,
+          SizedBox(
+            width: 24,
+            height: 24,
             child: Stack(
               alignment: Alignment.center,
               children: [
-                CircularProgressIndicator(
-                  value: progress,
-                  strokeWidth: 2,
-                  backgroundColor: context.dividerColor.withValues(alpha: 0.3),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    isCompleted ? effectiveColor : ThemeConstants.primary,
+                // دائرة الخلفية
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: context.dividerColor.withValues(alpha: 0.5),
+                      width: 2,
+                    ),
                   ),
                 ),
+                
+                // دائرة التقدم
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    value: progress,
+                    strokeWidth: 2,
+                    backgroundColor: Colors.transparent,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      isCompleted ? effectiveColor : ThemeConstants.primary,
+                    ),
+                  ),
+                ),
+                
+                // أيقونة الحالة
                 if (isCompleted)
                   Icon(
-                    Icons.check,
+                    Icons.check_rounded,
                     size: 12,
                     color: effectiveColor,
+                  )
+                else if (currentCount > 0)
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: ThemeConstants.primary,
+                      shape: BoxShape.circle,
+                    ),
                   ),
               ],
             ),
@@ -266,12 +425,26 @@ class AthkarItemCard extends StatelessWidget {
           ThemeConstants.space2.w,
           
           // النص
-          Text(
-            '$currentCount / ${item.count}',
-            style: context.labelMedium?.copyWith(
-              color: isCompleted ? effectiveColor : context.textPrimaryColor,
-              fontWeight: isCompleted ? ThemeConstants.bold : ThemeConstants.medium,
-            ),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$currentCount / ${item.count}',
+                style: context.labelMedium?.copyWith(
+                  color: isCompleted ? effectiveColor : context.textPrimaryColor,
+                  fontWeight: isCompleted ? ThemeConstants.bold : ThemeConstants.medium,
+                ),
+              ),
+              if (!isCompleted && currentCount > 0)
+                Text(
+                  'اضغط للمتابعة',
+                  style: context.labelSmall?.copyWith(
+                    color: context.textSecondaryColor,
+                    fontSize: 9,
+                  ),
+                ),
+            ],
           ),
         ],
       ),
@@ -284,7 +457,7 @@ class AthkarItemCard extends StatelessWidget {
       children: [
         if (onFavoriteToggle != null) ...[
           _ActionButton(
-            icon: Icons.favorite_outline,
+            icon: Icons.favorite_outline_rounded,
             onTap: onFavoriteToggle!,
             tooltip: 'إضافة للمفضلة',
             color: context.textSecondaryColor,
@@ -292,9 +465,9 @@ class AthkarItemCard extends StatelessWidget {
         ],
         
         if (onShare != null) ...[
-          if (onFavoriteToggle != null) ThemeConstants.space1.w,
+          if (onFavoriteToggle != null) ThemeConstants.space2.w,
           _ActionButton(
-            icon: Icons.share_outlined,
+            icon: Icons.share_rounded,
             onTap: onShare!,
             tooltip: 'مشاركة',
             color: context.textSecondaryColor,
@@ -329,8 +502,12 @@ class _ActionButton extends StatelessWidget {
           onTap();
         },
         borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-        child: Padding(
+        child: Container(
           padding: const EdgeInsets.all(ThemeConstants.space2),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
           child: Icon(
             icon,
             size: ThemeConstants.iconSm,

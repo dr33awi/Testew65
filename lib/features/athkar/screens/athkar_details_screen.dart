@@ -6,7 +6,6 @@ import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
-import '../../../app/themes/widgets/animations/animated_press.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
 import '../../../core/infrastructure/services/utils/extensions/string_extensions.dart';
 import '../services/athkar_service.dart';
@@ -15,6 +14,7 @@ import '../widgets/athkar_item_card.dart';
 import '../widgets/athkar_progress_bar.dart';
 import '../widgets/athkar_completion_dialog.dart';
 import '../utils/category_utils.dart';
+import 'notification_settings_screen.dart';
 
 class AthkarDetailsScreen extends StatefulWidget {
   String categoryId;
@@ -251,210 +251,202 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     final category = _category!;
     
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          // AppBar مخصص
-          _buildSliverAppBar(context, category),
+      backgroundColor: context.backgroundColor,
+      appBar: CustomAppBar(
+        title: category.title,
+        leading: AppBackButton(
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        actions: [
+          // زر المفضلة
+          AppBarAction(
+            icon: Icons.favorite_outline,
+            onPressed: () {
+              Navigator.pushNamed(context, AppRouter.favorites);
+            },
+            tooltip: 'المفضلة',
+          ),
           
+          // زر إعدادات الإشعارات
+          AppBarAction(
+            icon: Icons.notifications_outlined,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AthkarNotificationSettingsScreen(),
+                ),
+              );
+            },
+            tooltip: 'إعدادات الإشعارات',
+          ),
+          
+          // زر المشاركة
+          AppBarAction(
+            icon: Icons.share_outlined,
+            onPressed: _shareProgress,
+            tooltip: 'مشاركة',
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
           // شريط التقدم
-          SliverToBoxAdapter(
-            child: AnimatedBuilder(
-              animation: _animationController,
-              builder: (context, child) {
-                return FadeTransition(
-                  opacity: _animationController,
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0, -1),
-                      end: Offset.zero,
-                    ).animate(CurvedAnimation(
-                      parent: _animationController,
-                      curve: ThemeConstants.curveDefault,
-                    )),
-                    child: AthkarProgressBar(
-                      progress: _totalProgress,
-                      color: category.color,
-                      completedCount: _completedItems.length,
-                      totalCount: category.athkar.length,
-                    ),
+          AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              return FadeTransition(
+                opacity: _animationController,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, -1),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(
+                    parent: _animationController,
+                    curve: ThemeConstants.curveDefault,
+                  )),
+                  child: AthkarProgressBar(
+                    progress: _totalProgress,
+                    color: CategoryUtils.getCategoryThemeColor(category.id),
+                    completedCount: _completedItems.length,
+                    totalCount: category.athkar.length,
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
           
           // قائمة الأذكار
-          if (_visibleItems.isEmpty && _completedItems.isNotEmpty)
-            SliverFillRemaining(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.check_circle,
-                      size: 80,
-                      color: ThemeConstants.success,
-                    ),
-                    ThemeConstants.space4.h,
-                    Text(
-                      'أحسنت! أكملت جميع الأذكار',
-                      style: context.headlineSmall?.copyWith(
-                        color: ThemeConstants.success,
-                        fontWeight: ThemeConstants.bold,
-                      ),
-                    ),
-                    ThemeConstants.space2.h,
-                    Text(
-                      'جعله الله في ميزان حسناتك',
-                      style: context.bodyLarge?.copyWith(
-                        color: context.textSecondaryColor,
-                      ),
-                    ),
-                    ThemeConstants.space6.h,
-                    AppButton.primary(
-                      text: 'البدء من جديد',
-                      icon: Icons.refresh,
-                      onPressed: _resetAll,
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.all(ThemeConstants.space4),
-              sliver: AnimationLimiter(
-                child: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final item = _visibleItems[index];
-                      final currentCount = _counts[item.id] ?? 0;
-                      final isCompleted = _completedItems.contains(item.id);
-                      
-                      // إيجاد الفهرس الأصلي
-                      final originalIndex = category.athkar.indexOf(item);
-                      final number = originalIndex + 1;
-                      
-                      return AnimationConfiguration.staggeredList(
-                        position: index,
-                        duration: ThemeConstants.durationNormal,
-                        child: SlideAnimation(
-                          verticalOffset: 50.0,
-                          child: FadeInAnimation(
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                bottom: index < _visibleItems.length - 1
-                                    ? ThemeConstants.space3
-                                    : 0,
-                              ),
-                              child: AthkarItemCard(
-                                item: item,
-                                currentCount: currentCount,
-                                isCompleted: isCompleted,
-                                number: number,
-                                color: category.color,
-                                onTap: () => _onItemTap(item),
-                                onLongPress: () => _onItemLongPress(item),
-                                onFavoriteToggle: () => _toggleFavorite(item),
-                                onShare: () => _shareItem(item),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                    childCount: _visibleItems.length,
-                  ),
-                ),
-              ),
-            ),
-          
-          // مساحة إضافية في الأسفل
-          const SliverPadding(
-            padding: EdgeInsets.only(bottom: ThemeConstants.space8),
+          Expanded(
+            child: _buildContent(category),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSliverAppBar(BuildContext context, AthkarCategory category) {
-    // استخدام ألوان من الثيم بناءً على نوع الفئة
-    final categoryColor = CategoryUtils.getCategoryThemeColor(category.id);
-    
-    return SliverAppBar(
-      expandedHeight: 200,
-      pinned: true,
-      stretch: true,
-      backgroundColor: categoryColor,
-      leading: AppBackButton(
-        color: Colors.white,
-        onPressed: () => Navigator.of(context).pop(),
-      ),
-      actions: [
-        // زر المفضلة
-        AppBarAction(
-          icon: Icons.favorite_outline,
-          color: Colors.white,
-          onPressed: () {
-            Navigator.pushNamed(context, AppRouter.favorites);
-          },
-          tooltip: 'المفضلة',
-        ),
-        
-        // زر الإعدادات
-        AppBarAction(
-          icon: Icons.settings,
-          color: Colors.white,
-          onPressed: () {
-            Navigator.pushNamed(context, AppRouter.appSettings);
-          },
-          tooltip: 'الإعدادات',
-        ),
-      ],
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(
-          category.title,
-          style: AppTextStyles.h5.copyWith(
-            color: Colors.white,
-            fontWeight: ThemeConstants.bold,
-          ),
-        ),
-        centerTitle: true,
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                categoryColor.darken(0.2),
-                categoryColor,
-                categoryColor.lighten(0.1),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: Stack(
+  Widget _buildContent(AthkarCategory category) {
+    if (_visibleItems.isEmpty && _completedItems.isNotEmpty) {
+      // عرض رسالة الإكمال
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(ThemeConstants.space6),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // نمط في الخلفية
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: _BackgroundPatternPainter(
-                    color: Colors.white.withValues(alpha: 0.1),
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: ThemeConstants.success.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: ThemeConstants.success.withValues(alpha: 0.3),
+                    width: 2,
                   ),
+                ),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  size: 60,
+                  color: ThemeConstants.success,
                 ),
               ),
               
-              // أيقونة الفئة
-              Center(
-                child: Icon(
-                  CategoryUtils.getCategoryIcon(category.id),
-                  size: 80,
-                  color: Colors.white.withValues(alpha: 0.3),
+              ThemeConstants.space6.h,
+              
+              Text(
+                'أحسنت! أكملت جميع الأذكار',
+                style: context.headlineSmall?.copyWith(
+                  color: ThemeConstants.success,
+                  fontWeight: ThemeConstants.bold,
                 ),
+                textAlign: TextAlign.center,
+              ),
+              
+              ThemeConstants.space3.h,
+              
+              Text(
+                'جعله الله في ميزان حسناتك',
+                style: context.bodyLarge?.copyWith(
+                  color: context.textSecondaryColor,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              
+              ThemeConstants.space8.h,
+              
+              Row(
+                children: [
+                  Expanded(
+                    child: AppButton.outline(
+                      text: 'مشاركة الإنجاز',
+                      icon: Icons.share_rounded,
+                      onPressed: _shareProgress,
+                      color: ThemeConstants.success,
+                    ),
+                  ),
+                  
+                  ThemeConstants.space4.w,
+                  
+                  Expanded(
+                    child: AppButton.primary(
+                      text: 'البدء من جديد',
+                      icon: Icons.refresh_rounded,
+                      onPressed: _resetAll,
+                      backgroundColor: ThemeConstants.success,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
+      );
+    }
+    
+    // عرض الأذكار
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(ThemeConstants.space4),
+        itemCount: _visibleItems.length,
+        itemBuilder: (context, index) {
+          final item = _visibleItems[index];
+          final currentCount = _counts[item.id] ?? 0;
+          final isCompleted = _completedItems.contains(item.id);
+          
+          // إيجاد الفهرس الأصلي
+          final originalIndex = category.athkar.indexOf(item);
+          final number = originalIndex + 1;
+          
+          return AnimationConfiguration.staggeredList(
+            position: index,
+            duration: ThemeConstants.durationNormal,
+            child: SlideAnimation(
+              verticalOffset: 50.0,
+              child: FadeInAnimation(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: index < _visibleItems.length - 1
+                        ? ThemeConstants.space3
+                        : 0,
+                  ),
+                  child: AthkarItemCard(
+                    item: item,
+                    currentCount: currentCount,
+                    isCompleted: isCompleted,
+                    number: number,
+                    color: CategoryUtils.getCategoryThemeColor(category.id),
+                    onTap: () => _onItemTap(item),
+                    onLongPress: () => _onItemLongPress(item),
+                    onFavoriteToggle: () => _toggleFavorite(item),
+                    onShare: () => _shareItem(item),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -463,33 +455,4 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     // TODO: تنفيذ المفضلة
     context.showInfoSnackBar('سيتم إضافة ميزة المفضلة قريباً');
   }
-}
-
-// رسام النمط في الخلفية
-class _BackgroundPatternPainter extends CustomPainter {
-  final Color color;
-
-  _BackgroundPatternPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    const spacing = 30.0;
-    
-    // رسم خطوط مائلة
-    for (double i = -size.height; i < size.width + size.height; i += spacing) {
-      canvas.drawLine(
-        Offset(i, 0),
-        Offset(i + size.height, size.height),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

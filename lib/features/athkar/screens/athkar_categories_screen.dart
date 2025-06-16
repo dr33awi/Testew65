@@ -7,9 +7,11 @@ import '../../../app/di/service_locator.dart';
 import '../../../app/routes/app_router.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
 import '../../../core/infrastructure/services/notifications/notification_manager.dart';
+import '../../../core/infrastructure/services/storage/storage_service.dart';
 import '../services/athkar_service.dart';
 import '../models/athkar_model.dart';
 import '../widgets/athkar_category_card.dart';
+import 'notification_settings_screen.dart';
 
 class AthkarCategoriesScreen extends StatefulWidget {
   const AthkarCategoriesScreen({super.key});
@@ -22,6 +24,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     with SingleTickerProviderStateMixin {
   late final AthkarService _service;
   late final PermissionService _permissionService;
+  late final StorageService _storage;
   late final AnimationController _animationController;
   
   late Future<List<AthkarCategory>> _futureCategories;
@@ -32,6 +35,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
   void initState() {
     super.initState();
     _service = getIt<AthkarService>();
+    _storage = getIt<StorageService>();
     _permissionService = getIt<PermissionService>();
     _animationController = AnimationController(
       vsync: this,
@@ -44,7 +48,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // تحديث البيانات عند العودة من صفحة التفاصيل
     _loadProgress();
   }
 
@@ -78,7 +81,23 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
       final progressMap = <String, int>{};
       
       for (final category in categories) {
-        final percentage = await _service.getCategoryCompletionPercentage(category.id);
+        // حساب التقدم الإجمالي بناءً على العدد الفعلي للأذكار المكررة
+        int totalCompleted = 0;
+        int totalRequired = 0;
+        
+        // تحميل البيانات المحفوظة لكل فئة
+        final key = 'athkar_progress_${category.id}';
+        final savedData = _storage.getMap(key);
+        final savedProgress = savedData?.map((k, v) => MapEntry(int.parse(k), v as int)) ?? <int, int>{};
+        
+        for (final item in category.athkar) {
+          final currentCount = savedProgress[item.id] ?? 0;
+          totalCompleted += currentCount.clamp(0, item.count);
+          totalRequired += item.count;
+        }
+        
+        // حساب النسبة المئوية للتقدم الإجمالي
+        final percentage = totalRequired > 0 ? ((totalCompleted / totalRequired) * 100).round() : 0;
         progressMap[category.id] = percentage;
       }
       
@@ -93,63 +112,74 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     }
   }
 
-  Future<void> _requestNotificationPermission() async {
-    final status = await _permissionService.requestPermission(
-      AppPermissionType.notification,
-    );
-    
-    if (status == AppPermissionStatus.granted) {
-      setState(() => _notificationsEnabled = true);
-      context.showSuccessSnackBar('تم تفعيل الإشعارات بنجاح');
-      
-      // جدولة التذكيرات
-      await _service.scheduleCategoryReminders();
-    } else if (status == AppPermissionStatus.permanentlyDenied) {
-      final shouldOpenSettings = await AppInfoDialog.showConfirmation(
-        context: context,
-        title: 'الإشعارات مطلوبة',
-        content: 'يرجى تفعيل الإشعارات من إعدادات التطبيق لتلقي تذكيرات الأذكار',
-        confirmText: 'فتح الإعدادات',
-        cancelText: 'لاحقاً',
-        icon: Icons.notifications_off,
-      );
-      
-      if (shouldOpenSettings == true) {
-        await _permissionService.openAppSettings();
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
+      appBar: CustomAppBar(
+        title: 'أذكار المسلم',
+        centerTitle: true,
+        actions: [
+          // زر المفضلة
+          AppBarAction(
+            icon: Icons.favorite_outline,
+            onPressed: () {
+              Navigator.pushNamed(context, AppRouter.favorites);
+            },
+            tooltip: 'المفضلة',
+          ),
+          
+          // زر إعدادات الإشعارات
+          AppBarAction(
+            icon: Icons.notifications_outlined,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AthkarNotificationSettingsScreen(),
+                ),
+              );
+            },
+            tooltip: 'إعدادات الإشعارات',
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () async {
           await _loadProgress();
         },
         child: CustomScrollView(
           slivers: [
-            // AppBar مخصص مع ألوان الثيم
-            _buildSliverAppBar(context),
+            // مساحة علوية
+            const SliverPadding(
+              padding: EdgeInsets.only(top: ThemeConstants.space2),
+            ),
             
-
-            
-            // العنوان
+            // العنوان التوضيحي
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  ThemeConstants.space4,
-                  ThemeConstants.space4,
-                  ThemeConstants.space4,
-                  ThemeConstants.space2,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: ThemeConstants.space4,
+                  vertical: ThemeConstants.space2,
                 ),
-                child: Text(
-                  'فئات الأذكار',
-                  style: context.titleLarge?.copyWith(
-                    fontWeight: ThemeConstants.bold,
-                    color: context.textPrimaryColor,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'اختر فئة الأذكار',
+                      style: context.titleLarge?.copyWith(
+                        fontWeight: ThemeConstants.bold,
+                        color: context.textPrimaryColor,
+                      ),
+                    ),
+                    ThemeConstants.space1.h,
+                    Text(
+                      'اقرأ الأذكار اليومية وحافظ على ذكر الله في كل وقت',
+                      style: context.bodyMedium?.copyWith(
+                        color: context.textSecondaryColor,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -192,17 +222,14 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                 }
                 
                 return SliverPadding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: ThemeConstants.space4,
-                    vertical: ThemeConstants.space2,
-                  ),
+                  padding: const EdgeInsets.all(ThemeConstants.space4),
                   sliver: AnimationLimiter(
                     child: SliverGrid(
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
-                        mainAxisSpacing: ThemeConstants.space3,
-                        crossAxisSpacing: ThemeConstants.space3,
-                        childAspectRatio: 0.85,
+                        mainAxisSpacing: ThemeConstants.space4,
+                        crossAxisSpacing: ThemeConstants.space4,
+                        childAspectRatio: 0.8,
                       ),
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
@@ -219,9 +246,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                                   category: category,
                                   progress: progress,
                                   onTap: () => _openCategoryDetails(category),
-                                  onNotificationToggle: _notificationsEnabled
-                                      ? () => _toggleCategoryNotification(category)
-                                      : null,
                                 ),
                               ),
                             ),
@@ -242,120 +266,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
           ],
         ),
       ),
-      
-      // زر الإشعارات العائم
-      floatingActionButton: _buildNotificationFAB(),
-    );
-  }
-
-  Widget _buildSliverAppBar(BuildContext context) {
-    return SliverAppBar(
-      expandedHeight: 120,
-      floating: true,
-      snap: true,
-      backgroundColor: ThemeConstants.primary,
-      flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.symmetric(
-          horizontal: ThemeConstants.space4,
-          vertical: ThemeConstants.space3,
-        ),
-        title: Row(
-          children: [
-            // الشعار
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-              ),
-              child: Icon(
-                Icons.auto_awesome,
-                color: Colors.white,
-                size: ThemeConstants.iconMd,
-              ),
-            ),
-            
-            ThemeConstants.space3.w,
-            
-            // العنوان
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'الأذكار',
-                    style: context.titleLarge?.copyWith(
-                      fontWeight: ThemeConstants.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    'حصن المسلم',
-                    style: context.labelSmall?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: ThemeConstants.primaryGradient,
-          ),
-          child: CustomPaint(
-            painter: _BackgroundPatternPainter(
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
-          ),
-        ),
-      ),
-      actions: [
-        // زر المفضلة
-        AppBarAction(
-          icon: Icons.favorite_outline,
-          color: Colors.white,
-          onPressed: () {
-            Navigator.pushNamed(context, AppRouter.favorites);
-          },
-          tooltip: 'المفضلة',
-        ),
-        
-        // زر الإعدادات
-        AppBarAction(
-          icon: Icons.settings,
-          color: Colors.white,
-          onPressed: () {
-            Navigator.pushNamed(context, AppRouter.appSettings);
-          },
-          tooltip: 'الإعدادات',
-        ),
-      ],
-    );
-  }
-
-  Widget? _buildNotificationFAB() {
-    if (_notificationsEnabled) return null;
-    
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return ScaleTransition(
-          scale: CurvedAnimation(
-            parent: _animationController,
-            curve: const Interval(0.5, 1.0, curve: Curves.elasticOut),
-          ),
-          child: FloatingActionButton.extended(
-            onPressed: _requestNotificationPermission,
-            backgroundColor: ThemeConstants.accent,
-            icon: const Icon(Icons.notifications_off),
-            label: const Text('تفعيل التذكيرات'),
-          ),
-        );
-      },
     );
   }
 
@@ -366,61 +276,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
       AppRouter.athkarDetails,
       arguments: category.id,
     ).then((_) {
-      // تحديث البيانات عند العودة
       _loadProgress();
     });
   }
-
-  Future<void> _toggleCategoryNotification(AthkarCategory category) async {
-    HapticFeedback.lightImpact();
-    
-    if (category.notifyTime == null) {
-      context.showInfoSnackBar('هذه الفئة لا تحتوي على وقت تنبيه');
-      return;
-    }
-    
-    final enabledIds = _service.getEnabledReminderCategories();
-    final isEnabled = enabledIds.contains(category.id);
-    
-    if (!isEnabled) {
-      await NotificationManager.instance.scheduleAthkarReminder(
-        categoryId: category.id,
-        categoryName: category.title,
-        time: category.notifyTime!,
-      );
-      context.showSuccessSnackBar('تم تفعيل تذكير ${category.title}');
-    } else {
-      await NotificationManager.instance.cancelAthkarReminder(category.id);
-      context.showInfoSnackBar('تم إيقاف تذكير ${category.title}');
-    }
-  }
-}
-
-// رسام النمط في الخلفية
-class _BackgroundPatternPainter extends CustomPainter {
-  final Color color;
-
-  _BackgroundPatternPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    const spacing = 30.0;
-    
-    // رسم خطوط مائلة
-    for (double i = -size.height; i < size.width + size.height; i += spacing) {
-      canvas.drawLine(
-        Offset(i, 0),
-        Offset(i + size.height, size.height),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
