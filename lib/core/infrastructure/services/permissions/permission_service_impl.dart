@@ -1,4 +1,4 @@
-// lib/core/infrastructure/services/permissions/permission_service_impl.dart (محدث)
+// lib/core/infrastructure/services/permissions/permission_service_impl.dart (محدث مع الدوال المطلوبة)
 
 import 'dart:async';
 import 'dart:io';
@@ -71,6 +71,22 @@ class PermissionServiceImpl implements PermissionService {
     _loadCachedStatuses();
     _startPermissionMonitoring();
   }
+  
+  // ==================== الدوال المطلوبة الجديدة ====================
+  
+  /// فحص إذن الإشعارات
+  Future<bool> checkNotificationPermission() async {
+    final status = await checkPermissionStatus(AppPermissionType.notification);
+    return status == AppPermissionStatus.granted;
+  }
+  
+  /// طلب إذن الإشعارات
+  Future<bool> requestNotificationPermission() async {
+    final status = await requestPermission(AppPermissionType.notification);
+    return status == AppPermissionStatus.granted;
+  }
+  
+  // ==================== الدوال الأساسية ====================
   
   @override
   Future<AppPermissionStatus> requestPermission(AppPermissionType permission) async {

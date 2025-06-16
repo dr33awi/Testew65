@@ -1,4 +1,4 @@
-// lib/core/infrastructure/services/permissions/permission_service.dart
+// lib/core/infrastructure/services/permissions/permission_service.dart (محدث)
 
 import 'dart:async';
 
@@ -112,6 +112,10 @@ abstract class PermissionService {
   String getPermissionName(AppPermissionType permission);
   String getPermissionIcon(AppPermissionType permission);
   bool isPermissionAvailable(AppPermissionType permission);
+  
+  // دوال مساعدة للإشعارات (الدوال المطلوبة)
+  Future<bool> checkNotificationPermission();
+  Future<bool> requestNotificationPermission();
   
   // Stream للاستماع لتغييرات الأذونات
   Stream<PermissionChange> get permissionChanges;

@@ -1,4 +1,4 @@
-// lib/features/athkar/services/athkar_service.dart
+// lib/features/athkar/services/athkar_service.dart (محدث مع الدوال المطلوبة)
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import '../../../core/constants/app_constants.dart';
@@ -151,7 +151,6 @@ class AthkarService {
       // تحديث الكاش
       _progressCache[categoryId] = progress;
 
-
       _logger.debug(
         message: '[AthkarService] تم تحديث التقدم',
         data: {
@@ -257,6 +256,24 @@ class AthkarService {
     return _storage.getStringList(_reminderKey) ?? [];
   }
 
+  /// تحديث الفئات المفعلة للتذكيرات (الدالة المطلوبة)
+  Future<void> setEnabledReminderCategories(List<String> enabledIds) async {
+    try {
+      await _storage.setStringList(_reminderKey, enabledIds);
+      
+      _logger.info(
+        message: '[AthkarService] تم تحديث الفئات المفعلة للتذكيرات',
+        data: {'enabledIds': enabledIds},
+      );
+    } catch (e) {
+      _logger.error(
+        message: '[AthkarService] فشل تحديث الفئات المفعلة للتذكيرات',
+        error: e,
+      );
+      rethrow;
+    }
+  }
+
   /// تحديث إعدادات التذكيرات
   Future<void> updateReminderSettings(Map<String, bool> enabledMap) async {
     try {
@@ -265,7 +282,7 @@ class AthkarService {
           .map((e) => e.key)
           .toList();
       
-      await _storage.setStringList(_reminderKey, enabledIds);
+      await setEnabledReminderCategories(enabledIds);
 
       // تحديث الجدولة
       final categories = await loadCategories();
@@ -361,8 +378,6 @@ class AthkarService {
     final key = '$categoryId:$itemId';
     return getFavoriteItems().contains(key);
   }
-
-
 
   // ==================== البحث ====================
 

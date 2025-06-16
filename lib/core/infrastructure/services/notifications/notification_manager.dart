@@ -1,4 +1,4 @@
-// lib/core/services/notification/notification_manager.dart
+// lib/core/infrastructure/services/notifications/notification_manager.dart (محدث)
 
 import 'dart:async';
 import 'package:flutter/material.dart';
