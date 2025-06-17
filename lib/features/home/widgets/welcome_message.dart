@@ -1,10 +1,78 @@
-// lib/features/home/widgets/welcome_message.dart
+// lib/features/home/widgets/enhanced_welcome_message.dart
+import 'package:athkar_app/features/home/widgets/color_helper.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'dart:math' as math;
 import '../../../app/themes/app_theme.dart';
 
-class WelcomeMessage extends StatelessWidget {
+class WelcomeMessage extends StatefulWidget {
   const WelcomeMessage({super.key});
+
+  @override
+  State<WelcomeMessage> createState() => _WelcomeMessageState();
+}
+
+class _WelcomeMessageState extends State<WelcomeMessage>
+    with TickerProviderStateMixin {
+  late AnimationController _animationController;
+  late AnimationController _iconController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _rotationAnimation;
+  late Animation<Color?> _colorAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupAnimations();
+  }
+
+  void _setupAnimations() {
+    _animationController = AnimationController(
+      duration: ThemeConstants.durationExtraSlow,
+      vsync: this,
+    );
+
+    _iconController = AnimationController(
+      duration: const Duration(seconds: 8),
+      vsync: this,
+    )..repeat();
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: ThemeConstants.curveSmooth,
+    ));
+
+    _rotationAnimation = Tween<double>(
+      begin: 0.0,
+      end: 2 * math.pi,
+    ).animate(CurvedAnimation(
+      parent: _iconController,
+      curve: Curves.linear,
+    ));
+
+    final hour = DateTime.now().hour;
+    final gradientColors = _getGradientColors(hour);
+    
+    _colorAnimation = ColorTween(
+      begin: gradientColors[0],
+      end: gradientColors[1],
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _iconController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,212 +82,334 @@ class WelcomeMessage extends StatelessWidget {
     final icon = _getIcon(hour);
     final gradient = _getGradientColors(hour);
     
-    return Padding(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-          boxShadow: [
-            BoxShadow(
-              color: gradient[0].withOpacity(0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return ScaleTransition(
+          scale: _scaleAnimation,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+              boxShadow: [
+                BoxShadow(
+                  color: gradient[0].withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                  spreadRadius: 2,
+                ),
+                BoxShadow(
+                  color: gradient[1].withValues(alpha: 0.1),
+                  blurRadius: 40,
+                  offset: const Offset(0, 20),
+                  spreadRadius: 4,
+                ),
+              ],
             ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              padding: const EdgeInsets.all(ThemeConstants.space5),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: gradient.map((c) => c.withOpacity(0.8)).toList(),
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  // الأيقونة
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          Colors.white.withOpacity(0.3),
-                          Colors.white.withOpacity(0.1),
-                        ],
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: gradient.map((c) => c.withValues(alpha: 0.9)).toList(),
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Stack(
+                    children: [
+                      // خلفية زخرفية
+                      _buildDecorativeBackground(),
+                      
+                      // المحتوى الرئيسي
+                      Padding(
+                        padding: const EdgeInsets.all(ThemeConstants.space6),
+                        child: _buildContent(context, greeting, message, icon),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: gradient[0].withOpacity(0.5),
-                          blurRadius: 20,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      icon,
-                      color: Colors.white,
-                      size: ThemeConstants.iconXl,
-                    ),
+                    ],
                   ),
-                  
-                  ThemeConstants.space4.w,
-                  
-                  // النصوص
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          greeting,
-                          style: context.headlineSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: ThemeConstants.bold,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.3),
-                                offset: const Offset(0, 2),
-                                blurRadius: 4,
-                              ),
-                            ],
-                          ),
-                        ),
-                        ThemeConstants.space1.h,
-                        Text(
-                          message,
-                          style: context.bodyLarge?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
-                            height: 1.4,
-                          ),
-                        ),
-                        ThemeConstants.space2.h,
-                        _buildTimeDisplay(context),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDecorativeBackground() {
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          // نجوم متحركة
+          ...List.generate(6, (index) {
+            return AnimatedBuilder(
+              animation: _iconController,
+              builder: (context, child) {
+                final offset = _rotationAnimation.value + (index * math.pi / 3);
+                return Positioned(
+                  top: 20 + (index * 15) + (math.sin(offset) * 10),
+                  right: 20 + (index * 20) + (math.cos(offset) * 15),
+                  child: Opacity(
+                    opacity: 0.3 + (math.sin(offset) * 0.2),
+                    child: Icon(
+                      Icons.star,
+                      size: 8 + (math.sin(offset) * 4),
+                      color: Colors.white.withValues(alpha: 0.6),
+                    ),
+                  ),
+                );
+              },
+            );
+          }),
+          
+          // دوائر زخرفية
+          Positioned(
+            top: -50,
+            left: -50,
+            child: Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    Colors.white.withValues(alpha: 0.1),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          
+          Positioned(
+            bottom: -30,
+            right: -30,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    Colors.white.withValues(alpha: 0.05),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildTimeDisplay(BuildContext context) {
-    final now = DateTime.now();
-    final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
-    final dateStr = _getArabicDate(now);
-    
+  Widget _buildContent(BuildContext context, String greeting, String message, IconData icon) {
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: ThemeConstants.space3,
-            vertical: ThemeConstants.space1,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.access_time,
-                color: Colors.white,
-                size: ThemeConstants.iconSm,
-              ),
-              ThemeConstants.space1.w,
-              Text(
-                timeStr,
-                style: context.labelLarge?.copyWith(
+        // الأيقونة المتحركة
+        AnimatedBuilder(
+          animation: _iconController,
+          builder: (context, child) {
+            return Transform.rotate(
+              angle: _rotationAnimation.value * 0.1,
+              child: Container(
+                width: 90,
+                height: 90,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      Colors.white.withValues(alpha: 0.3),
+                      Colors.white.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  icon,
                   color: Colors.white,
-                  fontWeight: ThemeConstants.bold,
+                  size: ThemeConstants.icon2xl,
                 ),
               ),
-            ],
-          ),
+            );
+          },
         ),
-        ThemeConstants.space2.w,
-        Text(
-          dateStr,
-          style: context.labelMedium?.copyWith(
-            color: Colors.white.withOpacity(0.8),
+        
+        ThemeConstants.space5.w,
+        
+        // النصوص
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // التحية
+              Text(
+                greeting,
+                style: context.headlineMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: ThemeConstants.bold,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      offset: const Offset(0, 2),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+              ),
+              
+              ThemeConstants.space2.h,
+              
+              // الرسالة
+              Text(
+                message,
+                style: context.bodyLarge?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.95),
+                  height: 1.5,
+                  fontWeight: ThemeConstants.medium,
+                ),
+              ),
+              
+              ThemeConstants.space4.h,
+              
+              // معلومات الوقت والتاريخ
+              _buildTimeInfo(context),
+            ],
           ),
         ),
       ],
     );
   }
 
+  Widget _buildTimeInfo(BuildContext context) {
+    final now = DateTime.now();
+    final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    final dateStr = _getArabicDate(now);
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: ThemeConstants.space4,
+        vertical: ThemeConstants.space2,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // أيقونة الوقت
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space1),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.access_time_rounded,
+              color: Colors.white,
+              size: ThemeConstants.iconSm,
+            ),
+          ),
+          
+          ThemeConstants.space2.w,
+          
+          // الوقت
+          Text(
+            timeStr,
+            style: context.titleMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: ThemeConstants.bold,
+            ),
+          ),
+          
+          ThemeConstants.space3.w,
+          
+          // التاريخ
+          Text(
+            dateStr,
+            style: context.labelMedium?.copyWith(
+              color: Colors.white.withValues(alpha: 0.9),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _getGreeting(int hour) {
     if (hour < 5) {
-      return 'أهلاً بك في قيام الليل';
+      return 'ليلة مباركة 🌙';
     } else if (hour < 12) {
-      return 'صباح الخير والبركة';
+      return 'صباح الخير 🌅';
     } else if (hour < 17) {
-      return 'مساء النور';
+      return 'نهارك سعيد ☀️';
     } else if (hour < 20) {
-      return 'مساء الخير';
+      return 'مساء النور 🌇';
     } else {
-      return 'أمسية مباركة';
+      return 'أمسية مباركة 🌃';
     }
   }
 
   String _getMessage(int hour) {
     if (hour < 5) {
-      return 'وقت مبارك لقيام الليل والدعاء';
-    } else if (hour < 10) {
-      return 'لا تنس أذكار الصباح وصلاة الضحى';
-    } else if (hour < 14) {
+      return 'وقت مبارك للقيام والدعاء والاستغفار';
+    } else if (hour < 8) {
+      return 'ابدأ يومك بأذكار الصباح وصلاة الفجر';
+    } else if (hour < 12) {
       return 'وقت مناسب لقراءة القرآن والذكر';
-    } else if (hour < 17) {
-      return 'حان وقت أذكار المساء';
-    } else if (hour < 20) {
-      return 'وقت الدعاء والاستغفار';
+    } else if (hour < 15) {
+      return 'استمر في الذكر واغتنم هذا الوقت المبارك';
+    } else if (hour < 18) {
+      return 'حان وقت أذكار المساء والاستغفار';
+    } else if (hour < 21) {
+      return 'وقت الدعاء والتسبيح والحمد';
     } else {
-      return 'لا تنس أذكار النوم والوتر';
+      return 'استعد للنوم بأذكار النوم والوتر';
     }
   }
 
   IconData _getIcon(int hour) {
     if (hour < 5) {
-      return Icons.nights_stay;
+      return Icons.nightlight_round;
+    } else if (hour < 8) {
+      return Icons.wb_twilight;
     } else if (hour < 12) {
       return Icons.wb_sunny;
     } else if (hour < 17) {
-      return Icons.wb_twilight;
+      return Icons.light_mode;
     } else if (hour < 20) {
       return Icons.wb_twilight_sharp;
     } else {
-      return Icons.nightlight_round;
+      return Icons.nights_stay;
     }
   }
 
   List<Color> _getGradientColors(int hour) {
-    if (hour < 5) {
-      return [ThemeConstants.primaryDark, ThemeConstants.darkCard];
-    } else if (hour < 8) {
-      return [ThemeConstants.primary, ThemeConstants.primaryLight];
-    } else if (hour < 12) {
-      return [ThemeConstants.accent, ThemeConstants.accentLight];
-    } else if (hour < 17) {
-      return [ThemeConstants.primaryLight, ThemeConstants.primarySoft];
-    } else if (hour < 20) {
-      return [ThemeConstants.tertiary, ThemeConstants.tertiaryLight];
-    } else {
-      return [ThemeConstants.primaryDark, ThemeConstants.primary];
-    }
+    final gradient = ColorHelper.getTimeBasedGradient();
+    return gradient.colors;
   }
 
   String _getArabicDate(DateTime date) {
