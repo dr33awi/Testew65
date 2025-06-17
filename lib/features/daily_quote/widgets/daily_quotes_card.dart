@@ -5,6 +5,9 @@ import 'package:flutter/services.dart';
 import 'dart:ui';
 import 'dart:math' as math;
 import '../../../app/themes/app_theme.dart';
+import '../../../app/di/service_locator.dart';
+import '../services/daily_quote_service.dart';
+import '../models/daily_quote_model.dart';
 
 class DailyQuotesCard extends StatefulWidget {
   const DailyQuotesCard({super.key});
@@ -15,35 +18,95 @@ class DailyQuotesCard extends StatefulWidget {
 
 class _DailyQuotesCardState extends State<DailyQuotesCard> {
   late PageController _pageController;
+  late DailyQuoteService _quoteService;
   
   int _currentPage = 0;
-  
-  // بيانات وهمية - يجب استبدالها ببيانات حقيقية
-  final List<QuoteData> quotes = [
-    QuoteData(
-      type: QuoteType.verse,
-      content: 'وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا وَيَرْزُقْهُ مِنْ حَيْثُ لَا يَحْتَسِبُ',
-      source: 'سورة الطلاق - آية 2-3',
-      gradient: ColorHelper.getContentGradient('verse').colors,
-    ),
-    QuoteData(
-      type: QuoteType.hadith,
-      content: 'مَنْ قَالَ سُبْحَانَ اللَّهِ وَبِحَمْدِهِ فِي يَوْمٍ مِائَةَ مَرَّةٍ، حُطَّتْ خَطَايَاهُ وَلَوْ كَانَتْ مِثْلَ زَبَدِ الْبَحْرِ',
-      source: 'صحيح البخاري',
-      gradient: ColorHelper.getContentGradient('hadith').colors,
-    ),
-    QuoteData(
-      type: QuoteType.dua,
-      content: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
-      source: 'سورة البقرة - آية 201',
-      gradient: ColorHelper.getContentGradient('dua').colors,
-    ),
-  ];
+  List<QuoteData> quotes = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+    _quoteService = getIt<DailyQuoteService>();
+    _loadQuotes();
+  }
+
+  Future<void> _loadQuotes() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
+      // تحميل الاقتباس اليومي
+      final dailyQuote = await _quoteService.getDailyQuote();
+      
+      // تحميل دعاء عشوائي من JSON
+      final allDuas = await _quoteService.getAllDuas();
+      String duaText = 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ';
+      String duaSource = 'سورة البقرة - آية 201';
+      
+      if (allDuas.isNotEmpty) {
+        final randomDua = allDuas[DateTime.now().day % allDuas.length];
+        duaText = randomDua['text'] ?? duaText;
+        duaSource = randomDua['source'] ?? duaSource;
+      }
+      
+      // تحويل البيانات إلى QuoteData
+      quotes = [
+        QuoteData(
+          type: QuoteType.verse,
+          content: dailyQuote.verse,
+          source: dailyQuote.verseSource,
+          gradient: ColorHelper.getContentGradient('verse').colors,
+        ),
+        QuoteData(
+          type: QuoteType.hadith,
+          content: dailyQuote.hadith,
+          source: dailyQuote.hadithSource,
+          gradient: ColorHelper.getContentGradient('hadith').colors,
+        ),
+        QuoteData(
+          type: QuoteType.dua,
+          content: duaText,
+          source: duaSource,
+          gradient: ColorHelper.getContentGradient('dua').colors,
+        ),
+      ];
+
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'فشل في تحميل الاقتباسات';
+      });
+      
+      // في حالة الخطأ، استخدم بيانات افتراضية
+      quotes = [
+        QuoteData(
+          type: QuoteType.verse,
+          content: 'وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا وَيَرْزُقْهُ مِنْ حَيْثُ لَا يَحْتَسِبُ',
+          source: 'سورة الطلاق - آية 2-3',
+          gradient: ColorHelper.getContentGradient('verse').colors,
+        ),
+        QuoteData(
+          type: QuoteType.hadith,
+          content: 'مَنْ قَالَ سُبْحَانَ اللَّهِ وَبِحَمْدِهِ فِي يَوْمٍ مِائَةَ مَرَّةٍ، حُطَّتْ خَطَايَاهُ وَلَوْ كَانَتْ مِثْلَ زَبَدِ الْبَحْرِ',
+          source: 'صحيح البخاري',
+          gradient: ColorHelper.getContentGradient('hadith').colors,
+        ),
+        QuoteData(
+          type: QuoteType.dua,
+          content: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
+          source: 'سورة البقرة - آية 201',
+          gradient: ColorHelper.getContentGradient('dua').colors,
+        ),
+      ];
+    }
   }
 
   @override
@@ -54,6 +117,14 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return _buildLoadingState();
+    }
+
+    if (_errorMessage != null && quotes.isEmpty) {
+      return _buildErrorState();
+    }
+
     return Column(
       children: [
         // عنوان القسم البسيط
@@ -84,6 +155,68 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
         // مؤشر الصفحات
         _buildPageIndicator(context),
       ],
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Container(
+      height: 300,
+      decoration: BoxDecoration(
+        color: context.cardColor,
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(context.primaryColor),
+            ),
+            ThemeConstants.space3.h,
+            Text(
+              'جاري تحميل الاقتباسات...',
+              style: context.bodyMedium?.copyWith(
+                color: context.textSecondaryColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Container(
+      height: 300,
+      decoration: BoxDecoration(
+        color: context.cardColor,
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 48,
+              color: context.errorColor,
+            ),
+            ThemeConstants.space3.h,
+            Text(
+              _errorMessage ?? 'خطأ في تحميل الاقتباسات',
+              style: context.bodyMedium?.copyWith(
+                color: context.textSecondaryColor,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            ThemeConstants.space3.h,
+            ElevatedButton(
+              onPressed: _loadQuotes,
+              child: const Text('إعادة المحاولة'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -147,6 +280,17 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
                         ],
                       ),
                     ),
+                    
+                    // زر إعادة التحديث
+                    if (!_isLoading)
+                      IconButton(
+                        onPressed: _loadQuotes,
+                        icon: Icon(
+                          Icons.refresh,
+                          color: context.textSecondaryColor,
+                        ),
+                        tooltip: 'تحديث الاقتباسات',
+                      ),
                   ],
                 ),
               ),

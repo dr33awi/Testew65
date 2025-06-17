@@ -36,6 +36,7 @@ import '../../core/error/error_handler.dart';
 import '../../features/prayer_times/services/prayer_times_service.dart';
 import 'package:athkar_app/features/qibla/services/qibla_service.dart';
 import 'package:athkar_app/features/athkar/services/athkar_service.dart';
+import '../../features/daily_quote/services/daily_quote_service.dart';
 
 // خدمات الإعدادات الموحدة
 import '../../features/settings/services/settings_services_manager.dart';
@@ -254,6 +255,16 @@ class ServiceLocator {
         ),
       );
     }
+
+    // خدمة الاقتباسات اليومية
+    if (!getIt.isRegistered<DailyQuoteService>()) {
+      getIt.registerLazySingleton<DailyQuoteService>(
+        () => DailyQuoteService(
+          storage: getIt<StorageService>(),
+          logger: getIt<LoggerService>(),
+        ),
+      );
+    }
     
     // تسجيل خدمة القبلة
     _registerQiblaServices();
@@ -453,6 +464,9 @@ extension ServiceLocatorExtensions on BuildContext {
   
   /// الحصول على خدمة القبلة
   QiblaService get qiblaService => getIt<QiblaService>();
+  
+  /// الحصول على خدمة الاقتباسات اليومية
+  DailyQuoteService get dailyQuoteService => getIt<DailyQuoteService>();
   
   /// الحصول على إدارة الثيم
   ThemeNotifier get themeNotifier => getIt<ThemeNotifier>();

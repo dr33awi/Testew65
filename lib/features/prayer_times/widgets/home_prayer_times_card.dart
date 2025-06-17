@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
 import 'dart:math' as math;
+import 'dart:async';
 import '../../../app/themes/app_theme.dart';
+import '../../../app/di/service_locator.dart';
+import '../services/prayer_times_service.dart';
+import '../models/prayer_time_model.dart';
 
 class PrayerTimesCard extends StatefulWidget {
   const PrayerTimesCard({super.key});
@@ -18,21 +22,24 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
   late AnimationController _pulseController;
   late Animation<double> _progressAnimation;
   late Animation<double> _pulseAnimation;
+  late PrayerTimesService _prayerService;
 
-  // بيانات وهمية - يجب استبدالها ببيانات حقيقية من الخدمة
-  final List<PrayerTimeData> prayerTimes = [
-    PrayerTimeData(name: 'الفجر', time: '05:30', isPassed: true, isNext: false),
-    PrayerTimeData(name: 'الشروق', time: '07:00', isPassed: true, isNext: false),
-    PrayerTimeData(name: 'الظهر', time: '12:15', isPassed: true, isNext: false),
-    PrayerTimeData(name: 'العصر', time: '15:45', isPassed: false, isNext: true),
-    PrayerTimeData(name: 'المغرب', time: '18:20', isPassed: false, isNext: false),
-    PrayerTimeData(name: 'العشاء', time: '19:50', isPassed: false, isNext: false),
-  ];
+  // State
+  DailyPrayerTimes? _dailyTimes;
+  PrayerTime? _nextPrayer;
+  PrayerLocation? _location;
+  bool _isLoading = true;
+  String? _errorMessage;
+  
+  // Subscriptions
+  StreamSubscription<DailyPrayerTimes>? _timesSubscription;
+  StreamSubscription<PrayerTime?>? _nextPrayerSubscription;
 
   @override
   void initState() {
     super.initState();
     _setupAnimations();
+    _initializeService();
   }
 
   void _setupAnimations() {
@@ -65,24 +72,112 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     _progressController.forward();
   }
 
+  void _initializeService() {
+    try {
+      _prayerService = getIt<PrayerTimesService>();
+      
+      // الاستماع للتحديثات
+      _timesSubscription = _prayerService.prayerTimesStream.listen(
+        (times) {
+          if (mounted) {
+            setState(() {
+              _dailyTimes = times;
+              _location = times.location;
+              _isLoading = false;
+              _errorMessage = null;
+            });
+          }
+        },
+        onError: (error) {
+          if (mounted) {
+            setState(() {
+              _errorMessage = 'فشل في تحميل مواقيت الصلاة';
+              _isLoading = false;
+            });
+          }
+        },
+      );
+      
+      _nextPrayerSubscription = _prayerService.nextPrayerStream.listen(
+        (prayer) {
+          if (mounted) {
+            setState(() {
+              _nextPrayer = prayer;
+            });
+          }
+        },
+      );
+      
+      // تحميل البيانات الأولية
+      _loadInitialData();
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'خطأ في تهيئة خدمة مواقيت الصلاة';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadInitialData() async {
+    try {
+      // محاولة تحميل البيانات المحفوظة أولاً
+      final cachedTimes = await _prayerService.getCachedPrayerTimes(DateTime.now());
+      if (cachedTimes != null && mounted) {
+        setState(() {
+          _dailyTimes = cachedTimes;
+          _nextPrayer = cachedTimes.nextPrayer;
+          _location = cachedTimes.location;
+          _isLoading = false;
+        });
+      }
+      
+      // تحديث البيانات في الخلفية
+      if (_prayerService.currentLocation == null) {
+        await _prayerService.getCurrentLocation();
+      }
+      await _prayerService.updatePrayerTimes();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'فشل في تحميل مواقيت الصلاة';
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   void dispose() {
     _progressController.dispose();
     _pulseController.dispose();
+    _timesSubscription?.cancel();
+    _nextPrayerSubscription?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final nextPrayer = prayerTimes.firstWhere(
-      (prayer) => prayer.isNext,
-      orElse: () => prayerTimes.first,
-    );
+    if (_isLoading) {
+      return _buildLoadingState();
+    }
+
+    if (_errorMessage != null && _dailyTimes == null) {
+      return _buildErrorState();
+    }
+
+    if (_dailyTimes == null) {
+      return _buildEmptyState();
+    }
+
+    final nextPrayer = _nextPrayer ?? _dailyTimes!.nextPrayer;
+    if (nextPrayer == null) {
+      return _buildEmptyState();
+    }
 
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        gradient: _getPrayerGradient(nextPrayer.name),
+        gradient: _getPrayerGradient(nextPrayer.nameAr),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
@@ -126,7 +221,122 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     );
   }
 
-  Widget _buildHeader(BuildContext context, PrayerTimeData nextPrayer) {
+  Widget _buildLoadingState() {
+    return Container(
+      height: 280,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        color: context.cardColor,
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(context.primaryColor),
+            ),
+            ThemeConstants.space3.h,
+            Text(
+              'جاري تحميل مواقيت الصلاة...',
+              style: context.bodyMedium?.copyWith(
+                color: context.textSecondaryColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Container(
+      height: 280,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        color: context.cardColor,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _loadInitialData,
+          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+          child: Padding(
+            padding: const EdgeInsets.all(ThemeConstants.space5),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 48,
+                  color: context.errorColor,
+                ),
+                ThemeConstants.space3.h,
+                Text(
+                  _errorMessage ?? 'خطأ في تحميل المواقيت',
+                  style: context.bodyMedium?.copyWith(
+                    color: context.textSecondaryColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                ThemeConstants.space3.h,
+                Text(
+                  'اضغط للمحاولة مرة أخرى',
+                  style: context.bodySmall?.copyWith(
+                    color: context.primaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      height: 280,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        color: context.cardColor,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _loadInitialData,
+          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+          child: Padding(
+            padding: const EdgeInsets.all(ThemeConstants.space5),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.location_on,
+                  size: 48,
+                  color: context.textSecondaryColor,
+                ),
+                ThemeConstants.space3.h,
+                Text(
+                  'لم يتم تحديد الموقع',
+                  style: context.titleMedium?.semiBold,
+                ),
+                ThemeConstants.space2.h,
+                Text(
+                  'اضغط لتحديد موقعك وعرض مواقيت الصلاة',
+                  style: context.bodySmall?.copyWith(
+                    color: context.textSecondaryColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context, PrayerTime nextPrayer) {
     return Row(
       children: [
         // أيقونة المسجد
@@ -158,7 +368,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                 ),
               ),
               Text(
-                'الرياض، المملكة العربية السعودية',
+                _location?.displayName ?? 'جاري تحديد الموقع...',
                 style: context.labelMedium?.copyWith(
                   color: Colors.white.withValues(alpha: 0.8),
                 ),
@@ -170,7 +380,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     );
   }
 
-  Widget _buildNextPrayerSection(BuildContext context, PrayerTimeData nextPrayer) {
+  Widget _buildNextPrayerSection(BuildContext context, PrayerTime nextPrayer) {
     return Container(
       padding: const EdgeInsets.all(ThemeConstants.space3),
       decoration: BoxDecoration(
@@ -212,14 +422,14 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    nextPrayer.name,
+                    nextPrayer.nameAr,
                     style: context.titleLarge?.copyWith(
                       color: Colors.white,
                       fontWeight: ThemeConstants.bold,
                     ),
                   ),
                   Text(
-                    _getNextPrayerMessage(nextPrayer.name),
+                    _getNextPrayerMessage(nextPrayer.nameAr),
                     style: context.labelSmall?.copyWith(
                       color: Colors.white.withValues(alpha: 0.8),
                     ),
@@ -243,9 +453,9 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                         borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
                       ),
                       child: Text(
-                        nextPrayer.time,
+                        _formatTime(nextPrayer.time),
                         style: context.titleMedium?.copyWith(
-                          color: _getPrayerColor(nextPrayer.name),
+                          color: _getPrayerColor(nextPrayer.nameAr),
                           fontWeight: ThemeConstants.bold,
                         ),
                       ),
@@ -259,18 +469,17 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
           ThemeConstants.space2.h,
           
           // الوقت المتبقي
-          _buildTimeRemaining(context),
+          _buildTimeRemaining(context, nextPrayer),
         ],
       ),
     );
   }
 
-  Widget _buildTimeRemaining(BuildContext context) {
+  Widget _buildTimeRemaining(BuildContext context, PrayerTime nextPrayer) {
     return StreamBuilder(
       stream: Stream.periodic(const Duration(seconds: 1)),
       builder: (context, snapshot) {
-        // حساب الوقت المتبقي (مثال)
-        const remainingTime = '2 ساعة و 15 دقيقة';
+        final remainingTime = nextPrayer.remainingTimeText;
         
         return Container(
           padding: const EdgeInsets.symmetric(
@@ -291,7 +500,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
               ),
               ThemeConstants.space1.w,
               Text(
-                'بعد $remainingTime',
+                remainingTime,
                 style: context.labelMedium?.copyWith(
                   color: Colors.white.withValues(alpha: 0.8),
                   fontWeight: ThemeConstants.medium,
@@ -305,6 +514,12 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
   }
 
   Widget _buildPrayerTimeline(BuildContext context) {
+    if (_dailyTimes == null) return const SizedBox.shrink();
+    
+    final mainPrayers = _dailyTimes!.prayers.where((prayer) => 
+      prayer.type != PrayerType.sunrise
+    ).toList();
+
     return AnimatedBuilder(
       animation: _progressAnimation,
       builder: (context, child) {
@@ -354,7 +569,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                     top: 20,
                     left: 20,
                     child: Container(
-                      width: _calculateProgressWidth(context),
+                      width: _calculateProgressWidth(context, mainPrayers),
                       height: 2,
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -373,7 +588,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                   // نقاط الصلوات فوق الخط
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: prayerTimes.map((prayer) => 
+                    children: mainPrayers.map((prayer) => 
                       _buildTimelinePoint(context, prayer)
                     ).toList(),
                   ),
@@ -386,7 +601,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     );
   }
 
-  Widget _buildTimelinePoint(BuildContext context, PrayerTimeData prayer) {
+  Widget _buildTimelinePoint(BuildContext context, PrayerTime prayer) {
     final isActive = prayer.isNext;
     final isPassed = prayer.isPassed;
     
@@ -407,8 +622,8 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
           ),
           child: Center(
             child: Icon(
-              isPassed && !isActive ? Icons.check : _getPrayerIcon(prayer.name),
-              color: isPassed || isActive ? _getPrayerColor(prayer.name) : Colors.white,
+              isPassed && !isActive ? Icons.check : _getPrayerIcon(prayer.nameAr),
+              color: isPassed || isActive ? _getPrayerColor(prayer.nameAr) : Colors.white,
               size: isActive ? 18 : 16,
             ),
           ),
@@ -418,7 +633,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
         
         // اسم الصلاة
         Text(
-          prayer.name,
+          prayer.nameAr,
           style: context.labelSmall?.copyWith(
             color: Colors.white.withValues(alpha: isActive ? 1.0 : 0.7),
             fontWeight: isActive ? ThemeConstants.semiBold : ThemeConstants.regular,
@@ -428,7 +643,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
         
         // الوقت
         Text(
-          prayer.time,
+          _formatTime(prayer.time),
           style: context.labelSmall?.copyWith(
             color: Colors.white.withValues(alpha: isActive ? 0.9 : 0.6),
             fontSize: 10,
@@ -478,77 +693,74 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     }
   }
 
-  double _getDayProgress() {
-    final now = DateTime.now();
-    final currentMinutes = now.hour * 60 + now.minute;
-    return currentMinutes / 1440; // 1440 دقيقة في اليوم
+  String _formatTime(DateTime time) {
+    final hour = time.hour;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = hour >= 12 ? 'م' : 'ص';
+    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+    
+    return '$displayHour:$minute $period';
   }
 
-  double _calculateProgressWidth(BuildContext context) {
+  double _calculateProgressWidth(BuildContext context, List<PrayerTime> prayers) {
+    if (prayers.isEmpty) return 0.0;
+    
     final screenWidth = MediaQuery.of(context).size.width - 120; // عرض الشاشة مطروحاً منه الهوامش
-    final totalPrayers = prayerTimes.length;
-    final sectionWidth = screenWidth / (totalPrayers - 1); // عرض كل قسم بين الصلوات
-    
-    // حساب موقع كل صلاة بالدقائق (تقريبي)
-    final prayerTimes24h = [
-      5 * 60 + 30,  // الفجر 05:30
-      7 * 60 + 0,   // الشروق 07:00
-      12 * 60 + 15, // الظهر 12:15
-      15 * 60 + 45, // العصر 15:45
-      18 * 60 + 20, // المغرب 18:20
-      19 * 60 + 50, // العشاء 19:50
-    ];
-    
     final now = DateTime.now();
-    final currentMinutes = now.hour * 60 + now.minute;
     
     // العثور على الصلاة الحالية
     int currentPrayerIndex = 0;
-    for (int i = 0; i < prayerTimes24h.length; i++) {
-      if (currentMinutes >= prayerTimes24h[i]) {
+    for (int i = 0; i < prayers.length; i++) {
+      if (prayers[i].isPassed) {
         currentPrayerIndex = i;
       } else {
         break;
       }
     }
     
-    // إذا كان الوقت بعد العشاء، فالخط يصل للنهاية
-    if (currentMinutes >= prayerTimes24h.last) {
-      return screenWidth * _progressAnimation.value;
-    }
-    
-    // إذا كان الوقت قبل الفجر، فلا يوجد خط
-    if (currentMinutes < prayerTimes24h[0]) {
+    // إذا لم تمر أي صلاة بعد، فلا يوجد خط
+    if (currentPrayerIndex == 0 && !prayers[0].isPassed) {
       return 0;
     }
     
-    // حساب التقدم داخل القسم الحالي
-    double progress;
-    if (currentPrayerIndex == prayerTimes24h.length - 1) {
-      // إذا كنا في آخر صلاة
-      progress = currentPrayerIndex.toDouble();
-    } else {
-      final nextPrayerTime = prayerTimes24h[currentPrayerIndex + 1];
-      final currentPrayerTime = prayerTimes24h[currentPrayerIndex];
-      final sectionProgress = (currentMinutes - currentPrayerTime) / (nextPrayerTime - currentPrayerTime);
-      progress = currentPrayerIndex + sectionProgress.clamp(0.0, 1.0);
+    // إذا مرت جميع الصلوات، فالخط يصل للنهاية
+    if (prayers.every((prayer) => prayer.isPassed)) {
+      return screenWidth * _progressAnimation.value;
     }
     
-    return (screenWidth / (totalPrayers - 1)) * progress * _progressAnimation.value;
+    // حساب التقدم
+    double progress;
+    if (currentPrayerIndex < prayers.length - 1) {
+      final currentPrayer = prayers[currentPrayerIndex];
+      final nextPrayer = prayers[currentPrayerIndex + 1];
+      final totalDuration = nextPrayer.time.difference(currentPrayer.time);
+      final elapsed = now.difference(currentPrayer.time);
+      
+      if (totalDuration.inSeconds > 0) {
+        final sectionProgress = (elapsed.inSeconds / totalDuration.inSeconds).clamp(0.0, 1.0);
+        progress = currentPrayerIndex + sectionProgress;
+      } else {
+        progress = currentPrayerIndex.toDouble();
+      }
+    } else {
+      progress = currentPrayerIndex.toDouble();
+    }
+    
+    return (screenWidth / (prayers.length - 1)) * progress * _progressAnimation.value;
   }
 }
 
-/// نموذج بيانات وقت الصلاة
-class PrayerTimeData {
-  final String name;
-  final String time;
-  final bool isPassed;
-  final bool isNext;
-
-  const PrayerTimeData({
-    required this.name,
-    required this.time,
-    required this.isPassed,
-    required this.isNext,
-  });
+// Extension للموقع
+extension PrayerLocationDisplayExtension on PrayerLocation {
+  String get displayName {
+    if (cityName != null && countryName != null) {
+      return '$cityName، $countryName';
+    } else if (cityName != null) {
+      return cityName!;
+    } else if (countryName != null) {
+      return countryName!;
+    } else {
+      return 'موقع غير محدد';
+    }
+  }
 }
