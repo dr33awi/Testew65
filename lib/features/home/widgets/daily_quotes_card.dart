@@ -1,6 +1,5 @@
-// lib/features/home/widgets/enhanced_daily_quotes_card.dart
+// lib/features/home/widgets/daily_quotes_card.dart
 import 'package:athkar_app/features/home/widgets/color_helper.dart';
-import 'package:athkar_app/features/home/widgets/islamic_pattern_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
@@ -14,13 +13,8 @@ class DailyQuotesCard extends StatefulWidget {
   State<DailyQuotesCard> createState() => _DailyQuotesCardState();
 }
 
-class _DailyQuotesCardState extends State<DailyQuotesCard>
-    with TickerProviderStateMixin {
+class _DailyQuotesCardState extends State<DailyQuotesCard> {
   late PageController _pageController;
-  late AnimationController _animationController;
-  late AnimationController _backgroundController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
   
   int _currentPage = 0;
   
@@ -49,190 +43,121 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
   @override
   void initState() {
     super.initState();
-    _setupControllers();
-    _setupAnimations();
-  }
-
-  void _setupControllers() {
     _pageController = PageController();
-    
-    _animationController = AnimationController(
-      duration: ThemeConstants.durationSlow,
-      vsync: this,
-    );
-
-    _backgroundController = AnimationController(
-      duration: const Duration(seconds: 10),
-      vsync: this,
-    )..repeat();
-  }
-
-  void _setupAnimations() {
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: ThemeConstants.curveSmooth,
-    ));
-
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: ThemeConstants.curveSmooth,
-    ));
-
-    _animationController.forward();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
-    _animationController.dispose();
-    _backgroundController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _fadeAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Opacity(
-            opacity: _fadeAnimation.value,
-            child: Column(
-              children: [
-                // عنوان القسم
-                _buildSectionHeader(context),
-                
-                ThemeConstants.space4.h,
-                
-                // بطاقة الاقتباسات
-                SizedBox(
-                  height: 280,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentPage = index;
-                      });
-                      HapticFeedback.selectionClick();
-                    },
-                    itemCount: quotes.length,
-                    itemBuilder: (context, index) {
-                      return _buildQuoteCard(context, quotes[index]);
-                    },
-                  ),
-                ),
-                
-                ThemeConstants.space4.h,
-                
-                // مؤشر الصفحات
-                _buildPageIndicator(context),
-              ],
-            ),
+    return Column(
+      children: [
+        // عنوان القسم البسيط
+        _buildSimpleSectionHeader(context),
+        
+        ThemeConstants.space4.h,
+        
+        // بطاقة الاقتباسات
+        SizedBox(
+          height: 280,
+          child: PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+              HapticFeedback.selectionClick();
+            },
+            itemCount: quotes.length,
+            itemBuilder: (context, index) {
+              return _buildSimpleQuoteCard(context, quotes[index]);
+            },
           ),
-        );
-      },
+        ),
+        
+        ThemeConstants.space4.h,
+        
+        // مؤشر الصفحات
+        _buildPageIndicator(context),
+      ],
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context) {
+  Widget _buildSimpleSectionHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
       decoration: BoxDecoration(
         color: context.cardColor,
         borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-        border: Border.all(
-          color: context.dividerColor.withValues(alpha: 0.3),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: context.primaryColor.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
-      child: Row(
-        children: [
-          // أيقونة متحركة
-          AnimatedBuilder(
-            animation: _backgroundController,
-            builder: (context, child) {
-              return Transform.rotate(
-                angle: _backgroundController.value * 2 * math.pi,
-                child: Container(
-                  padding: const EdgeInsets.all(ThemeConstants.space2),
-                  decoration: BoxDecoration(
-                    gradient: ThemeConstants.primaryGradient,
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                  ),
-                  child: const Icon(
-                    Icons.auto_stories_rounded,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ),
-              );
-            },
-          ),
-          
-          ThemeConstants.space4.w,
-          
-          // النصوص
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'الاقتباس اليومي',
-                  style: context.titleLarge?.copyWith(
-                    fontWeight: ThemeConstants.bold,
-                  ),
-                ),
-                Text(
-                  'آية وحديث وادعية مختارة',
-                  style: context.labelMedium?.copyWith(
-                    color: context.textSecondaryColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          // زر التحديث
-          Material(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Material(
             color: Colors.transparent,
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-            child: InkWell(
-              onTap: _refreshQuotes,
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-              child: Container(
-                padding: const EdgeInsets.all(ThemeConstants.space2),
-                decoration: BoxDecoration(
-                  color: context.primaryColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: context.dividerColor.withValues(alpha: 0.2),
+                  width: 1,
                 ),
-                child: Icon(
-                  Icons.refresh_rounded,
-                  size: ThemeConstants.iconMd,
-                  color: context.primaryColor,
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(ThemeConstants.space4),
+                child: Row(
+                  children: [
+                    // أيقونة ثابتة
+                    Container(
+                      padding: const EdgeInsets.all(ThemeConstants.space2),
+                      decoration: BoxDecoration(
+                        gradient: ThemeConstants.primaryGradient,
+                        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                      ),
+                      child: const Icon(
+                        Icons.auto_stories_rounded,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    
+                    ThemeConstants.space4.w,
+                    
+                    // النصوص
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'الاقتباس اليومي',
+                            style: context.titleLarge?.copyWith(
+                              fontWeight: ThemeConstants.bold,
+                            ),
+                          ),
+                          Text(
+                            'آية وحديث وادعية مختارة',
+                            style: context.labelMedium?.copyWith(
+                              color: context.textSecondaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildQuoteCard(BuildContext context, QuoteData quote) {
+  Widget _buildSimpleQuoteCard(BuildContext context, QuoteData quote) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space1),
       decoration: BoxDecoration(
@@ -242,14 +167,6 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
           end: Alignment.bottomRight,
           colors: quote.gradient.map((c) => c.withValues(alpha: 0.9)).toList(),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: quote.gradient[0].withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-            spreadRadius: 2,
-          ),
-        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
@@ -260,17 +177,25 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
             child: InkWell(
               onTap: () => _showQuoteDetails(context, quote),
               borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-              child: Stack(
-                children: [
-                  // خلفية زخرفية
-                  _buildQuoteBackground(quote),
-                  
-                  // المحتوى
-                  Padding(
-                    padding: const EdgeInsets.all(ThemeConstants.space5),
-                    child: _buildQuoteContent(context, quote),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    width: 1,
                   ),
-                ],
+                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+                ),
+                child: Stack(
+                  children: [
+                    // زخرفات إسلامية
+                    _buildIslamicQuoteBackground(quote),
+                    
+                    Padding(
+                      padding: const EdgeInsets.all(ThemeConstants.space5),
+                      child: _buildQuoteContent(context, quote),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -279,61 +204,13 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
     );
   }
 
-  Widget _buildQuoteBackground(QuoteData quote) {
+  Widget _buildIslamicQuoteBackground(QuoteData quote) {
     return Positioned.fill(
-      child: Stack(
-        children: [
-          // نمط إسلامي زخرفي
-          Positioned.fill(
-            child: CustomPaint(
-              painter: IslamicPatternPainter(
-                color: Colors.white.withValues(alpha: 0.1),
-                animation: _backgroundController.value,
-              ),
-            ),
-          ),
-          
-          // دوائر متحركة
-          ...List.generate(5, (index) {
-            return AnimatedBuilder(
-              animation: _backgroundController,
-              builder: (context, child) {
-                final offset = _backgroundController.value * 2 * math.pi + (index * math.pi / 2.5);
-                return Positioned(
-                  top: 20 + (index * 30) + (math.sin(offset) * 15),
-                  right: 20 + (index * 25) + (math.cos(offset) * 20),
-                  child: Container(
-                    width: 8 + (math.sin(offset) * 4),
-                    height: 8 + (math.sin(offset) * 4),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.3 + (math.sin(offset) * 0.2)),
-                    ),
-                  ),
-                );
-              },
-            );
-          }),
-          
-          // تأثير ضوئي
-          Positioned(
-            top: -50,
-            left: -50,
-            child: Container(
-              width: 150,
-              height: 150,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    Colors.white.withValues(alpha: 0.1),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
+      child: CustomPaint(
+        painter: IslamicQuotePainter(
+          color: Colors.white.withValues(alpha: 0.1),
+          quoteType: quote.type,
+        ),
       ),
     );
   }
@@ -377,24 +254,6 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
                     ),
                   ),
                 ],
-              ),
-            ),
-            
-            // زر المشاركة
-            Material(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-              child: InkWell(
-                onTap: () => _shareQuote(context, quote),
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-                child: Container(
-                  padding: const EdgeInsets.all(ThemeConstants.space2),
-                  child: Icon(
-                    Icons.share_rounded,
-                    color: Colors.white.withValues(alpha: 0.8),
-                    size: ThemeConstants.iconSm,
-                  ),
-                ),
               ),
             ),
           ],
@@ -538,19 +397,6 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
       case QuoteType.dua:
         return 'دعاء مأثور';
     }
-  }
-
-  void _refreshQuotes() {
-    HapticFeedback.mediumImpact();
-    // إعادة تحميل الاقتباسات
-    context.showInfoSnackBar('جاري تحديث الاقتباسات...');
-  }
-
-  void _shareQuote(BuildContext context, QuoteData quote) {
-    HapticFeedback.lightImpact();
-    final shareText = '${quote.content}\n\n${quote.source}\n\nمن تطبيق الأذكار';
-    // استخدام share_plus package
-    context.showInfoSnackBar('سيتم إضافة ميزة المشاركة قريباً');
   }
 
   void _showQuoteDetails(BuildContext context, QuoteData quote) {
@@ -737,4 +583,156 @@ class QuoteDetailsModal extends StatelessWidget {
     HapticFeedback.lightImpact();
     context.showInfoSnackBar('سيتم إضافة ميزة المشاركة قريباً');
   }
+}
+
+/// رسام الزخارف الإسلامية للاقتباسات
+class IslamicQuotePainter extends CustomPainter {
+  final Color color;
+  final QuoteType quoteType;
+
+  IslamicQuotePainter({
+    required this.color,
+    required this.quoteType,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    switch (quoteType) {
+      case QuoteType.verse:
+        _drawQuranPattern(canvas, size, paint);
+        break;
+      case QuoteType.hadith:
+        _drawHadithPattern(canvas, size, paint);
+        break;
+      case QuoteType.dua:
+        _drawDuaPattern(canvas, size, paint);
+        break;
+    }
+  }
+
+  void _drawQuranPattern(Canvas canvas, Size size, Paint paint) {
+    // زخرفة مناسبة للقرآن - خطوط عربية متدفقة
+    final path = Path();
+    
+    // خطوط منحنية تشبه الخط العربي
+    path.moveTo(size.width * 0.1, size.height * 0.15);
+    path.quadraticBezierTo(
+      size.width * 0.3, size.height * 0.05,
+      size.width * 0.6, size.height * 0.2,
+    );
+    path.quadraticBezierTo(
+      size.width * 0.8, size.height * 0.3,
+      size.width * 0.9, size.height * 0.15,
+    );
+    
+    // خط ثاني
+    path.moveTo(size.width * 0.1, size.height * 0.85);
+    path.quadraticBezierTo(
+      size.width * 0.4, size.height * 0.95,
+      size.width * 0.7, size.height * 0.8,
+    );
+    path.quadraticBezierTo(
+      size.width * 0.85, size.height * 0.7,
+      size.width * 0.9, size.height * 0.85,
+    );
+    
+    canvas.drawPath(path, paint);
+    
+    // نقاط زخرفية
+    final dots = [
+      Offset(size.width * 0.15, size.height * 0.25),
+      Offset(size.width * 0.85, size.height * 0.25),
+      Offset(size.width * 0.15, size.height * 0.75),
+      Offset(size.width * 0.85, size.height * 0.75),
+    ];
+    
+    for (final dot in dots) {
+      canvas.drawCircle(dot, 2, paint);
+    }
+  }
+
+  void _drawHadithPattern(Canvas canvas, Size size, Paint paint) {
+    // زخرفة للحديث - نمط هندسي إسلامي
+    final centerX = size.width * 0.15;
+    final centerY = size.height * 0.15;
+    
+    // نجمة ثمانية صغيرة
+    _drawEightPointedStar(canvas, Offset(centerX, centerY), 12, paint);
+    
+    // نجمة أخرى في الزاوية المقابلة
+    _drawEightPointedStar(canvas, Offset(size.width * 0.85, size.height * 0.85), 10, paint);
+    
+    // خطوط متقاطعة زخرفية
+    final lines = [
+      [Offset(size.width * 0.8, size.height * 0.2), Offset(size.width * 0.9, size.height * 0.3)],
+      [Offset(size.width * 0.1, size.height * 0.7), Offset(size.width * 0.2, size.height * 0.8)],
+    ];
+    
+    for (final line in lines) {
+      canvas.drawLine(line[0], line[1], paint);
+    }
+  }
+
+  void _drawDuaPattern(Canvas canvas, Size size, Paint paint) {
+    // زخرفة للدعاء - أنماط دائرية ومنحنية
+    final center1 = Offset(size.width * 0.2, size.height * 0.2);
+    final center2 = Offset(size.width * 0.8, size.height * 0.8);
+    
+    // دوائر متداخلة
+    canvas.drawCircle(center1, 15, paint);
+    canvas.drawCircle(center1, 10, paint);
+    
+    canvas.drawCircle(center2, 12, paint);
+    canvas.drawCircle(center2, 8, paint);
+    
+    // منحنيات تشبه اليدين المرفوعتين
+    final handsPath = Path();
+    handsPath.moveTo(size.width * 0.3, size.height * 0.7);
+    handsPath.quadraticBezierTo(
+      size.width * 0.45, size.height * 0.5,
+      size.width * 0.5, size.height * 0.6,
+    );
+    handsPath.quadraticBezierTo(
+      size.width * 0.55, size.height * 0.5,
+      size.width * 0.7, size.height * 0.7,
+    );
+    
+    canvas.drawPath(handsPath, paint);
+  }
+
+  void _drawEightPointedStar(Canvas canvas, Offset center, double radius, Paint paint) {
+    final path = Path();
+    const int points = 8;
+    final double angle = 2 * math.pi / points;
+    
+    for (int i = 0; i < points; i++) {
+      final outerAngle = i * angle - math.pi / 2;
+      final innerAngle = (i + 0.5) * angle - math.pi / 2;
+      
+      final outerX = center.dx + radius * math.cos(outerAngle);
+      final outerY = center.dy + radius * math.sin(outerAngle);
+      
+      final innerX = center.dx + (radius * 0.6) * math.cos(innerAngle);
+      final innerY = center.dy + (radius * 0.6) * math.sin(innerAngle);
+      
+      if (i == 0) {
+        path.moveTo(outerX, outerY);
+      } else {
+        path.lineTo(outerX, outerY);
+      }
+      
+      path.lineTo(innerX, innerY);
+    }
+    
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

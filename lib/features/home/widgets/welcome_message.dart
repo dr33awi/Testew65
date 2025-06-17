@@ -1,256 +1,72 @@
-// lib/features/home/widgets/enhanced_welcome_message.dart
+// lib/features/home/widgets/welcome_message.dart
 import 'package:athkar_app/features/home/widgets/color_helper.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'dart:math' as math;
 import '../../../app/themes/app_theme.dart';
 
-class WelcomeMessage extends StatefulWidget {
+class WelcomeMessage extends StatelessWidget {
   const WelcomeMessage({super.key});
-
-  @override
-  State<WelcomeMessage> createState() => _WelcomeMessageState();
-}
-
-class _WelcomeMessageState extends State<WelcomeMessage>
-    with TickerProviderStateMixin {
-  late AnimationController _animationController;
-  late AnimationController _iconController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _rotationAnimation;
-  late Animation<Color?> _colorAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _setupAnimations();
-  }
-
-  void _setupAnimations() {
-    _animationController = AnimationController(
-      duration: ThemeConstants.durationExtraSlow,
-      vsync: this,
-    );
-
-    _iconController = AnimationController(
-      duration: const Duration(seconds: 8),
-      vsync: this,
-    )..repeat();
-
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: ThemeConstants.curveSmooth,
-    ));
-
-    _rotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 2 * math.pi,
-    ).animate(CurvedAnimation(
-      parent: _iconController,
-      curve: Curves.linear,
-    ));
-
-    final hour = DateTime.now().hour;
-    final gradientColors = _getGradientColors(hour);
-    
-    _colorAnimation = ColorTween(
-      begin: gradientColors[0],
-      end: gradientColors[1],
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-
-    _animationController.forward();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    _iconController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     final hour = DateTime.now().hour;
     final greeting = _getGreeting(hour);
     final message = _getMessage(hour);
-    final icon = _getIcon(hour);
     final gradient = _getGradientColors(hour);
     
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return ScaleTransition(
-          scale: _scaleAnimation,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-              boxShadow: [
-                BoxShadow(
-                  color: gradient[0].withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                  spreadRadius: 2,
-                ),
-                BoxShadow(
-                  color: gradient[1].withValues(alpha: 0.1),
-                  blurRadius: 40,
-                  offset: const Offset(0, 20),
-                  spreadRadius: 4,
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: gradient.map((c) => c.withValues(alpha: 0.9)).toList(),
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Stack(
-                    children: [
-                      // خلفية زخرفية
-                      _buildDecorativeBackground(),
-                      
-                      // المحتوى الرئيسي
-                      Padding(
-                        padding: const EdgeInsets.all(ThemeConstants.space6),
-                        child: _buildContent(context, greeting, message, icon),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDecorativeBackground() {
-    return Positioned.fill(
-      child: Stack(
-        children: [
-          // نجوم متحركة
-          ...List.generate(6, (index) {
-            return AnimatedBuilder(
-              animation: _iconController,
-              builder: (context, child) {
-                final offset = _rotationAnimation.value + (index * math.pi / 3);
-                return Positioned(
-                  top: 20 + (index * 15) + (math.sin(offset) * 10),
-                  right: 20 + (index * 20) + (math.cos(offset) * 15),
-                  child: Opacity(
-                    opacity: 0.3 + (math.sin(offset) * 0.2),
-                    child: Icon(
-                      Icons.star,
-                      size: 8 + (math.sin(offset) * 4),
-                      color: Colors.white.withValues(alpha: 0.6),
-                    ),
-                  ),
-                );
-              },
-            );
-          }),
-          
-          // دوائر زخرفية
-          Positioned(
-            top: -50,
-            left: -50,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradient.map((c) => c.withValues(alpha: 0.9)).toList(),
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Material(
+            color: Colors.transparent,
             child: Container(
-              width: 150,
-              height: 150,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    Colors.white.withValues(alpha: 0.1),
-                    Colors.transparent,
-                  ],
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  width: 1,
                 ),
+                borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(ThemeConstants.space6),
+                child: _buildContent(context, greeting, message),
               ),
             ),
           ),
-          
-          Positioned(
-            bottom: -30,
-            right: -30,
-            child: Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    Colors.white.withValues(alpha: 0.05),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context, String greeting, String message, IconData icon) {
+  Widget _buildContent(BuildContext context, String greeting, String message) {
+    final hour = DateTime.now().hour;
+    final icon = _getGreetingIcon(hour);
+    
     return Row(
       children: [
-        // الأيقونة المتحركة
-        AnimatedBuilder(
-          animation: _iconController,
-          builder: (context, child) {
-            return Transform.rotate(
-              angle: _rotationAnimation.value * 0.1,
-              child: Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      Colors.white.withValues(alpha: 0.3),
-                      Colors.white.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: ThemeConstants.icon2xl,
-                ),
-              ),
-            );
-          },
+        // الأيقونة الثابتة
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withValues(alpha: 0.2),
+          ),
+          child: Icon(
+            icon,
+            color: Colors.white,
+            size: ThemeConstants.icon2xl,
+          ),
         ),
         
         ThemeConstants.space5.w,
@@ -361,15 +177,15 @@ class _WelcomeMessageState extends State<WelcomeMessage>
 
   String _getGreeting(int hour) {
     if (hour < 5) {
-      return 'ليلة مباركة 🌙';
+      return 'ليلة مباركة';
     } else if (hour < 12) {
-      return 'صباح الخير 🌅';
+      return 'صباح الخير';
     } else if (hour < 17) {
-      return 'نهارك سعيد ☀️';
+      return 'نهارك سعيد';
     } else if (hour < 20) {
-      return 'مساء النور 🌇';
+      return 'مساء النور';
     } else {
-      return 'أمسية مباركة 🌃';
+      return 'أمسية مباركة';
     }
   }
 
@@ -388,22 +204,6 @@ class _WelcomeMessageState extends State<WelcomeMessage>
       return 'وقت الدعاء والتسبيح والحمد';
     } else {
       return 'استعد للنوم بأذكار النوم والوتر';
-    }
-  }
-
-  IconData _getIcon(int hour) {
-    if (hour < 5) {
-      return Icons.nightlight_round;
-    } else if (hour < 8) {
-      return Icons.wb_twilight;
-    } else if (hour < 12) {
-      return Icons.wb_sunny;
-    } else if (hour < 17) {
-      return Icons.light_mode;
-    } else if (hour < 20) {
-      return Icons.wb_twilight_sharp;
-    } else {
-      return Icons.nights_stay;
     }
   }
 
@@ -427,5 +227,19 @@ class _WelcomeMessageState extends State<WelcomeMessage>
     final month = arabicMonths[date.month - 1];
     
     return '$dayName، $day $month';
+  }
+
+  IconData _getGreetingIcon(int hour) {
+    if (hour < 5) {
+      return Icons.nightlight_round; // ليلة مباركة
+    } else if (hour < 12) {
+      return Icons.wb_sunny; // صباح الخير
+    } else if (hour < 17) {
+      return Icons.light_mode; // نهارك سعيد
+    } else if (hour < 20) {
+      return Icons.wb_twilight; // مساء النور
+    } else {
+      return Icons.nights_stay; // أمسية مباركة
+    }
   }
 }
