@@ -19,37 +19,7 @@ class LocationHeader extends StatefulWidget {
   State<LocationHeader> createState() => _LocationHeaderState();
 }
 
-class _LocationHeaderState extends State<LocationHeader>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _rotationAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _setupAnimations();
-  }
-
-  void _setupAnimations() {
-    _animationController = AnimationController(
-      duration: const Duration(seconds: 4),
-      vsync: this,
-    )..repeat();
-
-    _rotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 2 * 3.14159,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.linear,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
+class _LocationHeaderState extends State<LocationHeader> {
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +69,7 @@ class _LocationHeaderState extends State<LocationHeader>
   Widget _buildContent(BuildContext context) {
     return Row(
       children: [
-        // أيقونة الموقع المتحركة
+        // أيقونة الموقع الثابتة
         Container(
           width: 70,
           height: 70,
@@ -111,37 +81,10 @@ class _LocationHeaderState extends State<LocationHeader>
               width: 2,
             ),
           ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // الدوائر المتحركة
-              AnimatedBuilder(
-                animation: _rotationAnimation,
-                builder: (context, child) {
-                  return Transform.rotate(
-                    angle: _rotationAnimation.value,
-                    child: Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.3),
-                          width: 1,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              
-              // الأيقونة
-              const Icon(
-                Icons.location_on,
-                color: Colors.white,
-                size: 32,
-              ),
-            ],
+          child: const Icon(
+            Icons.location_on,
+            color: Colors.white,
+            size: 32,
           ),
         ),
         
@@ -246,7 +189,7 @@ class _LocationHeaderState extends State<LocationHeader>
         
         ThemeConstants.space3.w,
         
-        // زر التحديث
+        // زر التحديث - بدون حركة
         Container(
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
@@ -257,18 +200,10 @@ class _LocationHeaderState extends State<LocationHeader>
               HapticFeedback.lightImpact();
               widget.onTap();
             },
-            icon: AnimatedBuilder(
-              animation: _rotationAnimation,
-              builder: (context, child) {
-                return Transform.rotate(
-                  angle: _rotationAnimation.value * 0.5,
-                  child: const Icon(
-                    Icons.refresh,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                );
-              },
+            icon: const Icon(
+              Icons.refresh,
+              color: Colors.white,
+              size: 24,
             ),
             tooltip: 'تحديث الموقع',
           ),

@@ -45,10 +45,8 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
     with TickerProviderStateMixin {
   late final AnimationController _mainController;
   late final AnimationController _confettiController;
-  late final AnimationController _pulseController;
   late final Animation<double> _scaleAnimation;
   late final Animation<double> _fadeAnimation;
-  late final Animation<double> _pulseAnimation;
 
   @override
   void initState() {
@@ -67,11 +65,6 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
       vsync: this,
       duration: const Duration(seconds: 3),
     );
-
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
     
     _scaleAnimation = Tween<double>(
       begin: 0.5,
@@ -88,14 +81,6 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
       parent: _mainController,
       curve: const Interval(0.0, 0.6),
     ));
-
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.1,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
   }
 
   void _startAnimations() async {
@@ -108,7 +93,6 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
   void dispose() {
     _mainController.dispose();
     _confettiController.dispose();
-    _pulseController.dispose();
     super.dispose();
   }
 
@@ -125,9 +109,9 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
               backgroundColor: Colors.transparent,
               elevation: 0,
               child: Container(
-                constraints: const BoxConstraints(maxWidth: 400),
+                constraints: const BoxConstraints(maxWidth: 350, maxHeight: 500), // حجم أصغر
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl), // تصغير الزاوية
                   gradient: LinearGradient(
                     colors: [
                       ThemeConstants.success.withValues(alpha: 0.95),
@@ -138,7 +122,7 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
                   ),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                     child: Stack(
@@ -153,7 +137,7 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
                               color: Colors.white.withValues(alpha: 0.3),
                               width: 2,
                             ),
-                            borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+                            borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
                           ),
                           child: _buildContent(context),
                         ),
@@ -184,29 +168,26 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
 
   Widget _buildContent(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(ThemeConstants.space6),
+      padding: const EdgeInsets.all(ThemeConstants.space4), // تقليل الpadding
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // الأيقونة المتحركة
+          // الأيقونة المبسطة
           _buildSuccessIcon(),
           
-          ThemeConstants.space4.h,
+          ThemeConstants.space3.h, // تقليل المسافات
           
           // العنوان والرسالة
           _buildTitleSection(context),
           
-          ThemeConstants.space4.h,
+          ThemeConstants.space3.h,
           
-          // معلومات الإنجاز
-          _buildAchievementInfo(context),
-          
-          ThemeConstants.space4.h,
+
           
           // آية قرآنية
           _buildQuranVerse(context),
           
-          ThemeConstants.space6.h,
+          ThemeConstants.space3.h,
           
           // الأزرار
           _buildActionButtons(context),
@@ -216,67 +197,29 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
   }
 
   Widget _buildSuccessIcon() {
-    return AnimatedBuilder(
-      animation: _pulseAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _pulseAnimation.value,
-          child: Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.4),
-                width: 3,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  spreadRadius: 5,
-                ),
-              ],
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // دوائر متحركة في الخلفية
-                ...List.generate(3, (index) {
-                  return AnimatedBuilder(
-                    animation: _confettiController,
-                    builder: (context, child) {
-                      final offset = _confettiController.value * 2 * math.pi + index;
-                      return Transform.scale(
-                        scale: 1.0 + (math.sin(offset) * 0.1),
-                        child: Container(
-                          width: 100 - (index * 20),
-                          height: 100 - (index * 20),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.2 - (index * 0.05)),
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                }),
-                
-                // الأيقونة الرئيسية
-                const Icon(
-                  Icons.check_circle_rounded,
-                  color: Colors.white,
-                  size: 60,
-                ),
-              ],
-            ),
+    return Container(
+      width: 80, // تصغير الحجم
+      height: 80,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.4),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.3),
+            blurRadius: 15,
+            spreadRadius: 3,
           ),
-        );
-      },
+        ],
+      ),
+      child: const Icon(
+        Icons.check_circle_rounded,
+        color: Colors.white,
+        size: 40, // تصغير الأيقونة
+      ),
     );
   }
 
@@ -289,8 +232,8 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
           child: Column(
             children: [
               Text(
-                'بارك الله فيك! 🎉',
-                style: context.headlineLarge?.copyWith(
+                'بارك الله فيك 🎉',
+                style: context.headlineMedium?.copyWith( // تصغير الخط
                   color: Colors.white,
                   fontWeight: ThemeConstants.bold,
                 ),
@@ -300,34 +243,22 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
               ThemeConstants.space2.h,
               
               Container(
-                padding: const EdgeInsets.all(ThemeConstants.space4),
+                padding: const EdgeInsets.all(ThemeConstants.space3), // تقليل الpadding
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.3),
                   ),
                 ),
-                child: Column(
-                  children: [
-                    Text(
-                      'أكملت ${widget.categoryName}',
-                      style: context.titleLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: ThemeConstants.semiBold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    ThemeConstants.space1.h,
-                    Text(
-                      'جعله الله في ميزان حسناتك',
-                      style: context.bodyMedium?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontStyle: FontStyle.italic,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                child: Text(
+                  'أكملت ${widget.categoryName}\nجعله الله في ميزان حسناتك',
+                  style: context.titleMedium?.copyWith( // تصغير الخط
+                    color: Colors.white,
+                    fontWeight: ThemeConstants.semiBold,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ],
@@ -337,60 +268,7 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
     );
   }
 
-  Widget _buildAchievementInfo(BuildContext context) {
-    return AnimationConfiguration.synchronized(
-      duration: ThemeConstants.durationNormal,
-      child: SlideAnimation(
-        verticalOffset: 30,
-        delay: const Duration(milliseconds: 200),
-        child: FadeInAnimation(
-          child: Container(
-            padding: const EdgeInsets.all(ThemeConstants.space4),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildStatItem('✓', 'مكتمل', 'بالكامل'),
-                _buildStatItem('🤲', 'ثواب', 'عظيم'),
-                _buildStatItem('⭐', 'إنجاز', 'رائع'),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
-  Widget _buildStatItem(String icon, String title, String subtitle) {
-    return Column(
-      children: [
-        Text(
-          icon,
-          style: const TextStyle(fontSize: 24),
-        ),
-        ThemeConstants.space1.h,
-        Text(
-          title,
-          style: context.labelMedium?.copyWith(
-            color: Colors.white,
-            fontWeight: ThemeConstants.semiBold,
-          ),
-        ),
-        Text(
-          subtitle,
-          style: context.labelSmall?.copyWith(
-            color: Colors.white.withValues(alpha: 0.8),
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildQuranVerse(BuildContext context) {
     return AnimationConfiguration.synchronized(
@@ -400,10 +278,10 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
         delay: const Duration(milliseconds: 400),
         child: FadeInAnimation(
           child: Container(
-            padding: const EdgeInsets.all(ThemeConstants.space4),
+            padding: const EdgeInsets.all(ThemeConstants.space3), // تقليل الpadding
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.2),
               ),
@@ -412,17 +290,17 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
               children: [
                 Text(
                   '﴿ وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ ﴾',
-                  style: context.bodyLarge?.copyWith(
+                  style: context.bodyMedium?.copyWith( // تصغير الخط
                     color: Colors.white,
                     fontFamily: ThemeConstants.fontFamilyArabic,
-                    height: 2.0,
+                    height: 1.8,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                ThemeConstants.space2.h,
+                ThemeConstants.space1.h,
                 Text(
                   'سورة آل عمران - آية 41',
-                  style: context.labelMedium?.copyWith(
+                  style: context.labelSmall?.copyWith(
                     color: Colors.white.withValues(alpha: 0.8),
                   ),
                 ),
@@ -435,100 +313,82 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    return Column(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // زر المشاركة
-        if (widget.onShare != null)
-          AnimationConfiguration.synchronized(
-            duration: ThemeConstants.durationNormal,
-            child: SlideAnimation(
-              horizontalOffset: 50,
-              delay: const Duration(milliseconds: 600),
-              child: FadeInAnimation(
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context, false);
-                      widget.onShare?.call();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: ThemeConstants.success,
-                      padding: const EdgeInsets.symmetric(vertical: ThemeConstants.space4),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-                      ),
-                      elevation: 8,
-                    ),
-                    icon: const Icon(Icons.share_rounded),
-                    label: Text(
-                      'مشاركة الإنجاز 📱',
-                      style: context.titleMedium?.copyWith(
-                        fontWeight: ThemeConstants.semiBold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+        // زر الإغلاق كأيقونة
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.3),
             ),
           ),
-        
-        if (widget.onShare != null) ThemeConstants.space3.h,
-        
-        // الأزرار الثانوية
-        AnimationConfiguration.synchronized(
-          duration: ThemeConstants.durationNormal,
-          child: SlideAnimation(
-            horizontalOffset: -50,
-            delay: const Duration(milliseconds: 800),
-            child: FadeInAnimation(
-              child: Row(
-                children: [
-                  // زر الإغلاق
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
-                        padding: const EdgeInsets.symmetric(vertical: ThemeConstants.space3),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                        ),
-                      ),
-                      child: const Text('إغلاق'),
-                    ),
-                  ),
-                  
-                  if (widget.onReset != null) ...[
-                    ThemeConstants.space3.w,
-                    
-                    // زر البدء من جديد
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context, true);
-                          widget.onReset?.call();
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
-                          padding: const EdgeInsets.symmetric(vertical: ThemeConstants.space3),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                          ),
-                        ),
-                        icon: const Icon(Icons.refresh_rounded, size: 18),
-                        label: const Text('البدء مجدداً'),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+          child: IconButton(
+            onPressed: () => Navigator.pop(context, false),
+            icon: const Icon(
+              Icons.close_rounded,
+              color: Colors.white,
+              size: 20,
             ),
+            tooltip: 'إغلاق',
           ),
         ),
+        
+        if (widget.onReset != null) ...[
+          ThemeConstants.space4.w,
+          
+          // زر البدء من جديد كأيقونة
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
+            ),
+            child: IconButton(
+              onPressed: () {
+                Navigator.pop(context, true);
+                widget.onReset?.call();
+              },
+              icon: const Icon(
+                Icons.refresh_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+              tooltip: 'البدء من جديد',
+            ),
+          ),
+        ],
+        
+        if (widget.onShare != null) ...[
+          ThemeConstants.space4.w,
+          
+          // زر المشاركة كأيقونة
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
+            ),
+            child: IconButton(
+              onPressed: () {
+                Navigator.pop(context, false);
+                widget.onShare?.call();
+              },
+              icon: const Icon(
+                Icons.share_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+              tooltip: 'مشاركة الإنجاز',
+            ),
+          ),
+        ],
       ],
     );
   }

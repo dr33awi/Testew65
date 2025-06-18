@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-import 'dart:math' as math;
 import '../../../app/themes/app_theme.dart';
 
 class AthkarStatsCard extends StatefulWidget {
@@ -23,60 +22,13 @@ class AthkarStatsCard extends StatefulWidget {
   State<AthkarStatsCard> createState() => _AthkarStatsCardState();
 }
 
-class _AthkarStatsCardState extends State<AthkarStatsCard>
-    with TickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late AnimationController _backgroundController;
-  late Animation<double> _pulseAnimation;
-  late Animation<double> _backgroundAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _setupAnimations();
-  }
-
-  void _setupAnimations() {
-    _pulseController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _backgroundController = AnimationController(
-      duration: const Duration(seconds: 8),
-      vsync: this,
-    )..repeat();
-
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
-
-    _backgroundAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _backgroundController,
-      curve: Curves.linear,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    _backgroundController.dispose();
-    super.dispose();
-  }
-
+class _AthkarStatsCardState extends State<AthkarStatsCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(ThemeConstants.space4),
+      margin: const EdgeInsets.all(ThemeConstants.space3), // تقليل المارجن
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl), // تقليل الزاوية
         gradient: LinearGradient(
           colors: [
             ThemeConstants.primary.withValues(alpha: 0.9),
@@ -87,71 +39,47 @@ class _AthkarStatsCardState extends State<AthkarStatsCard>
         ),
         boxShadow: [
           BoxShadow(
-            color: ThemeConstants.primary.withValues(alpha: 0.3),
-            blurRadius: 25,
-            offset: const Offset(0, 15),
-            spreadRadius: 2,
+            color: ThemeConstants.primary.withValues(alpha: 0.2), // تقليل الظل
+            blurRadius: 15, // تقليل الضبابية
+            offset: const Offset(0, 8), // تقليل الإزاحة
+            spreadRadius: 1, // تقليل الانتشار
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Stack(
-            children: [
-              // الخلفية المتحركة
-              _buildAnimatedBackground(),
-              
-              // المحتوى الرئيسي
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1,
-                  ),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                ),
-                child: _buildContent(context),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1,
               ),
-            ],
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+            ),
+            child: _buildContent(context),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildAnimatedBackground() {
-    return Positioned.fill(
-      child: AnimatedBuilder(
-        animation: _backgroundAnimation,
-        builder: (context, child) {
-          return CustomPaint(
-            painter: StatsBackgroundPainter(
-              animation: _backgroundAnimation.value,
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   Widget _buildContent(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(ThemeConstants.space5),
+      padding: const EdgeInsets.all(ThemeConstants.space4), // تقليل الpadding
       child: Column(
         children: [
           // الرأس
           _buildHeader(context),
           
-          ThemeConstants.space5.h,
+          ThemeConstants.space3.h, // تقليل المسافة
           
           // الإحصائيات
           _buildStatistics(context),
           
           if (widget.onViewDetails != null) ...[
-            ThemeConstants.space5.h,
+            ThemeConstants.space3.h, // تقليل المسافة
             
             // زر عرض التفاصيل
             _buildDetailsButton(context),
@@ -164,71 +92,33 @@ class _AthkarStatsCardState extends State<AthkarStatsCard>
   Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
-        // الأيقونة المتحركة
-        AnimatedBuilder(
-          animation: _pulseAnimation,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _pulseAnimation.value,
-              child: Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      blurRadius: 15,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // دوائر متحركة في الخلفية
-                    ...List.generate(3, (index) {
-                      return AnimatedBuilder(
-                        animation: _backgroundAnimation,
-                        builder: (context, child) {
-                          final offset = _backgroundAnimation.value * 2 * math.pi + index;
-                          return Transform.scale(
-                            scale: 1.0 + (math.sin(offset) * 0.1),
-                            child: Container(
-                              width: 60 - (index * 15),
-                              height: 60 - (index * 15),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.2 - (index * 0.05)),
-                                  width: 1,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    }),
-                    
-                    // الأيقونة الرئيسية
-                    const Icon(
-                      Icons.insights_rounded,
-                      color: Colors.white,
-                      size: 35,
-                    ),
-                  ],
-                ),
+        // الأيقونة الثابتة (مصغرة)
+        Container(
+          width: 50, // تصغير الحجم
+          height: 50,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.3),
+              width: 2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.2),
+                blurRadius: 10, // تقليل الضبابية
+                spreadRadius: 1, // تقليل الانتشار
               ),
-            );
-          },
+            ],
+          ),
+          child: const Icon(
+            Icons.insights_rounded,
+            color: Colors.white,
+            size: 24, // تصغير الأيقونة
+          ),
         ),
         
-        ThemeConstants.space4.w,
+        ThemeConstants.space3.w, // تقليل المسافة
         
         // العنوان والوصف
         Expanded(
@@ -237,7 +127,7 @@ class _AthkarStatsCardState extends State<AthkarStatsCard>
             children: [
               Text(
                 'إحصائياتك اليوم',
-                style: context.headlineMedium?.copyWith(
+                style: context.titleLarge?.copyWith( // تصغير الخط
                   color: Colors.white,
                   fontWeight: ThemeConstants.bold,
                 ),
@@ -247,7 +137,7 @@ class _AthkarStatsCardState extends State<AthkarStatsCard>
               
               Text(
                 _getMotivationalMessage(),
-                style: context.bodyLarge?.copyWith(
+                style: context.bodyMedium?.copyWith( // تصغير الخط
                   color: Colors.white.withValues(alpha: 0.9),
                   height: 1.4,
                 ),
@@ -261,10 +151,10 @@ class _AthkarStatsCardState extends State<AthkarStatsCard>
 
   Widget _buildStatistics(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
+      padding: const EdgeInsets.all(ThemeConstants.space3), // تقليل الpadding
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg), // تقليل الزاوية
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.3),
           width: 1,
@@ -289,27 +179,19 @@ class _AthkarStatsCardState extends State<AthkarStatsCard>
           // الفاصل
           Container(
             width: 1,
-            height: 60,
+            height: 40, // تقليل الارتفاع
             color: Colors.white.withValues(alpha: 0.3),
           ),
           
-          // سلسلة الأيام
+          // سلسلة الأيام (بدون أنيميشن)
           Expanded(
-            child: AnimatedBuilder(
-              animation: _pulseAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: widget.streak > 0 ? _pulseAnimation.value : 1.0,
-                  child: _StatItem(
-                    icon: Icons.local_fire_department_rounded,
-                    value: '${widget.streak}',
-                    label: widget.streak == 1 ? 'يوم متتالي' : 'أيام متتالية',
-                    color: Colors.white,
-                    hasStreak: widget.streak > 0,
-                    showGlow: widget.streak > 0,
-                  ),
-                );
-              },
+            child: _StatItem(
+              icon: Icons.local_fire_department_rounded,
+              value: '${widget.streak}',
+              label: widget.streak == 1 ? 'يوم متتالي' : 'أيام متتالية',
+              color: Colors.white,
+              hasStreak: widget.streak > 0,
+              showGlow: widget.streak > 0,
             ),
           ),
         ],
@@ -327,17 +209,17 @@ class _AthkarStatsCardState extends State<AthkarStatsCard>
         },
         child: Container(
           padding: const EdgeInsets.symmetric(
-            vertical: ThemeConstants.space4,
-            horizontal: ThemeConstants.space5,
+            vertical: ThemeConstants.space3, // تقليل الpadding
+            horizontal: ThemeConstants.space4,
           ),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg), // تقليل الزاوية
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
+                blurRadius: 10, // تقليل الضبابية
+                offset: const Offset(0, 4), // تقليل الإزاحة
               ),
             ],
           ),
@@ -346,21 +228,22 @@ class _AthkarStatsCardState extends State<AthkarStatsCard>
             children: [
               Icon(
                 Icons.analytics_outlined,
-                size: ThemeConstants.iconMd,
+                size: ThemeConstants.iconSm, // تصغير الأيقونة
                 color: ThemeConstants.primary,
               ),
               ThemeConstants.space2.w,
               Text(
                 'عرض التفاصيل',
-                style: context.titleMedium?.copyWith(
+                style: context.titleSmall?.copyWith( // تصغير الخط
                   color: ThemeConstants.primary,
                   fontWeight: ThemeConstants.semiBold,
                 ),
               ),
               ThemeConstants.space2.w,
+              // أيقونة السهم الثابتة
               Icon(
                 Icons.arrow_forward_ios_rounded,
-                size: ThemeConstants.iconSm,
+                size: ThemeConstants.iconXs, // تصغير الأيقونة
                 color: ThemeConstants.primary,
               ),
             ],
@@ -414,22 +297,22 @@ class _StatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // الأيقونة مع التأثيرات
+        // الأيقونة (بدون تأثيرات)
         Stack(
           alignment: Alignment.center,
           children: [
-            // توهج للخطوط المتتالية
+            // توهج بسيط للخطوط المتتالية
             if (showGlow)
               Container(
-                width: 50,
-                height: 50,
+                width: 35, // تصغير الحجم
+                height: 35,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.white.withValues(alpha: 0.3),
-                      blurRadius: 20,
-                      spreadRadius: 5,
+                      blurRadius: 15, // تقليل الضبابية
+                      spreadRadius: 3, // تقليل الانتشار
                     ),
                   ],
                 ),
@@ -437,8 +320,8 @@ class _StatItem extends StatelessWidget {
             
             // الأيقونة
             Container(
-              width: 45,
-              height: 45,
+              width: 32, // تصغير الحجم
+              height: 32,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
@@ -446,18 +329,18 @@ class _StatItem extends StatelessWidget {
               child: Icon(
                 icon,
                 color: color,
-                size: hasStreak ? ThemeConstants.iconLg : ThemeConstants.iconMd,
+                size: hasStreak ? ThemeConstants.iconMd : ThemeConstants.iconSm, // تصغير الأيقونة
               ),
             ),
             
             // شريط التقدم الدائري
             if (showProgress)
               SizedBox(
-                width: 50,
-                height: 50,
+                width: 35, // تصغير الحجم
+                height: 35,
                 child: CircularProgressIndicator(
                   value: progress,
-                  strokeWidth: 3,
+                  strokeWidth: 2, // تقليل السماكة
                   backgroundColor: Colors.white.withValues(alpha: 0.2),
                   valueColor: AlwaysStoppedAnimation<Color>(color),
                 ),
@@ -465,15 +348,15 @@ class _StatItem extends StatelessWidget {
           ],
         ),
         
-        ThemeConstants.space3.h,
+        ThemeConstants.space2.h, // تقليل المسافة
         
         // القيمة
         Text(
           value,
-          style: context.headlineMedium?.copyWith(
+          style: context.titleLarge?.copyWith( // تصغير الخط
             color: color,
             fontWeight: ThemeConstants.bold,
-            fontSize: hasStreak ? 28 : 24,
+            fontSize: hasStreak ? 20 : 18, // تصغير الحجم
           ),
         ),
         
@@ -482,7 +365,7 @@ class _StatItem extends StatelessWidget {
         // التسمية
         Text(
           label,
-          style: context.labelMedium?.copyWith(
+          style: context.labelSmall?.copyWith( // تصغير الخط
             color: color.withValues(alpha: 0.9),
             fontWeight: ThemeConstants.medium,
           ),
@@ -491,90 +374,4 @@ class _StatItem extends StatelessWidget {
       ],
     );
   }
-}
-
-/// رسام الخلفية للإحصائيات
-class StatsBackgroundPainter extends CustomPainter {
-  final double animation;
-  final Color color;
-
-  StatsBackgroundPainter({
-    required this.animation,
-    required this.color,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    // رسم خطوط قطرية متحركة
-    for (int i = 0; i < 8; i++) {
-      final offset = animation * 50 + (i * 30);
-      final startX = -50 + offset;
-      final endX = startX + size.height;
-      
-      paint.color = color.withValues(alpha: 0.3 - (i * 0.03));
-      canvas.drawLine(
-        Offset(startX, 0),
-        Offset(endX, size.height),
-        paint,
-      );
-    }
-
-    // رسم دوائر متحركة للإحصائيات
-    for (int i = 0; i < 5; i++) {
-      final radius = 25.0 + (i * 15) + (animation * 10);
-      final alpha = (1 - (i * 0.15)) * (0.5 - animation * 0.2);
-      
-      paint.color = color.withValues(alpha: alpha.clamp(0.0, 1.0));
-      
-      // دوائر في مواقع مختلفة
-      canvas.drawCircle(
-        Offset(size.width * 0.2, size.height * 0.3),
-        radius * 0.5,
-        paint,
-      );
-      
-      canvas.drawCircle(
-        Offset(size.width * 0.8, size.height * 0.7),
-        radius * 0.3,
-        paint,
-      );
-    }
-
-    // رسم أشكال إحصائية
-    _drawStatShapes(canvas, size, paint);
-  }
-
-  void _drawStatShapes(Canvas canvas, Size size, Paint paint) {
-    // رسم مخطط بياني مبسط
-    final points = [
-      Offset(size.width * 0.1, size.height * 0.8),
-      Offset(size.width * 0.3, size.height * 0.6 + (animation * 30)),
-      Offset(size.width * 0.5, size.height * 0.4 - (animation * 20)),
-      Offset(size.width * 0.7, size.height * 0.5 + (animation * 25)),
-      Offset(size.width * 0.9, size.height * 0.3),
-    ];
-    
-    final path = Path();
-    path.moveTo(points[0].dx, points[0].dy);
-    
-    for (int i = 1; i < points.length; i++) {
-      path.lineTo(points[i].dx, points[i].dy);
-    }
-    
-    paint.color = color.withValues(alpha: 0.4);
-    canvas.drawPath(path, paint);
-    
-    // نقاط البيانات
-    for (final point in points) {
-      canvas.drawCircle(point, 3, paint..style = PaintingStyle.fill);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

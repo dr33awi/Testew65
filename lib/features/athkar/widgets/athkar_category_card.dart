@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-import 'dart:math' as math;
 import '../../../app/themes/app_theme.dart';
 import '../../../app/themes/widgets/animations/animated_press.dart';
 import '../models/athkar_model.dart';
@@ -87,10 +86,7 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Stack(
               children: [
-                // الخلفية المتحركة
-                _buildAnimatedBackground(categoryColor),
-                
-                // الحد اللامع للبطاقات المكتملة
+                // الحد اللامع للبطاقات المكتملة فقط
                 if (isCompleted) _buildGlowBorder(),
                 
                 // المحتوى الرئيسي
@@ -116,22 +112,6 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildAnimatedBackground(Color categoryColor) {
-    return Positioned.fill(
-      child: AnimatedBuilder(
-        animation: _glowAnimation,
-        builder: (context, child) {
-          return CustomPaint(
-            painter: CategoryBackgroundPainter(
-              animation: _glowAnimation.value,
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
-          );
-        },
       ),
     );
   }
@@ -326,18 +306,10 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
           
           // النسبة المئوية أو أيقونة الإكمال
           if (isCompleted)
-            AnimatedBuilder(
-              animation: _glowAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: 1.0 + (_glowAnimation.value * 0.1),
-                  child: const Icon(
-                    Icons.check_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                );
-              },
+            const Icon(
+              Icons.check_rounded,
+              color: Colors.white,
+              size: 20,
             )
           else
             Text(
@@ -352,90 +324,4 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
       ),
     );
   }
-}
-
-/// رسام الخلفية للفئة
-class CategoryBackgroundPainter extends CustomPainter {
-  final double animation;
-  final Color color;
-
-  CategoryBackgroundPainter({
-    required this.animation,
-    required this.color,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    // رسم دوائر متحركة
-    for (int i = 0; i < 3; i++) {
-      final radius = 30.0 + (i * 20) + (animation * 10);
-      final alpha = (1 - (i * 0.3)) * (0.8 - animation * 0.3);
-      
-      paint.color = color.withValues(alpha: alpha.clamp(0.0, 1.0));
-      
-      canvas.drawCircle(
-        Offset(size.width * 0.8, size.height * 0.2),
-        radius,
-        paint,
-      );
-    }
-
-    // رسم أشكال زخرفية
-    _drawDecorativeShapes(canvas, size, paint);
-  }
-
-  void _drawDecorativeShapes(Canvas canvas, Size size, Paint paint) {
-    // رسم نجوم صغيرة متحركة
-    final positions = [
-      Offset(size.width * 0.15, size.height * 0.25),
-      Offset(size.width * 0.85, size.height * 0.75),
-      Offset(size.width * 0.25, size.height * 0.85),
-    ];
-
-    for (int i = 0; i < positions.length; i++) {
-      final offset = math.sin(animation * 2 * math.pi + i) * 3;
-      _drawStar(
-        canvas,
-        positions[i] + Offset(offset, offset),
-        4,
-        paint..color = color.withValues(alpha: 0.6),
-      );
-    }
-  }
-
-  void _drawStar(Canvas canvas, Offset center, double radius, Paint paint) {
-    final path = Path();
-    const int points = 5;
-    final double angle = 2 * math.pi / points;
-
-    for (int i = 0; i < points; i++) {
-      final outerAngle = i * angle - math.pi / 2;
-      final innerAngle = (i + 0.5) * angle - math.pi / 2;
-
-      final outerX = center.dx + radius * math.cos(outerAngle);
-      final outerY = center.dy + radius * math.sin(outerAngle);
-
-      final innerX = center.dx + (radius * 0.5) * math.cos(innerAngle);
-      final innerY = center.dy + (radius * 0.5) * math.sin(innerAngle);
-
-      if (i == 0) {
-        path.moveTo(outerX, outerY);
-      } else {
-        path.lineTo(outerX, outerY);
-      }
-
-      path.lineTo(innerX, innerY);
-    }
-
-    path.close();
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

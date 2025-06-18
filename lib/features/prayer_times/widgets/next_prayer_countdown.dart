@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-import 'dart:math' as math;
 import '../../../app/themes/app_theme.dart';
 import '../models/prayer_time_model.dart';
 
@@ -20,53 +19,7 @@ class NextPrayerCountdown extends StatefulWidget {
   State<NextPrayerCountdown> createState() => _NextPrayerCountdownState();
 }
 
-class _NextPrayerCountdownState extends State<NextPrayerCountdown>
-    with TickerProviderStateMixin {
-  late AnimationController _pulseController;
-  late AnimationController _backgroundController;
-  late Animation<double> _pulseAnimation;
-  late Animation<double> _backgroundAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _setupAnimations();
-  }
-
-  void _setupAnimations() {
-    _pulseController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _backgroundController = AnimationController(
-      duration: const Duration(seconds: 8),
-      vsync: this,
-    )..repeat();
-
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
-
-    _backgroundAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _backgroundController,
-      curve: Curves.linear,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    _backgroundController.dispose();
-    super.dispose();
-  }
+class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
 
   @override
   Widget build(BuildContext context) {
@@ -97,42 +50,18 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown>
         borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Stack(
-            children: [
-              // الخلفية المتحركة
-              _buildAnimatedBackground(prayerColor),
-              
-              // المحتوى الرئيسي
-              Container(
-                padding: const EdgeInsets.all(ThemeConstants.space5),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1,
-                  ),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                ),
-                child: _buildContent(context, prayerColor),
+          child: Container(
+            padding: const EdgeInsets.all(ThemeConstants.space5),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1,
               ),
-            ],
+              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+            ),
+            child: _buildContent(context, prayerColor),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildAnimatedBackground(Color prayerColor) {
-    return Positioned.fill(
-      child: AnimatedBuilder(
-        animation: _backgroundAnimation,
-        builder: (context, child) {
-          return CustomPaint(
-            painter: CountdownBackgroundPainter(
-              animation: _backgroundAnimation.value,
-              color: Colors.white.withValues(alpha: 0.1),
-            ),
-          );
-        },
       ),
     );
   }
@@ -210,21 +139,13 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // اسم الصلاة
-              AnimatedBuilder(
-                animation: _pulseAnimation,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: _pulseAnimation.value,
-                    child: Text(
-                      widget.nextPrayer.nameAr,
-                      style: context.headlineLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: ThemeConstants.bold,
-                      ),
-                    ),
-                  );
-                },
+              // اسم الصلاة - بدون حركة
+              Text(
+                widget.nextPrayer.nameAr,
+                style: context.headlineLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: ThemeConstants.bold,
+                ),
               ),
               
               ThemeConstants.space1.h,
@@ -355,20 +276,12 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown>
   }
 
   Widget _buildTimeSeparator() {
-    return AnimatedBuilder(
-      animation: _pulseController,
-      builder: (context, child) {
-        return Opacity(
-          opacity: 0.5 + (_pulseAnimation.value - 1.0) * 10,
-          child: Text(
-            ':',
-            style: context.headlineLarge?.copyWith(
-              color: Colors.white,
-              fontWeight: ThemeConstants.bold,
-            ),
-          ),
-        );
-      },
+    return Text(
+      ':',
+      style: context.headlineLarge?.copyWith(
+        color: Colors.white,
+        fontWeight: ThemeConstants.bold,
+      ),
     );
   }
 
@@ -439,68 +352,4 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown>
   IconData _getPrayerIcon(PrayerType type) {
     return ThemeConstants.getPrayerIcon(type.name);
   }
-}
-
-/// رسام الخلفية للعد التنازلي
-class CountdownBackgroundPainter extends CustomPainter {
-  final double animation;
-  final Color color;
-
-  CountdownBackgroundPainter({
-    required this.animation,
-    required this.color,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    // رسم دوائر متحركة للعد التنازلي
-    for (int i = 0; i < 4; i++) {
-      final radius = 40.0 + (i * 25) + (animation * 15);
-      final alpha = (1 - (i * 0.2)) * (0.7 - animation * 0.3);
-      
-      paint.color = color.withValues(alpha: alpha.clamp(0.0, 1.0));
-      
-      canvas.drawCircle(
-        Offset(size.width * 0.8, size.height * 0.3),
-        radius,
-        paint,
-      );
-    }
-
-    // رسم عقارب الساعة
-    _drawClockHands(canvas, size, paint);
-  }
-
-  void _drawClockHands(Canvas canvas, Size size, Paint paint) {
-    final center = Offset(size.width * 0.2, size.height * 0.7);
-    final radius = 20.0;
-    
-    // دائرة الساعة
-    paint.color = color.withValues(alpha: 0.4);
-    canvas.drawCircle(center, radius, paint);
-    
-    // عقرب الساعات
-    final hourAngle = animation * 2 * math.pi;
-    final hourEnd = Offset(
-      center.dx + (radius * 0.6) * math.cos(hourAngle - math.pi / 2),
-      center.dy + (radius * 0.6) * math.sin(hourAngle - math.pi / 2),
-    );
-    canvas.drawLine(center, hourEnd, paint..strokeWidth = 3);
-    
-    // عقرب الدقائق
-    final minuteAngle = animation * 12 * 2 * math.pi;
-    final minuteEnd = Offset(
-      center.dx + (radius * 0.8) * math.cos(minuteAngle - math.pi / 2),
-      center.dy + (radius * 0.8) * math.sin(minuteAngle - math.pi / 2),
-    );
-    canvas.drawLine(center, minuteEnd, paint..strokeWidth = 2);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

@@ -2,11 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-import 'dart:math' as math;
 import '../../../app/themes/app_theme.dart';
 import '../models/prayer_time_model.dart';
 
-/// بطاقة وقت الصلاة المحسنة
+/// بطاقة وقت الصلاة المبسطة
 class PrayerTimeCard extends StatefulWidget {
   final PrayerTime prayer;
   final Function(bool) onNotificationToggle;
@@ -23,46 +22,7 @@ class PrayerTimeCard extends StatefulWidget {
   State<PrayerTimeCard> createState() => _PrayerTimeCardState();
 }
 
-class _PrayerTimeCardState extends State<PrayerTimeCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _glowAnimation;
-  late Animation<double> _pulseAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _setupAnimations();
-  }
-
-  void _setupAnimations() {
-    _animationController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _glowAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
+class _PrayerTimeCardState extends State<PrayerTimeCard> {
 
   @override
   Widget build(BuildContext context) {
@@ -71,64 +31,50 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
     final gradient = _getGradient(widget.prayer.type);
     final useGradient = widget.forceColored || isNext;
     
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: isNext ? _pulseAnimation.value : 1.0,
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-              boxShadow: [
-                BoxShadow(
-                  color: useGradient 
-                      ? gradient[0].withValues(alpha: 0.3)
-                      : Colors.black.withValues(alpha: 0.05),
-                  blurRadius: useGradient ? 20 : 10,
-                  offset: const Offset(0, 8),
-                  spreadRadius: useGradient ? 2 : 0,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        boxShadow: [
+          BoxShadow(
+            color: useGradient 
+                ? gradient[0].withValues(alpha: 0.3)
+                : Colors.black.withValues(alpha: 0.05),
+            blurRadius: useGradient ? 20 : 10,
+            offset: const Offset(0, 8),
+            spreadRadius: useGradient ? 2 : 0,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _showPrayerDetails(context),
+            borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+            child: Stack(
+              children: [
+                // الخلفية المتدرجة أو العادية
+                _buildCardBackground(useGradient, gradient, isPassed),
+                
+                // المحتوى الرئيسي
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: useGradient 
+                          ? Colors.white.withValues(alpha: 0.2)
+                          : context.dividerColor.withValues(alpha: 0.2),
+                      width: useGradient ? 1 : 1,
+                    ),
+                    borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+                  ),
+                  child: _buildCardContent(context, useGradient, gradient, isPassed),
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => _showPrayerDetails(context),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                  child: Stack(
-                    children: [
-                      // الخلفية المتدرجة أو العادية
-                      _buildCardBackground(useGradient, gradient, isPassed),
-                      
-                      // الخلفية المتحركة للصلاة القادمة
-                      if (isNext) _buildAnimatedBackground(),
-                      
-                      // الحد اللامع للصلاة القادمة
-                      if (isNext) _buildGlowBorder(gradient[0]),
-                      
-                      // المحتوى الرئيسي
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: useGradient 
-                                ? Colors.white.withValues(alpha: 0.2)
-                                : context.dividerColor.withValues(alpha: 0.2),
-                            width: useGradient ? 1 : 1,
-                          ),
-                          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                        ),
-                        child: _buildCardContent(context, useGradient, gradient, isPassed),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -162,31 +108,6 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
         ),
       );
     }
-  }
-
-  Widget _buildAnimatedBackground() {
-    return Positioned.fill(
-      child: CustomPaint(
-        painter: PrayerBackgroundPainter(
-          animation: _glowAnimation.value,
-          color: Colors.white.withValues(alpha: 0.1),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGlowBorder(Color color) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        border: Border.all(
-          color: Colors.white.withValues(
-            alpha: 0.4 + (_glowAnimation.value * 0.3),
-          ),
-          width: 2,
-        ),
-      ),
-    );
   }
 
   Widget _buildCardContent(
@@ -525,96 +446,4 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
   }
   
   void onNotificationToggle(bool bool) {}
-}
-
-/// رسام الخلفية للصلاة
-class PrayerBackgroundPainter extends CustomPainter {
-  final double animation;
-  final Color color;
-
-  PrayerBackgroundPainter({
-    required this.animation,
-    required this.color,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    // رسم دوائر متحركة تمثل أمواج الصلاة
-    for (int i = 0; i < 4; i++) {
-      final radius = 25.0 + (i * 15) + (animation * 8);
-      final alpha = (1 - (i * 0.2)) * (0.8 - animation * 0.4);
-      
-      paint.color = color.withValues(alpha: alpha.clamp(0.0, 1.0));
-      
-      // دوائر في الزوايا
-      canvas.drawCircle(
-        Offset(size.width * 0.15, size.height * 0.2),
-        radius * 0.6,
-        paint,
-      );
-      
-      canvas.drawCircle(
-        Offset(size.width * 0.85, size.height * 0.8),
-        radius * 0.4,
-        paint,
-      );
-    }
-
-    // رسم أشكال إسلامية بسيطة
-    _drawIslamicElements(canvas, size, paint);
-  }
-
-  void _drawIslamicElements(Canvas canvas, Size size, Paint paint) {
-    // رسم نجوم إسلامية صغيرة
-    final positions = [
-      Offset(size.width * 0.8, size.height * 0.3),
-      Offset(size.width * 0.2, size.height * 0.7),
-    ];
-
-    for (int i = 0; i < positions.length; i++) {
-      final offset = math.sin(animation * 2 * math.pi + i * math.pi) * 2;
-      _drawSimpleStar(
-        canvas,
-        positions[i] + Offset(offset, offset),
-        6,
-        paint..color = color.withValues(alpha: 0.5),
-      );
-    }
-  }
-
-  void _drawSimpleStar(Canvas canvas, Offset center, double radius, Paint paint) {
-    final path = Path();
-    const int points = 6;
-    final double angle = 2 * math.pi / points;
-
-    for (int i = 0; i < points; i++) {
-      final outerAngle = i * angle - math.pi / 2;
-      final innerAngle = (i + 0.5) * angle - math.pi / 2;
-
-      final outerX = center.dx + radius * math.cos(outerAngle);
-      final outerY = center.dy + radius * math.sin(outerAngle);
-
-      final innerX = center.dx + (radius * 0.6) * math.cos(innerAngle);
-      final innerY = center.dy + (radius * 0.6) * math.sin(innerAngle);
-
-      if (i == 0) {
-        path.moveTo(outerX, outerY);
-      } else {
-        path.lineTo(outerX, outerY);
-      }
-
-      path.lineTo(innerX, innerY);
-    }
-
-    path.close();
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-import 'dart:math' as math;
 import '../../../app/themes/app_theme.dart';
 import '../domain/models/qibla_model.dart';
 
@@ -18,37 +17,7 @@ class QiblaInfoCard extends StatefulWidget {
   State<QiblaInfoCard> createState() => _QiblaInfoCardState();
 }
 
-class _QiblaInfoCardState extends State<QiblaInfoCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _pulseAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _setupAnimations();
-  }
-
-  void _setupAnimations() {
-    _animationController = AnimationController(
-      duration: const Duration(seconds: 3),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _pulseAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
+class _QiblaInfoCardState extends State<QiblaInfoCard> {
 
   @override
   Widget build(BuildContext context) {
@@ -77,33 +46,9 @@ class _QiblaInfoCardState extends State<QiblaInfoCard>
               ),
               borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
             ),
-            child: Stack(
-              children: [
-                // خلفية متحركة
-                _buildAnimatedBackground(),
-                
-                // المحتوى الرئيسي
-                _buildContent(context),
-              ],
-            ),
+            child: _buildContent(context),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildAnimatedBackground() {
-    return Positioned.fill(
-      child: AnimatedBuilder(
-        animation: _pulseAnimation,
-        builder: (context, child) {
-          return CustomPaint(
-            painter: QiblaInfoBackgroundPainter(
-              animation: _pulseAnimation.value,
-              color: ThemeConstants.primary.withValues(alpha: 0.1),
-            ),
-          );
-        },
       ),
     );
   }
@@ -155,65 +100,35 @@ class _QiblaInfoCardState extends State<QiblaInfoCard>
       ),
       child: Row(
         children: [
-          // أيقونة الموقع المتحركة
-          AnimatedBuilder(
-            animation: _pulseAnimation,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: 1.0 + (_pulseAnimation.value * 0.1),
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        ThemeConstants.primary.withValues(alpha: 0.2),
-                        ThemeConstants.primary.withValues(alpha: 0.1),
-                      ],
-                    ),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: ThemeConstants.primary.withValues(alpha: 0.3),
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: ThemeConstants.primary.withValues(alpha: 0.2),
-                        blurRadius: 15,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // دوائر متحركة في الخلفية
-                      Transform.rotate(
-                        angle: _pulseAnimation.value * 2 * math.pi,
-                        child: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: ThemeConstants.primary.withValues(alpha: 0.3),
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                      // الأيقونة الرئيسية
-                      Icon(
-                        Icons.location_on,
-                        color: ThemeConstants.primary,
-                        size: ThemeConstants.iconLg,
-                      ),
-                    ],
-                  ),
+          // أيقونة الموقع الثابتة
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  ThemeConstants.primary.withValues(alpha: 0.2),
+                  ThemeConstants.primary.withValues(alpha: 0.1),
+                ],
+              ),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: ThemeConstants.primary.withValues(alpha: 0.3),
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: ThemeConstants.primary.withValues(alpha: 0.2),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
                 ),
-              );
-            },
+              ],
+            ),
+            child: Icon(
+              Icons.location_on,
+              color: ThemeConstants.primary,
+              size: ThemeConstants.iconLg,
+            ),
           ),
           
           ThemeConstants.space4.w,
@@ -293,7 +208,6 @@ class _QiblaInfoCardState extends State<QiblaInfoCard>
             value: '${widget.qiblaData.qiblaDirection.toStringAsFixed(1)}°',
             subtitle: widget.qiblaData.directionDescription,
             color: ThemeConstants.primary,
-            showAnimation: true,
           ),
         ),
         
@@ -337,7 +251,6 @@ class _QiblaInfoCardState extends State<QiblaInfoCard>
     required String value,
     required String subtitle,
     required Color color,
-    bool showAnimation = false,
   }) {
     return Container(
       padding: const EdgeInsets.all(ThemeConstants.space4),
@@ -356,25 +269,17 @@ class _QiblaInfoCardState extends State<QiblaInfoCard>
       child: Column(
         children: [
           // الأيقونة
-          AnimatedBuilder(
-            animation: showAnimation ? _pulseAnimation : kAlwaysCompleteAnimation,
-            builder: (context, child) {
-              return Transform.rotate(
-                angle: showAnimation ? _pulseAnimation.value * 0.1 : 0,
-                child: Container(
-                  padding: const EdgeInsets.all(ThemeConstants.space3),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    icon,
-                    color: color,
-                    size: ThemeConstants.iconLg,
-                  ),
-                ),
-              );
-            },
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space3),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: ThemeConstants.iconLg,
+            ),
           ),
           
           ThemeConstants.space2.h,
@@ -548,18 +453,10 @@ class _QiblaInfoCardState extends State<QiblaInfoCard>
       ),
       child: Row(
         children: [
-          AnimatedBuilder(
-            animation: _pulseAnimation,
-            builder: (context, child) {
-              return Transform.scale(
-                scale: 1.0 + (_pulseAnimation.value * 0.1),
-                child: Icon(
-                  Icons.warning_amber_rounded,
-                  color: ThemeConstants.warning,
-                  size: ThemeConstants.iconLg,
-                ),
-              );
-            },
+          Icon(
+            Icons.warning_amber_rounded,
+            color: ThemeConstants.warning,
+            size: ThemeConstants.iconLg,
           ),
           
           ThemeConstants.space3.w,
@@ -632,122 +529,4 @@ class _QiblaInfoCardState extends State<QiblaInfoCard>
       return 'منذ ${age.inDays} يوم';
     }
   }
-}
-
-/// رسام الخلفية لمعلومات القبلة
-class QiblaInfoBackgroundPainter extends CustomPainter {
-  final double animation;
-  final Color color;
-
-  QiblaInfoBackgroundPainter({
-    required this.animation,
-    required this.color,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    // رسم دوائر متحركة تمثل موجات الموقع
-    for (int i = 0; i < 4; i++) {
-      final radius = 40.0 + (i * 25) + (animation * 20);
-      final alpha = (1 - (i * 0.2)) * (0.6 - animation * 0.3);
-      
-      paint.color = color.withValues(alpha: alpha.clamp(0.0, 1.0));
-      
-      canvas.drawCircle(
-        Offset(size.width * 0.8, size.height * 0.2),
-        radius,
-        paint,
-      );
-    }
-
-    // رسم أشكال القبلة الإسلامية
-    _drawQiblaShapes(canvas, size, paint);
-  }
-
-  void _drawQiblaShapes(Canvas canvas, Size size, Paint paint) {
-    // رسم رمز الكعبة المبسط
-    final kabaCenter = Offset(size.width * 0.2, size.height * 0.8);
-    final kabaSize = 20.0;
-    
-    // مربع الكعبة
-    final kabaRect = Rect.fromCenter(
-      center: kabaCenter,
-      width: kabaSize,
-      height: kabaSize,
-    );
-    
-    paint.color = color.withValues(alpha: 0.4);
-    canvas.drawRect(kabaRect, paint..style = PaintingStyle.stroke);
-    
-    // خطوط الاتجاه المتحركة
-    for (int i = 0; i < 8; i++) {
-      final angle = (i * math.pi / 4) + (animation * math.pi / 4);
-      final startRadius = 30;
-      final endRadius = 50;
-      
-      final startX = kabaCenter.dx + startRadius * math.cos(angle);
-      final startY = kabaCenter.dy + startRadius * math.sin(angle);
-      final endX = kabaCenter.dx + endRadius * math.cos(angle);
-      final endY = kabaCenter.dy + endRadius * math.sin(angle);
-      
-      paint.color = color.withValues(alpha: 0.3);
-      canvas.drawLine(
-        Offset(startX, startY),
-        Offset(endX, endY),
-        paint..strokeWidth = 1,
-      );
-    }
-    
-    // نجوم إسلامية متحركة
-    final starPositions = [
-      Offset(size.width * 0.15, size.height * 0.3),
-      Offset(size.width * 0.85, size.height * 0.7),
-    ];
-
-    for (int i = 0; i < starPositions.length; i++) {
-      final offset = math.sin(animation * 2 * math.pi + i * math.pi) * 5;
-      _drawIslamicStar(
-        canvas,
-        starPositions[i] + Offset(offset, offset),
-        8,
-        paint..color = color.withValues(alpha: 0.3),
-      );
-    }
-  }
-
-  void _drawIslamicStar(Canvas canvas, Offset center, double radius, Paint paint) {
-    final path = Path();
-    const int points = 8;
-    final double angle = 2 * math.pi / points;
-
-    for (int i = 0; i < points; i++) {
-      final outerAngle = i * angle - math.pi / 2;
-      final innerAngle = (i + 0.5) * angle - math.pi / 2;
-
-      final outerX = center.dx + radius * math.cos(outerAngle);
-      final outerY = center.dy + radius * math.sin(outerAngle);
-
-      final innerX = center.dx + (radius * 0.6) * math.cos(innerAngle);
-      final innerY = center.dy + (radius * 0.6) * math.sin(innerAngle);
-
-      if (i == 0) {
-        path.moveTo(outerX, outerY);
-      } else {
-        path.lineTo(outerX, outerY);
-      }
-
-      path.lineTo(innerX, innerY);
-    }
-
-    path.close();
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

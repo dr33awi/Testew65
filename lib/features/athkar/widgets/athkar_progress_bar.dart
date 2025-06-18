@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-import 'dart:math' as math;
 import '../../../app/themes/app_theme.dart';
 
 class AthkarProgressBar extends StatefulWidget {
@@ -24,11 +23,9 @@ class AthkarProgressBar extends StatefulWidget {
 }
 
 class _AthkarProgressBarState extends State<AthkarProgressBar>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   late AnimationController _progressController;
-  late AnimationController _pulseController;
   late Animation<double> _progressAnimation;
-  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
@@ -42,25 +39,12 @@ class _AthkarProgressBarState extends State<AthkarProgressBar>
       vsync: this,
     );
 
-    _pulseController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat(reverse: true);
-
     _progressAnimation = Tween<double>(
       begin: 0.0,
       end: widget.progress / 100,
     ).animate(CurvedAnimation(
       parent: _progressController,
       curve: ThemeConstants.curveSmooth,
-    ));
-
-    _pulseAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
     ));
 
     _progressController.forward();
@@ -84,7 +68,6 @@ class _AthkarProgressBarState extends State<AthkarProgressBar>
   @override
   void dispose() {
     _progressController.dispose();
-    _pulseController.dispose();
     super.dispose();
   }
 
@@ -92,11 +75,11 @@ class _AthkarProgressBarState extends State<AthkarProgressBar>
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(
-        horizontal: ThemeConstants.space4,
-        vertical: ThemeConstants.space3,
+        horizontal: ThemeConstants.space3, // تقليل المارجن
+        vertical: ThemeConstants.space2, // تقليل المارجن
       ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl), // تقليل الزاوية
         gradient: LinearGradient(
           colors: [
             widget.color.withValues(alpha: 0.05),
@@ -107,7 +90,7 @@ class _AthkarProgressBarState extends State<AthkarProgressBar>
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
@@ -116,34 +99,26 @@ class _AthkarProgressBarState extends State<AthkarProgressBar>
                 color: context.dividerColor.withValues(alpha: 0.2),
                 width: 1,
               ),
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
             ),
-            child: Stack(
-              children: [
-                // خلفية متحركة
-                _buildAnimatedBackground(),
-                
-                // المحتوى الرئيسي
-                Padding(
-                  padding: const EdgeInsets.all(ThemeConstants.space5),
-                  child: Column(
-                    children: [
-                      // الرأس
-                      _buildHeader(context),
-                      
-                      ThemeConstants.space4.h,
-                      
-                      // شريط التقدم المحسن
-                      _buildProgressBar(context),
-                      
-                      ThemeConstants.space4.h,
-                      
-                      // الإحصائيات
-                      _buildStatistics(context),
-                    ],
-                  ),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(ThemeConstants.space4), // تقليل الpadding
+              child: Column(
+                children: [
+                  // الرأس
+                  _buildHeader(context),
+                  
+                  ThemeConstants.space3.h, // تقليل المسافة
+                  
+                  // شريط التقدم المحسن
+                  _buildProgressBar(context),
+                  
+                  ThemeConstants.space3.h, // تقليل المسافة
+                  
+                  // الإحصائيات
+                  _buildStatistics(context),
+                ],
+              ),
             ),
           ),
         ),
@@ -151,67 +126,43 @@ class _AthkarProgressBarState extends State<AthkarProgressBar>
     );
   }
 
-  Widget _buildAnimatedBackground() {
-    return Positioned.fill(
-      child: AnimatedBuilder(
-        animation: _pulseAnimation,
-        builder: (context, child) {
-          return CustomPaint(
-            painter: ProgressBackgroundPainter(
-              animation: _pulseAnimation.value,
-              color: widget.color.withValues(alpha: 0.1),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
-        // أيقونة التقدم
-        AnimatedBuilder(
-          animation: _pulseAnimation,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: 1.0 + (_pulseAnimation.value * 0.1),
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      widget.color.withValues(alpha: 0.2),
-                      widget.color.withValues(alpha: 0.1),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-                  border: Border.all(
-                    color: widget.color.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: widget.color.withValues(alpha: 0.2),
-                      blurRadius: 15,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.trending_up_rounded,
-                  color: widget.color,
-                  size: ThemeConstants.iconLg,
-                ),
+        // أيقونة التقدم الثابتة (مصغرة)
+        Container(
+          width: 45, // تصغير الحجم
+          height: 45,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                widget.color.withValues(alpha: 0.2),
+                widget.color.withValues(alpha: 0.1),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd), // تقليل الزاوية
+            border: Border.all(
+              color: widget.color.withValues(alpha: 0.3),
+              width: 1.5, // تقليل سماكة الحد
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: widget.color.withValues(alpha: 0.1), // تقليل شدة الظل
+                blurRadius: 8, // تقليل الضبابية
+                offset: const Offset(0, 4), // تقليل الإزاحة
               ),
-            );
-          },
+            ],
+          ),
+          child: Icon(
+            Icons.trending_up_rounded,
+            color: widget.color,
+            size: ThemeConstants.iconMd, // تصغير الأيقونة
+          ),
         ),
         
-        ThemeConstants.space4.w,
+        ThemeConstants.space3.w, // تقليل المسافة
         
         // معلومات التقدم
         Expanded(
@@ -220,14 +171,14 @@ class _AthkarProgressBarState extends State<AthkarProgressBar>
             children: [
               Text(
                 'التقدم الإجمالي',
-                style: context.titleLarge?.copyWith(
+                style: context.titleMedium?.copyWith( // تصغير الخط
                   fontWeight: ThemeConstants.bold,
                 ),
               ),
               ThemeConstants.space1.h,
               Text(
                 'استمر في التقدم والأجر',
-                style: context.bodyMedium?.copyWith(
+                style: context.bodySmall?.copyWith( // تصغير الخط
                   color: context.textSecondaryColor,
                 ),
               ),
@@ -235,15 +186,15 @@ class _AthkarProgressBarState extends State<AthkarProgressBar>
           ),
         ),
         
-        // النسبة المئوية
+        // النسبة المئوية (مصغرة)
         AnimatedBuilder(
           animation: _progressAnimation,
           builder: (context, child) {
             final currentProgress = (_progressAnimation.value * 100).round();
             return Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: ThemeConstants.space4,
-                vertical: ThemeConstants.space3,
+                horizontal: ThemeConstants.space3, // تقليل الpadding
+                vertical: ThemeConstants.space2,
               ),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -254,12 +205,12 @@ class _AthkarProgressBarState extends State<AthkarProgressBar>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd), // تقليل الزاوية
                 boxShadow: [
                   BoxShadow(
-                    color: widget.color.withValues(alpha: 0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 8),
+                    color: widget.color.withValues(alpha: 0.2), // تقليل شدة الظل
+                    blurRadius: 8, // تقليل الضبابية
+                    offset: const Offset(0, 4), // تقليل الإزاحة
                   ),
                 ],
               ),
@@ -267,7 +218,7 @@ class _AthkarProgressBarState extends State<AthkarProgressBar>
                 children: [
                   Text(
                     '$currentProgress%',
-                    style: context.headlineSmall?.copyWith(
+                    style: context.titleMedium?.copyWith( // تصغير الخط
                       color: Colors.white,
                       fontWeight: ThemeConstants.bold,
                     ),
@@ -317,14 +268,14 @@ class _AthkarProgressBarState extends State<AthkarProgressBar>
           ],
         ),
         
-        ThemeConstants.space3.h,
+        ThemeConstants.space2.h, // تقليل المسافة
         
-        // شريط التقدم المتقدم
+        // شريط التقدم البسيط (مصغر)
         Container(
-          height: 16,
+          height: 12, // تقليل الارتفاع
           decoration: BoxDecoration(
             color: context.surfaceColor,
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusSm), // تقليل الزاوية
             border: Border.all(
               color: context.dividerColor.withValues(alpha: 0.3),
             ),
@@ -333,7 +284,7 @@ class _AthkarProgressBarState extends State<AthkarProgressBar>
             children: [
               // الخلفية مع تدرج خفيف
               Container(
-                height: 16,
+                height: 12, // تقليل الارتفاع
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -345,7 +296,7 @@ class _AthkarProgressBarState extends State<AthkarProgressBar>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusSm), // تقليل الزاوية
                 ),
               ),
               
@@ -354,36 +305,12 @@ class _AthkarProgressBarState extends State<AthkarProgressBar>
                 animation: _progressAnimation,
                 builder: (context, child) {
                   return ClipRRect(
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusSm), // تقليل الزاوية
                     child: LinearProgressIndicator(
                       value: _progressAnimation.value,
                       backgroundColor: Colors.transparent,
                       valueColor: AlwaysStoppedAnimation<Color>(widget.color),
-                      minHeight: 16,
-                    ),
-                  );
-                },
-              ),
-              
-              // تأثير لمعان متحرك
-              AnimatedBuilder(
-                animation: _pulseAnimation,
-                builder: (context, child) {
-                  return Positioned(
-                    left: -50 + (_pulseAnimation.value * (MediaQuery.of(context).size.width + 100)),
-                    child: Container(
-                      width: 50,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.transparent,
-                            Colors.white.withValues(alpha: 0.4),
-                            Colors.transparent,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                      ),
+                      minHeight: 12, // تقليل الارتفاع
                     ),
                   );
                 },
@@ -449,7 +376,7 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
+      padding: const EdgeInsets.all(ThemeConstants.space3), // تقليل الpadding
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -459,7 +386,7 @@ class _StatCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd), // تقليل الزاوية
         border: Border.all(
           color: color.withValues(alpha: 0.2),
           width: 1,
@@ -467,15 +394,15 @@ class _StatCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: color.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+            blurRadius: 6, // تقليل الضبابية
+            offset: const Offset(0, 2), // تقليل الإزاحة
           ),
         ],
       ),
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(ThemeConstants.space2),
+            padding: const EdgeInsets.all(ThemeConstants.space1), // تقليل الpadding
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
@@ -483,15 +410,15 @@ class _StatCard extends StatelessWidget {
             child: Icon(
               icon,
               color: color,
-              size: ThemeConstants.iconMd,
+              size: ThemeConstants.iconSm, // تصغير الأيقونة
             ),
           ),
           
-          ThemeConstants.space2.h,
+          ThemeConstants.space1.h, // تقليل المسافة
           
           Text(
             value,
-            style: context.titleLarge?.copyWith(
+            style: context.titleMedium?.copyWith( // تصغير الخط
               color: color,
               fontWeight: ThemeConstants.bold,
             ),
@@ -501,7 +428,7 @@ class _StatCard extends StatelessWidget {
           
           Text(
             label,
-            style: context.labelMedium?.copyWith(
+            style: context.labelSmall?.copyWith( // تصغير الخط
               color: context.textSecondaryColor,
             ),
           ),
@@ -509,84 +436,4 @@ class _StatCard extends StatelessWidget {
       ),
     );
   }
-}
-
-/// رسام الخلفية للتقدم
-class ProgressBackgroundPainter extends CustomPainter {
-  final double animation;
-  final Color color;
-
-  ProgressBackgroundPainter({
-    required this.animation,
-    required this.color,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    // رسم دوائر متحركة تمثل التقدم
-    for (int i = 0; i < 4; i++) {
-      final radius = 40.0 + (i * 25) + (animation * 15);
-      final alpha = (1 - (i * 0.2)) * (0.6 - animation * 0.2);
-      
-      paint.color = color.withValues(alpha: alpha.clamp(0.0, 1.0));
-      
-      // دوائر في مواقع مختلفة
-      canvas.drawCircle(
-        Offset(size.width * 0.15, size.height * 0.2),
-        radius * 0.6,
-        paint,
-      );
-      
-      canvas.drawCircle(
-        Offset(size.width * 0.85, size.height * 0.8),
-        radius * 0.4,
-        paint,
-      );
-    }
-
-    // رسم أشكال هندسية للتقدم
-    _drawProgressShapes(canvas, size, paint);
-  }
-
-  void _drawProgressShapes(Canvas canvas, Size size, Paint paint) {
-    // رسم خطوط متدرجة تمثل التقدم
-    final path = Path();
-    
-    // خط متموج يمثل التقدم
-    path.moveTo(size.width * 0.1, size.height * 0.6);
-    path.quadraticBezierTo(
-      size.width * 0.3, size.height * 0.4 + (animation * 20),
-      size.width * 0.5, size.height * 0.6,
-    );
-    path.quadraticBezierTo(
-      size.width * 0.7, size.height * 0.8 - (animation * 20),
-      size.width * 0.9, size.height * 0.6,
-    );
-    
-    paint.color = color.withValues(alpha: 0.4);
-    canvas.drawPath(path, paint);
-    
-    // نقاط تقدم متحركة
-    final positions = [
-      Offset(size.width * 0.2, size.height * 0.3),
-      Offset(size.width * 0.8, size.height * 0.7),
-    ];
-
-    for (int i = 0; i < positions.length; i++) {
-      final offset = math.sin(animation * 2 * math.pi + i * math.pi) * 5;
-      canvas.drawCircle(
-        positions[i] + Offset(offset, offset),
-        3 + (animation * 2),
-        paint..style = PaintingStyle.fill,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
