@@ -200,6 +200,16 @@ extension NumberExtensions on num {
     bottomLeft: Radius.circular(toDouble()),
     bottomRight: Radius.circular(toDouble()),
   );
+
+  /// إنشاء SliverToBoxAdapter للمسافات العمودية - الإصلاح المطلوب
+  Widget get sliverBox => SliverToBoxAdapter(
+    child: SizedBox(height: toDouble()),
+  );
+  
+  /// إنشاء SliverToBoxAdapter للمسافات الأفقية
+  Widget get sliverBoxHorizontal => SliverToBoxAdapter(
+    child: SizedBox(width: toDouble()),
+  );
 }
 
 /// Extensions للـ Lists

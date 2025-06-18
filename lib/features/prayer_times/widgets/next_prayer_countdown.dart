@@ -1,10 +1,12 @@
 // lib/features/prayer_times/widgets/next_prayer_countdown.dart
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:ui';
+import 'dart:math' as math;
 import '../../../app/themes/app_theme.dart';
 import '../models/prayer_time_model.dart';
 
-class NextPrayerCountdown extends StatelessWidget {
+class NextPrayerCountdown extends StatefulWidget {
   final PrayerTime nextPrayer;
   final PrayerTime? currentPrayer;
 
@@ -15,171 +17,403 @@ class NextPrayerCountdown extends StatelessWidget {
   });
 
   @override
+  State<NextPrayerCountdown> createState() => _NextPrayerCountdownState();
+}
+
+class _NextPrayerCountdownState extends State<NextPrayerCountdown>
+    with TickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late AnimationController _backgroundController;
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _backgroundAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupAnimations();
+  }
+
+  void _setupAnimations() {
+    _pulseController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _backgroundController = AnimationController(
+      duration: const Duration(seconds: 8),
+      vsync: this,
+    )..repeat();
+
+    _pulseAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.05,
+    ).animate(CurvedAnimation(
+      parent: _pulseController,
+      curve: Curves.easeInOut,
+    ));
+
+    _backgroundAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _backgroundController,
+      curve: Curves.linear,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    _backgroundController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final prayerColor = _getPrayerColor(widget.nextPrayer.type);
+    
     return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space5),
+      margin: const EdgeInsets.all(ThemeConstants.space4),
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            _getPrayerColor(nextPrayer.type),
-            _getPrayerColor(nextPrayer.type).darken(0.2),
+            prayerColor.withValues(alpha: 0.9),
+            prayerColor.darken(0.2).withValues(alpha: 0.9),
           ],
         ),
-        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: _getPrayerColor(nextPrayer.type).withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: prayerColor.withValues(alpha: 0.3),
+            blurRadius: 25,
+            offset: const Offset(0, 15),
+            spreadRadius: 2,
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // العنوان
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Stack(
             children: [
-              Icon(
-                Icons.access_time_filled,
-                color: Colors.white.withValues(alpha: 0.9),
-                size: 20,
-              ),
-              ThemeConstants.space2.w,
-              Text(
-                'الصلاة القادمة',
-                style: context.bodyLarge?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.9),
-                  fontWeight: ThemeConstants.medium,
+              // الخلفية المتحركة
+              _buildAnimatedBackground(prayerColor),
+              
+              // المحتوى الرئيسي
+              Container(
+                padding: const EdgeInsets.all(ThemeConstants.space5),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
                 ),
+                child: _buildContent(context, prayerColor),
               ),
             ],
           ),
-          
-          ThemeConstants.space3.h,
-          
-          // اسم الصلاة والوقت
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnimatedBackground(Color prayerColor) {
+    return Positioned.fill(
+      child: AnimatedBuilder(
+        animation: _backgroundAnimation,
+        builder: (context, child) {
+          return CustomPaint(
+            painter: CountdownBackgroundPainter(
+              animation: _backgroundAnimation.value,
+              color: Colors.white.withValues(alpha: 0.1),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, Color prayerColor) {
+    return Column(
+      children: [
+        // رأس العد التنازلي
+        _buildHeader(context),
+        
+        ThemeConstants.space4.h,
+        
+        // معلومات الصلاة والوقت
+        _buildPrayerInfo(context, prayerColor),
+        
+        ThemeConstants.space4.h,
+        
+        // العد التنازلي
+        _buildCountdown(context),
+        
+        ThemeConstants.space4.h,
+        
+        // شريط التقدم
+        _buildProgressBar(context),
+      ],
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(ThemeConstants.space2),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.access_time_filled,
+            color: Colors.white,
+            size: ThemeConstants.iconMd,
+          ),
+        ),
+        
+        ThemeConstants.space3.w,
+        
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'الصلاة القادمة',
+              style: context.titleMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: ThemeConstants.semiBold,
+              ),
+            ),
+            Text(
+              'استعد لأداء الصلاة',
+              style: context.bodySmall?.copyWith(
+                color: Colors.white.withValues(alpha: 0.8),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPrayerInfo(BuildContext context, Color prayerColor) {
+    return Row(
+      children: [
+        // معلومات الصلاة
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // اسم الصلاة
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      nextPrayer.nameAr,
-                      style: context.headlineMedium?.copyWith(
+              AnimatedBuilder(
+                animation: _pulseAnimation,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _pulseAnimation.value,
+                    child: Text(
+                      widget.nextPrayer.nameAr,
+                      style: context.headlineLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: ThemeConstants.bold,
                       ),
                     ),
-                    if (currentPrayer != null) ...[
-                      ThemeConstants.space1.h,
+                  );
+                },
+              ),
+              
+              ThemeConstants.space1.h,
+              
+              // الصلاة الحالية
+              if (widget.currentPrayer != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: ThemeConstants.space3,
+                    vertical: ThemeConstants.space1,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.radio_button_checked,
+                        color: Colors.white.withValues(alpha: 0.8),
+                        size: ThemeConstants.iconXs,
+                      ),
+                      ThemeConstants.space1.w,
                       Text(
-                        'الصلاة الحالية: ${currentPrayer!.nameAr}',
-                        style: context.bodySmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.7),
+                        'الحالية: ${widget.currentPrayer!.nameAr}',
+                        style: context.labelMedium?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.8),
                         ),
                       ),
                     ],
-                  ],
-                ),
-              ),
-              
-              // العد التنازلي
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: ThemeConstants.space4,
-                  vertical: ThemeConstants.space3,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    width: 1,
                   ),
                 ),
-                child: StreamBuilder(
-                  stream: Stream.periodic(const Duration(seconds: 1)),
-                  builder: (context, snapshot) {
-                    final duration = nextPrayer.remainingTime;
-                    final hours = duration.inHours;
-                    final minutes = duration.inMinutes % 60;
-                    final seconds = duration.inSeconds % 60;
-                    
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildTimeUnit(hours.toString().padLeft(2, '0'), 'س'),
-                        Text(
-                          ':',
-                          style: context.headlineSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: ThemeConstants.bold,
-                          ),
-                        ),
-                        _buildTimeUnit(minutes.toString().padLeft(2, '0'), 'د'),
-                        Text(
-                          ':',
-                          style: context.headlineSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: ThemeConstants.bold,
-                          ),
-                        ),
-                        _buildTimeUnit(seconds.toString().padLeft(2, '0'), 'ث'),
-                      ],
-                    );
-                  },
-                ),
-              ),
             ],
           ),
+        ),
+        
+        // أيقونة الصلاة
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.3),
+              width: 2,
+            ),
+          ),
+          child: Icon(
+            _getPrayerIcon(widget.nextPrayer.type),
+            color: Colors.white,
+            size: 40,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCountdown(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(ThemeConstants.space4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: StreamBuilder(
+        stream: Stream.periodic(const Duration(seconds: 1)),
+        builder: (context, snapshot) {
+          final duration = widget.nextPrayer.remainingTime;
+          final hours = duration.inHours;
+          final minutes = duration.inMinutes % 60;
+          final seconds = duration.inSeconds % 60;
           
-          ThemeConstants.space3.h,
-          
-          // شريط التقدم
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildTimeUnit(context, hours.toString().padLeft(2, '0'), 'ساعة'),
+              _buildTimeSeparator(),
+              _buildTimeUnit(context, minutes.toString().padLeft(2, '0'), 'دقيقة'),
+              _buildTimeSeparator(),
+              _buildTimeUnit(context, seconds.toString().padLeft(2, '0'), 'ثانية'),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTimeUnit(BuildContext context, String value, String unit) {
+    return Column(
+      children: [
+        Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Center(
+            child: Text(
+              value,
+              style: context.headlineMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: ThemeConstants.bold,
+              ),
+            ),
+          ),
+        ),
+        
+        ThemeConstants.space1.h,
+        
+        Text(
+          unit,
+          style: context.labelSmall?.copyWith(
+            color: Colors.white.withValues(alpha: 0.8),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimeSeparator() {
+    return AnimatedBuilder(
+      animation: _pulseController,
+      builder: (context, child) {
+        return Opacity(
+          opacity: 0.5 + (_pulseAnimation.value - 1.0) * 10,
+          child: Text(
+            ':',
+            style: context.headlineLarge?.copyWith(
+              color: Colors.white,
+              fontWeight: ThemeConstants.bold,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildProgressBar(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'التقدم نحو الصلاة',
+              style: context.labelMedium?.copyWith(
+                color: Colors.white.withValues(alpha: 0.8),
+              ),
+            ),
+            Text(
+              '${(_calculateProgress() * 100).toInt()}%',
+              style: context.labelMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: ThemeConstants.semiBold,
+              ),
+            ),
+          ],
+        ),
+        
+        ThemeConstants.space2.h,
+        
+        Container(
+          height: 8,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(4),
             child: StreamBuilder(
               stream: Stream.periodic(const Duration(seconds: 1)),
               builder: (context, snapshot) {
                 return LinearProgressIndicator(
                   value: _calculateProgress(),
-                  minHeight: 6,
-                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  backgroundColor: Colors.transparent,
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 );
-              }
+              },
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimeUnit(String value, String unit) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          unit,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.7),
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
           ),
         ),
       ],
@@ -187,11 +421,11 @@ class NextPrayerCountdown extends StatelessWidget {
   }
 
   double _calculateProgress() {
-    if (currentPrayer == null) return 0.0;
+    if (widget.currentPrayer == null) return 0.0;
     
     final now = DateTime.now();
-    final totalDuration = nextPrayer.time.difference(currentPrayer!.time);
-    final elapsed = now.difference(currentPrayer!.time);
+    final totalDuration = widget.nextPrayer.time.difference(widget.currentPrayer!.time);
+    final elapsed = now.difference(widget.currentPrayer!.time);
     
     if (totalDuration.inSeconds == 0) return 0.0;
     
@@ -201,4 +435,72 @@ class NextPrayerCountdown extends StatelessWidget {
   Color _getPrayerColor(PrayerType type) {
     return ThemeConstants.getPrayerColor(type.name);
   }
+
+  IconData _getPrayerIcon(PrayerType type) {
+    return ThemeConstants.getPrayerIcon(type.name);
+  }
+}
+
+/// رسام الخلفية للعد التنازلي
+class CountdownBackgroundPainter extends CustomPainter {
+  final double animation;
+  final Color color;
+
+  CountdownBackgroundPainter({
+    required this.animation,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    // رسم دوائر متحركة للعد التنازلي
+    for (int i = 0; i < 4; i++) {
+      final radius = 40.0 + (i * 25) + (animation * 15);
+      final alpha = (1 - (i * 0.2)) * (0.7 - animation * 0.3);
+      
+      paint.color = color.withValues(alpha: alpha.clamp(0.0, 1.0));
+      
+      canvas.drawCircle(
+        Offset(size.width * 0.8, size.height * 0.3),
+        radius,
+        paint,
+      );
+    }
+
+    // رسم عقارب الساعة
+    _drawClockHands(canvas, size, paint);
+  }
+
+  void _drawClockHands(Canvas canvas, Size size, Paint paint) {
+    final center = Offset(size.width * 0.2, size.height * 0.7);
+    final radius = 20.0;
+    
+    // دائرة الساعة
+    paint.color = color.withValues(alpha: 0.4);
+    canvas.drawCircle(center, radius, paint);
+    
+    // عقرب الساعات
+    final hourAngle = animation * 2 * math.pi;
+    final hourEnd = Offset(
+      center.dx + (radius * 0.6) * math.cos(hourAngle - math.pi / 2),
+      center.dy + (radius * 0.6) * math.sin(hourAngle - math.pi / 2),
+    );
+    canvas.drawLine(center, hourEnd, paint..strokeWidth = 3);
+    
+    // عقرب الدقائق
+    final minuteAngle = animation * 12 * 2 * math.pi;
+    final minuteEnd = Offset(
+      center.dx + (radius * 0.8) * math.cos(minuteAngle - math.pi / 2),
+      center.dy + (radius * 0.8) * math.sin(minuteAngle - math.pi / 2),
+    );
+    canvas.drawLine(center, minuteEnd, paint..strokeWidth = 2);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

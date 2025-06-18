@@ -256,48 +256,53 @@ class AppButton extends StatelessWidget {
     }
   }
 
-factory AppButton.primary({
-  required String text,
-  required VoidCallback? onPressed,
-  IconData? icon,
-  bool isLoading = false,
-  bool isFullWidth = false,
-  ButtonSize size = ButtonSize.medium,
-  Color? backgroundColor, // إضافة معلمة اختيارية للون الخلفية
-}) {
-  return AppButton(
-    text: text,
-    onPressed: onPressed,
-    type: ButtonType.primary,
-    icon: icon,
-    isLoading: isLoading,
-    isFullWidth: isFullWidth,
-    size: size,
-    customColor: backgroundColor, // استخدام اللون المخصص إذا تم تمريره
-  );
-}
-factory AppButton.custom({
-  required String text,
-  required VoidCallback? onPressed,
-  IconData? icon,
-  bool isLoading = false,
-  bool isFullWidth = false,
-  ButtonSize size = ButtonSize.medium,
-  Color? backgroundColor,
-  Color? textColor,
-}) {
-  return AppButton(
-    text: text,
-    onPressed: onPressed,
-    type: ButtonType.primary,
-    icon: icon,
-    isLoading: isLoading,
-    isFullWidth: isFullWidth,
-    size: size,
-    customColor: backgroundColor,
-    textColor: textColor,
-  );
-}
+  // Factory constructors مع إصلاح textColor parameter
+  factory AppButton.primary({
+    required String text,
+    required VoidCallback? onPressed,
+    IconData? icon,
+    bool isLoading = false,
+    bool isFullWidth = false,
+    ButtonSize size = ButtonSize.medium,
+    Color? backgroundColor,
+    Color? textColor, // إضافة معلمة textColor المطلوبة
+  }) {
+    return AppButton(
+      text: text,
+      onPressed: onPressed,
+      type: ButtonType.primary,
+      icon: icon,
+      isLoading: isLoading,
+      isFullWidth: isFullWidth,
+      size: size,
+      customColor: backgroundColor,
+      textColor: textColor, // استخدام المعلمة الجديدة
+    );
+  }
+
+  factory AppButton.custom({
+    required String text,
+    required VoidCallback? onPressed,
+    IconData? icon,
+    bool isLoading = false,
+    bool isFullWidth = false,
+    ButtonSize size = ButtonSize.medium,
+    Color? backgroundColor,
+    Color? textColor,
+  }) {
+    return AppButton(
+      text: text,
+      onPressed: onPressed,
+      type: ButtonType.primary,
+      icon: icon,
+      isLoading: isLoading,
+      isFullWidth: isFullWidth,
+      size: size,
+      customColor: backgroundColor,
+      textColor: textColor,
+    );
+  }
+
   factory AppButton.secondary({
     required String text,
     required VoidCallback? onPressed,

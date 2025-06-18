@@ -21,7 +21,8 @@ export 'widgets/core/app_button.dart';
 export 'widgets/core/app_text_field.dart';
 export 'widgets/core/app_loading.dart';
 
-// Animation exports
+// Animation exports - إضافة AnimatedPress
+export 'widgets/animations/animated_press.dart';
 export 'package:flutter_staggered_animations/flutter_staggered_animations.dart'
     show
         AnimationConfiguration,

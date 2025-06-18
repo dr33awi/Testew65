@@ -1,15 +1,17 @@
+// lib/features/tasbih/screens/tasbih_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'dart:math' as math;
 
+import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
 import '../services/tasbih_service.dart';
 
-/// شاشة المسبحة الرقمية
+/// شاشة المسبحة الرقمية المحسنة
 class TasbihScreen extends StatefulWidget {
   const TasbihScreen({super.key});
 
@@ -23,10 +25,10 @@ class _TasbihScreenState extends State<TasbihScreen>
   late LoggerService _logger;
   late AnimationController _countAnimationController;
   late AnimationController _rippleAnimationController;
-  late AnimationController _floatingAnimationController;
+  late AnimationController _backgroundAnimationController;
   late Animation<double> _countAnimation;
   late Animation<double> _rippleAnimation;
-  late Animation<double> _floatingAnimation;
+  late Animation<double> _backgroundAnimation;
 
   int _selectedTasbihIndex = 0;
   
@@ -35,37 +37,37 @@ class _TasbihScreenState extends State<TasbihScreen>
       text: 'سُبْحَانَ اللَّهِ',
       transliteration: 'سبحان الله',
       meaning: 'تنزيه الله عن كل نقص',
-      color: const Color(0xFF667eea),
+      colors: [ThemeConstants.primary, ThemeConstants.primaryLight],
     ),
     TasbihItem(
       text: 'الْحَمْدُ لِلَّهِ',
       transliteration: 'الحمد لله',
       meaning: 'الثناء والشكر لله',
-      color: const Color(0xFF4facfe),
+      colors: [ThemeConstants.accent, ThemeConstants.accentLight],
     ),
     TasbihItem(
       text: 'اللَّهُ أَكْبَرُ',
       transliteration: 'الله أكبر',
       meaning: 'الله أعظم من كل شيء',
-      color: const Color(0xFFfa709a),
+      colors: [ThemeConstants.tertiary, ThemeConstants.tertiaryLight],
     ),
     TasbihItem(
       text: 'لَا إِلَهَ إِلَّا اللَّهُ',
       transliteration: 'لا إله إلا الله',
       meaning: 'لا معبود بحق إلا الله',
-      color: const Color(0xFF43e97b),
+      colors: [ThemeConstants.success, ThemeConstants.successLight],
     ),
     TasbihItem(
       text: 'أَسْتَغْفِرُ اللَّهَ',
       transliteration: 'أستغفر الله',
       meaning: 'طلب المغفرة من الله',
-      color: const Color(0xFFfb6340),
+      colors: [ThemeConstants.warning, ThemeConstants.warningLight],
     ),
     TasbihItem(
       text: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
       transliteration: 'سبحان الله وبحمده',
       meaning: 'تنزيه الله مع حمده',
-      color: const Color(0xFF667eea),
+      colors: [ThemeConstants.info, ThemeConstants.infoLight],
     ),
   ];
 
@@ -81,22 +83,20 @@ class _TasbihScreenState extends State<TasbihScreen>
   }
 
   void _setupAnimations() {
-    // تحريك الأرقام - أقصر وأسرع
     _countAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
+      duration: ThemeConstants.durationFast,
       vsync: this,
     );
     _countAnimation = Tween<double>(
       begin: 1.0,
-      end: 1.1,
+      end: 1.15,
     ).animate(CurvedAnimation(
       parent: _countAnimationController,
-      curve: Curves.elasticOut,
+      curve: ThemeConstants.curveSmooth,
     ));
 
-    // تحريك التموجات - أقصر
     _rippleAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: ThemeConstants.durationNormal,
       vsync: this,
     );
     _rippleAnimation = Tween<double>(
@@ -104,19 +104,18 @@ class _TasbihScreenState extends State<TasbihScreen>
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _rippleAnimationController,
-      curve: Curves.easeOut,
+      curve: ThemeConstants.curveDefault,
     ));
 
-    // تحريك الخلفية - أبطأ وأهدأ
-    _floatingAnimationController = AnimationController(
-      duration: const Duration(seconds: 6),
+    _backgroundAnimationController = AnimationController(
+      duration: ThemeConstants.durationExtraSlow,
       vsync: this,
     )..repeat(reverse: true);
-    _floatingAnimation = Tween<double>(
+    _backgroundAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(
-      parent: _floatingAnimationController,
+      parent: _backgroundAnimationController,
       curve: Curves.easeInOut,
     ));
   }
@@ -125,19 +124,17 @@ class _TasbihScreenState extends State<TasbihScreen>
   void dispose() {
     _countAnimationController.dispose();
     _rippleAnimationController.dispose();
-    _floatingAnimationController.dispose();
+    _backgroundAnimationController.dispose();
     super.dispose();
   }
 
   void _onTasbihTap() {
     _service.increment();
     
-    // تحريك العداد فقط
     _countAnimationController.forward().then((_) {
       _countAnimationController.reverse();
     });
     
-    // تحريك التموجات
     _rippleAnimationController.forward().then((_) {
       _rippleAnimationController.reset();
     });
@@ -151,49 +148,21 @@ class _TasbihScreenState extends State<TasbihScreen>
   }
 
   void _onReset() {
-    showDialog(
+    AppInfoDialog.showConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'تصفير العداد',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Text(
-          'هل أنت متأكد من تصفير عداد التسبيح؟',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        backgroundColor: Theme.of(context).cardColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'إلغاء',
-              style: TextStyle(color: Theme.of(context).hintColor),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _service.reset();
-              HapticFeedback.lightImpact();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('تصفير'),
-          ),
-        ],
-      ),
-    );
+      title: 'تصفير العداد',
+      content: 'هل أنت متأكد من تصفير عداد التسبيح؟',
+      confirmText: 'تصفير',
+      cancelText: 'إلغاء',
+      icon: Icons.refresh_rounded,
+      destructive: true,
+    ).then((result) {
+      if (result == true) {
+        _service.reset();
+        HapticFeedback.lightImpact();
+        context.showSuccessSnackBar('تم تصفير العداد');
+      }
+    });
   }
 
   @override
@@ -201,115 +170,112 @@ class _TasbihScreenState extends State<TasbihScreen>
     return ChangeNotifierProvider.value(
       value: _service,
       child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Theme.of(context).primaryColor.withOpacity(0.1),
-                Theme.of(context).scaffoldBackgroundColor,
-                Theme.of(context).primaryColor.withOpacity(0.05),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                // شريط التنقل العلوي
-                _buildAppBar(context),
-                
-                // اختيار نوع التسبيح
-                _buildTasbihSelector(context),
-                
-                // المحتوى الرئيسي
-                Expanded(
-                  child: Consumer<TasbihService>(
-                    builder: (context, service, _) {
-                      return Stack(
-                        children: [
-                          // الخلفية المتحركة
-                          _buildAnimatedBackground(),
-                          
-                          // المحتوى
-                          _buildMainContent(context, service),
-                        ],
-                      );
-                    },
+        backgroundColor: context.backgroundColor,
+        body: Stack(
+          children: [
+            // الخلفية المتحركة
+            _buildAnimatedBackground(),
+            
+            // المحتوى الرئيسي
+            SafeArea(
+              child: Column(
+                children: [
+                  // شريط التنقل العلوي
+                  _buildAppBar(context),
+                  
+                  // المحتوى
+                  Expanded(
+                    child: Consumer<TasbihService>(
+                      builder: (context, service, _) {
+                        return CustomScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          slivers: [
+                            // اختيار نوع التسبيح
+                            SliverToBoxAdapter(
+                              child: _buildTasbihSelector(context),
+                            ),
+                            
+                            ThemeConstants.space4.sliverBox,
+                            
+                            // نص التسبيح المختار
+                            SliverToBoxAdapter(
+                              child: _buildSelectedTasbih(context),
+                            ),
+                            
+                            ThemeConstants.space6.sliverBox,
+                            
+                            // العداد الرئيسي
+                            SliverToBoxAdapter(
+                              child: _buildMainCounter(context, service),
+                            ),
+                            
+                            ThemeConstants.space6.sliverBox,
+                            
+                            // زر التسبيح
+                            SliverToBoxAdapter(
+                              child: _buildTasbihButton(context),
+                            ),
+                            
+                            ThemeConstants.space6.sliverBox,
+                            
+                            // الإحصائيات
+                            SliverToBoxAdapter(
+                              child: _buildStatistics(context, service),
+                            ),
+                            
+                            ThemeConstants.space8.sliverBox,
+                          ],
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 
+  Widget _buildAnimatedBackground() {
+    return AnimatedBuilder(
+      animation: _backgroundAnimation,
+      builder: (context, child) {
+        return Positioned.fill(
+          child: CustomPaint(
+            painter: TasbihBackgroundPainter(
+              animation: _backgroundAnimation.value,
+              color: _tasbihItems[_selectedTasbihIndex].colors[0].withValues(alpha: 0.05),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildAppBar(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          // زر العودة
-          Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Theme.of(context).dividerColor.withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: Icon(
-                Icons.arrow_back_ios_rounded,
-                color: Theme.of(context).textTheme.bodyLarge?.color,
-              ),
-            ),
-          ),
-          
-          const SizedBox(width: 16),
-          
-          // العنوان
-          Expanded(
-            child: Text(
-              'المسبحة الرقمية',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          
-          // زر التصفير
-          Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Theme.of(context).dividerColor.withOpacity(0.2),
-                width: 1,
-              ),
-            ),
-            child: IconButton(
-              onPressed: _onReset,
-              icon: Icon(
-                Icons.refresh_rounded,
-                color: Theme.of(context).hintColor,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return CustomAppBar(
+      title: 'المسبحة الرقمية',
+      actions: [
+        AppBarAction(
+          icon: Icons.refresh_rounded,
+          onPressed: _onReset,
+          tooltip: 'تصفير العداد',
+        ),
+        AppBarAction(
+          icon: Icons.info_outline,
+          onPressed: () => _showTasbihInfo(),
+          tooltip: 'معلومات التسبيح',
+        ),
+      ],
     );
   }
 
   Widget _buildTasbihSelector(BuildContext context) {
     return Container(
-      height: 60,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      height: 80,
+      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: _tasbihItems.length,
@@ -317,32 +283,60 @@ class _TasbihScreenState extends State<TasbihScreen>
           final item = _tasbihItems[index];
           final isSelected = index == _selectedTasbihIndex;
           
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                _selectedTasbihIndex = index;
-              });
-              HapticFeedback.selectionClick();
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.only(right: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: isSelected ? item.color : Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isSelected ? item.color : Theme.of(context).dividerColor.withOpacity(0.2),
-                  width: 1,
+          return Container(
+            margin: const EdgeInsets.only(right: ThemeConstants.space3),
+            child: AnimatedPress(
+              onTap: () {
+                setState(() {
+                  _selectedTasbihIndex = index;
+                });
+                HapticFeedback.selectionClick();
+              },
+              child: AnimatedContainer(
+                duration: ThemeConstants.durationNormal,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: ThemeConstants.space4,
+                  vertical: ThemeConstants.space3,
                 ),
-              ),
-              child: Center(
-                child: Text(
-                  item.transliteration,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                decoration: BoxDecoration(
+                  gradient: isSelected 
+                      ? LinearGradient(
+                          colors: item.colors,
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  color: !isSelected ? context.cardColor : null,
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+                  border: Border.all(
+                    color: isSelected 
+                        ? item.colors[0].withValues(alpha: 0.3)
+                        : context.dividerColor.withValues(alpha: 0.3),
+                    width: isSelected ? 2 : 1,
                   ),
+                  boxShadow: isSelected ? [
+                    BoxShadow(
+                      color: item.colors[0].withValues(alpha: 0.2),
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
+                    ),
+                  ] : null,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      item.transliteration,
+                      style: context.labelMedium?.copyWith(
+                        color: isSelected 
+                            ? Colors.white 
+                            : context.textPrimaryColor,
+                        fontWeight: isSelected 
+                            ? ThemeConstants.bold 
+                            : ThemeConstants.medium,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -352,15 +346,123 @@ class _TasbihScreenState extends State<TasbihScreen>
     );
   }
 
-  Widget _buildAnimatedBackground() {
+  Widget _buildSelectedTasbih(BuildContext context) {
+    final selectedItem = _tasbihItems[_selectedTasbihIndex];
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        gradient: LinearGradient(
+          colors: selectedItem.colors.map((c) => c.withValues(alpha: 0.9)).toList(),
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.all(ThemeConstants.space5),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+            ),
+            child: Column(
+              children: [
+                // أيقونة التسبيح
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.auto_awesome,
+                    color: Colors.white,
+                    size: 32,
+                  ),
+                ),
+                
+                ThemeConstants.space3.h,
+                
+                // النص العربي
+                Text(
+                  selectedItem.text,
+                  style: context.headlineMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: ThemeConstants.bold,
+                    fontFamily: ThemeConstants.fontFamilyArabic,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                ThemeConstants.space2.h,
+                
+                // المعنى
+                Text(
+                  selectedItem.meaning,
+                  style: context.bodyMedium?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMainCounter(BuildContext context, TasbihService service) {
+    final selectedItem = _tasbihItems[_selectedTasbihIndex];
+    
     return AnimatedBuilder(
-      animation: _floatingAnimation,
+      animation: _countAnimation,
       builder: (context, child) {
-        return Positioned.fill(
-          child: CustomPaint(
-            painter: IslamicPatternPainter(
-              animation: _floatingAnimation.value,
-              color: _tasbihItems[_selectedTasbihIndex].color.withOpacity(0.1),
+        return Transform.scale(
+          scale: _countAnimation.value,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+            child: AppCard(
+              backgroundColor: context.cardColor,
+              elevation: ThemeConstants.elevation2,
+              child: Column(
+                children: [
+                  Text(
+                    'العدد',
+                    style: context.titleMedium?.copyWith(
+                      color: context.textSecondaryColor,
+                      fontWeight: ThemeConstants.medium,
+                    ),
+                  ),
+                  
+                  ThemeConstants.space2.h,
+                  
+                  Text(
+                    '${service.count}',
+                    style: context.displayLarge?.copyWith(
+                      color: selectedItem.colors[0],
+                      fontWeight: ThemeConstants.bold,
+                    ),
+                  ),
+                  
+                  ThemeConstants.space1.h,
+                  
+                  Text(
+                    service.count == 1 ? 'تسبيحة' : 'تسبيحة',
+                    style: context.bodyMedium?.copyWith(
+                      color: context.textSecondaryColor,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -368,151 +470,8 @@ class _TasbihScreenState extends State<TasbihScreen>
     );
   }
 
-  Widget _buildMainContent(BuildContext context, TasbihService service) {
-    return Column(
-      children: [
-        const SizedBox(height: 20),
-        
-        // نص التسبيح المختار
-        _buildSelectedTasbih(context),
-        
-        const Spacer(),
-        
-        // العداد الرئيسي
-        _buildMainCounter(context, service),
-        
-        const Spacer(),
-        
-        // زر التسبيح
-        _buildTasbihButton(context),
-        
-        const SizedBox(height: 32),
-        
-        // الإحصائيات (ثابتة)
-        _buildStatistics(context, service),
-        
-        const SizedBox(height: 24),
-      ],
-    );
-  }
-
-  Widget _buildSelectedTasbih(BuildContext context) {
-    final selectedItem = _tasbihItems[_selectedTasbihIndex];
-    
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: selectedItem.color.withOpacity(0.3),
-          width: 2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: selectedItem.color.withOpacity(0.1),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // النص العربي
-          Text(
-            selectedItem.text,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: selectedItem.color,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          
-          const SizedBox(height: 8),
-          
-          // المعنى
-          Text(
-            selectedItem.meaning,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).hintColor,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMainCounter(BuildContext context, TasbihService service) {
-    return Column(
-      children: [
-        // نص "العدد"
-        Text(
-          'العدد',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Theme.of(context).hintColor,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        
-        const SizedBox(height: 8),
-        
-        // العداد (مع تحريك بسيط فقط)
-        AnimatedBuilder(
-          animation: _countAnimation,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _countAnimation.value,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: _tasbihItems[_selectedTasbihIndex].color.withOpacity(0.3),
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: _tasbihItems[_selectedTasbihIndex].color.withOpacity(0.1),
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: Text(
-                  '${service.count}',
-                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: _tasbihItems[_selectedTasbihIndex].color,
-                    fontSize: 72,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-        
-        const SizedBox(height: 8),
-        
-        // نص "تسبيحة"
-        Text(
-          service.count == 1 ? 'تسبيحة' : 'تسبيحة',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: Theme.of(context).hintColor,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildTasbihButton(BuildContext context) {
-    final selectedColor = _tasbihItems[_selectedTasbihIndex].color;
+    final selectedItem = _tasbihItems[_selectedTasbihIndex];
     
     return Stack(
       alignment: Alignment.center,
@@ -522,13 +481,13 @@ class _TasbihScreenState extends State<TasbihScreen>
           animation: _rippleAnimation,
           builder: (context, child) {
             return Container(
-              width: 200 + (_rippleAnimation.value * 100),
-              height: 200 + (_rippleAnimation.value * 100),
+              width: 220 + (_rippleAnimation.value * 60),
+              height: 220 + (_rippleAnimation.value * 60),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: selectedColor.withOpacity(
-                    0.3 * (1 - _rippleAnimation.value),
+                  color: selectedItem.colors[0].withValues(
+                    alpha: 0.3 * (1 - _rippleAnimation.value),
                   ),
                   width: 2,
                 ),
@@ -537,28 +496,28 @@ class _TasbihScreenState extends State<TasbihScreen>
           },
         ),
         
-        // الزر الرئيسي (ثابت)
-        GestureDetector(
+        // الزر الرئيسي
+        AnimatedPress(
           onTap: _onTasbihTap,
+          scaleFactor: 0.95,
           child: Container(
-            width: 180,
-            height: 180,
+            width: 200,
+            height: 200,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  selectedColor,
-                  selectedColor.withOpacity(0.8),
-                ],
+              gradient: LinearGradient(
+                colors: selectedItem.colors,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
+              shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: selectedColor.withOpacity(0.4),
+                  color: selectedItem.colors[0].withValues(alpha: 0.4),
                   blurRadius: 30,
                   spreadRadius: 5,
                 ),
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),
@@ -568,26 +527,24 @@ class _TasbihScreenState extends State<TasbihScreen>
               color: Colors.transparent,
               child: InkWell(
                 onTap: _onTasbihTap,
-                borderRadius: BorderRadius.circular(90),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.touch_app_rounded,
+                borderRadius: BorderRadius.circular(100),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.touch_app_rounded,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                    ThemeConstants.space2.h,
+                    Text(
+                      'سَبِّح',
+                      style: context.titleLarge?.copyWith(
                         color: Colors.white,
-                        size: 40,
+                        fontWeight: ThemeConstants.bold,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'سَبِّح',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -598,86 +555,98 @@ class _TasbihScreenState extends State<TasbihScreen>
   }
 
   Widget _buildStatistics(BuildContext context, TasbihService service) {
+    final selectedItem = _tasbihItems[_selectedTasbihIndex];
+    
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Theme.of(context).dividerColor.withOpacity(0.2),
-          width: 1,
+      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      child: AppCard(
+        backgroundColor: context.cardColor,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // عنوان الإحصائيات
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(ThemeConstants.space2),
+                  decoration: BoxDecoration(
+                    color: selectedItem.colors[0].withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                  ),
+                  child: Icon(
+                    Icons.analytics_outlined,
+                    color: selectedItem.colors[0],
+                    size: ThemeConstants.iconMd,
+                  ),
+                ),
+                ThemeConstants.space3.w,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'الإحصائيات',
+                        style: context.titleMedium?.semiBold,
+                      ),
+                      Text(
+                        'تتبع تقدمك في التسبيح',
+                        style: context.bodySmall?.copyWith(
+                          color: context.textSecondaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            
+            ThemeConstants.space4.h,
+            
+            // الإحصائيات
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    context,
+                    title: 'العدد الكلي',
+                    value: '${service.count}',
+                    icon: Icons.format_list_numbered_rounded,
+                    color: selectedItem.colors[0],
+                  ),
+                ),
+                
+                ThemeConstants.space3.w,
+                
+                Expanded(
+                  child: _buildStatCard(
+                    context,
+                    title: 'الأطقم',
+                    value: '${(service.count / 33).floor()}',
+                    icon: Icons.repeat_rounded,
+                    color: ThemeConstants.success,
+                  ),
+                ),
+                
+                ThemeConstants.space3.w,
+                
+                Expanded(
+                  child: _buildStatCard(
+                    context,
+                    title: 'الباقي',
+                    value: '${33 - (service.count % 33 == 0 ? 33 : service.count % 33)}',
+                    icon: Icons.more_horiz_rounded,
+                    color: ThemeConstants.warning,
+                  ),
+                ),
+              ],
+            ),
+            
+            ThemeConstants.space4.h,
+            
+            // شريط التقدم للطقم الحالي
+            _buildProgressBar(context, service),
+          ],
         ),
-      ),
-      child: Column(
-        children: [
-          // عنوان الإحصائيات
-          Row(
-            children: [
-              Icon(
-                Icons.analytics_outlined,
-                color: Theme.of(context).hintColor,
-                size: 16,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'الإحصائيات',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // الإحصائيات
-          Row(
-            children: [
-              // العدد الكلي
-              Expanded(
-                child: _buildStatCard(
-                  context,
-                  title: 'العدد الكلي',
-                  value: '${service.count}',
-                  icon: Icons.format_list_numbered_rounded,
-                  color: _tasbihItems[_selectedTasbihIndex].color,
-                ),
-              ),
-              
-              const SizedBox(width: 12),
-              
-              // عدد الأطقم (33)
-              Expanded(
-                child: _buildStatCard(
-                  context,
-                  title: 'الأطقم',
-                  value: '${(service.count / 33).floor()}',
-                  icon: Icons.repeat_rounded,
-                  color: Colors.green,
-                ),
-              ),
-              
-              const SizedBox(width: 12),
-              
-              // الباقي في الطقم
-              Expanded(
-                child: _buildStatCard(
-                  context,
-                  title: 'الباقي',
-                  value: '${33 - (service.count % 33 == 0 ? 33 : service.count % 33)}',
-                  icon: Icons.more_horiz_rounded,
-                  color: Colors.orange,
-                ),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // شريط التقدم للطقم الحالي
-          _buildProgressBar(context, service),
-        ],
       ),
     );
   }
@@ -690,13 +659,12 @@ class _TasbihScreenState extends State<TasbihScreen>
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(ThemeConstants.space3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         border: Border.all(
-          color: color.withOpacity(0.2),
-          width: 1,
+          color: color.withValues(alpha: 0.2),
         ),
       ),
       child: Column(
@@ -704,20 +672,20 @@ class _TasbihScreenState extends State<TasbihScreen>
           Icon(
             icon,
             color: color,
-            size: 24,
+            size: ThemeConstants.iconMd,
           ),
-          const SizedBox(height: 4),
+          ThemeConstants.space1.h,
           Text(
             value,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
+            style: context.titleLarge?.copyWith(
               color: color,
+              fontWeight: ThemeConstants.bold,
             ),
           ),
           Text(
             title,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Theme.of(context).hintColor,
+            style: context.labelSmall?.copyWith(
+              color: context.textSecondaryColor,
             ),
             textAlign: TextAlign.center,
           ),
@@ -727,6 +695,7 @@ class _TasbihScreenState extends State<TasbihScreen>
   }
 
   Widget _buildProgressBar(BuildContext context, TasbihService service) {
+    final selectedItem = _tasbihItems[_selectedTasbihIndex];
     final currentSetProgress = service.count % 33;
     final progress = currentSetProgress / 33;
     
@@ -738,38 +707,48 @@ class _TasbihScreenState extends State<TasbihScreen>
           children: [
             Text(
               'تقدم الطقم الحالي',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: Theme.of(context).hintColor,
+              style: context.labelMedium?.copyWith(
+                color: context.textSecondaryColor,
               ),
             ),
             Text(
               '$currentSetProgress / 33',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: _tasbihItems[_selectedTasbihIndex].color,
-                fontWeight: FontWeight.w600,
+              style: context.labelMedium?.copyWith(
+                color: selectedItem.colors[0],
+                fontWeight: ThemeConstants.semiBold,
               ),
             ),
           ],
         ),
         
-        const SizedBox(height: 8),
+        ThemeConstants.space2.h,
         
         Container(
           height: 8,
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(4),
+            color: context.surfaceColor,
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
             child: LinearProgressIndicator(
               value: progress,
               backgroundColor: Colors.transparent,
-              valueColor: AlwaysStoppedAnimation<Color>(_tasbihItems[_selectedTasbihIndex].color),
+              valueColor: AlwaysStoppedAnimation<Color>(selectedItem.colors[0]),
             ),
           ),
         ),
       ],
+    );
+  }
+
+  void _showTasbihInfo() {
+    AppInfoDialog.show(
+      context: context,
+      title: 'عن التسبيح',
+      content: 'التسبيح هو ذكر الله وتنزيهه عن كل نقص. قال رسول الله ﷺ: "كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن: سبحان الله وبحمده، سبحان الله العظيم"',
+      icon: Icons.auto_awesome,
+      accentColor: _tasbihItems[_selectedTasbihIndex].colors[0],
     );
   }
 }
@@ -779,22 +758,22 @@ class TasbihItem {
   final String text;
   final String transliteration;
   final String meaning;
-  final Color color;
+  final List<Color> colors;
 
   const TasbihItem({
     required this.text,
     required this.transliteration,
     required this.meaning,
-    required this.color,
+    required this.colors,
   });
 }
 
-/// رسام الأنماط الإسلامية للخلفية
-class IslamicPatternPainter extends CustomPainter {
+/// رسام الخلفية للتسبيح
+class TasbihBackgroundPainter extends CustomPainter {
   final double animation;
   final Color color;
 
-  IslamicPatternPainter({
+  TasbihBackgroundPainter({
     required this.animation,
     required this.color,
   });
@@ -810,11 +789,11 @@ class IslamicPatternPainter extends CustomPainter {
     final centerY = size.height / 2;
 
     // رسم دوائر متحركة
-    for (int i = 0; i < 5; i++) {
-      final radius = 50.0 + (i * 30) + (animation * 20);
-      final alpha = (1 - (i * 0.2)) * (1 - animation * 0.5);
+    for (int i = 0; i < 6; i++) {
+      final radius = 40.0 + (i * 25) + (animation * 15);
+      final alpha = (1 - (i * 0.15)) * (0.8 - animation * 0.3);
       
-      paint.color = color.withOpacity(alpha.clamp(0.0, 1.0));
+      paint.color = color.withValues(alpha: alpha.clamp(0.0, 1.0));
       canvas.drawCircle(
         Offset(centerX, centerY),
         radius,
@@ -822,26 +801,26 @@ class IslamicPatternPainter extends CustomPainter {
       );
     }
 
-    // رسم نجوم في الزوايا
-    final corners = [
-      Offset(size.width * 0.1, size.height * 0.1),
-      Offset(size.width * 0.9, size.height * 0.1),
-      Offset(size.width * 0.1, size.height * 0.9),
-      Offset(size.width * 0.9, size.height * 0.9),
+    // رسم نجوم إسلامية في الزوايا
+    final positions = [
+      Offset(size.width * 0.15, size.height * 0.2),
+      Offset(size.width * 0.85, size.height * 0.2),
+      Offset(size.width * 0.15, size.height * 0.8),
+      Offset(size.width * 0.85, size.height * 0.8),
     ];
 
-    for (int i = 0; i < corners.length; i++) {
-      final offset = math.sin(animation * 2 * math.pi + i) * 10;
-      _drawStar(
+    for (int i = 0; i < positions.length; i++) {
+      final offset = math.sin(animation * 2 * math.pi + i) * 8;
+      _drawIslamicStar(
         canvas,
-        corners[i] + Offset(offset, offset),
-        15,
-        paint..color = color.withOpacity(0.3),
+        positions[i] + Offset(offset, offset),
+        12,
+        paint..color = color.withValues(alpha: 0.4),
       );
     }
   }
 
-  void _drawStar(Canvas canvas, Offset center, double radius, Paint paint) {
+  void _drawIslamicStar(Canvas canvas, Offset center, double radius, Paint paint) {
     final path = Path();
     const int points = 8;
     final double angle = 2 * math.pi / points;

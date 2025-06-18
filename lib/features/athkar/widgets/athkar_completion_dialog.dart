@@ -2,8 +2,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../app/themes/app_theme.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'dart:ui';
+import '../../../app/themes/app_theme.dart';
 
 class AthkarCompletionDialog extends StatefulWidget {
   final String categoryName;
@@ -44,13 +45,19 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
     with TickerProviderStateMixin {
   late final AnimationController _mainController;
   late final AnimationController _confettiController;
+  late final AnimationController _pulseController;
   late final Animation<double> _scaleAnimation;
   late final Animation<double> _fadeAnimation;
+  late final Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-    
+    _setupAnimations();
+    _startAnimations();
+  }
+
+  void _setupAnimations() {
     _mainController = AnimationController(
       vsync: this,
       duration: ThemeConstants.durationSlow,
@@ -58,8 +65,13 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
     
     _confettiController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 3),
     );
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
     
     _scaleAnimation = Tween<double>(
       begin: 0.5,
@@ -76,13 +88,19 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
       parent: _mainController,
       curve: const Interval(0.0, 0.6),
     ));
-    
-    _startAnimations();
+
+    _pulseAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.1,
+    ).animate(CurvedAnimation(
+      parent: _pulseController,
+      curve: Curves.easeInOut,
+    ));
   }
 
   void _startAnimations() async {
     _mainController.forward();
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 500));
     _confettiController.repeat();
   }
 
@@ -90,6 +108,7 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
   void dispose() {
     _mainController.dispose();
     _confettiController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -103,369 +122,423 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
           child: ScaleTransition(
             scale: _scaleAnimation,
             child: Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-              ),
-              elevation: 16,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 400),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-                  gradient: ThemeConstants.customGradient(
+                  borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+                  gradient: LinearGradient(
                     colors: [
-                      ThemeConstants.success.lighten(0.2),
-                      ThemeConstants.success,
-                      ThemeConstants.success.darken(0.1),
+                      ThemeConstants.success.withValues(alpha: 0.95),
+                      ThemeConstants.success.darken(0.1).withValues(alpha: 0.95),
                     ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
                 ),
-                child: Stack(
-                  children: [
-                    // Confetti في الخلفية
-                    Positioned.fill(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-                        child: AnimatedBuilder(
-                          animation: _confettiController,
-                          builder: (context, child) {
-                            return CustomPaint(
-                              painter: _ConfettiPainter(_confettiController.value),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    
-                    // المحتوى
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Stack(
                       children: [
-                        // الرأس
-                        Container(
-                          padding: const EdgeInsets.all(ThemeConstants.space6),
-                          child: Column(
-                            children: [
-                              // الأيقونة المتحركة
-                              _AnimatedSuccessIcon(
-                                animation: _mainController,
-                              ),
-                              
-                              ThemeConstants.space4.h,
-                              
-                              // العنوان
-                              AnimationConfiguration.synchronized(
-                                duration: ThemeConstants.durationNormal,
-                                child: SlideAnimation(
-                                  verticalOffset: 20,
-                                  curve: Curves.easeOutBack,
-                                  child: FadeInAnimation(
-                                    child: Text(
-                                      'بارك الله فيك! 🎉',
-                                      style: context.headlineMedium?.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: ThemeConstants.bold,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              
-                              ThemeConstants.space2.h,
-                              
-                              // الرسالة
-                              AnimationConfiguration.synchronized(
-                                duration: ThemeConstants.durationNormal,
-                                child: SlideAnimation(
-                                  verticalOffset: 20,
-                                  curve: Curves.easeOutBack,
-                                  delay: const Duration(milliseconds: 100),
-                                  child: FadeInAnimation(
-                                    child: Container(
-                                      padding: const EdgeInsets.all(ThemeConstants.space3),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                                        border: Border.all(
-                                          color: Colors.white.withValues(alpha: 0.3),
-                                        ),
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Text(
-                                            'أكملت ${widget.categoryName}',
-                                            style: context.titleLarge?.copyWith(
-                                              color: Colors.white,
-                                              fontWeight: ThemeConstants.semiBold,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          ThemeConstants.space1.h,
-                                          Text(
-                                            'جعله الله في ميزان حسناتك',
-                                            style: context.bodyMedium?.copyWith(
-                                              color: Colors.white.withValues(alpha: 0.9),
-                                              fontStyle: FontStyle.italic,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              
-                              ThemeConstants.space2.h,
-                              
-                              // آية أو حديث
-                              AnimationConfiguration.synchronized(
-                                duration: ThemeConstants.durationNormal,
-                                child: SlideAnimation(
-                                  verticalOffset: 20,
-                                  curve: Curves.easeOutBack,
-                                  delay: const Duration(milliseconds: 200),
-                                  child: FadeInAnimation(
-                                    child: Container(
-                                      padding: const EdgeInsets.all(ThemeConstants.space3),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                                      ),
-                                      child: Text(
-                                        '\"واذكر ربك كثيراً وسبح بالعشي والإبكار\"',
-                                        style: context.bodyMedium?.copyWith(
-                                          color: Colors.white.withValues(alpha: 0.8),
-                                          fontStyle: FontStyle.italic,
-                                          height: 1.6,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        // Confetti في الخلفية
+                        _buildConfettiBackground(),
                         
-                        // الإجراءات
+                        // المحتوى الرئيسي
                         Container(
                           decoration: BoxDecoration(
-                            color: context.cardColor,
-                            borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(ThemeConstants.radiusXl),
-                              bottomRight: Radius.circular(ThemeConstants.radiusXl),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              width: 2,
                             ),
+                            borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
                           ),
-                          padding: const EdgeInsets.all(ThemeConstants.space4),
-                          child: Column(
-                            children: [
-                              // زر المشاركة
-                              if (widget.onShare != null)
-                                AnimationConfiguration.synchronized(
-                                  duration: ThemeConstants.durationNormal,
-                                  child: SlideAnimation(
-                                    horizontalOffset: 50,
-                                    curve: Curves.easeOutBack,
-                                    delay: const Duration(milliseconds: 300),
-                                    child: FadeInAnimation(
-                                      child: SizedBox(
-                                        width: double.infinity,
-                                        child: AppButton.custom(
-                                          text: 'مشاركة الإنجاز 📱',
-                                          icon: Icons.share_rounded,
-                                          onPressed: () {
-                                            Navigator.pop(context, false);
-                                            widget.onShare?.call();
-                                          },
-                                          backgroundColor: ThemeConstants.success,
-                                          textColor: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              
-                              if (widget.onShare != null) ThemeConstants.space3.h,
-                              
-                              // الأزرار الثانوية
-                              AnimationConfiguration.synchronized(
-                                duration: ThemeConstants.durationNormal,
-                                child: SlideAnimation(
-                                  horizontalOffset: -50,
-                                  curve: Curves.easeOutBack,
-                                  delay: const Duration(milliseconds: 400),
-                                  child: FadeInAnimation(
-                                    child: Row(
-                                      children: [
-                                        // زر الإغلاق
-                                        Expanded(
-                                          child: AppButton.text(
-                                            text: 'إغلاق',
-                                            onPressed: () => Navigator.pop(context, false),
-                                            color: context.textSecondaryColor,
-                                          ),
-                                        ),
-                                        
-                                        ThemeConstants.space3.w,
-                                        
-                                        // زر البدء من جديد
-                                        if (widget.onReset != null)
-                                          Expanded(
-                                            child: AppButton.outline(
-                                              text: 'البدء مجدداً',
-                                              onPressed: () {
-                                                Navigator.pop(context, true);
-                                                widget.onReset?.call();
-                                              },
-                                              icon: Icons.refresh_rounded,
-                                              color: ThemeConstants.success,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                          child: _buildContent(context),
                         ),
                       ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildConfettiBackground() {
+    return Positioned.fill(
+      child: AnimatedBuilder(
+        animation: _confettiController,
+        builder: (context, child) {
+          return CustomPaint(
+            painter: ConfettiPainter(_confettiController.value),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(ThemeConstants.space6),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // الأيقونة المتحركة
+          _buildSuccessIcon(),
+          
+          ThemeConstants.space4.h,
+          
+          // العنوان والرسالة
+          _buildTitleSection(context),
+          
+          ThemeConstants.space4.h,
+          
+          // معلومات الإنجاز
+          _buildAchievementInfo(context),
+          
+          ThemeConstants.space4.h,
+          
+          // آية قرآنية
+          _buildQuranVerse(context),
+          
+          ThemeConstants.space6.h,
+          
+          // الأزرار
+          _buildActionButtons(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuccessIcon() {
+    return AnimatedBuilder(
+      animation: _pulseAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _pulseAnimation.value,
+          child: Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.4),
+                width: 3,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  spreadRadius: 5,
+                ),
+              ],
+            ),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // دوائر متحركة في الخلفية
+                ...List.generate(3, (index) {
+                  return AnimatedBuilder(
+                    animation: _confettiController,
+                    builder: (context, child) {
+                      final offset = _confettiController.value * 2 * math.pi + index;
+                      return Transform.scale(
+                        scale: 1.0 + (math.sin(offset) * 0.1),
+                        child: Container(
+                          width: 100 - (index * 20),
+                          height: 100 - (index * 20),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2 - (index * 0.05)),
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }),
+                
+                // الأيقونة الرئيسية
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: Colors.white,
+                  size: 60,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTitleSection(BuildContext context) {
+    return AnimationConfiguration.synchronized(
+      duration: ThemeConstants.durationNormal,
+      child: SlideAnimation(
+        verticalOffset: 30,
+        child: FadeInAnimation(
+          child: Column(
+            children: [
+              Text(
+                'بارك الله فيك! 🎉',
+                style: context.headlineLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: ThemeConstants.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              
+              ThemeConstants.space2.h,
+              
+              Container(
+                padding: const EdgeInsets.all(ThemeConstants.space4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'أكملت ${widget.categoryName}',
+                      style: context.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: ThemeConstants.semiBold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    ThemeConstants.space1.h,
+                    Text(
+                      'جعله الله في ميزان حسناتك',
+                      style: context.bodyMedium?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontStyle: FontStyle.italic,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// أيقونة النجاح المتحركة
-class _AnimatedSuccessIcon extends StatelessWidget {
-  final Animation<double> animation;
-
-  const _AnimatedSuccessIcon({
-    required this.animation,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, child) {
-        return Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
-              width: 2,
-            ),
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // الدوائر المتحركة
-              _AnimatedCircle(
-                animation: animation,
-                delay: 0.0,
-                size: 100,
-                opacity: 0.3,
-              ),
-              _AnimatedCircle(
-                animation: animation,
-                delay: 0.2,
-                size: 80,
-                opacity: 0.4,
-              ),
-              _AnimatedCircle(
-                animation: animation,
-                delay: 0.4,
-                size: 60,
-                opacity: 0.5,
-              ),
-              
-              // الأيقونة
-              ScaleTransition(
-                scale: CurvedAnimation(
-                  parent: animation,
-                  curve: const Interval(0.5, 1.0, curve: Curves.elasticOut),
-                ),
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.check_rounded,
-                    color: ThemeConstants.success,
-                    size: 36,
-                  ),
-                ),
-              ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
-}
 
-/// دائرة متحركة
-class _AnimatedCircle extends StatelessWidget {
-  final Animation<double> animation;
-  final double delay;
-  final double size;
-  final double opacity;
-
-  const _AnimatedCircle({
-    required this.animation,
-    required this.delay,
-    required this.size,
-    required this.opacity,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (context, child) {
-        final value = Curves.easeOut.transform(
-          ((animation.value - delay) / (1 - delay)).clamp(0.0, 1.0),
-        );
-        
-        return Transform.scale(
-          scale: value,
+  Widget _buildAchievementInfo(BuildContext context) {
+    return AnimationConfiguration.synchronized(
+      duration: ThemeConstants.durationNormal,
+      child: SlideAnimation(
+        verticalOffset: 30,
+        delay: const Duration(milliseconds: 200),
+        child: FadeInAnimation(
           child: Container(
-            width: size,
-            height: size,
+            padding: const EdgeInsets.all(ThemeConstants.space4),
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
               border: Border.all(
-                color: Colors.white.withValues(alpha: opacity * (1 - value)),
-                width: 2,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildStatItem('✓', 'مكتمل', 'بالكامل'),
+                _buildStatItem('🤲', 'ثواب', 'عظيم'),
+                _buildStatItem('⭐', 'إنجاز', 'رائع'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatItem(String icon, String title, String subtitle) {
+    return Column(
+      children: [
+        Text(
+          icon,
+          style: const TextStyle(fontSize: 24),
+        ),
+        ThemeConstants.space1.h,
+        Text(
+          title,
+          style: context.labelMedium?.copyWith(
+            color: Colors.white,
+            fontWeight: ThemeConstants.semiBold,
+          ),
+        ),
+        Text(
+          subtitle,
+          style: context.labelSmall?.copyWith(
+            color: Colors.white.withValues(alpha: 0.8),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuranVerse(BuildContext context) {
+    return AnimationConfiguration.synchronized(
+      duration: ThemeConstants.durationNormal,
+      child: SlideAnimation(
+        verticalOffset: 30,
+        delay: const Duration(milliseconds: 400),
+        child: FadeInAnimation(
+          child: Container(
+            padding: const EdgeInsets.all(ThemeConstants.space4),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  '﴿ وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ ﴾',
+                  style: context.bodyLarge?.copyWith(
+                    color: Colors.white,
+                    fontFamily: ThemeConstants.fontFamilyArabic,
+                    height: 2.0,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                ThemeConstants.space2.h,
+                Text(
+                  'سورة آل عمران - آية 41',
+                  style: context.labelMedium?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context) {
+    return Column(
+      children: [
+        // زر المشاركة
+        if (widget.onShare != null)
+          AnimationConfiguration.synchronized(
+            duration: ThemeConstants.durationNormal,
+            child: SlideAnimation(
+              horizontalOffset: 50,
+              delay: const Duration(milliseconds: 600),
+              child: FadeInAnimation(
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context, false);
+                      widget.onShare?.call();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: ThemeConstants.success,
+                      padding: const EdgeInsets.symmetric(vertical: ThemeConstants.space4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+                      ),
+                      elevation: 8,
+                    ),
+                    icon: const Icon(Icons.share_rounded),
+                    label: Text(
+                      'مشاركة الإنجاز 📱',
+                      style: context.titleMedium?.copyWith(
+                        fontWeight: ThemeConstants.semiBold,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
-        );
-      },
+        
+        if (widget.onShare != null) ThemeConstants.space3.h,
+        
+        // الأزرار الثانوية
+        AnimationConfiguration.synchronized(
+          duration: ThemeConstants.durationNormal,
+          child: SlideAnimation(
+            horizontalOffset: -50,
+            delay: const Duration(milliseconds: 800),
+            child: FadeInAnimation(
+              child: Row(
+                children: [
+                  // زر الإغلاق
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
+                        padding: const EdgeInsets.symmetric(vertical: ThemeConstants.space3),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                        ),
+                      ),
+                      child: const Text('إغلاق'),
+                    ),
+                  ),
+                  
+                  if (widget.onReset != null) ...[
+                    ThemeConstants.space3.w,
+                    
+                    // زر البدء من جديد
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context, true);
+                          widget.onReset?.call();
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
+                          padding: const EdgeInsets.symmetric(vertical: ThemeConstants.space3),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                          ),
+                        ),
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: const Text('البدء مجدداً'),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
 
-/// رسام الconfetti
-class _ConfettiPainter extends CustomPainter {
+/// رسام الconfetti المحسن
+class ConfettiPainter extends CustomPainter {
   final double animationValue;
 
-  _ConfettiPainter(this.animationValue);
+  ConfettiPainter(this.animationValue);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -473,35 +546,41 @@ class _ConfettiPainter extends CustomPainter {
     
     // ألوان مختلفة للconfetti
     final colors = [
-      Colors.white.withValues(alpha: 0.8),
-      Colors.yellow.withValues(alpha: 0.6),
-      Colors.orange.withValues(alpha: 0.6),
-      Colors.pink.withValues(alpha: 0.6),
+      Colors.white.withValues(alpha: 0.9),
+      Colors.yellow.withValues(alpha: 0.8),
+      Colors.orange.withValues(alpha: 0.8),
+      Colors.pink.withValues(alpha: 0.8),
+      Colors.lightBlue.withValues(alpha: 0.8),
     ];
     
-    // رسم جزيئات متحركة
-    for (int i = 0; i < 20; i++) {
-      final progress = (animationValue + i * 0.1) % 1.0;
-      final x = (size.width * 0.1) + (i % 4) * (size.width * 0.2) + 
-                (progress * 50 - 25);
-      final y = progress * size.height;
+    // رسم جزيئات متحركة متطورة
+    for (int i = 0; i < 25; i++) {
+      final progress = (animationValue + i * 0.08) % 1.0;
+      final lateralMovement = math.sin(animationValue * 4 + i) * 30;
+      
+      final x = (size.width * 0.1) + (i % 5) * (size.width * 0.2) + lateralMovement;
+      final y = -20 + progress * (size.height + 40);
       final colorIndex = i % colors.length;
       
       paint.color = colors[colorIndex];
       
-      // رسم أشكال مختلفة
-      if (i % 3 == 0) {
+      // أشكال مختلفة ومتنوعة
+      if (i % 4 == 0) {
         // دوائر
-        canvas.drawCircle(Offset(x, y), 3, paint);
-      } else if (i % 3 == 1) {
-        // مربعات
-        canvas.drawRect(
-          Rect.fromCenter(center: Offset(x, y), width: 6, height: 6),
-          paint,
+        canvas.drawCircle(Offset(x, y), 4, paint);
+      } else if (i % 4 == 1) {
+        // مربعات مدورة
+        final rect = RRect.fromRectAndRadius(
+          Rect.fromCenter(center: Offset(x, y), width: 8, height: 8),
+          const Radius.circular(2),
         );
+        canvas.drawRRect(rect, paint);
+      } else if (i % 4 == 2) {
+        // نجوم
+        _drawStar(canvas, Offset(x, y), 5, paint);
       } else {
-        // نجوم صغيرة
-        _drawStar(canvas, Offset(x, y), 4, paint);
+        // قلوب صغيرة
+        _drawHeart(canvas, Offset(x, y), 4, paint);
       }
     }
   }
@@ -515,11 +594,11 @@ class _ConfettiPainter extends CustomPainter {
       final outerAngle = i * angle - 3.14159 / 2;
       final innerAngle = outerAngle + angle / 2;
       
-      final outerX = center.dx + radius * 0.8 * (outerAngle.cos());
-      final outerY = center.dy + radius * 0.8 * (outerAngle.sin());
+      final outerX = center.dx + radius * math.cos(outerAngle);
+      final outerY = center.dy + radius * math.sin(outerAngle);
       
-      final innerX = center.dx + radius * 0.4 * (innerAngle.cos());
-      final innerY = center.dy + radius * 0.4 * (innerAngle.sin());
+      final innerX = center.dx + radius * 0.5 * math.cos(innerAngle);
+      final innerY = center.dy + radius * 0.5 * math.sin(innerAngle);
       
       if (i == 0) {
         path.moveTo(outerX, outerY);
@@ -532,12 +611,26 @@ class _ConfettiPainter extends CustomPainter {
     canvas.drawPath(path, paint);
   }
 
+  void _drawHeart(Canvas canvas, Offset center, double size, Paint paint) {
+    final path = Path();
+    
+    path.moveTo(center.dx, center.dy + size);
+    
+    path.cubicTo(
+      center.dx - size, center.dy,
+      center.dx - size, center.dy - size / 2,
+      center.dx, center.dy - size / 2,
+    );
+    
+    path.cubicTo(
+      center.dx + size, center.dy - size / 2,
+      center.dx + size, center.dy,
+      center.dx, center.dy + size,
+    );
+    
+    canvas.drawPath(path, paint);
+  }
+
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
-// Extension للحصول على cos و sin
-extension DoubleExtension on double {
-  double cos() => math.cos(this);
-  double sin() => math.sin(this);
 }

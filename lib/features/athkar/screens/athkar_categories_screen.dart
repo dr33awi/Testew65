@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../app/routes/app_router.dart';
@@ -81,11 +82,9 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
       final progressMap = <String, int>{};
       
       for (final category in categories) {
-        // حساب التقدم الإجمالي بناءً على العدد الفعلي للأذكار المكررة
         int totalCompleted = 0;
         int totalRequired = 0;
         
-        // تحميل البيانات المحفوظة لكل فئة
         final key = 'athkar_progress_${category.id}';
         final savedData = _storage.getMap(key);
         final savedProgress = savedData?.map((k, v) => MapEntry(int.parse(k), v as int)) ?? <int, int>{};
@@ -96,7 +95,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
           totalRequired += item.count;
         }
         
-        // حساب النسبة المئوية للتقدم الإجمالي
         final percentage = totalRequired > 0 ? ((totalCompleted / totalRequired) * 100).round() : 0;
         progressMap[category.id] = percentage;
       }
@@ -116,154 +114,295 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      appBar: CustomAppBar(
-        title: 'أذكار المسلم',
-        centerTitle: true,
-        actions: [
-          // زر المفضلة
-          AppBarAction(
-            icon: Icons.favorite_outline,
-            onPressed: () {
-              Navigator.pushNamed(context, AppRouter.favorites);
-            },
-            tooltip: 'المفضلة',
-          ),
-          
-          // زر إعدادات الإشعارات
-          AppBarAction(
-            icon: Icons.notifications_outlined,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AthkarNotificationSettingsScreen(),
-                ),
-              );
-            },
-            tooltip: 'إعدادات الإشعارات',
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await _loadProgress();
-        },
-        child: CustomScrollView(
-          slivers: [
-            // مساحة علوية
-            const SliverPadding(
-              padding: EdgeInsets.only(top: ThemeConstants.space2),
-            ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // شريط التنقل العلوي
+            _buildAppBar(context),
             
-            // العنوان التوضيحي
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: ThemeConstants.space4,
-                  vertical: ThemeConstants.space2,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'اختر فئة الأذكار',
-                      style: context.titleLarge?.copyWith(
-                        fontWeight: ThemeConstants.bold,
-                        color: context.textPrimaryColor,
-                      ),
+            // المحتوى
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await _loadProgress();
+                },
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    // رسالة الترحيب
+                    SliverToBoxAdapter(
+                      child: _buildWelcomeCard(context),
                     ),
-                    ThemeConstants.space1.h,
-                    Text(
-                      'اقرأ الأذكار اليومية وحافظ على ذكر الله في كل وقت',
-                      style: context.bodyMedium?.copyWith(
-                        color: context.textSecondaryColor,
-                      ),
+                    
+                    ThemeConstants.space4.sliverBox,
+                    
+                    // قائمة الفئات
+                    FutureBuilder<List<AthkarCategory>>(
+                      future: _futureCategories,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return SliverFillRemaining(
+                            child: Center(
+                              child: AppLoading.page(
+                                message: 'جاري تحميل الأذكار...',
+                              ),
+                            ),
+                          );
+                        }
+                        
+                        if (snapshot.hasError) {
+                          return SliverFillRemaining(
+                            child: AppEmptyState.error(
+                              message: 'حدث خطأ في تحميل البيانات',
+                              onRetry: () {
+                                setState(() {
+                                  _futureCategories = _service.loadCategories();
+                                });
+                              },
+                            ),
+                          );
+                        }
+                        
+                        final categories = snapshot.data ?? [];
+                        
+                        if (categories.isEmpty) {
+                          return SliverFillRemaining(
+                            child: AppEmptyState.noData(
+                              message: 'لا توجد أذكار متاحة حالياً',
+                            ),
+                          );
+                        }
+                        
+                        return SliverPadding(
+                          padding: const EdgeInsets.all(ThemeConstants.space4),
+                          sliver: AnimationLimiter(
+                            child: SliverGrid(
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: ThemeConstants.space4,
+                                crossAxisSpacing: ThemeConstants.space4,
+                                childAspectRatio: 0.8,
+                              ),
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  final category = categories[index];
+                                  final progress = _progress[category.id] ?? 0;
+                                  
+                                  return AnimationConfiguration.staggeredGrid(
+                                    position: index,
+                                    duration: ThemeConstants.durationNormal,
+                                    columnCount: 2,
+                                    child: ScaleAnimation(
+                                      child: FadeInAnimation(
+                                        child: AthkarCategoryCard(
+                                          category: category,
+                                          progress: progress,
+                                          onTap: () => _openCategoryDetails(category),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                childCount: categories.length,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
+                    
+                    ThemeConstants.space8.sliverBox,
                   ],
                 ),
               ),
             ),
-            
-            // قائمة الفئات
-            FutureBuilder<List<AthkarCategory>>(
-              future: _futureCategories,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return SliverFillRemaining(
-                    child: Center(
-                      child: AppLoading.page(
-                        message: 'جاري تحميل الأذكار...',
-                      ),
-                    ),
-                  );
-                }
-                
-                if (snapshot.hasError) {
-                  return SliverFillRemaining(
-                    child: AppEmptyState.error(
-                      message: 'حدث خطأ في تحميل البيانات',
-                      onRetry: () {
-                        setState(() {
-                          _futureCategories = _service.loadCategories();
-                        });
-                      },
-                    ),
-                  );
-                }
-                
-                final categories = snapshot.data ?? [];
-                
-                if (categories.isEmpty) {
-                  return SliverFillRemaining(
-                    child: AppEmptyState.noData(
-                      message: 'لا توجد أذكار متاحة حالياً',
-                    ),
-                  );
-                }
-                
-                return SliverPadding(
-                  padding: const EdgeInsets.all(ThemeConstants.space4),
-                  sliver: AnimationLimiter(
-                    child: SliverGrid(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: ThemeConstants.space4,
-                        crossAxisSpacing: ThemeConstants.space4,
-                        childAspectRatio: 0.8,
-                      ),
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final category = categories[index];
-                          final progress = _progress[category.id] ?? 0;
-                          
-                          return AnimationConfiguration.staggeredGrid(
-                            position: index,
-                            duration: ThemeConstants.durationNormal,
-                            columnCount: 2,
-                            child: ScaleAnimation(
-                              child: FadeInAnimation(
-                                child: AthkarCategoryCard(
-                                  category: category,
-                                  progress: progress,
-                                  onTap: () => _openCategoryDetails(category),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                        childCount: categories.length,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-            
-            // مساحة إضافية
-            const SliverPadding(
-              padding: EdgeInsets.only(bottom: ThemeConstants.space8),
-            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAppBar(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(ThemeConstants.space4),
+      child: Row(
+        children: [
+          // أيقونة التطبيق
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space3),
+            decoration: BoxDecoration(
+              gradient: ThemeConstants.primaryGradient,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+            ),
+            child: const Icon(
+              Icons.auto_awesome,
+              color: Colors.white,
+              size: ThemeConstants.iconLg,
+            ),
+          ),
+          
+          ThemeConstants.space3.w,
+          
+          // العنوان
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'أذكار المسلم',
+                  style: context.titleLarge?.copyWith(
+                    fontWeight: ThemeConstants.bold,
+                  ),
+                ),
+                Text(
+                  'احرص على الذكر في كل وقت',
+                  style: context.bodySmall?.copyWith(
+                    color: context.textSecondaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // الإجراءات
+          Row(
+            children: [
+              // زر المفضلة
+              Container(
+                decoration: BoxDecoration(
+                  color: context.cardColor,
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                  border: Border.all(
+                    color: context.dividerColor.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, AppRouter.favorites);
+                  },
+                  icon: Icon(
+                    Icons.favorite_outline,
+                    color: context.textSecondaryColor,
+                  ),
+                  tooltip: 'المفضلة',
+                ),
+              ),
+              
+              ThemeConstants.space2.w,
+              
+              // زر إعدادات الإشعارات
+              Container(
+                decoration: BoxDecoration(
+                  color: context.cardColor,
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                  border: Border.all(
+                    color: context.dividerColor.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AthkarNotificationSettingsScreen(),
+                      ),
+                    );
+                  },
+                  icon: Icon(
+                    Icons.notifications_outlined,
+                    color: context.textSecondaryColor,
+                  ),
+                  tooltip: 'إعدادات الإشعارات',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWelcomeCard(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        gradient: LinearGradient(
+          colors: [
+            ThemeConstants.accent.withValues(alpha: 0.9),
+            ThemeConstants.accent.darken(0.1).withValues(alpha: 0.9),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.all(ThemeConstants.space5),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.auto_awesome,
+                    color: Colors.white,
+                    size: 40,
+                  ),
+                ),
+                
+                ThemeConstants.space4.w,
+                
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'اختر فئة الأذكار',
+                        style: context.headlineMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: ThemeConstants.bold,
+                        ),
+                      ),
+                      
+                      ThemeConstants.space1.h,
+                      
+                      Text(
+                        'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
+                        style: context.bodyMedium?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontFamily: ThemeConstants.fontFamilyArabic,
+                        ),
+                      ),
+                      
+                      ThemeConstants.space1.h,
+                      
+                      Text(
+                        'اقرأ الأذكار اليومية وحافظ على ذكر الله',
+                        style: context.bodySmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -280,3 +419,4 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     });
   }
 }
+

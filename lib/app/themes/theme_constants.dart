@@ -23,9 +23,12 @@ class ThemeConstants {
 
   // ===== الألوان الدلالية =====
   static const Color success = Color(0xFF5D7052); // نفس اللون الأساسي للتناسق
+  static const Color successLight = Color(0xFF7A8B6F); // أخضر زيتي فاتح للنجاح - إضافة مطلوبة
   static const Color error = Color(0xFFB85450); // أحمر مخملي ناعم
   static const Color warning = Color(0xFFD4A574); // برتقالي دافئ
+  static const Color warningLight = Color(0xFFE8C899); // برتقالي فاتح للتحذير - إضافة مطلوبة
   static const Color info = Color(0xFF6B8E9F); // أزرق رمادي
+  static const Color infoLight = Color(0xFF8FA9B8); // أزرق رمادي فاتح للمعلومات - إضافة مطلوبة
 
   // ===== ألوان الوضع الفاتح =====
   static const Color lightBackground = Color(0xFFFAFAF8); // خلفية دافئة
