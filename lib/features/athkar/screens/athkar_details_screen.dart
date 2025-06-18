@@ -12,7 +12,6 @@ import '../../../core/infrastructure/services/utils/extensions/string_extensions
 import '../services/athkar_service.dart';
 import '../models/athkar_model.dart';
 import '../widgets/athkar_item_card.dart';
-import '../widgets/athkar_progress_bar.dart';
 import '../widgets/athkar_completion_dialog.dart';
 import '../utils/category_utils.dart';
 import 'notification_settings_screen.dart';
@@ -39,7 +38,6 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
   final Map<int, int> _counts = {};
   final Set<int> _completedItems = {};
   List<AthkarItem> _visibleItems = [];
-  int _totalProgress = 0;
   bool _loading = true;
   bool _allCompleted = false;
 
@@ -79,7 +77,7 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
             }
           }
           _updateVisibleItems();
-          _calculateProgress();
+          _calculateCompletion();
         }
         _loading = false;
       });
@@ -114,7 +112,7 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
     await _storage.setMap(key, data);
   }
 
-  void _calculateProgress() {
+  void _calculateCompletion() {
     if (_category == null) return;
     
     int completed = 0;
@@ -127,7 +125,6 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
     }
     
     setState(() {
-      _totalProgress = total > 0 ? ((completed / total) * 100).round() : 0;
       _allCompleted = completed >= total && total > 0;
     });
   }
@@ -146,7 +143,7 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
           _updateVisibleItems();
         }
       }
-      _calculateProgress();
+      _calculateCompletion();
     });
     
     _saveProgress();
@@ -163,7 +160,7 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
       _counts[item.id] = 0;
       _completedItems.remove(item.id);
       _updateVisibleItems();
-      _calculateProgress();
+      _calculateCompletion();
     });
     
     _saveProgress();
@@ -199,7 +196,6 @@ ${_category!.athkar.map((item) => '✓ ${item.text.truncate(50)}').join('\n')}
       _counts.clear();
       _completedItems.clear();
       _allCompleted = false;
-      _totalProgress = 0;
       _updateVisibleItems();
     });
     _saveProgress();
@@ -252,32 +248,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
             // شريط التنقل العلوي
             _buildAppBar(context, category),
             
-            // شريط التقدم
-            AnimatedBuilder(
-              animation: _animationController,
-              builder: (context, child) {
-                return FadeTransition(
-                  opacity: _animationController,
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0, -1),
-                      end: Offset.zero,
-                    ).animate(CurvedAnimation(
-                      parent: _animationController,
-                      curve: ThemeConstants.curveDefault,
-                    )),
-                    child: AthkarProgressBar(
-                      progress: _totalProgress,
-                      color: CategoryUtils.getCategoryThemeColor(category.id),
-                      completedCount: _completedItems.length,
-                      totalCount: category.athkar.length,
-                    ),
-                  ),
-                );
-              },
-            ),
-            
-            // المحتوى
+            // المحتوى مباشرة بدون شريط التقدم
             Expanded(
               child: _buildContent(category),
             ),
