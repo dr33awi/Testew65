@@ -523,6 +523,8 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
       ],
     );
   }
+  
+  void onNotificationToggle(bool bool) {}
 }
 
 /// رسام الخلفية للصلاة
