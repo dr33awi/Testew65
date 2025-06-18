@@ -1,11 +1,13 @@
 // lib/features/athkar/widgets/athkar_item_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui';
+import 'dart:math' as math;
 import '../../../app/themes/app_theme.dart';
 import '../../../app/themes/widgets/animations/animated_press.dart';
 import '../models/athkar_model.dart';
 
-class AthkarItemCard extends StatelessWidget {
+class AthkarItemCard extends StatefulWidget {
   final AthkarItem item;
   final int currentCount;
   final bool isCompleted;
@@ -30,318 +32,417 @@ class AthkarItemCard extends StatelessWidget {
   });
 
   @override
+  State<AthkarItemCard> createState() => _AthkarItemCardState();
+}
+
+class _AthkarItemCardState extends State<AthkarItemCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _glowAnimation;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupAnimations();
+  }
+
+  void _setupAnimations() {
+    _animationController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _glowAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _pulseAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.02,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final effectiveColor = color ?? ThemeConstants.primary;
+    final effectiveColor = widget.color ?? ThemeConstants.primary;
     
-    return AnimatedPress(
-      onTap: onTap,
-      onLongPress: onLongPress,
-      scaleFactor: 0.98,
-      child: AnimatedContainer(
-        duration: ThemeConstants.durationFast,
-        decoration: BoxDecoration(
-          gradient: isCompleted 
-              ? LinearGradient(
-                  colors: [
-                    effectiveColor.withValues(alpha: 0.05),
-                    effectiveColor.withValues(alpha: 0.1),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-          color: isCompleted ? null : context.cardColor,
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-          border: Border.all(
-            color: effectiveColor.withValues(alpha: isCompleted ? 0.4 : 0.3),
-            width: isCompleted ? 2 : 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: effectiveColor.withValues(alpha: isCompleted ? 0.2 : 0.1),
-              blurRadius: isCompleted ? 16 : 8,
-              offset: const Offset(0, 4),
-              spreadRadius: isCompleted ? 1 : 0,
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            // خلفية بسيطة للبطاقات المكتملة
-            if (isCompleted)
-              Positioned.fill(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: widget.isCompleted ? _pulseAnimation.value : 1.0,
+          child: AnimatedPress(
+            onTap: widget.onTap,
+            onLongPress: widget.onLongPress,
+            scaleFactor: 0.98,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+                gradient: widget.isCompleted 
+                    ? LinearGradient(
                         colors: [
-                          effectiveColor.withValues(alpha: 0.05),
-                          effectiveColor.withValues(alpha: 0.1),
+                          effectiveColor.withValues(alpha: 0.9),
+                          effectiveColor.darken(0.1).withValues(alpha: 0.9),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                      ),
-                    ),
+                      )
+                    : null,
+                color: !widget.isCompleted ? context.cardColor : null,
+                boxShadow: widget.isCompleted ? [
+                  BoxShadow(
+                    color: effectiveColor.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                    spreadRadius: 2,
                   ),
-                ),
-              ),
-            
-            // مؤشر الإكمال العلوي
-            if (isCompleted)
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  height: 4,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        effectiveColor.lighten(0.1),
-                        effectiveColor,
-                        effectiveColor.darken(0.1),
-                      ],
-                    ),
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(ThemeConstants.radiusXl),
-                    ),
-                  ),
-                ),
-              ),
-            
-            // المحتوى الرئيسي
-            Padding(
-              padding: const EdgeInsets.all(ThemeConstants.space4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // الرأس
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // رقم الذكر
-                      _buildNumberBadge(context),
-                      
-                      ThemeConstants.space3.w,
-                      
-                      // محتوى الذكر
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // النص الرئيسي
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(ThemeConstants.space4),
-                              decoration: BoxDecoration(
-                                color: isCompleted 
-                                    ? effectiveColor.withValues(alpha: 0.1)
-                                    : context.isDarkMode 
-                                        ? effectiveColor.withValues(alpha: 0.08)
-                                        : effectiveColor.withValues(alpha: 0.05),
-                                borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-                                border: Border.all(
-                                  color: effectiveColor.withValues(alpha: 0.2),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Text(
-                                item.text,
-                                style: context.bodyLarge?.copyWith(
-                                  fontSize: 18,
-                                  height: 2.0,
-                                  fontFamily: ThemeConstants.fontFamilyArabic,
-                                  color: isCompleted 
-                                      ? effectiveColor.darken(0.2)
-                                      : context.textPrimaryColor,
-                                  fontWeight: isCompleted 
-                                      ? ThemeConstants.medium 
-                                      : ThemeConstants.regular,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            
-                            // الفضل
-                            if (item.fadl != null) ...[
-                              ThemeConstants.space3.h,
-                              Container(
-                                padding: const EdgeInsets.all(ThemeConstants.space3),
-                                decoration: BoxDecoration(
-                                  color: ThemeConstants.accent.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                                  border: Border.all(
-                                    color: ThemeConstants.accent.withValues(alpha: 0.2),
-                                  ),
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(ThemeConstants.space1),
-                                      decoration: BoxDecoration(
-                                        color: ThemeConstants.accent.withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
-                                      ),
-                                      child: Icon(
-                                        Icons.star_rounded,
-                                        size: ThemeConstants.iconSm,
-                                        color: ThemeConstants.accent,
-                                      ),
-                                    ),
-                                    ThemeConstants.space2.w,
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'الفضل',
-                                            style: context.labelMedium?.copyWith(
-                                              color: ThemeConstants.accent,
-                                              fontWeight: ThemeConstants.semiBold,
-                                            ),
-                                          ),
-                                          ThemeConstants.space1.h,
-                                          Text(
-                                            item.fadl!,
-                                            style: context.bodySmall?.copyWith(
-                                              color: context.textSecondaryColor,
-                                              height: 1.5,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  ThemeConstants.space4.h,
-                  
-                  // الفوتر
-                  Row(
-                    children: [
-                      // المصدر
-                      if (item.source != null) ...[
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: ThemeConstants.space3,
-                              vertical: ThemeConstants.space2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: context.textSecondaryColor.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                              border: Border.all(
-                                color: context.textSecondaryColor.withValues(alpha: 0.15),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.source_rounded,
-                                  size: ThemeConstants.iconXs,
-                                  color: context.textSecondaryColor,
-                                ),
-                                ThemeConstants.space1.w,
-                                Flexible(
-                                  child: Text(
-                                    item.source!,
-                                    style: context.labelSmall?.copyWith(
-                                      color: context.textSecondaryColor,
-                                      fontWeight: ThemeConstants.medium,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        ThemeConstants.space3.w,
-                      ] else
-                        const Spacer(),
-                      
-                      // العداد
-                      _buildCounter(context),
-                      
-                      // الإجراءات
-                      if (onShare != null || onFavoriteToggle != null) ...[
-                        ThemeConstants.space3.w,
-                        _buildActions(context),
-                      ],
-                    ],
+                ] : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+                child: Stack(
+                  children: [
+                    // الخلفية المتحركة للبطاقات المكتملة
+                    if (widget.isCompleted) _buildAnimatedBackground(),
+                    
+                    // الحد اللامع للبطاقات المكتملة
+                    if (widget.isCompleted) _buildGlowBorder(effectiveColor),
+                    
+                    // المحتوى الرئيسي
+                    _buildCardContent(context, effectiveColor),
+                  ],
+                ),
+              ),
             ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAnimatedBackground() {
+    return Positioned.fill(
+      child: CustomPaint(
+        painter: AthkarBackgroundPainter(
+          animation: _glowAnimation.value,
+          color: Colors.white.withValues(alpha: 0.1),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlowBorder(Color effectiveColor) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        border: Border.all(
+          color: Colors.white.withValues(
+            alpha: 0.4 + (_glowAnimation.value * 0.3),
+          ),
+          width: 2,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCardContent(BuildContext context, Color effectiveColor) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: widget.isCompleted 
+              ? Colors.white.withValues(alpha: 0.2)
+              : context.dividerColor.withValues(alpha: 0.2),
+          width: 1,
+        ),
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(ThemeConstants.space4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // الرأس
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // رقم الذكر
+                _buildNumberBadge(context, effectiveColor),
+                
+                ThemeConstants.space3.w,
+                
+                // محتوى الذكر
+                Expanded(
+                  child: _buildMainContent(context, effectiveColor),
+                ),
+              ],
+            ),
+            
+            ThemeConstants.space4.h,
+            
+            // الفوتر
+            _buildFooter(context, effectiveColor),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNumberBadge(BuildContext context) {
-    final effectiveColor = color ?? ThemeConstants.primary;
-    
+  Widget _buildNumberBadge(BuildContext context, Color effectiveColor) {
     return Container(
-      width: 44,
-      height: 44,
+      width: 50,
+      height: 50,
       decoration: BoxDecoration(
-        gradient: isCompleted
+        gradient: widget.isCompleted
             ? LinearGradient(
                 colors: [effectiveColor.lighten(0.1), effectiveColor],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
             : null,
-        color: isCompleted ? null : effectiveColor.withValues(alpha: 0.1),
+        color: !widget.isCompleted ? effectiveColor.withValues(alpha: 0.1) : null,
         shape: BoxShape.circle,
         border: Border.all(
-          color: effectiveColor.withValues(alpha: isCompleted ? 0.6 : 0.3),
-          width: isCompleted ? 2 : 1,
+          color: effectiveColor.withValues(alpha: widget.isCompleted ? 0.6 : 0.3),
+          width: widget.isCompleted ? 2 : 1.5,
         ),
-        boxShadow: isCompleted ? [
+        boxShadow: widget.isCompleted ? [
           BoxShadow(
             color: effectiveColor.withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ] : null,
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          if (isCompleted)
-            Icon(
-              Icons.check_rounded,
-              color: Colors.white,
-              size: ThemeConstants.iconMd,
-            )
-          else
-            Text(
-              '$number',
-              style: context.labelLarge?.copyWith(
-                color: effectiveColor,
-                fontWeight: ThemeConstants.bold,
+      child: Center(
+        child: widget.isCompleted
+            ? Icon(
+                Icons.check_rounded,
+                color: Colors.white,
+                size: ThemeConstants.iconMd,
+              )
+            : Text(
+                '${widget.number}',
+                style: context.titleMedium?.copyWith(
+                  color: effectiveColor,
+                  fontWeight: ThemeConstants.bold,
+                ),
               ),
-            ),
-        ],
       ),
     );
   }
 
-  Widget _buildCounter(BuildContext context) {
-    final effectiveColor = color ?? ThemeConstants.primary;
-    final progress = currentCount / item.count;
+  Widget _buildMainContent(BuildContext context, Color effectiveColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // النص الرئيسي
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(ThemeConstants.space4),
+          decoration: BoxDecoration(
+            gradient: widget.isCompleted 
+                ? LinearGradient(
+                    colors: [
+                      Colors.white.withValues(alpha: 0.15),
+                      Colors.white.withValues(alpha: 0.1),
+                    ],
+                  )
+                : null,
+            color: !widget.isCompleted 
+                ? context.isDarkMode 
+                    ? effectiveColor.withValues(alpha: 0.08)
+                    : effectiveColor.withValues(alpha: 0.05)
+                : null,
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+            border: Border.all(
+              color: widget.isCompleted
+                  ? Colors.white.withValues(alpha: 0.2)
+                  : effectiveColor.withValues(alpha: 0.2),
+              width: 1,
+            ),
+          ),
+          child: Text(
+            widget.item.text,
+            style: context.bodyLarge?.copyWith(
+              fontSize: 18,
+              height: 2.0,
+              fontFamily: ThemeConstants.fontFamilyArabic,
+              color: widget.isCompleted 
+                  ? Colors.white
+                  : context.textPrimaryColor,
+              fontWeight: widget.isCompleted 
+                  ? ThemeConstants.medium 
+                  : ThemeConstants.regular,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        
+        // الفضل
+        if (widget.item.fadl != null) ...[
+          ThemeConstants.space3.h,
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space3),
+            decoration: BoxDecoration(
+              gradient: widget.isCompleted
+                  ? LinearGradient(
+                      colors: [
+                        Colors.white.withValues(alpha: 0.15),
+                        Colors.white.withValues(alpha: 0.1),
+                      ],
+                    )
+                  : null,
+              color: !widget.isCompleted
+                  ? ThemeConstants.accent.withValues(alpha: 0.08)
+                  : null,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              border: Border.all(
+                color: widget.isCompleted
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : ThemeConstants.accent.withValues(alpha: 0.2),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(ThemeConstants.space1),
+                  decoration: BoxDecoration(
+                    color: widget.isCompleted
+                        ? Colors.white.withValues(alpha: 0.2)
+                        : ThemeConstants.accent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
+                  ),
+                  child: Icon(
+                    Icons.star_rounded,
+                    size: ThemeConstants.iconSm,
+                    color: widget.isCompleted
+                        ? Colors.white
+                        : ThemeConstants.accent,
+                  ),
+                ),
+                ThemeConstants.space2.w,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'الفضل',
+                        style: context.labelMedium?.copyWith(
+                          color: widget.isCompleted
+                              ? Colors.white.withValues(alpha: 0.9)
+                              : ThemeConstants.accent,
+                          fontWeight: ThemeConstants.semiBold,
+                        ),
+                      ),
+                      ThemeConstants.space1.h,
+                      Text(
+                        widget.item.fadl!,
+                        style: context.bodySmall?.copyWith(
+                          color: widget.isCompleted
+                              ? Colors.white.withValues(alpha: 0.8)
+                              : context.textSecondaryColor,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildFooter(BuildContext context, Color effectiveColor) {
+    return Row(
+      children: [
+        // المصدر
+        if (widget.item.source != null) ...[
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: ThemeConstants.space3,
+                vertical: ThemeConstants.space2,
+              ),
+              decoration: BoxDecoration(
+                color: widget.isCompleted
+                    ? Colors.white.withValues(alpha: 0.15)
+                    : context.textSecondaryColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                border: Border.all(
+                  color: widget.isCompleted
+                      ? Colors.white.withValues(alpha: 0.2)
+                      : context.textSecondaryColor.withValues(alpha: 0.15),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.source_rounded,
+                    size: ThemeConstants.iconXs,
+                    color: widget.isCompleted
+                        ? Colors.white.withValues(alpha: 0.8)
+                        : context.textSecondaryColor,
+                  ),
+                  ThemeConstants.space1.w,
+                  Flexible(
+                    child: Text(
+                      widget.item.source!,
+                      style: context.labelSmall?.copyWith(
+                        color: widget.isCompleted
+                            ? Colors.white.withValues(alpha: 0.8)
+                            : context.textSecondaryColor,
+                        fontWeight: ThemeConstants.medium,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          ThemeConstants.space3.w,
+        ] else
+          const Spacer(),
+        
+        // العداد
+        _buildCounter(context, effectiveColor),
+        
+        // الإجراءات
+        if (widget.onShare != null || widget.onFavoriteToggle != null) ...[
+          ThemeConstants.space3.w,
+          _buildActions(context),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCounter(BuildContext context, Color effectiveColor) {
+    final progress = widget.currentCount / widget.item.count;
     
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -349,21 +450,28 @@ class AthkarItemCard extends StatelessWidget {
         vertical: ThemeConstants.space2,
       ),
       decoration: BoxDecoration(
-        gradient: isCompleted
+        gradient: widget.isCompleted
             ? LinearGradient(
                 colors: [
-                  effectiveColor.withValues(alpha: 0.15),
-                  effectiveColor.withValues(alpha: 0.1),
+                  Colors.white.withValues(alpha: 0.2),
+                  Colors.white.withValues(alpha: 0.15),
                 ],
               )
             : null,
-        color: isCompleted ? null : context.surfaceColor,
+        color: !widget.isCompleted ? context.surfaceColor : null,
         borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
         border: Border.all(
-          color: isCompleted
-              ? effectiveColor.withValues(alpha: 0.3)
+          color: widget.isCompleted
+              ? Colors.white.withValues(alpha: 0.3)
               : context.dividerColor,
         ),
+        boxShadow: widget.isCompleted ? [
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ] : null,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -382,7 +490,9 @@ class AthkarItemCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: context.dividerColor.withValues(alpha: 0.5),
+                      color: widget.isCompleted
+                          ? Colors.white.withValues(alpha: 0.3)
+                          : context.dividerColor.withValues(alpha: 0.5),
                       width: 2,
                     ),
                   ),
@@ -397,24 +507,24 @@ class AthkarItemCard extends StatelessWidget {
                     strokeWidth: 2,
                     backgroundColor: Colors.transparent,
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      isCompleted ? effectiveColor : ThemeConstants.primary,
+                      widget.isCompleted ? Colors.white : effectiveColor,
                     ),
                   ),
                 ),
                 
                 // أيقونة الحالة
-                if (isCompleted)
+                if (widget.isCompleted)
                   Icon(
                     Icons.check_rounded,
                     size: 12,
-                    color: effectiveColor,
+                    color: Colors.white,
                   )
-                else if (currentCount > 0)
+                else if (widget.currentCount > 0)
                   Container(
                     width: 8,
                     height: 8,
                     decoration: BoxDecoration(
-                      color: ThemeConstants.primary,
+                      color: effectiveColor,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -430,17 +540,23 @@ class AthkarItemCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '$currentCount / ${item.count}',
+                '${widget.currentCount} / ${widget.item.count}',
                 style: context.labelMedium?.copyWith(
-                  color: isCompleted ? effectiveColor : context.textPrimaryColor,
-                  fontWeight: isCompleted ? ThemeConstants.bold : ThemeConstants.medium,
+                  color: widget.isCompleted 
+                      ? Colors.white 
+                      : context.textPrimaryColor,
+                  fontWeight: widget.isCompleted 
+                      ? ThemeConstants.bold 
+                      : ThemeConstants.medium,
                 ),
               ),
-              if (!isCompleted && currentCount > 0)
+              if (!widget.isCompleted && widget.currentCount > 0)
                 Text(
                   'اضغط للمتابعة',
                   style: context.labelSmall?.copyWith(
-                    color: context.textSecondaryColor,
+                    color: widget.isCompleted
+                        ? Colors.white.withValues(alpha: 0.7)
+                        : context.textSecondaryColor,
                     fontSize: 9,
                   ),
                 ),
@@ -455,22 +571,26 @@ class AthkarItemCard extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (onFavoriteToggle != null) ...[
+        if (widget.onFavoriteToggle != null) ...[
           _ActionButton(
             icon: Icons.favorite_outline_rounded,
-            onTap: onFavoriteToggle!,
+            onTap: widget.onFavoriteToggle!,
             tooltip: 'إضافة للمفضلة',
-            color: context.textSecondaryColor,
+            color: widget.isCompleted
+                ? Colors.white.withValues(alpha: 0.8)
+                : context.textSecondaryColor,
           ),
         ],
         
-        if (onShare != null) ...[
-          if (onFavoriteToggle != null) ThemeConstants.space2.w,
+        if (widget.onShare != null) ...[
+          if (widget.onFavoriteToggle != null) ThemeConstants.space2.w,
           _ActionButton(
             icon: Icons.share_rounded,
-            onTap: onShare!,
+            onTap: widget.onShare!,
             tooltip: 'مشاركة',
-            color: context.textSecondaryColor,
+            color: widget.isCompleted
+                ? Colors.white.withValues(alpha: 0.8)
+                : context.textSecondaryColor,
           ),
         ],
       ],
@@ -517,4 +637,90 @@ class _ActionButton extends StatelessWidget {
       ),
     );
   }
+}
+
+/// رسام الخلفية للأذكار
+class AthkarBackgroundPainter extends CustomPainter {
+  final double animation;
+  final Color color;
+
+  AthkarBackgroundPainter({
+    required this.animation,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    // رسم دوائر متحركة
+    for (int i = 0; i < 3; i++) {
+      final radius = 30.0 + (i * 20) + (animation * 10);
+      final alpha = (1 - (i * 0.3)) * (0.8 - animation * 0.3);
+      
+      paint.color = color.withValues(alpha: alpha.clamp(0.0, 1.0));
+      
+      canvas.drawCircle(
+        Offset(size.width * 0.8, size.height * 0.2),
+        radius,
+        paint,
+      );
+    }
+
+    // رسم أشكال زخرفية
+    _drawDecorativeShapes(canvas, size, paint);
+  }
+
+  void _drawDecorativeShapes(Canvas canvas, Size size, Paint paint) {
+    // رسم نجوم صغيرة متحركة
+    final positions = [
+      Offset(size.width * 0.15, size.height * 0.25),
+      Offset(size.width * 0.85, size.height * 0.75),
+      Offset(size.width * 0.25, size.height * 0.85),
+    ];
+
+    for (int i = 0; i < positions.length; i++) {
+      final offset = math.sin(animation * 2 * math.pi + i) * 3;
+      _drawStar(
+        canvas,
+        positions[i] + Offset(offset, offset),
+        4,
+        paint..color = color.withValues(alpha: 0.6),
+      );
+    }
+  }
+
+  void _drawStar(Canvas canvas, Offset center, double radius, Paint paint) {
+    final path = Path();
+    const int points = 5;
+    final double angle = 2 * math.pi / points;
+
+    for (int i = 0; i < points; i++) {
+      final outerAngle = i * angle - math.pi / 2;
+      final innerAngle = (i + 0.5) * angle - math.pi / 2;
+
+      final outerX = center.dx + radius * math.cos(outerAngle);
+      final outerY = center.dy + radius * math.sin(outerAngle);
+
+      final innerX = center.dx + (radius * 0.5) * math.cos(innerAngle);
+      final innerY = center.dy + (radius * 0.5) * math.sin(innerAngle);
+
+      if (i == 0) {
+        path.moveTo(outerX, outerY);
+      } else {
+        path.lineTo(outerX, outerY);
+      }
+
+      path.lineTo(innerX, innerY);
+    }
+
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
