@@ -145,7 +145,7 @@ class AppTheme {
   static LinearGradient prayerGradient(String prayerName) {
     final color = getPrayerColor(prayerName);
     return LinearGradient(
-      colors: [color, color.withOpacity(0.8)],
+      colors: [color, color.withValues(alpha: 0.8)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     );
@@ -255,7 +255,7 @@ class AppTheme {
   
   static List<BoxShadow> get shadowSm => [
     BoxShadow(
-      color: Colors.black.withOpacity(0.05),
+      color: Colors.black.withValues(alpha: 0.05),
       blurRadius: 2,
       offset: const Offset(0, 1),
     ),
@@ -263,7 +263,7 @@ class AppTheme {
 
   static List<BoxShadow> get shadowMd => [
     BoxShadow(
-      color: Colors.black.withOpacity(0.1),
+      color: Colors.black.withValues(alpha: 0.1),
       blurRadius: 4,
       offset: const Offset(0, 2),
     ),
@@ -271,7 +271,7 @@ class AppTheme {
 
   static List<BoxShadow> get shadowLg => [
     BoxShadow(
-      color: Colors.black.withOpacity(0.1),
+      color: Colors.black.withValues(alpha: 0.1),
       blurRadius: 8,
       offset: const Offset(0, 4),
     ),
@@ -279,7 +279,7 @@ class AppTheme {
 
   static List<BoxShadow> get shadowXl => [
     BoxShadow(
-      color: Colors.black.withOpacity(0.15),
+      color: Colors.black.withValues(alpha: 0.15),
       blurRadius: 15,
       offset: const Offset(0, 8),
     ),
@@ -292,7 +292,7 @@ class AppTheme {
     color: lightCard,
     borderRadius: BorderRadius.circular(radius2xl),
     border: Border.all(
-      color: lightDivider.withOpacity(0.2),
+      color: lightDivider.withValues(alpha: 0.2),
       width: borderLight,
     ),
     boxShadow: shadowMd,
@@ -302,17 +302,17 @@ class AppTheme {
   static BoxDecoration cardGradientDecoration(List<Color> colors) => BoxDecoration(
     borderRadius: BorderRadius.circular(radius2xl),
     gradient: LinearGradient(
-      colors: colors.map((c) => c.withOpacity(0.9)).toList(),
+      colors: colors.map((c) => c.withValues(alpha: 0.9)).toList(),
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
     border: Border.all(
-      color: Colors.white.withOpacity(0.2),
+      color: Colors.white.withValues(alpha: 0.2),
       width: borderLight,
     ),
     boxShadow: [
       BoxShadow(
-        color: colors[0].withOpacity(0.3),
+        color: colors[0].withValues(alpha: 0.3),
         blurRadius: 25,
         offset: const Offset(0, 12),
         spreadRadius: 2,
@@ -324,7 +324,7 @@ class AppTheme {
   static BoxDecoration get glassCardDecoration => BoxDecoration(
     borderRadius: BorderRadius.circular(radius2xl),
     border: Border.all(
-      color: Colors.white.withOpacity(0.2),
+      color: Colors.white.withValues(alpha: 0.2),
       width: borderLight,
     ),
   );
@@ -336,232 +336,330 @@ class AppTheme {
     boxShadow: shadowXl,
   );
 
-  // ==================== أنماط خاصة بالتطبيق ====================
+  // ==================== الثيمات الجاهزة ====================
   
-  /// بطاقة ترحيب (WelcomeCard style)
-  static BoxDecoration welcomeCardDecoration(List<Color> colors) => BoxDecoration(
-    borderRadius: BorderRadius.circular(radius3xl),
-    gradient: LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: colors.map((c) => c.withOpacity(0.9)).toList(),
-    ),
-    border: Border.all(
-      color: Colors.white.withOpacity(0.2),
-      width: borderLight,
-    ),
-  );
-
-  /// بطاقة فئة (CategoryCard style)
-  static BoxDecoration categoryCardDecoration(Color color) => BoxDecoration(
-    borderRadius: BorderRadius.circular(radius2xl),
-    gradient: LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [
-        color.withOpacity(0.9),
-        color.darken(0.1).withOpacity(0.9),
-      ],
-    ),
-    border: Border.all(
-      color: Colors.white.withOpacity(0.2),
-      width: borderLight,
-    ),
-  );
-
-  /// بطاقة إحصائيات (StatsCard style)
-  static BoxDecoration statsCardDecoration(Color color) => BoxDecoration(
-    borderRadius: BorderRadius.circular(radiusXl),
-    gradient: LinearGradient(
-      colors: [
-        color.withOpacity(0.9),
-        color.darken(0.1).withOpacity(0.9),
-      ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ),
-    boxShadow: [
-      BoxShadow(
-        color: color.withOpacity(0.2),
-        blurRadius: 15,
-        offset: const Offset(0, 8),
-        spreadRadius: 1,
+  /// ثيم فاتح
+  static ThemeData get lightTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      
+      // الألوان الأساسية
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primary,
+        brightness: Brightness.light,
+        primary: primary,
+        secondary: accent,
+        tertiary: tertiary,
+        surface: lightSurface,
+        surfaceContainerHighest: lightCard,
+        error: error,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: lightTextPrimary,
+        onError: Colors.white,
+        outline: lightDivider,
+        shadow: Colors.black.withValues(alpha: 0.1),
       ),
-    ],
-  );
 
-  /// بطاقة صغيرة (SmallCard style)
-  static BoxDecoration smallCardDecoration(List<Color> colors) => BoxDecoration(
-    borderRadius: BorderRadius.circular(radiusXl),
-    gradient: LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: colors.map((c) => c.withOpacity(0.9)).toList(),
-    ),
-    boxShadow: [
-      BoxShadow(
-        color: colors[0].withOpacity(0.3),
-        blurRadius: 15,
-        offset: const Offset(0, 8),
+      // الخطوط
+      fontFamily: fontFamily,
+      textTheme: _buildTextTheme(Brightness.light),
+      
+      // شريط التطبيق
+      appBarTheme: const AppBarTheme(
+        backgroundColor: lightBackground,
+        foregroundColor: lightTextPrimary,
+        elevation: 0,
+        centerTitle: false,
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
+        titleTextStyle: TextStyle(
+          fontSize: textSizeLg,
+          fontWeight: bold,
+          color: lightTextPrimary,
+        ),
+        iconTheme: IconThemeData(
+          color: lightTextPrimary,
+        ),
       ),
-    ],
-  );
 
-  // ==================== أنماط الأزرار ====================
-  
-  /// زر أساسي (كما مستخدم في التطبيق)
-  static BoxDecoration primaryButtonDecoration() => BoxDecoration(
-    gradient: primaryGradient,
-    borderRadius: BorderRadius.circular(radiusLg),
-    boxShadow: [
-      BoxShadow(
-        color: primary.withOpacity(0.3),
-        blurRadius: 15,
-        offset: const Offset(0, 8),
+      // البطاقات
+      cardTheme: CardThemeData(
+        color: lightCard,
+        elevation: elevation2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius2xl),
+        ),
+        shadowColor: Colors.black.withValues(alpha: 0.1),
       ),
-    ],
-  );
 
-  /// زر مضغوط بتأثير
-  static BoxDecoration pressedButtonDecoration(Color color) => BoxDecoration(
-    gradient: LinearGradient(
-      colors: [color, color.withOpacity(0.8)],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ),
-    borderRadius: BorderRadius.circular(radiusLg),
-    boxShadow: [
-      BoxShadow(
-        color: color.withOpacity(0.3),
-        blurRadius: 15,
-        offset: const Offset(0, 8),
+      // الأزرار المرفوعة
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: primary,
+          foregroundColor: Colors.white,
+          elevation: elevation2,
+          padding: const EdgeInsets.symmetric(
+            horizontal: space4,
+            vertical: space3,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(radiusLg),
+          ),
+          textStyle: const TextStyle(
+            fontSize: textSizeMd,
+            fontWeight: semiBold,
+          ),
+          shadowColor: primary.withValues(alpha: 0.3),
+        ),
       ),
-    ],
-  );
 
-  /// زر دائري كبير (للمسبحة)
-  static BoxDecoration circularButtonDecoration(List<Color> colors) => BoxDecoration(
-    gradient: LinearGradient(
-      colors: colors,
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ),
-    shape: BoxShape.circle,
-    boxShadow: [
-      BoxShadow(
-        color: colors[0].withOpacity(0.4),
-        blurRadius: 30,
-        spreadRadius: 5,
+      // الحوارات
+      dialogTheme: DialogThemeData(
+        backgroundColor: lightCard,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius2xl),
+        ),
+        elevation: elevation4,
+        titleTextStyle: const TextStyle(
+          fontSize: textSizeXl,
+          fontWeight: bold,
+          color: lightTextPrimary,
+        ),
+        contentTextStyle: const TextStyle(
+          fontSize: textSizeMd,
+          color: lightTextSecondary,
+        ),
+        insetPadding: const EdgeInsets.all(space6),
       ),
-      BoxShadow(
-        color: Colors.black.withOpacity(0.1),
-        blurRadius: 10,
-        offset: const Offset(0, 5),
+
+      // شرائط الإشعارات
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: lightTextPrimary,
+        contentTextStyle: const TextStyle(
+          fontSize: textSizeMd,
+          color: Colors.white,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radiusXl),
+        ),
+        behavior: SnackBarBehavior.floating,
+        elevation: elevation3,
+        actionTextColor: primary,
+        insetPadding: const EdgeInsets.all(space4),
       ),
-    ],
-  );
 
-  /// زر إجراء في شريط التطبيق
-  static BoxDecoration appBarActionDecoration(BuildContext context) => BoxDecoration(
-    color: context.cardColor.withOpacity(0.8),
-    borderRadius: BorderRadius.circular(radiusMd),
-    border: Border.all(
-      color: context.dividerColor.withOpacity(0.2),
-    ),
-  );
+      // الفواصل
+      dividerTheme: const DividerThemeData(
+        color: lightDivider,
+        thickness: 1,
+        space: 1,
+        indent: 0,
+        endIndent: 0,
+      ),
 
-  // ==================== أنماط النصوص ====================
-  
-  static TextStyle get displayLarge => const TextStyle(
-    fontSize: textSize5xl,
-    fontWeight: bold,
-    height: 1.1,
-    letterSpacing: -0.5,
-  );
+      // الأيقونات
+      iconTheme: const IconThemeData(
+        color: lightTextSecondary,
+        size: iconMd,
+      ),
+    );
+  }
 
-  static TextStyle get displaySmall => const TextStyle(
-    fontSize: textSize4xl,
-    fontWeight: bold,
-    height: 1.2,
-  );
+  /// ثيم داكن
+  static ThemeData get darkTheme {
+    return lightTheme.copyWith(
+      brightness: Brightness.dark,
+      
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primary,
+        brightness: Brightness.dark,
+        primary: primaryLight,
+        secondary: accentLight,
+        tertiary: tertiaryLight,
+        surface: darkSurface,
+        surfaceContainerHighest: darkCard,
+        error: errorLight,
+        onPrimary: Colors.black,
+        onSecondary: Colors.black,
+        onSurface: darkTextPrimary,
+        onError: Colors.black,
+        outline: darkDivider,
+        shadow: Colors.black.withValues(alpha: 0.3),
+      ),
 
-  static TextStyle get headlineLarge => const TextStyle(
-    fontSize: textSize3xl,
-    fontWeight: bold,
-    height: 1.2,
-  );
+      textTheme: _buildTextTheme(Brightness.dark),
 
-  static TextStyle get headlineMedium => const TextStyle(
-    fontSize: textSize2xl,
-    fontWeight: semiBold,
-    height: 1.3,
-  );
+      appBarTheme: const AppBarTheme(
+        backgroundColor: darkBackground,
+        foregroundColor: darkTextPrimary,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
+        titleTextStyle: TextStyle(
+          fontSize: textSizeLg,
+          fontWeight: bold,
+          color: darkTextPrimary,
+        ),
+        iconTheme: IconThemeData(
+          color: darkTextPrimary,
+        ),
+      ),
 
-  static TextStyle get headlineSmall => const TextStyle(
-    fontSize: textSizeXl,
-    fontWeight: semiBold,
-    height: 1.3,
-  );
+      cardTheme: CardThemeData(
+        color: darkCard,
+        elevation: elevation2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius2xl),
+        ),
+        shadowColor: Colors.black.withValues(alpha: 0.3),
+      ),
 
-  static TextStyle get titleLarge => const TextStyle(
-    fontSize: textSizeLg,
-    fontWeight: semiBold,
-    height: 1.3,
-  );
+      dialogTheme: const DialogThemeData(
+        backgroundColor: darkCard,
+        titleTextStyle: TextStyle(
+          fontSize: textSizeXl,
+          fontWeight: bold,
+          color: darkTextPrimary,
+        ),
+        contentTextStyle: TextStyle(
+          fontSize: textSizeMd,
+          color: darkTextSecondary,
+        ),
+      ),
 
-  static TextStyle get titleMedium => const TextStyle(
-    fontSize: textSizeMd,
-    fontWeight: medium,
-    height: 1.4,
-  );
+      dividerTheme: const DividerThemeData(
+        color: darkDivider,
+        thickness: 1,
+        space: 1,
+      ),
 
-  static TextStyle get titleSmall => const TextStyle(
-    fontSize: textSizeSm,
-    fontWeight: medium,
-    height: 1.4,
-  );
+      iconTheme: const IconThemeData(
+        color: darkTextSecondary,
+        size: iconMd,
+      ),
+    );
+  }
 
-  static TextStyle get bodyLarge => const TextStyle(
-    fontSize: textSizeLg,
-    fontWeight: regular,
-    height: 1.5,
-  );
+  /// بناء أنماط النصوص
+  static TextTheme _buildTextTheme(Brightness brightness) {
+    final baseColor = brightness == Brightness.light 
+        ? lightTextPrimary 
+        : darkTextPrimary;
+    
+    final secondaryColor = brightness == Brightness.light 
+        ? lightTextSecondary 
+        : darkTextSecondary;
 
-  static TextStyle get bodyMedium => const TextStyle(
-    fontSize: textSizeMd,
-    fontWeight: regular,
-    height: 1.5,
-  );
-
-  static TextStyle get bodySmall => const TextStyle(
-    fontSize: textSizeSm,
-    fontWeight: regular,
-    height: 1.4,
-  );
-
-  static TextStyle get labelLarge => const TextStyle(
-    fontSize: textSizeMd,
-    fontWeight: medium,
-    height: 1.3,
-  );
-
-  static TextStyle get labelMedium => const TextStyle(
-    fontSize: textSizeSm,
-    fontWeight: medium,
-    height: 1.3,
-  );
-
-  static TextStyle get labelSmall => const TextStyle(
-    fontSize: textSizeXs,
-    fontWeight: medium,
-    height: 1.2,
-  );
+    return TextTheme(
+      // Display styles
+      displayLarge: TextStyle(
+        fontSize: textSize5xl,
+        fontWeight: bold,
+        height: 1.1,
+        letterSpacing: -0.5,
+        color: baseColor,
+      ),
+      displayMedium: TextStyle(
+        fontSize: textSize4xl,
+        fontWeight: bold,
+        height: 1.2,
+        color: baseColor,
+      ),
+      displaySmall: TextStyle(
+        fontSize: textSize3xl,
+        fontWeight: bold,
+        height: 1.2,
+        color: baseColor,
+      ),
+      
+      // Headline styles
+      headlineLarge: TextStyle(
+        fontSize: textSize3xl,
+        fontWeight: bold,
+        height: 1.2,
+        color: baseColor,
+      ),
+      headlineMedium: TextStyle(
+        fontSize: textSize2xl,
+        fontWeight: semiBold,
+        height: 1.3,
+        color: baseColor,
+      ),
+      headlineSmall: TextStyle(
+        fontSize: textSizeXl,
+        fontWeight: semiBold,
+        height: 1.3,
+        color: baseColor,
+      ),
+      
+      // Title styles
+      titleLarge: TextStyle(
+        fontSize: textSizeLg,
+        fontWeight: semiBold,
+        height: 1.3,
+        color: baseColor,
+      ),
+      titleMedium: TextStyle(
+        fontSize: textSizeMd,
+        fontWeight: medium,
+        height: 1.4,
+        color: baseColor,
+      ),
+      titleSmall: TextStyle(
+        fontSize: textSizeSm,
+        fontWeight: medium,
+        height: 1.4,
+        color: baseColor,
+      ),
+      
+      // Body styles
+      bodyLarge: TextStyle(
+        fontSize: textSizeLg,
+        fontWeight: regular,
+        height: 1.5,
+        color: baseColor,
+      ),
+      bodyMedium: TextStyle(
+        fontSize: textSizeMd,
+        fontWeight: regular,
+        height: 1.5,
+        color: baseColor,
+      ),
+      bodySmall: TextStyle(
+        fontSize: textSizeSm,
+        fontWeight: regular,
+        height: 1.4,
+        color: secondaryColor,
+      ),
+      
+      // Label styles
+      labelLarge: TextStyle(
+        fontSize: textSizeMd,
+        fontWeight: medium,
+        height: 1.3,
+        color: baseColor,
+      ),
+      labelMedium: TextStyle(
+        fontSize: textSizeSm,
+        fontWeight: medium,
+        height: 1.3,
+        color: secondaryColor,
+      ),
+      labelSmall: TextStyle(
+        fontSize: textSizeXs,
+        fontWeight: medium,
+        height: 1.2,
+        color: secondaryColor,
+      ),
+    );
+  }
 
   // ==================== أنماط النصوص العربية ====================
   
-  static TextStyle get arabicDisplayLarge => displayLarge.copyWith(
-    fontFamily: fontFamilyArabic,
+  static TextStyle get arabicDisplayLarge => const TextStyle(
+    fontSize: textSize5xl,
+    fontWeight: bold,
     height: 1.8,
+    fontFamily: fontFamilyArabic,
   );
 
   static TextStyle get quranText => const TextStyle(
@@ -609,79 +707,13 @@ class AppTheme {
         borderRadius: BorderRadius.circular(radius2xl),
         boxShadow: [
           BoxShadow(
-            color: glowColor.withOpacity(0.5),
+            color: glowColor.withValues(alpha: 0.5),
             blurRadius: glowRadius,
             spreadRadius: 2,
           ),
         ],
       ),
       child: child,
-    );
-  }
-
-  /// حاوية بتأثير النبض
-  static Widget pulseContainer({
-    required Widget child,
-    required Color pulseColor,
-    double minOpacity = 0.5,
-    double maxOpacity = 1.0,
-    Duration duration = durationNormal,
-  }) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: minOpacity, end: maxOpacity),
-      duration: duration,
-      builder: (context, value, child) {
-        return Container(
-          decoration: BoxDecoration(
-            color: pulseColor.withOpacity(value),
-            borderRadius: BorderRadius.circular(radius2xl),
-          ),
-          child: child,
-        );
-      },
-      child: child,
-    );
-  }
-
-  // ==================== تأثيرات خاصة بالتطبيق ====================
-
-  /// تأثير الحدود المتوهجة (للبطاقات المكتملة)
-  static Widget glowBorder({
-    required Widget child,
-    required Color glowColor,
-    double animationValue = 1.0,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(radius2xl),
-        border: Border.all(
-          color: Colors.white.withOpacity(
-            0.5 + (animationValue * 0.3),
-          ),
-          width: 2,
-        ),
-      ),
-      child: child,
-    );
-  }
-
-  /// تأثير الخلفية المتحركة
-  static Widget animatedBackground({
-    required Widget child,
-    required Color color,
-    double animationValue = 0.0,
-  }) {
-    return Stack(
-      children: [
-        CustomPaint(
-          painter: AnimatedBackgroundPainter(
-            animation: animationValue,
-            color: color.withOpacity(0.1),
-          ),
-          size: Size.infinite,
-        ),
-        child,
-      ],
     );
   }
 
@@ -770,20 +802,20 @@ extension AppThemeExtension on BuildContext {
   bool get isDarkMode => _isDarkMode;
 
   // أنماط النصوص
-  TextStyle? get displayLarge => AppTheme.displayLarge.copyWith(color: textPrimaryColor);
-  TextStyle? get displaySmall => AppTheme.displaySmall.copyWith(color: textPrimaryColor);
-  TextStyle? get headlineLarge => AppTheme.headlineLarge.copyWith(color: textPrimaryColor);
-  TextStyle? get headlineMedium => AppTheme.headlineMedium.copyWith(color: textPrimaryColor);
-  TextStyle? get headlineSmall => AppTheme.headlineSmall.copyWith(color: textPrimaryColor);
-  TextStyle? get titleLarge => AppTheme.titleLarge.copyWith(color: textPrimaryColor);
-  TextStyle? get titleMedium => AppTheme.titleMedium.copyWith(color: textPrimaryColor);
-  TextStyle? get titleSmall => AppTheme.titleSmall.copyWith(color: textPrimaryColor);
-  TextStyle? get bodyLarge => AppTheme.bodyLarge.copyWith(color: textPrimaryColor);
-  TextStyle? get bodyMedium => AppTheme.bodyMedium.copyWith(color: textPrimaryColor);
-  TextStyle? get bodySmall => AppTheme.bodySmall.copyWith(color: textSecondaryColor);
-  TextStyle? get labelLarge => AppTheme.labelLarge.copyWith(color: textPrimaryColor);
-  TextStyle? get labelMedium => AppTheme.labelMedium.copyWith(color: textSecondaryColor);
-  TextStyle? get labelSmall => AppTheme.labelSmall.copyWith(color: textSecondaryColor);
+  TextStyle? get displayLarge => Theme.of(this).textTheme.displayLarge;
+  TextStyle? get displaySmall => Theme.of(this).textTheme.displaySmall;
+  TextStyle? get headlineLarge => Theme.of(this).textTheme.headlineLarge;
+  TextStyle? get headlineMedium => Theme.of(this).textTheme.headlineMedium;
+  TextStyle? get headlineSmall => Theme.of(this).textTheme.headlineSmall;
+  TextStyle? get titleLarge => Theme.of(this).textTheme.titleLarge;
+  TextStyle? get titleMedium => Theme.of(this).textTheme.titleMedium;
+  TextStyle? get titleSmall => Theme.of(this).textTheme.titleSmall;
+  TextStyle? get bodyLarge => Theme.of(this).textTheme.bodyLarge;
+  TextStyle? get bodyMedium => Theme.of(this).textTheme.bodyMedium;
+  TextStyle? get bodySmall => Theme.of(this).textTheme.bodySmall;
+  TextStyle? get labelLarge => Theme.of(this).textTheme.labelLarge;
+  TextStyle? get labelMedium => Theme.of(this).textTheme.labelMedium;
+  TextStyle? get labelSmall => Theme.of(this).textTheme.labelSmall;
 
   // النصوص العربية
   TextStyle? get arabicDisplayLarge => AppTheme.arabicDisplayLarge.copyWith(color: textPrimaryColor);
@@ -800,7 +832,7 @@ extension AppThemeExtension on BuildContext {
   BoxDecoration get cardDecoration => AppTheme.cardDecoration.copyWith(
     color: cardColor,
     border: Border.all(
-      color: dividerColor.withOpacity(0.2),
+      color: dividerColor.withValues(alpha: 0.2),
       width: AppTheme.borderLight,
     ),
   );
@@ -834,40 +866,4 @@ extension TextStyleExtension on TextStyle? {
   TextStyle? get medium => this?.copyWith(fontWeight: AppTheme.medium);
   TextStyle? get semiBold => this?.copyWith(fontWeight: AppTheme.semiBold);
   TextStyle? get bold => this?.copyWith(fontWeight: AppTheme.bold);
-}
-
-/// رسام الخلفية المتحركة
-class AnimatedBackgroundPainter extends CustomPainter {
-  final double animation;
-  final Color color;
-
-  AnimatedBackgroundPainter({
-    required this.animation,
-    required this.color,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    // رسم دوائر متحركة
-    for (int i = 0; i < 3; i++) {
-      final radius = 30.0 + (i * 20) + (animation * 10);
-      final alpha = (1 - (i * 0.3)) * (0.8 - animation * 0.3);
-      
-      paint.color = color.withOpacity(alpha.clamp(0.0, 1.0));
-      
-      canvas.drawCircle(
-        Offset(size.width * 0.8, size.height * 0.2),
-        radius,
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

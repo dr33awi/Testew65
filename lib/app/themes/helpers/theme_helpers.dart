@@ -21,7 +21,7 @@ class ThemeHelpers {
       case 'tasbih':
         return ThemeConstants.tasbihGradient;
       case 'dua':
-        return LinearGradient(
+        return const LinearGradient(
           colors: [ThemeConstants.primarySoft, ThemeConstants.primary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -36,21 +36,21 @@ class ThemeHelpers {
     switch (contentType.toLowerCase()) {
       case 'verse':
       case 'آية':
-        return LinearGradient(
+        return const LinearGradient(
           colors: [ThemeConstants.primary, ThemeConstants.primaryLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
       case 'hadith':
       case 'حديث':
-        return LinearGradient(
+        return const LinearGradient(
           colors: [ThemeConstants.accent, ThemeConstants.accentLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
       case 'dua':
       case 'دعاء':
-        return LinearGradient(
+        return const LinearGradient(
           colors: [ThemeConstants.tertiary, ThemeConstants.tertiaryLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -72,13 +72,13 @@ class ThemeHelpers {
         end: Alignment.bottomRight,
       );
     } else if (progress < 0.7) {
-      return LinearGradient(
+      return const LinearGradient(
         colors: [ThemeConstants.warning, ThemeConstants.accent],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       );
     } else {
-      return LinearGradient(
+      return const LinearGradient(
         colors: [ThemeConstants.success, ThemeConstants.primary],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -93,14 +93,14 @@ class ThemeHelpers {
     
     if (hour < 5) {
       // ليل
-      return LinearGradient(
+      return const LinearGradient(
         colors: [ThemeConstants.darkBackground, ThemeConstants.darkCard],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       );
     } else if (hour < 8) {
       // فجر
-      return LinearGradient(
+      return const LinearGradient(
         colors: [ThemeConstants.primaryDark, ThemeConstants.primary],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -113,7 +113,7 @@ class ThemeHelpers {
       return ThemeConstants.primaryGradient;
     } else if (hour < 17) {
       // عصر
-      return LinearGradient(
+      return const LinearGradient(
         colors: [ThemeConstants.primaryLight, ThemeConstants.primarySoft],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -123,7 +123,7 @@ class ThemeHelpers {
       return ThemeConstants.tertiaryGradient;
     } else {
       // مساء
-      return LinearGradient(
+      return const LinearGradient(
         colors: [ThemeConstants.primaryDark, ThemeConstants.primary],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -182,11 +182,21 @@ class ThemeHelpers {
   static Color blendColors(Color color1, Color color2, double ratio) {
     ratio = ratio.clamp(0.0, 1.0);
     
+    final r1 = (color1.r * 255.0).round() & 0xff;
+    final g1 = (color1.g * 255.0).round() & 0xff;
+    final b1 = (color1.b * 255.0).round() & 0xff;
+    final a1 = (color1.a * 255.0).round() & 0xff;
+    
+    final r2 = (color2.r * 255.0).round() & 0xff;
+    final g2 = (color2.g * 255.0).round() & 0xff;
+    final b2 = (color2.b * 255.0).round() & 0xff;
+    final a2 = (color2.a * 255.0).round() & 0xff;
+    
     return Color.fromARGB(
-      ((1 - ratio) * color1.alpha + ratio * color2.alpha).round(),
-      ((1 - ratio) * color1.red + ratio * color2.red).round(),
-      ((1 - ratio) * color1.green + ratio * color2.green).round(),
-      ((1 - ratio) * color1.blue + ratio * color2.blue).round(),
+      ((1 - ratio) * a1 + ratio * a2).round(),
+      ((1 - ratio) * r1 + ratio * r2).round(),
+      ((1 - ratio) * g1 + ratio * g2).round(),
+      ((1 - ratio) * b1 + ratio * b2).round(),
     );
   }
 

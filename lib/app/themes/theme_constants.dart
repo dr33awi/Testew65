@@ -186,14 +186,6 @@ class ThemeConstants {
   static const String fontFamilyQuran = 'Amiri';
   static const String fontFamily = fontFamilyArabic;
 
-  // ==================== أوزان الخطوط ====================
-  
-  static const FontWeight light = FontWeight.w300;
-  static const FontWeight regular = FontWeight.w400;
-  static const FontWeight medium = FontWeight.w500;
-  static const FontWeight semiBold = FontWeight.w600;
-  static const FontWeight bold = FontWeight.w700;
-
   // ==================== ألوان خاصة بالميزات ====================
   
   static const Color athkarBackground = Color(0xFFF0F4EC); // خلفية الأذكار
@@ -247,14 +239,14 @@ class ThemeConstants {
   // ==================== المساعدات للمساحات ====================
   
   /// Extensions للمساحات مع أدوات سهلة
-  static Widget get space1 => SizedBox(height: space1);
-  static Widget get space2 => SizedBox(height: space2);
-  static Widget get space3 => SizedBox(height: space3);
-  static Widget get space4 => SizedBox(height: space4);
-  static Widget get space5 => SizedBox(height: space5);
-  static Widget get space6 => SizedBox(height: space6);
-  static Widget get space8 => SizedBox(height: space8);
-  static Widget get space12 => SizedBox(height: space12);
+  static Widget get spaceBox1 => const SizedBox(height: space1);
+  static Widget get spaceBox2 => const SizedBox(height: space2);
+  static Widget get spaceBox3 => const SizedBox(height: space3);
+  static Widget get spaceBox4 => const SizedBox(height: space4);
+  static Widget get spaceBox5 => const SizedBox(height: space5);
+  static Widget get spaceBox6 => const SizedBox(height: space6);
+  static Widget get spaceBox8 => const SizedBox(height: space8);
+  static Widget get spaceBox12 => const SizedBox(height: space12);
 }
 
 /// Extension للمساحات مع .h و .w
@@ -269,4 +261,86 @@ extension ThemeSpacing on num {
   Widget get h => SizedBox(height: toDouble());
   Widget get w => SizedBox(width: toDouble());
   Widget get sliverBox => SliverToBoxAdapter(child: SizedBox(height: toDouble()));
+}
+
+/// أنماط النصوص المستخدمة في التطبيق
+class AppTextStyles {
+  AppTextStyles._();
+
+  // Display styles
+  static TextStyle get h1 => const TextStyle(
+    fontSize: ThemeConstants.textSize5xl,
+    fontWeight: ThemeConstants.bold,
+    height: 1.1,
+    letterSpacing: -0.5,
+  );
+
+  static TextStyle get h2 => const TextStyle(
+    fontSize: ThemeConstants.textSize4xl,
+    fontWeight: ThemeConstants.bold,
+    height: 1.2,
+  );
+
+  static TextStyle get h3 => const TextStyle(
+    fontSize: ThemeConstants.textSize3xl,
+    fontWeight: ThemeConstants.bold,
+    height: 1.2,
+  );
+
+  static TextStyle get h4 => const TextStyle(
+    fontSize: ThemeConstants.textSize2xl,
+    fontWeight: ThemeConstants.semiBold,
+    height: 1.3,
+  );
+
+  static TextStyle get h5 => const TextStyle(
+    fontSize: ThemeConstants.textSizeXl,
+    fontWeight: ThemeConstants.semiBold,
+    height: 1.3,
+  );
+
+  static TextStyle get h6 => const TextStyle(
+    fontSize: ThemeConstants.textSizeLg,
+    fontWeight: ThemeConstants.semiBold,
+    height: 1.3,
+  );
+
+  // Body styles
+  static TextStyle get body1 => const TextStyle(
+    fontSize: ThemeConstants.textSizeLg,
+    fontWeight: ThemeConstants.regular,
+    height: 1.5,
+  );
+
+  static TextStyle get body2 => const TextStyle(
+    fontSize: ThemeConstants.textSizeMd,
+    fontWeight: ThemeConstants.regular,
+    height: 1.5,
+  );
+
+  static TextStyle get caption => const TextStyle(
+    fontSize: ThemeConstants.textSizeSm,
+    fontWeight: ThemeConstants.regular,
+    height: 1.4,
+  );
+
+  // Arabic styles
+  static TextStyle get arabicH1 => h1.copyWith(
+    fontFamily: ThemeConstants.fontFamilyArabic,
+    height: 1.8,
+  );
+
+  static TextStyle get quranText => const TextStyle(
+    fontSize: ThemeConstants.textSizeXl,
+    fontWeight: ThemeConstants.regular,
+    height: 2.0,
+    fontFamily: ThemeConstants.fontFamilyQuran,
+  );
+
+  static TextStyle get hadithText => const TextStyle(
+    fontSize: ThemeConstants.textSizeLg,
+    fontWeight: ThemeConstants.regular,
+    height: 1.8,
+    fontFamily: ThemeConstants.fontFamilyArabic,
+  );
 }

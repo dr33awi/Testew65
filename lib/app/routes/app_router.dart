@@ -1,6 +1,6 @@
 // lib/app/routes/app_router.dart
 import 'package:flutter/material.dart';
-import '../../app/themes/app_theme.dart';
+import '../../app/themes/index.dart';
 import '../../features/home/screens/home_screen.dart';
 
 import '../../features/prayer_times/screens/prayer_times_screen.dart';
@@ -53,7 +53,7 @@ class AppRouter {
         return _slideRoute(const PrayerTimesScreen(), settings);
         
       case athkar:
-        return _slideRoute(AthkarCategoriesScreen(), settings);
+        return _slideRoute(const AthkarCategoriesScreen(), settings);
         
       case athkarDetails:
         final categoryId = settings.arguments as String?;
@@ -120,8 +120,8 @@ class AppRouter {
     return PageRouteBuilder<T>(
       settings: settings,
       pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionDuration: ThemeConstants.durationNormal,
-      reverseTransitionDuration: ThemeConstants.durationFast,
+      transitionDuration: AppTheme.durationNormal,
+      reverseTransitionDuration: AppTheme.durationFast,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         return FadeTransition(
           opacity: animation,
@@ -135,8 +135,8 @@ class AppRouter {
     return PageRouteBuilder<T>(
       settings: settings,
       pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionDuration: ThemeConstants.durationNormal,
-      reverseTransitionDuration: ThemeConstants.durationFast,
+      transitionDuration: AppTheme.durationNormal,
+      reverseTransitionDuration: AppTheme.durationFast,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
         const end = Offset.zero;
@@ -166,41 +166,41 @@ class AppRouter {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: ThemeConstants.primary.withValues(alpha: 0.1),
+                color: AppTheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 _getIconForFeature(title),
                 size: 60,
-                color: ThemeConstants.primary,
+                color: AppTheme.primary,
               ),
             ),
-            ThemeConstants.space5.h,
+            AppTheme.space5H,
             Text(
               'قريباً',
               style: AppTextStyles.h2.copyWith(
-                color: ThemeConstants.primary,
-                fontWeight: ThemeConstants.bold,
+                color: AppTheme.primary,
+                fontWeight: AppTheme.bold,
               ),
             ),
-            ThemeConstants.space2.h,
+            AppTheme.space2H,
             Text(
               title,
               style: AppTextStyles.h4.copyWith(
-                color: ThemeConstants.lightTextSecondary,
+                color: AppTheme.lightTextSecondary,
               ),
             ),
-            ThemeConstants.space1.h,
+            AppTheme.space1H,
             Text(
               'هذه الميزة قيد التطوير',
               style: AppTextStyles.body1.copyWith(
-                color: ThemeConstants.lightTextHint,
+                color: AppTheme.lightTextSecondary,
               ),
             ),
-            ThemeConstants.space6.h,
+            AppTheme.space6H,
             AppButton.outline(
               text: 'العودة',
-              onPressed: () => Navigator.of(_navigatorKey.currentContext!).pop(),
+              onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
               icon: Icons.arrow_back,
             ),
           ],
@@ -219,68 +219,67 @@ class AppRouter {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: ThemeConstants.error.withValues(alpha: 0.1),
+                color: AppTheme.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.error_outline,
                 size: 60,
-                color: ThemeConstants.error,
+                color: AppTheme.error,
               ),
             ),
-            ThemeConstants.space5.h,
+            AppTheme.space5H,
             Text(
               '404',
               style: AppTextStyles.h1.copyWith(
-                color: ThemeConstants.error,
-                fontWeight: ThemeConstants.bold,
+                color: AppTheme.error,
+                fontWeight: AppTheme.bold,
               ),
             ),
-            ThemeConstants.space2.h,
-            const Text(
+            AppTheme.space2H,
+            Text(
               'الصفحة غير موجودة',
               style: AppTextStyles.h4,
             ),
-            ThemeConstants.space1.h,
+            AppTheme.space1H,
             Text(
               'لم نتمكن من العثور على الصفحة المطلوبة',
               style: AppTextStyles.body1.copyWith(
-                color: ThemeConstants.lightTextSecondary,
+                color: AppTheme.lightTextSecondary,
               ),
             ),
             if (routeName != null) ...[
-              ThemeConstants.space2.h,
+              AppTheme.space2H,
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: ThemeConstants.space3,
-                  vertical: ThemeConstants.space1,
+                  horizontal: AppTheme.space3,
+                  vertical: AppTheme.space1,
                 ),
                 decoration: BoxDecoration(
-                  color: ThemeConstants.lightTextHint.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                  color: AppTheme.lightTextSecondary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                 ),
                 child: Text(
                   routeName,
                   style: AppTextStyles.caption.copyWith(
-                    color: ThemeConstants.lightTextHint,
-                    fontFamily: 'monospace',
+                    color: AppTheme.lightTextSecondary,
                   ),
                 ),
               ),
             ],
-            ThemeConstants.space6.h,
+            AppTheme.space6H,
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 AppButton.outline(
                   text: 'العودة',
-                  onPressed: () => Navigator.of(_navigatorKey.currentContext!).pop(),
+                  onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
                   icon: Icons.arrow_back,
                 ),
-                const SizedBox(width: ThemeConstants.space3),
+                const SizedBox(width: AppTheme.space3),
                 AppButton.primary(
                   text: 'الرئيسية',
-                  onPressed: () => Navigator.of(_navigatorKey.currentContext!)
+                  onPressed: () => Navigator.of(navigatorKey.currentContext!)
                       .pushNamedAndRemoveUntil(home, (route) => false),
                   icon: Icons.home,
                 ),
@@ -303,27 +302,27 @@ class AppRouter {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: ThemeConstants.error.withValues(alpha: 0.1),
+                color: AppTheme.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.error_outline,
                 size: 50,
-                color: ThemeConstants.error,
+                color: AppTheme.error,
               ),
             ),
-            ThemeConstants.space4.h,
+            AppTheme.space4H,
             Text(
               message,
               style: AppTextStyles.h5.copyWith(
-                color: ThemeConstants.error,
+                color: AppTheme.error,
               ),
               textAlign: TextAlign.center,
             ),
-            ThemeConstants.space6.h,
+            AppTheme.space6H,
             AppButton.outline(
               text: 'العودة',
-              onPressed: () => Navigator.of(_navigatorKey.currentContext!).pop(),
+              onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
               icon: Icons.arrow_back,
             ),
           ],
@@ -366,21 +365,19 @@ class AppRouter {
   }
 
   // Navigator key for global navigation
-  static final GlobalKey<NavigatorState> _navigatorKey = 
+  static final GlobalKey<NavigatorState> navigatorKey = 
       GlobalKey<NavigatorState>();
-  
-  static GlobalKey<NavigatorState> get navigatorKey => _navigatorKey;
 
   // Navigation helper methods
   static Future<T?> push<T>(String routeName, {Object? arguments}) {
-    return _navigatorKey.currentState!.pushNamed<T>(
+    return navigatorKey.currentState!.pushNamed<T>(
       routeName,
       arguments: arguments,
     );
   }
 
   static Future<T?> pushReplacement<T, TO>(String routeName, {Object? arguments}) {
-    return _navigatorKey.currentState!.pushReplacementNamed<T, TO>(
+    return navigatorKey.currentState!.pushReplacementNamed<T, TO>(
       routeName,
       arguments: arguments,
     );
@@ -391,7 +388,7 @@ class AppRouter {
     bool Function(Route<dynamic>) predicate, {
     Object? arguments,
   }) {
-    return _navigatorKey.currentState!.pushNamedAndRemoveUntil<T>(
+    return navigatorKey.currentState!.pushNamedAndRemoveUntil<T>(
       routeName,
       predicate,
       arguments: arguments,
@@ -399,14 +396,14 @@ class AppRouter {
   }
 
   static void pop<T>([T? result]) {
-    return _navigatorKey.currentState!.pop<T>(result);
+    return navigatorKey.currentState!.pop<T>(result);
   }
 
   static bool canPop() {
-    return _navigatorKey.currentState!.canPop();
+    return navigatorKey.currentState!.canPop();
   }
 
   static void popUntil(bool Function(Route<dynamic>) predicate) {
-    return _navigatorKey.currentState!.popUntil(predicate);
+    return navigatorKey.currentState!.popUntil(predicate);
   }
 }

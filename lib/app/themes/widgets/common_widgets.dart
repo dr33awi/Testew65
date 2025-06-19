@@ -48,18 +48,18 @@ class AppCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: gradientColors == null ? (backgroundColor ?? context.cardColor) : null,
         gradient: gradientColors != null ? LinearGradient(
-          colors: gradientColors!.map((c) => c.withOpacity(0.9)).toList(),
+          colors: gradientColors!.map((c) => c.withValues(alpha: 0.9)).toList(),
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ) : null,
         borderRadius: effectiveBorderRadius,
         border: border ?? Border.all(
-          color: context.dividerColor.withOpacity(0.2),
+          color: context.dividerColor.withValues(alpha: 0.2),
           width: AppTheme.borderLight,
         ),
         boxShadow: elevation != null ? [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: elevation!,
             offset: Offset(0, elevation! / 2),
           ),
@@ -215,8 +215,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           end: Alignment.bottomCenter,
           colors: [
             context.backgroundColor,
-            context.backgroundColor.withOpacity(0.95),
-            context.backgroundColor.withOpacity(0.9),
+            context.backgroundColor.withValues(alpha: 0.95),
+            context.backgroundColor.withValues(alpha: 0.9),
           ],
         ),
       ),
@@ -264,10 +264,10 @@ class AppBarAction {
     return Container(
       margin: const EdgeInsets.only(right: AppTheme.space2),
       decoration: BoxDecoration(
-        color: context.cardColor.withOpacity(0.8),
+        color: context.cardColor.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         border: Border.all(
-          color: context.dividerColor.withOpacity(0.2),
+          color: context.dividerColor.withValues(alpha: 0.2),
         ),
       ),
       child: IconButton(
@@ -416,7 +416,7 @@ class AppEmptyState extends StatelessWidget {
               Icon(
                 icon,
                 size: 64,
-                color: iconColor ?? context.textSecondaryColor.withOpacity(0.5),
+                color: iconColor ?? context.textSecondaryColor.withValues(alpha: 0.5),
               ),
               AppTheme.space4H,
             ],
@@ -672,7 +672,7 @@ class _InfoDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: effectiveAccentColor.withOpacity(0.1),
+                color: effectiveAccentColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppTheme.radiusMd),
               ),
               child: Icon(
@@ -735,7 +735,7 @@ class _ConfirmationDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: buttonColor.withOpacity(0.1),
+                color: buttonColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppTheme.radiusMd),
               ),
               child: Icon(

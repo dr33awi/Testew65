@@ -4,7 +4,10 @@
 // الملفات الأساسية للثيم
 export 'app_theme.dart';
 export 'theme_constants.dart';
-export 'flutter_theme_config.dart';
+export 'flutter_theme_config.dart' show FlutterThemeConfig;
+
+// إدارة الثيم
+export 'core/theme_notifier.dart';
 
 // المكونات الموحدة
 export 'widgets/app_components.dart';

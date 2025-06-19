@@ -1,11 +1,8 @@
 // lib/app/themes/widgets/app_components.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'dart:ui';
 import '../app_theme.dart';
 import '../theme_constants.dart';
-import 'animations/animated_press.dart';
-import 'custom_app_bar.dart';
 
 /// بطاقة موحدة للتطبيق
 class AppCard extends StatelessWidget {
@@ -676,6 +673,6 @@ extension SnackBarExtension on BuildContext {
         borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
       ),
       action: action,
-      );
+    );
   }
 }

@@ -28,8 +28,7 @@ class FlutterThemeConfig {
         onSurface: AppTheme.lightTextPrimary,
         onError: Colors.white,
         outline: AppTheme.lightDivider,
-        surfaceVariant: AppTheme.lightCard,
-        shadow: Colors.black.withOpacity(0.1),
+        shadow: Colors.black.withValues(alpha: 0.1),
       ),
 
       // الخطوط
@@ -37,20 +36,21 @@ class FlutterThemeConfig {
       textTheme: _buildTextTheme(Brightness.light),
       
       // شريط التطبيق
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: AppTheme.lightBackground,
         foregroundColor: AppTheme.lightTextPrimary,
         elevation: 0,
         centerTitle: false,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        titleTextStyle: AppTheme.titleLarge.copyWith(
-          color: AppTheme.lightTextPrimary,
+        titleTextStyle: TextStyle(
+          fontSize: AppTheme.textSizeLg,
           fontWeight: AppTheme.bold,
-        ),
-        iconTheme: const IconThemeData(
           color: AppTheme.lightTextPrimary,
         ),
-        shape: const RoundedRectangleBorder(
+        iconTheme: IconThemeData(
+          color: AppTheme.lightTextPrimary,
+        ),
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
             bottom: Radius.circular(0),
           ),
@@ -64,8 +64,7 @@ class FlutterThemeConfig {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppTheme.radius2xl),
         ),
-        margin: const EdgeInsets.all(AppTheme.space2),
-        shadowColor: Colors.black.withOpacity(0.1),
+        shadowColor: Colors.black.withValues(alpha: 0.1),
       ),
 
       // الأزرار المرفوعة
@@ -81,10 +80,11 @@ class FlutterThemeConfig {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
           ),
-          textStyle: AppTheme.labelLarge.copyWith(
+          textStyle: const TextStyle(
+            fontSize: AppTheme.textSizeMd,
             fontWeight: AppTheme.semiBold,
           ),
-          shadowColor: AppTheme.primary.withOpacity(0.3),
+          shadowColor: AppTheme.primary.withValues(alpha: 0.3),
         ),
       ),
 
@@ -100,7 +100,8 @@ class FlutterThemeConfig {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
           ),
-          textStyle: AppTheme.labelLarge.copyWith(
+          textStyle: const TextStyle(
+            fontSize: AppTheme.textSizeMd,
             fontWeight: AppTheme.semiBold,
           ),
         ),
@@ -117,7 +118,8 @@ class FlutterThemeConfig {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
           ),
-          textStyle: AppTheme.labelLarge.copyWith(
+          textStyle: const TextStyle(
+            fontSize: AppTheme.textSizeMd,
             fontWeight: AppTheme.semiBold,
           ),
         ),
@@ -130,13 +132,13 @@ class FlutterThemeConfig {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusXl),
           borderSide: BorderSide(
-            color: AppTheme.lightDivider.withOpacity(0.5),
+            color: AppTheme.lightDivider.withValues(alpha: 0.5),
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusXl),
           borderSide: BorderSide(
-            color: AppTheme.lightDivider.withOpacity(0.5),
+            color: AppTheme.lightDivider.withValues(alpha: 0.5),
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -161,10 +163,14 @@ class FlutterThemeConfig {
           ),
         ),
         contentPadding: const EdgeInsets.all(AppTheme.space4),
-        hintStyle: AppTheme.bodyMedium.copyWith(
+        hintStyle: const TextStyle(
+          fontSize: AppTheme.textSizeMd,
+          fontWeight: AppTheme.regular,
           color: AppTheme.lightTextSecondary,
         ),
-        labelStyle: AppTheme.bodyMedium.copyWith(
+        labelStyle: const TextStyle(
+          fontSize: AppTheme.textSizeMd,
+          fontWeight: AppTheme.regular,
           color: AppTheme.lightTextSecondary,
         ),
       ),
@@ -175,17 +181,17 @@ class FlutterThemeConfig {
           if (states.contains(WidgetState.selected)) {
             return AppTheme.primary;
           }
-          return AppTheme.lightTextSecondary.withOpacity(0.5);
+          return AppTheme.lightTextSecondary.withValues(alpha: 0.5);
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return AppTheme.primary.withOpacity(0.3);
+            return AppTheme.primary.withValues(alpha: 0.3);
           }
           return AppTheme.lightDivider;
         }),
         overlayColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.pressed)) {
-            return AppTheme.primary.withOpacity(0.1);
+            return AppTheme.primary.withValues(alpha: 0.1);
           }
           return null;
         }),
@@ -194,7 +200,7 @@ class FlutterThemeConfig {
       // أشرطة التمرير
       scrollbarTheme: ScrollbarThemeData(
         thumbColor: WidgetStateProperty.all(
-          AppTheme.lightTextSecondary.withOpacity(0.3),
+          AppTheme.lightTextSecondary.withValues(alpha: 0.3),
         ),
         radius: const Radius.circular(AppTheme.radiusSm),
         thickness: WidgetStateProperty.all(6.0),
@@ -209,11 +215,14 @@ class FlutterThemeConfig {
           borderRadius: BorderRadius.circular(AppTheme.radius2xl),
         ),
         elevation: AppTheme.elevation4,
-        titleTextStyle: AppTheme.headlineSmall.copyWith(
-          color: AppTheme.lightTextPrimary,
+        titleTextStyle: const TextStyle(
+          fontSize: AppTheme.textSizeXl,
           fontWeight: AppTheme.bold,
+          color: AppTheme.lightTextPrimary,
         ),
-        contentTextStyle: AppTheme.bodyMedium.copyWith(
+        contentTextStyle: const TextStyle(
+          fontSize: AppTheme.textSizeMd,
+          fontWeight: AppTheme.regular,
           color: AppTheme.lightTextSecondary,
         ),
         insetPadding: const EdgeInsets.all(AppTheme.space6),
@@ -222,7 +231,9 @@ class FlutterThemeConfig {
       // أشرطة الإشعارات
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppTheme.lightTextPrimary,
-        contentTextStyle: AppTheme.bodyMedium.copyWith(
+        contentTextStyle: const TextStyle(
+          fontSize: AppTheme.textSizeMd,
+          fontWeight: AppTheme.regular,
           color: Colors.white,
         ),
         shape: RoundedRectangleBorder(
@@ -232,11 +243,10 @@ class FlutterThemeConfig {
         elevation: AppTheme.elevation3,
         actionTextColor: AppTheme.primary,
         insetPadding: const EdgeInsets.all(AppTheme.space4),
-        margin: const EdgeInsets.all(AppTheme.space4),
       ),
 
       // الفواصل
-      dividerTheme: DividerThemeData(
+      dividerTheme: const DividerThemeData(
         color: AppTheme.lightDivider,
         thickness: 1,
         space: 1,
@@ -249,23 +259,27 @@ class FlutterThemeConfig {
         labelColor: AppTheme.primary,
         unselectedLabelColor: AppTheme.lightTextSecondary,
         indicator: UnderlineTabIndicator(
-          borderSide: BorderSide(
+          borderSide: const BorderSide(
             color: AppTheme.primary,
             width: 3,
           ),
           borderRadius: BorderRadius.circular(AppTheme.radiusSm),
         ),
-        labelStyle: AppTheme.labelLarge.copyWith(
+        labelStyle: const TextStyle(
+          fontSize: AppTheme.textSizeMd,
           fontWeight: AppTheme.semiBold,
         ),
-        unselectedLabelStyle: AppTheme.labelLarge,
+        unselectedLabelStyle: const TextStyle(
+          fontSize: AppTheme.textSizeMd,
+          fontWeight: AppTheme.regular,
+        ),
         overlayColor: WidgetStateProperty.all(
-          AppTheme.primary.withOpacity(0.1),
+          AppTheme.primary.withValues(alpha: 0.1),
         ),
       ),
 
       // شرائط التقدم
-      progressIndicatorTheme: ProgressIndicatorThemeData(
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: AppTheme.primary,
         linearTrackColor: AppTheme.lightDivider,
         circularTrackColor: AppTheme.lightDivider,
@@ -274,7 +288,9 @@ class FlutterThemeConfig {
 
       // القوائم المنسدلة
       dropdownMenuTheme: DropdownMenuThemeData(
-        textStyle: AppTheme.bodyMedium.copyWith(
+        textStyle: const TextStyle(
+          fontSize: AppTheme.textSizeMd,
+          fontWeight: AppTheme.regular,
           color: AppTheme.lightTextPrimary,
         ),
         inputDecorationTheme: InputDecorationTheme(
@@ -305,7 +321,7 @@ class FlutterThemeConfig {
           return AppTheme.lightTextSecondary;
         }),
         overlayColor: WidgetStateProperty.all(
-          AppTheme.primary.withOpacity(0.1),
+          AppTheme.primary.withValues(alpha: 0.1),
         ),
       ),
 
@@ -326,7 +342,7 @@ class FlutterThemeConfig {
           borderRadius: BorderRadius.circular(AppTheme.radiusXs),
         ),
         overlayColor: WidgetStateProperty.all(
-          AppTheme.primary.withOpacity(0.1),
+          AppTheme.primary.withValues(alpha: 0.1),
         ),
       ),
 
@@ -342,11 +358,14 @@ class FlutterThemeConfig {
           horizontal: AppTheme.space4,
           vertical: AppTheme.space2,
         ),
-        titleTextStyle: AppTheme.bodyLarge.copyWith(
-          color: AppTheme.lightTextPrimary,
+        titleTextStyle: const TextStyle(
+          fontSize: AppTheme.textSizeLg,
           fontWeight: AppTheme.medium,
+          color: AppTheme.lightTextPrimary,
         ),
-        subtitleTextStyle: AppTheme.bodyMedium.copyWith(
+        subtitleTextStyle: const TextStyle(
+          fontSize: AppTheme.textSizeMd,
+          fontWeight: AppTheme.regular,
           color: AppTheme.lightTextSecondary,
         ),
         iconColor: AppTheme.lightTextSecondary,
@@ -354,14 +373,14 @@ class FlutterThemeConfig {
           borderRadius: BorderRadius.circular(AppTheme.radiusXl),
         ),
         tileColor: Colors.transparent,
-        selectedTileColor: AppTheme.primary.withOpacity(0.1),
+        selectedTileColor: AppTheme.primary.withValues(alpha: 0.1),
       ),
 
       // الشرائح السفلية
-      bottomSheetTheme: BottomSheetThemeData(
+      bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppTheme.lightCard,
         elevation: AppTheme.elevation4,
-        shape: const RoundedRectangleBorder(
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
             top: Radius.circular(AppTheme.radius2xl),
           ),
@@ -373,14 +392,16 @@ class FlutterThemeConfig {
       // الرقائق
       chipTheme: ChipThemeData(
         backgroundColor: AppTheme.lightCard,
-        selectedColor: AppTheme.primary.withOpacity(0.1),
+        selectedColor: AppTheme.primary.withValues(alpha: 0.1),
         disabledColor: AppTheme.lightDivider,
         deleteIconColor: AppTheme.lightTextSecondary,
-        labelStyle: AppTheme.bodySmall.copyWith(
+        labelStyle: const TextStyle(
+          fontSize: AppTheme.textSizeSm,
+          fontWeight: AppTheme.regular,
           color: AppTheme.lightTextPrimary,
         ),
         side: BorderSide(
-          color: AppTheme.lightDivider.withOpacity(0.5),
+          color: AppTheme.lightDivider.withValues(alpha: 0.5),
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusFull),
@@ -402,21 +423,25 @@ class FlutterThemeConfig {
       ),
 
       // شرائط التنقل السفلية
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppTheme.lightCard,
         selectedItemColor: AppTheme.primary,
         unselectedItemColor: AppTheme.lightTextSecondary,
         type: BottomNavigationBarType.fixed,
         elevation: AppTheme.elevation3,
-        selectedLabelStyle: AppTheme.labelSmall.copyWith(
+        selectedLabelStyle: TextStyle(
+          fontSize: AppTheme.textSizeXs,
           fontWeight: AppTheme.semiBold,
         ),
-        unselectedLabelStyle: AppTheme.labelSmall,
-        selectedIconTheme: const IconThemeData(
+        unselectedLabelStyle: TextStyle(
+          fontSize: AppTheme.textSizeXs,
+          fontWeight: AppTheme.regular,
+        ),
+        selectedIconTheme: IconThemeData(
           color: AppTheme.primary,
           size: AppTheme.iconMd,
         ),
-        unselectedIconTheme: const IconThemeData(
+        unselectedIconTheme: IconThemeData(
           color: AppTheme.lightTextSecondary,
           size: AppTheme.iconMd,
         ),
@@ -435,21 +460,16 @@ class FlutterThemeConfig {
         ),
       ),
 
-      // التحديد
-      selectionTheme: SelectionThemeData(
-        cursorColor: AppTheme.primary,
-        selectionColor: AppTheme.primary.withOpacity(0.3),
-        selectionHandleColor: AppTheme.primary,
-      ),
-
       // أشرطة التحديد
       sliderTheme: SliderThemeData(
         activeTrackColor: AppTheme.primary,
         inactiveTrackColor: AppTheme.lightDivider,
         thumbColor: AppTheme.primary,
-        overlayColor: AppTheme.primary.withOpacity(0.1),
+        overlayColor: AppTheme.primary.withValues(alpha: 0.1),
         valueIndicatorColor: AppTheme.primary,
-        valueIndicatorTextStyle: AppTheme.bodySmall.copyWith(
+        valueIndicatorTextStyle: const TextStyle(
+          fontSize: AppTheme.textSizeSm,
+          fontWeight: AppTheme.regular,
           color: Colors.white,
         ),
       ),
@@ -461,12 +481,15 @@ class FlutterThemeConfig {
         height: 70,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return AppTheme.labelSmall.copyWith(
-              color: AppTheme.primary,
+            return const TextStyle(
+              fontSize: AppTheme.textSizeXs,
               fontWeight: AppTheme.semiBold,
+              color: AppTheme.primary,
             );
           }
-          return AppTheme.labelSmall.copyWith(
+          return const TextStyle(
+            fontSize: AppTheme.textSizeXs,
+            fontWeight: AppTheme.regular,
             color: AppTheme.lightTextSecondary,
           );
         }),
@@ -482,20 +505,10 @@ class FlutterThemeConfig {
             size: AppTheme.iconMd,
           );
         }),
-        indicatorColor: AppTheme.primary.withOpacity(0.1),
+        indicatorColor: AppTheme.primary.withValues(alpha: 0.1),
         indicatorShape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusXl),
         ),
-      ),
-
-      // شرائط التطبيق العلوية
-      topAppBarTheme: AppBarTheme(
-        backgroundColor: AppTheme.lightBackground,
-        foregroundColor: AppTheme.lightTextPrimary,
-        elevation: 0,
-        scrolledUnderElevation: AppTheme.elevation1,
-        shadowColor: Colors.black.withOpacity(0.1),
-        surfaceTintColor: Colors.transparent,
       ),
 
       // التمديدات والمساحات
@@ -526,54 +539,67 @@ class FlutterThemeConfig {
         onSurface: AppTheme.darkTextPrimary,
         onError: Colors.black,
         outline: AppTheme.darkDivider,
-        surfaceVariant: AppTheme.darkCard,
-        shadow: Colors.black.withOpacity(0.3),
+        shadow: Colors.black.withValues(alpha: 0.3),
       ),
 
       textTheme: _buildTextTheme(Brightness.dark),
 
-      appBarTheme: lightTheme.appBarTheme?.copyWith(
+      appBarTheme: const AppBarTheme(
         backgroundColor: AppTheme.darkBackground,
         foregroundColor: AppTheme.darkTextPrimary,
         systemOverlayStyle: SystemUiOverlayStyle.light,
-        titleTextStyle: AppTheme.titleLarge.copyWith(
-          color: AppTheme.darkTextPrimary,
+        titleTextStyle: TextStyle(
+          fontSize: AppTheme.textSizeLg,
           fontWeight: AppTheme.bold,
+          color: AppTheme.darkTextPrimary,
         ),
-        iconTheme: const IconThemeData(
+        iconTheme: IconThemeData(
           color: AppTheme.darkTextPrimary,
         ),
       ),
 
-      cardTheme: lightTheme.cardTheme?.copyWith(
+      cardTheme: CardThemeData(
         color: AppTheme.darkCard,
-        shadowColor: Colors.black.withOpacity(0.3),
+        elevation: AppTheme.elevation2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radius2xl),
+        ),
+        shadowColor: Colors.black.withValues(alpha: 0.3),
       ),
 
-      inputDecorationTheme: lightTheme.inputDecorationTheme?.copyWith(
+      inputDecorationTheme: const InputDecorationTheme(
         fillColor: AppTheme.darkCard,
-        hintStyle: AppTheme.bodyMedium.copyWith(
+        hintStyle: TextStyle(
+          fontSize: AppTheme.textSizeMd,
+          fontWeight: AppTheme.regular,
           color: AppTheme.darkTextSecondary,
         ),
-        labelStyle: AppTheme.bodyMedium.copyWith(
+        labelStyle: TextStyle(
+          fontSize: AppTheme.textSizeMd,
+          fontWeight: AppTheme.regular,
           color: AppTheme.darkTextSecondary,
         ),
       ),
 
-      dialogTheme: lightTheme.dialogTheme?.copyWith(
+      dialogTheme: const DialogThemeData(
         backgroundColor: AppTheme.darkCard,
-        titleTextStyle: AppTheme.headlineSmall.copyWith(
-          color: AppTheme.darkTextPrimary,
+        titleTextStyle: TextStyle(
+          fontSize: AppTheme.textSizeXl,
           fontWeight: AppTheme.bold,
+          color: AppTheme.darkTextPrimary,
         ),
-        contentTextStyle: AppTheme.bodyMedium.copyWith(
+        contentTextStyle: TextStyle(
+          fontSize: AppTheme.textSizeMd,
+          fontWeight: AppTheme.regular,
           color: AppTheme.darkTextSecondary,
         ),
       ),
 
-      snackBarTheme: lightTheme.snackBarTheme?.copyWith(
+      snackBarTheme: const SnackBarThemeData(
         backgroundColor: AppTheme.darkCard,
-        contentTextStyle: AppTheme.bodyMedium.copyWith(
+        contentTextStyle: TextStyle(
+          fontSize: AppTheme.textSizeMd,
+          fontWeight: AppTheme.regular,
           color: AppTheme.darkTextPrimary,
         ),
       ),
@@ -589,53 +615,61 @@ class FlutterThemeConfig {
         size: AppTheme.iconMd,
       ),
 
-      listTileTheme: lightTheme.listTileTheme?.copyWith(
-        titleTextStyle: AppTheme.bodyLarge.copyWith(
-          color: AppTheme.darkTextPrimary,
+      listTileTheme: ListTileThemeData(
+        titleTextStyle: const TextStyle(
+          fontSize: AppTheme.textSizeLg,
           fontWeight: AppTheme.medium,
+          color: AppTheme.darkTextPrimary,
         ),
-        subtitleTextStyle: AppTheme.bodyMedium.copyWith(
+        subtitleTextStyle: const TextStyle(
+          fontSize: AppTheme.textSizeMd,
+          fontWeight: AppTheme.regular,
           color: AppTheme.darkTextSecondary,
         ),
         iconColor: AppTheme.darkTextSecondary,
-        selectedTileColor: AppTheme.primaryLight.withOpacity(0.1),
+        selectedTileColor: AppTheme.primaryLight.withValues(alpha: 0.1),
       ),
 
-      bottomSheetTheme: lightTheme.bottomSheetTheme?.copyWith(
+      bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppTheme.darkCard,
         modalBackgroundColor: AppTheme.darkCard,
       ),
 
-      chipTheme: lightTheme.chipTheme?.copyWith(
+      chipTheme: const ChipThemeData(
         backgroundColor: AppTheme.darkCard,
-        labelStyle: AppTheme.bodySmall.copyWith(
+        labelStyle: TextStyle(
+          fontSize: AppTheme.textSizeSm,
+          fontWeight: AppTheme.regular,
           color: AppTheme.darkTextPrimary,
         ),
       ),
 
-      bottomAppBarTheme: lightTheme.bottomAppBarTheme?.copyWith(
+      bottomAppBarTheme: const BottomAppBarTheme(
         color: AppTheme.darkCard,
       ),
 
-      bottomNavigationBarTheme: lightTheme.bottomNavigationBarTheme?.copyWith(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppTheme.darkCard,
         unselectedItemColor: AppTheme.darkTextSecondary,
-        selectedIconTheme: const IconThemeData(
+        selectedIconTheme: IconThemeData(
           color: AppTheme.primaryLight,
           size: AppTheme.iconMd,
         ),
       ),
 
-      navigationBarTheme: lightTheme.navigationBarTheme?.copyWith(
+      navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppTheme.darkCard,
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return AppTheme.labelSmall.copyWith(
-              color: AppTheme.primaryLight,
+            return const TextStyle(
+              fontSize: AppTheme.textSizeXs,
               fontWeight: AppTheme.semiBold,
+              color: AppTheme.primaryLight,
             );
           }
-          return AppTheme.labelSmall.copyWith(
+          return const TextStyle(
+            fontSize: AppTheme.textSizeXs,
+            fontWeight: AppTheme.regular,
             color: AppTheme.darkTextSecondary,
           );
         }),
@@ -651,18 +685,13 @@ class FlutterThemeConfig {
             size: AppTheme.iconMd,
           );
         }),
-        indicatorColor: AppTheme.primaryLight.withOpacity(0.1),
+        indicatorColor: AppTheme.primaryLight.withValues(alpha: 0.1),
       ),
 
-      scrollbarTheme: lightTheme.scrollbarTheme?.copyWith(
+      scrollbarTheme: ScrollbarThemeData(
         thumbColor: WidgetStateProperty.all(
-          AppTheme.darkTextSecondary.withOpacity(0.3),
+          AppTheme.darkTextSecondary.withValues(alpha: 0.3),
         ),
-      ),
-
-      topAppBarTheme: lightTheme.topAppBarTheme?.copyWith(
-        backgroundColor: AppTheme.darkBackground,
-        foregroundColor: AppTheme.darkTextPrimary,
       ),
     );
   }
@@ -679,32 +708,105 @@ class FlutterThemeConfig {
 
     return TextTheme(
       // Display styles
-      displayLarge: AppTheme.displayLarge.copyWith(color: baseColor),
-      displayMedium: AppTheme.displayLarge.copyWith(
+      displayLarge: TextStyle(
+        fontSize: AppTheme.textSize5xl,
+        fontWeight: AppTheme.bold,
+        height: 1.1,
+        letterSpacing: -0.5,
         color: baseColor,
-        fontSize: AppTheme.textSize4xl,
       ),
-      displaySmall: AppTheme.displaySmall.copyWith(color: baseColor),
+      displayMedium: TextStyle(
+        fontSize: AppTheme.textSize4xl,
+        fontWeight: AppTheme.bold,
+        height: 1.2,
+        color: baseColor,
+      ),
+      displaySmall: TextStyle(
+        fontSize: AppTheme.textSize3xl,
+        fontWeight: AppTheme.bold,
+        height: 1.2,
+        color: baseColor,
+      ),
       
       // Headline styles
-      headlineLarge: AppTheme.headlineLarge.copyWith(color: baseColor),
-      headlineMedium: AppTheme.headlineMedium.copyWith(color: baseColor),
-      headlineSmall: AppTheme.headlineSmall.copyWith(color: baseColor),
+      headlineLarge: TextStyle(
+        fontSize: AppTheme.textSize3xl,
+        fontWeight: AppTheme.bold,
+        height: 1.2,
+        color: baseColor,
+      ),
+      headlineMedium: TextStyle(
+        fontSize: AppTheme.textSize2xl,
+        fontWeight: AppTheme.semiBold,
+        height: 1.3,
+        color: baseColor,
+      ),
+      headlineSmall: TextStyle(
+        fontSize: AppTheme.textSizeXl,
+        fontWeight: AppTheme.semiBold,
+        height: 1.3,
+        color: baseColor,
+      ),
       
       // Title styles
-      titleLarge: AppTheme.titleLarge.copyWith(color: baseColor),
-      titleMedium: AppTheme.titleMedium.copyWith(color: baseColor),
-      titleSmall: AppTheme.titleSmall.copyWith(color: baseColor),
+      titleLarge: TextStyle(
+        fontSize: AppTheme.textSizeLg,
+        fontWeight: AppTheme.semiBold,
+        height: 1.3,
+        color: baseColor,
+      ),
+      titleMedium: TextStyle(
+        fontSize: AppTheme.textSizeMd,
+        fontWeight: AppTheme.medium,
+        height: 1.4,
+        color: baseColor,
+      ),
+      titleSmall: TextStyle(
+        fontSize: AppTheme.textSizeSm,
+        fontWeight: AppTheme.medium,
+        height: 1.4,
+        color: baseColor,
+      ),
       
       // Body styles
-      bodyLarge: AppTheme.bodyLarge.copyWith(color: baseColor),
-      bodyMedium: AppTheme.bodyMedium.copyWith(color: baseColor),
-      bodySmall: AppTheme.bodySmall.copyWith(color: secondaryColor),
+      bodyLarge: TextStyle(
+        fontSize: AppTheme.textSizeLg,
+        fontWeight: AppTheme.regular,
+        height: 1.5,
+        color: baseColor,
+      ),
+      bodyMedium: TextStyle(
+        fontSize: AppTheme.textSizeMd,
+        fontWeight: AppTheme.regular,
+        height: 1.5,
+        color: baseColor,
+      ),
+      bodySmall: TextStyle(
+        fontSize: AppTheme.textSizeSm,
+        fontWeight: AppTheme.regular,
+        height: 1.4,
+        color: secondaryColor,
+      ),
       
       // Label styles
-      labelLarge: AppTheme.labelLarge.copyWith(color: baseColor),
-      labelMedium: AppTheme.labelMedium.copyWith(color: secondaryColor),
-      labelSmall: AppTheme.labelSmall.copyWith(color: secondaryColor),
+      labelLarge: TextStyle(
+        fontSize: AppTheme.textSizeMd,
+        fontWeight: AppTheme.medium,
+        height: 1.3,
+        color: baseColor,
+      ),
+      labelMedium: TextStyle(
+        fontSize: AppTheme.textSizeSm,
+        fontWeight: AppTheme.medium,
+        height: 1.3,
+        color: secondaryColor,
+      ),
+      labelSmall: TextStyle(
+        fontSize: AppTheme.textSizeXs,
+        fontWeight: AppTheme.medium,
+        height: 1.2,
+        color: secondaryColor,
+      ),
     );
   }
 }

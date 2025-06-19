@@ -1,45 +1,57 @@
 // lib/app/app.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
 
 // استيراد الثيمات
-import 'themes/app_theme.dart';
+import 'themes/index.dart';
 import '../core/constants/app_constants.dart';
 import 'routes/app_router.dart';
-import '../main.dart'; // لاستخدام NavigationService
 
 class AthkarApp extends StatelessWidget {
-  final bool isDarkMode;
-  final String language;
-  
-  const AthkarApp({
-    super.key,
-    this.isDarkMode = false,
-    this.language = 'ar',
-  });
+  const AthkarApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: AppConstants.appName,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      locale: Locale(language),
-      supportedLocales: const [
-        Locale('ar'), // العربية
-        Locale('en'), // الإنجليزية
-      ],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      // إضافة navigatorKey
-      navigatorKey: NavigationService.navigatorKey,
-      // استخدام AppRouter
-      initialRoute: AppRouter.initialRoute,
-      onGenerateRoute: AppRouter.onGenerateRoute,
+    return Consumer<ThemeNotifier>(
+      builder: (context, themeNotifier, child) {
+        return MaterialApp(
+          title: AppConstants.appName,
+          
+          // استخدام الثيم الجديد
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeNotifier.themeMode,
+          
+          // اللغة والترجمة
+          locale: Locale(themeNotifier.language),
+          supportedLocales: const [
+            Locale('ar'), // العربية
+            Locale('en'), // الإنجليزية
+          ],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          
+          // التنقل
+          navigatorKey: AppRouter.navigatorKey,
+          initialRoute: AppRouter.initialRoute,
+          onGenerateRoute: AppRouter.onGenerateRoute,
+          
+          // إعدادات إضافية
+          debugShowCheckedModeBanner: false,
+          builder: (context, child) {
+            return Directionality(
+              textDirection: themeNotifier.language == 'ar' 
+                  ? TextDirection.rtl 
+                  : TextDirection.ltr,
+              child: child ?? const SizedBox.shrink(),
+            );
+          },
+        );
+      },
     );
   }
 }
