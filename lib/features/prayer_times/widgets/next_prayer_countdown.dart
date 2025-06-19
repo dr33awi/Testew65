@@ -1,6 +1,7 @@
 // lib/features/prayer_times/widgets/next_prayer_countdown.dart
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 import '../models/prayer_time_model.dart';
 
@@ -24,34 +25,68 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
   Widget build(BuildContext context) {
     final prayerColor = _getPrayerColor(widget.nextPrayer.type);
     
-    return AppCard(
-      type: CardType.normal,
-      style: CardStyle.gradient,
-      gradientColors: [prayerColor, prayerColor.darken(0.2)],
-      showShadow: true,
-      enableBlur: true,
-      padding: const EdgeInsets.all(ThemeConstants.space5),
-      child: Column(
-        children: [
-          // رأس العد التنازلي
-          _buildHeader(context),
-          
-          ThemeConstants.space4.h,
-          
-          // معلومات الصلاة والوقت
-          _buildPrayerInfo(context, prayerColor),
-          
-          ThemeConstants.space4.h,
-          
-          // العد التنازلي
-          _buildCountdown(context),
-          
-          ThemeConstants.space4.h,
-          
-          // شريط التقدم
-          _buildProgressBar(context),
+    return Container(
+      margin: const EdgeInsets.all(ThemeConstants.space4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            prayerColor.withValues(alpha: 0.9),
+            prayerColor.darken(0.2).withValues(alpha: 0.9),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: prayerColor.withValues(alpha: 0.3),
+            blurRadius: 25,
+            offset: const Offset(0, 15),
+            spreadRadius: 2,
+          ),
         ],
       ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.all(ThemeConstants.space5),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+            ),
+            child: _buildContent(context, prayerColor),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, Color prayerColor) {
+    return Column(
+      children: [
+        // رأس العد التنازلي
+        _buildHeader(context),
+        
+        ThemeConstants.space4.h,
+        
+        // معلومات الصلاة والوقت
+        _buildPrayerInfo(context, prayerColor),
+        
+        ThemeConstants.space4.h,
+        
+        // العد التنازلي
+        _buildCountdown(context),
+        
+        ThemeConstants.space4.h,
+        
+        // شريط التقدم
+        _buildProgressBar(context),
+      ],
     );
   }
 
@@ -82,7 +117,7 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
               style: context.titleMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: ThemeConstants.semiBold,
-              ).withShadow(),
+              ),
             ),
             Text(
               'استعد لأداء الصلاة',
@@ -104,12 +139,13 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // اسم الصلاة - بدون حركة
               Text(
                 widget.nextPrayer.nameAr,
                 style: context.headlineLarge?.copyWith(
                   color: Colors.white,
                   fontWeight: ThemeConstants.bold,
-                ).withShadow(),
+                ),
               ),
               
               ThemeConstants.space1.h,
@@ -222,7 +258,7 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
               style: context.headlineMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: ThemeConstants.bold,
-              ).withShadow(),
+              ),
             ),
           ),
         ),
@@ -245,7 +281,7 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
       style: context.headlineLarge?.copyWith(
         color: Colors.white,
         fontWeight: ThemeConstants.bold,
-      ).withShadow(),
+      ),
     );
   }
 

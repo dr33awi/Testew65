@@ -12,8 +12,7 @@ class PrayerTime {
   final bool isPassed;
   final PrayerType type;
 
-  // إضافة تعريف صريح للنوع
-  Duration? timeRemaining;
+  var timeRemaining;
 
   PrayerTime({
     required this.id,
@@ -25,7 +24,6 @@ class PrayerTime {
     this.isNext = false,
     this.isPassed = false,
     required this.type,
-    this.timeRemaining,
   });
 
   /// الحصول على الوقت المتبقي
@@ -329,17 +327,9 @@ class DailyPrayerTimes {
     );
   }
 
-  List<PrayerTime> get additionalPrayers => prayers.where((prayer) =>
-    prayer.type == PrayerType.sunrise ||
-    prayer.type == PrayerType.midnight ||
-    prayer.type == PrayerType.lastThird
-  ).toList();
+  get additionalPrayers => null;
 
-  List<PrayerTime> get mainPrayers => prayers.where((prayer) =>
-    prayer.type != PrayerType.sunrise &&
-    prayer.type != PrayerType.midnight &&
-    prayer.type != PrayerType.lastThird
-  ).toList();
+  get mainPrayers => null;
 }
 
 /// إعدادات تنبيهات الصلاة

@@ -1,159 +1,112 @@
-// lib/features/home/widgets/color_helper.dart
-
+// lib/app/themes/helpers/color_helper.dart
+import 'package:athkar_app/app/themes/theme_constants.dart';
 import 'package:flutter/material.dart';
-import '../../../app/themes/theme_constants.dart';
 
-/// مساعد موحد للألوان - مستقل وقابل لإعادة الاستخدام
+/// مساعد لتوحيد الألوان في جميع أنحاء التطبيق
 class ColorHelper {
   ColorHelper._();
 
-  // ===== خرائط الألوان الثابتة =====
-  
-  static const Map<String, List<Color>> _categoryGradients = {
-    'prayer_times': [ThemeConstants.primary, ThemeConstants.primaryLight],
-    'athkar': [ThemeConstants.accent, ThemeConstants.accentLight],
-    'quran': [ThemeConstants.tertiary, ThemeConstants.tertiaryLight],
-    'qibla': [ThemeConstants.primaryDark, ThemeConstants.primary],
-    'tasbih': [ThemeConstants.accentDark, ThemeConstants.accent],
-    'dua': [ThemeConstants.tertiaryDark, ThemeConstants.tertiary],
-    'hadith': [ThemeConstants.success, ThemeConstants.successLight],
-    'names': [ThemeConstants.info, ThemeConstants.infoLight],
-    'calendar': [ThemeConstants.warning, ThemeConstants.warningLight],
-    'settings': [Color(0xFF6B7280), Color(0xFF9CA3AF)],
-  };
-
-  static const Map<String, List<Color>> _contentGradients = {
-    'verse': [ThemeConstants.primary, ThemeConstants.primaryLight],
-    'آية': [ThemeConstants.primary, ThemeConstants.primaryLight],
-    'hadith': [ThemeConstants.accent, ThemeConstants.accentLight],
-    'حديث': [ThemeConstants.accent, ThemeConstants.accentLight],
-    'dua': [ThemeConstants.tertiary, ThemeConstants.tertiaryLight],
-    'دعاء': [ThemeConstants.tertiary, ThemeConstants.tertiaryLight],
-    'athkar': [ThemeConstants.accentDark, ThemeConstants.accent],
-    'أذكار': [ThemeConstants.accentDark, ThemeConstants.accent],
-    'tasbih': [ThemeConstants.success, ThemeConstants.successLight],
-    'تسبيح': [ThemeConstants.success, ThemeConstants.successLight],
-    'quote': [ThemeConstants.info, ThemeConstants.infoLight],
-    'اقتباس': [ThemeConstants.info, ThemeConstants.infoLight],
-  };
-
-  static const Map<String, Color> _categoryColors = {
-    'prayer_times': ThemeConstants.primary,
-    'athkar': ThemeConstants.accent,
-    'quran': ThemeConstants.tertiary,
-    'qibla': ThemeConstants.primaryDark,
-    'tasbih': ThemeConstants.accentDark,
-    'dua': ThemeConstants.tertiaryDark,
-    'hadith': ThemeConstants.success,
-    'names': ThemeConstants.info,
-    'calendar': ThemeConstants.warning,
-    'settings': Color(0xFF6B7280),
-    'favorites': Color(0xFFEF4444),
-    'history': Color(0xFF8B5CF6),
-    'about': Color(0xFF06B6D4),
-  };
-
-  static const Map<String, Color> _importanceColors = {
-    'high': ThemeConstants.error,
-    'عالي': ThemeConstants.error,
-    'critical': ThemeConstants.error,
-    'حرج': ThemeConstants.error,
-    'medium': ThemeConstants.warning,
-    'متوسط': ThemeConstants.warning,
-    'normal': ThemeConstants.warning,
-    'عادي': ThemeConstants.warning,
-    'low': ThemeConstants.info,
-    'منخفض': ThemeConstants.info,
-    'minor': ThemeConstants.info,
-    'بسيط': ThemeConstants.info,
-    'success': ThemeConstants.success,
-    'نجح': ThemeConstants.success,
-    'completed': ThemeConstants.success,
-    'مكتمل': ThemeConstants.success,
-  };
-
-  static const Map<String, Color> _moodColors = {
-    'happy': Color(0xFFFEF3C7),
-    'سعيد': Color(0xFFFEF3C7),
-    'peaceful': Color(0xFFDCFCE7),
-    'هادئ': Color(0xFFDCFCE7),
-    'focused': Color(0xFFDDD6FE),
-    'مركز': Color(0xFFDDD6FE),
-    'grateful': Color(0xFFFDE68A),
-    'ممتن': Color(0xFFFDE68A),
-    'contemplative': Color(0xFFE0E7FF),
-    'متأمل': Color(0xFFE0E7FF),
-    'energetic': Color(0xFFFECDD3),
-    'نشيط': Color(0xFFFECDD3),
-  };
-
-  // ===== الدوال الرئيسية =====
-  
   /// الحصول على تدرج لوني حسب الفئة
   static LinearGradient getCategoryGradient(String categoryId) {
-    final colors = _categoryGradients[categoryId.toLowerCase()] ?? 
-                  const [ThemeConstants.primary, ThemeConstants.primaryLight];
-    
-    return LinearGradient(
-      colors: colors,
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
+    switch (categoryId) {
+      case 'prayer_times':
+        return LinearGradient(
+          colors: [ThemeConstants.primary, ThemeConstants.primaryLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case 'athkar':
+        return LinearGradient(
+          colors: [ThemeConstants.accent, ThemeConstants.accentLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case 'quran':
+        return LinearGradient(
+          colors: [ThemeConstants.tertiary, ThemeConstants.tertiaryLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case 'qibla':
+        return LinearGradient(
+          colors: [ThemeConstants.primaryDark, ThemeConstants.primary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case 'tasbih':
+        return LinearGradient(
+          colors: [ThemeConstants.accentDark, ThemeConstants.accent],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case 'dua':
+        return LinearGradient(
+          colors: [ThemeConstants.tertiaryDark, ThemeConstants.tertiary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      default:
+        return ThemeConstants.primaryGradient;
+    }
   }
 
   /// الحصول على تدرج لوني حسب نوع المحتوى
   static LinearGradient getContentGradient(String contentType) {
-    final colors = _contentGradients[contentType.toLowerCase()] ?? 
-                  const [ThemeConstants.primary, ThemeConstants.primaryLight];
-    
-    return LinearGradient(
-      colors: colors,
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
-  }
-
-  /// الحصول على لون أساسي حسب الفئة
-  static Color getCategoryColor(String categoryId) {
-    return _categoryColors[categoryId.toLowerCase()] ?? ThemeConstants.primary;
-  }
-
-  /// الحصول على لون حسب مستوى الأهمية
-  static Color getImportanceColor(String level) {
-    return _importanceColors[level.toLowerCase()] ?? ThemeConstants.primary;
-  }
-
-  /// الحصول على لون حسب الحالة المزاجية
-  static Color getMoodColor(String mood) {
-    return _moodColors[mood.toLowerCase()] ?? ThemeConstants.primary.withValues(alpha: 0.1);
+    switch (contentType.toLowerCase()) {
+      case 'verse':
+      case 'آية':
+        return LinearGradient(
+          colors: [ThemeConstants.primary, ThemeConstants.primaryLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case 'hadith':
+      case 'حديث':
+        return LinearGradient(
+          colors: [ThemeConstants.accent, ThemeConstants.accentLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case 'dua':
+      case 'دعاء':
+        return LinearGradient(
+          colors: [ThemeConstants.tertiary, ThemeConstants.tertiaryLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case 'athkar':
+      case 'أذكار':
+        return LinearGradient(
+          colors: [ThemeConstants.accentDark, ThemeConstants.accent],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      default:
+        return ThemeConstants.primaryGradient;
+    }
   }
 
   /// الحصول على تدرج لوني حسب حالة التقدم
   static LinearGradient getProgressGradient(double progress) {
-    List<Color> colors;
-    
     if (progress < 0.3) {
-      colors = const [
-        ThemeConstants.error, 
-        ThemeConstants.warning,
-      ];
+      return LinearGradient(
+        colors: [ThemeConstants.error.withOpacity(0.8), ThemeConstants.warning],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
     } else if (progress < 0.7) {
-      colors = const [
-        ThemeConstants.warning, 
-        ThemeConstants.accent,
-      ];
+      return LinearGradient(
+        colors: [ThemeConstants.warning, ThemeConstants.accent],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
     } else {
-      colors = const [
-        ThemeConstants.success, 
-        ThemeConstants.primary,
-      ];
+      return LinearGradient(
+        colors: [ThemeConstants.success, ThemeConstants.primary],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
     }
-    
-    return LinearGradient(
-      colors: colors,
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
   }
 
   /// الحصول على تدرج لوني حسب الوقت
@@ -161,274 +114,150 @@ class ColorHelper {
     final time = dateTime ?? DateTime.now();
     final hour = time.hour;
     
-    List<Color> colors;
-    
     if (hour < 5) {
-      // ليل عميق
-      colors = const [ThemeConstants.darkBackground, ThemeConstants.darkCard];
+      // ليل
+      return LinearGradient(
+        colors: [ThemeConstants.darkBackground, ThemeConstants.darkCard],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
     } else if (hour < 8) {
       // فجر
-      colors = const [ThemeConstants.primaryDark, ThemeConstants.primary];
+      return LinearGradient(
+        colors: [ThemeConstants.primaryDark, ThemeConstants.primary],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
     } else if (hour < 12) {
       // صباح
-      colors = const [ThemeConstants.accent, ThemeConstants.accentLight];
+      return LinearGradient(
+        colors: [ThemeConstants.accent, ThemeConstants.accentLight],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
     } else if (hour < 15) {
       // ظهر
-      colors = const [ThemeConstants.primary, ThemeConstants.primaryLight];
+      return LinearGradient(
+        colors: [ThemeConstants.primary, ThemeConstants.primaryLight],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
     } else if (hour < 17) {
       // عصر
-      colors = const [ThemeConstants.primaryLight, ThemeConstants.primarySoft];
+      return LinearGradient(
+        colors: [ThemeConstants.primaryLight, ThemeConstants.primarySoft],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
     } else if (hour < 20) {
       // مغرب
-      colors = const [ThemeConstants.tertiary, ThemeConstants.tertiaryLight];
+      return LinearGradient(
+        colors: [ThemeConstants.tertiary, ThemeConstants.tertiaryLight],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
     } else {
-      // عشاء ومساء
-      colors = const [ThemeConstants.primaryDark, ThemeConstants.darkSurface];
+      // مساء
+      return LinearGradient(
+        colors: [ThemeConstants.primaryDark, ThemeConstants.primary],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
     }
-    
-    return LinearGradient(
-      colors: colors,
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-    );
   }
 
-  /// الحصول على تدرج لوني حسب نوع الصلاة
-  static LinearGradient getPrayerGradient(String prayerName) {
-    switch (prayerName.toLowerCase()) {
-      case 'fajr':
-      case 'الفجر':
-        return const LinearGradient(
-          colors: [ThemeConstants.primaryDark, ThemeConstants.primary],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        );
-      case 'dhuhr':
-      case 'الظهر':
-        return const LinearGradient(
-          colors: [ThemeConstants.accent, ThemeConstants.accentLight],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        );
-      case 'asr':
-      case 'العصر':
-        return const LinearGradient(
-          colors: [ThemeConstants.primaryLight, ThemeConstants.primarySoft],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        );
-      case 'maghrib':
-      case 'المغرب':
-        return const LinearGradient(
-          colors: [ThemeConstants.tertiary, ThemeConstants.tertiaryLight],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        );
-      case 'isha':
-      case 'العشاء':
-        return const LinearGradient(
-          colors: [ThemeConstants.darkCard, ThemeConstants.darkBackground],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        );
-      case 'sunrise':
-      case 'الشروق':
-        return const LinearGradient(
-          colors: [ThemeConstants.accentLight, ThemeConstants.accent],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        );
+  /// الحصول على لون أساسي حسب الفئة
+  static Color getCategoryColor(String categoryId) {
+    switch (categoryId) {
+      case 'prayer_times':
+        return ThemeConstants.primary;
+      case 'athkar':
+        return ThemeConstants.accent;
+      case 'quran':
+        return ThemeConstants.tertiary;
+      case 'qibla':
+        return ThemeConstants.primaryDark;
+      case 'tasbih':
+        return ThemeConstants.accentDark;
+      case 'dua':
+        return ThemeConstants.tertiaryDark;
       default:
-        return const LinearGradient(
-          colors: [ThemeConstants.primary, ThemeConstants.primaryLight],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        );
+        return ThemeConstants.primary;
     }
   }
 
-  /// الحصول على تدرج لوني حسب الفصل
-  static LinearGradient getSeasonGradient({DateTime? date}) {
-    final now = date ?? DateTime.now();
-    final month = now.month;
-    
-    List<Color> colors;
-    
-    if (month >= 12 || month <= 2) {
-      // شتاء
-      colors = const [Color(0xFF1E3A8A), Color(0xFF3B82F6)];
-    } else if (month >= 3 && month <= 5) {
-      // ربيع
-      colors = const [ThemeConstants.success, ThemeConstants.successLight];
-    } else if (month >= 6 && month <= 8) {
-      // صيف
-      colors = const [ThemeConstants.warning, ThemeConstants.warningLight];
-    } else {
-      // خريف
-      colors = const [ThemeConstants.tertiary, ThemeConstants.tertiaryLight];
+  /// الحصول على لون حسب مستوى الأهمية
+  static Color getImportanceColor(String level) {
+    switch (level.toLowerCase()) {
+      case 'high':
+      case 'عالي':
+        return ThemeConstants.error;
+      case 'medium':
+      case 'متوسط':
+        return ThemeConstants.warning;
+      case 'low':
+      case 'منخفض':
+        return ThemeConstants.info;
+      case 'success':
+      case 'نجح':
+        return ThemeConstants.success;
+      default:
+        return ThemeConstants.primary;
     }
-    
-    return LinearGradient(
-      colors: colors,
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
   }
 
-  /// الحصول على ألوان متناسقة للرسوم البيانية
-  static List<Color> getChartColors({int count = 5}) {
-    const baseColors = [
-      ThemeConstants.primary,
-      ThemeConstants.accent,
-      ThemeConstants.tertiary,
-      ThemeConstants.success,
-      ThemeConstants.info,
-      ThemeConstants.warning,
-      ThemeConstants.error,
-    ];
-    
-    if (count <= baseColors.length) {
-      return baseColors.take(count).toList();
-    }
-    
-    // إنشاء ألوان إضافية إذا احتجنا أكثر
-    final colors = <Color>[];
-    for (int i = 0; i < count; i++) {
-      final baseColor = baseColors[i % baseColors.length];
-      final variation = (i / baseColors.length) * 0.3;
-      colors.add(baseColor.withValues(alpha: 1.0 - variation));
-    }
-    
-    return colors;
-  }
-
-  /// الحصول على لون متباين للنص
+  /// الحصول على لون النص المتباين
   static Color getContrastingTextColor(Color backgroundColor) {
     final luminance = backgroundColor.computeLuminance();
     return luminance > 0.5 ? Colors.black87 : Colors.white;
   }
 
-  /// الحصول على تدرج لوني للخلفية حسب السياق
-  static LinearGradient getContextualGradient(BuildContext context, String type) {
-    switch (type.toLowerCase()) {
-      case 'success':
-        return LinearGradient(
-          colors: [
-            ThemeConstants.success.withValues(alpha: 0.1), 
-            ThemeConstants.success.withValues(alpha: 0.05)
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        );
-      case 'error':
-        return LinearGradient(
-          colors: [
-            ThemeConstants.error.withValues(alpha: 0.1), 
-            ThemeConstants.error.withValues(alpha: 0.05)
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        );
-      case 'warning':
-        return LinearGradient(
-          colors: [
-            ThemeConstants.warning.withValues(alpha: 0.1), 
-            ThemeConstants.warning.withValues(alpha: 0.05)
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        );
-      case 'info':
-        return LinearGradient(
-          colors: [
-            ThemeConstants.info.withValues(alpha: 0.1), 
-            ThemeConstants.info.withValues(alpha: 0.05)
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        );
-      default:
-        return LinearGradient(
-          colors: [
-            ThemeConstants.primary.withValues(alpha: 0.1), 
-            ThemeConstants.primary.withValues(alpha: 0.05)
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        );
-    }
-  }
-
-  /// تدرج لوني للكروت التفاعلية
-  static LinearGradient getInteractiveCardGradient(BuildContext context, {
-    required bool isPressed,
-    required bool isHovered,
-    Color? baseColor,
-  }) {
-    final color = baseColor ?? ThemeConstants.primary;
+  /// دمج لونين بنسبة معينة
+  static Color blendColors(Color color1, Color color2, double ratio) {
+    ratio = ratio.clamp(0.0, 1.0);
     
-    double opacity = 0.05;
-    if (isPressed) {
-      opacity = 0.15;
-    } else if (isHovered) {
-      opacity = 0.1;
-    }
-    
-    return LinearGradient(
-      colors: [
-        color.withValues(alpha: opacity),
-        color.withValues(alpha: opacity * 0.5),
-      ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
+    return Color.fromARGB(
+      ((1 - ratio) * color1.alpha + ratio * color2.alpha).round(),
+      ((1 - ratio) * color1.red + ratio * color2.red).round(),
+      ((1 - ratio) * color1.green + ratio * color2.green).round(),
+      ((1 - ratio) * color1.blue + ratio * color2.blue).round(),
     );
   }
 
-  /// الحصول على ألوان للتقويم الهجري
-  static Map<String, Color> getHijriCalendarColors() {
-    return const {
-      'muharram': Color(0xFF1F2937),
-      'safar': Color(0xFF374151),
-      'rabi_al_awwal': ThemeConstants.success,
-      'rabi_al_thani': ThemeConstants.successLight,
-      'jumada_al_awwal': ThemeConstants.primary,
-      'jumada_al_thani': ThemeConstants.primaryLight,
-      'rajab': ThemeConstants.accent,
-      'shaban': ThemeConstants.accentLight,
-      'ramadan': ThemeConstants.tertiary,
-      'shawwal': ThemeConstants.tertiaryLight,
-      'dhu_al_qidah': ThemeConstants.info,
-      'dhu_al_hijjah': ThemeConstants.infoLight,
-    };
+  /// الحصول على مجموعة ألوان متناسقة
+  static List<Color> getHarmoniousColors(Color baseColor, {int count = 3}) {
+    final hsl = HSLColor.fromColor(baseColor);
+    final colors = <Color>[];
+    
+    for (int i = 0; i < count; i++) {
+      final newHue = (hsl.hue + (i * 360 / count)) % 360;
+      colors.add(hsl.withHue(newHue).toColor());
+    }
+    
+    return colors;
   }
 
-  /// دوال مساعدة للألوان الديناميكية
-  static Color interpolateColors(Color startColor, Color endColor, double t) {
-    return Color.lerp(startColor, endColor, t.clamp(0.0, 1.0))!;
+  /// تطبيق شفافية على لون مع الحفاظ على قوة اللون
+  static Color applyOpacitySafely(Color color, double opacity) {
+    opacity = opacity.clamp(0.0, 1.0);
+    return color.withValues(alpha: opacity);
   }
 
-  /// إنشاء تدرج لوني مخصص
-  static LinearGradient createCustomGradient({
-    required List<Color> colors,
-    List<double>? stops,
-    AlignmentGeometry begin = Alignment.topLeft,
-    AlignmentGeometry end = Alignment.bottomRight,
+  /// الحصول على تدرج شفاف
+  static LinearGradient getTransparentGradient(Color color, {
+    Alignment begin = Alignment.topCenter,
+    Alignment end = Alignment.bottomCenter,
   }) {
     return LinearGradient(
-      colors: colors,
-      stops: stops,
       begin: begin,
       end: end,
+      colors: [
+        color.withValues(alpha: 0.0),
+        color.withValues(alpha: 0.3),
+        color.withValues(alpha: 0.7),
+        color,
+      ],
+      stops: const [0.0, 0.3, 0.7, 1.0],
     );
-  }
-
-  /// الحصول على مجموعة ألوان متدرجة
-  static List<Color> generateColorSeries(Color baseColor, int count) {
-    final colors = <Color>[];
-    for (int i = 0; i < count; i++) {
-      final factor = i / (count - 1);
-      colors.add(Color.lerp(baseColor.withValues(alpha: 0.3), baseColor, factor)!);
-    }
-    return colors;
   }
 }

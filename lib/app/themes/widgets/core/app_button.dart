@@ -142,10 +142,7 @@ class AppButton extends StatelessWidget {
         );
         break;
         
-      case ButtonType.primary:
-      case ButtonType.secondary:
-      case ButtonType.danger:
-      case ButtonType.success:
+      default:
         button = ElevatedButton(
           onPressed: isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
@@ -209,6 +206,7 @@ class AppButton extends StatelessWidget {
       case ButtonType.success:
         return Colors.white;
       case ButtonType.outline:
+        return customColor ?? context.primaryColor;
       case ButtonType.text:
         return customColor ?? context.primaryColor;
     }
@@ -258,8 +256,31 @@ class AppButton extends StatelessWidget {
     }
   }
 
-  // Factory constructors
+  // Factory constructors مع إصلاح textColor parameter
   factory AppButton.primary({
+    required String text,
+    required VoidCallback? onPressed,
+    IconData? icon,
+    bool isLoading = false,
+    bool isFullWidth = false,
+    ButtonSize size = ButtonSize.medium,
+    Color? backgroundColor,
+    Color? textColor, // إضافة معلمة textColor المطلوبة
+  }) {
+    return AppButton(
+      text: text,
+      onPressed: onPressed,
+      type: ButtonType.primary,
+      icon: icon,
+      isLoading: isLoading,
+      isFullWidth: isFullWidth,
+      size: size,
+      customColor: backgroundColor,
+      textColor: textColor, // استخدام المعلمة الجديدة
+    );
+  }
+
+  factory AppButton.custom({
     required String text,
     required VoidCallback? onPressed,
     IconData? icon,

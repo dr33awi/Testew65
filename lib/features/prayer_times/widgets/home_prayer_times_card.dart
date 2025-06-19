@@ -1,7 +1,8 @@
 // lib/features/prayer_times/widgets/home_prayer_times_card.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui';
+import 'dart:math' as math;
 import 'dart:async';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
@@ -75,6 +76,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     try {
       _prayerService = getIt<PrayerTimesService>();
       
+      // الاستماع للتحديثات
       _timesSubscription = _prayerService.prayerTimesStream.listen(
         (times) {
           if (mounted) {
@@ -106,6 +108,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
         },
       );
       
+      // تحميل البيانات الأولية
       _loadInitialData();
     } catch (e) {
       setState(() {
@@ -117,6 +120,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
 
   Future<void> _loadInitialData() async {
     try {
+      // محاولة تحميل البيانات المحفوظة أولاً
       final cachedTimes = await _prayerService.getCachedPrayerTimes(DateTime.now());
       if (cachedTimes != null && mounted) {
         setState(() {
@@ -127,6 +131,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
         });
       }
       
+      // تحديث البيانات في الخلفية
       if (_prayerService.currentLocation == null) {
         await _prayerService.getCurrentLocation();
       }
@@ -169,75 +174,163 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       return _buildEmptyState();
     }
 
-    return AppCard(
-      type: CardType.normal,
-      style: CardStyle.gradient,
-      gradientColors: _getPrayerGradient(nextPrayer.nameAr).colors,
-      showShadow: true,
-      enableBlur: true,
-      onTap: _navigateToPrayerTimes,
-      padding: const EdgeInsets.all(ThemeConstants.space5),
-      child: Column(
-        children: [
-          // رأس البطاقة
-          _buildHeader(context, nextPrayer),
-          
-          ThemeConstants.space3.h,
-          
-          // الصلاة القادمة
-          _buildNextPrayerSection(context, nextPrayer),
-          
-          ThemeConstants.space4.h,
-          
-          // خط زمني للصلوات
-          _buildPrayerTimeline(context),
-        ],
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        gradient: _getPrayerGradient(nextPrayer.nameAr),
       ),
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return AppCard(
-      type: CardType.normal,
-      child: SizedBox(
-        height: 280,
-        child: Center(
-          child: AppLoading.circular(
-            message: 'جاري تحميل مواقيت الصلاة...',
-            color: context.primaryColor,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: _navigateToPrayerTimes,
+              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+              child: Container(
+                padding: const EdgeInsets.all(ThemeConstants.space5),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+                ),
+                child: Column(
+                  children: [
+                    // رأس البطاقة
+                    _buildHeader(context, nextPrayer),
+                    
+                    ThemeConstants.space3.h,
+                    
+                    // الصلاة القادمة
+                    _buildNextPrayerSection(context, nextPrayer),
+                    
+                    ThemeConstants.space4.h,
+                    
+                    // خط زمني للصلوات
+                    _buildPrayerTimeline(context),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
+  Widget _buildLoadingState() {
+    return Container(
+      height: 280,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        color: context.cardColor,
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(context.primaryColor),
+            ),
+            ThemeConstants.space3.h,
+            Text(
+              'جاري تحميل مواقيت الصلاة...',
+              style: context.bodyMedium?.copyWith(
+                color: context.textSecondaryColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildErrorState() {
-    return AppCard(
-      type: CardType.normal,
-      onTap: _loadInitialData,
-      child: SizedBox(
-        height: 280,
-        child: AppEmptyState.error(
-          message: _errorMessage,
-          onRetry: _loadInitialData,
+    return Container(
+      height: 280,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        color: context.cardColor,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _loadInitialData,
+          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+          child: Padding(
+            padding: const EdgeInsets.all(ThemeConstants.space5),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 48,
+                  color: context.errorColor,
+                ),
+                ThemeConstants.space3.h,
+                Text(
+                  _errorMessage ?? 'خطأ في تحميل المواقيت',
+                  style: context.bodyMedium?.copyWith(
+                    color: context.textSecondaryColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                ThemeConstants.space3.h,
+                Text(
+                  'اضغط للمحاولة مرة أخرى',
+                  style: context.bodySmall?.copyWith(
+                    color: context.primaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildEmptyState() {
-    return AppCard(
-      type: CardType.normal,
-      onTap: _loadInitialData,
-      child: SizedBox(
-        height: 280,
-        child: AppEmptyState.custom(
-          title: 'لم يتم تحديد الموقع',
-          message: 'اضغط لتحديد موقعك وعرض مواقيت الصلاة',
-          icon: Icons.location_on,
-          onAction: _loadInitialData,
-          actionText: 'تحديد الموقع',
-          iconColor: context.primaryColor,
+    return Container(
+      height: 280,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        color: context.cardColor,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _loadInitialData,
+          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+          child: Padding(
+            padding: const EdgeInsets.all(ThemeConstants.space5),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.location_on,
+                  size: 48,
+                  color: context.textSecondaryColor,
+                ),
+                ThemeConstants.space3.h,
+                Text(
+                  'لم يتم تحديد الموقع',
+                  style: context.titleMedium?.semiBold,
+                ),
+                ThemeConstants.space2.h,
+                Text(
+                  'اضغط لتحديد موقعك وعرض مواقيت الصلاة',
+                  style: context.bodySmall?.copyWith(
+                    color: context.textSecondaryColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -246,13 +339,14 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
   Widget _buildHeader(BuildContext context, PrayerTime nextPrayer) {
     return Row(
       children: [
+        // أيقونة المسجد
         Container(
           padding: const EdgeInsets.all(ThemeConstants.space3),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.mosque,
             color: Colors.white,
             size: ThemeConstants.iconLg,
@@ -261,6 +355,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
         
         ThemeConstants.space4.w,
         
+        // المعلومات
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,7 +365,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                 style: context.titleLarge?.copyWith(
                   color: Colors.white,
                   fontWeight: ThemeConstants.bold,
-                ).withShadow(),
+                ),
               ),
               Text(
                 _location?.displayName ?? 'جاري تحديد الموقع...',
@@ -298,6 +393,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       ),
       child: Column(
         children: [
+          // عنوان الصلاة القادمة
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -318,6 +414,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
           
           ThemeConstants.space2.h,
           
+          // اسم الصلاة والوقت
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -329,7 +426,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                     style: context.titleLarge?.copyWith(
                       color: Colors.white,
                       fontWeight: ThemeConstants.bold,
-                    ).withShadow(),
+                    ),
                   ),
                   Text(
                     _getNextPrayerMessage(nextPrayer.nameAr),
@@ -340,6 +437,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                 ],
               ),
               
+              // الوقت مع تأثير النبض
               AnimatedBuilder(
                 animation: _pulseAnimation,
                 builder: (context, child) {
@@ -370,6 +468,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
           
           ThemeConstants.space2.h,
           
+          // الوقت المتبقي
           _buildTimeRemaining(context, nextPrayer),
         ],
       ),
@@ -426,6 +525,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       builder: (context, child) {
         return Column(
           children: [
+            // عنوان التايم لاين
             Row(
               children: [
                 Icon(
@@ -445,10 +545,12 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
             
             ThemeConstants.space3.h,
             
+            // التايم لاين
             SizedBox(
               height: 70,
               child: Stack(
                 children: [
+                  // الخط الأساسي خلف الأيقونات (غير مكتمل)
                   Positioned(
                     top: 20,
                     left: 20,
@@ -462,6 +564,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                     ),
                   ),
                   
+                  // خط التقدم التدريجي
                   Positioned(
                     top: 20,
                     left: 20,
@@ -482,6 +585,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                     ),
                   ),
                   
+                  // نقاط الصلوات فوق الخط
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: mainPrayers.map((prayer) => 
@@ -503,6 +607,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     
     return Column(
       children: [
+        // النقطة (الأيقونة)
         AnimatedContainer(
           duration: ThemeConstants.durationNormal,
           width: isActive ? 32 : 28,
@@ -526,6 +631,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
         
         ThemeConstants.space1.h,
         
+        // اسم الصلاة
         Text(
           prayer.nameAr,
           style: context.labelSmall?.copyWith(
@@ -535,6 +641,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
           ),
         ),
         
+        // الوقت
         Text(
           _formatTime(prayer.time),
           style: context.labelSmall?.copyWith(
@@ -598,9 +705,10 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
   double _calculateProgressWidth(BuildContext context, List<PrayerTime> prayers) {
     if (prayers.isEmpty) return 0.0;
     
-    final screenWidth = MediaQuery.of(context).size.width - 120;
+    final screenWidth = MediaQuery.of(context).size.width - 120; // عرض الشاشة مطروحاً منه الهوامش
     final now = DateTime.now();
     
+    // العثور على الصلاة الحالية
     int currentPrayerIndex = 0;
     for (int i = 0; i < prayers.length; i++) {
       if (prayers[i].isPassed) {
@@ -610,14 +718,17 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       }
     }
     
+    // إذا لم تمر أي صلاة بعد، فلا يوجد خط
     if (currentPrayerIndex == 0 && !prayers[0].isPassed) {
       return 0;
     }
     
+    // إذا مرت جميع الصلوات، فالخط يصل للنهاية
     if (prayers.every((prayer) => prayer.isPassed)) {
       return screenWidth * _progressAnimation.value;
     }
     
+    // حساب التقدم
     double progress;
     if (currentPrayerIndex < prayers.length - 1) {
       final currentPrayer = prayers[currentPrayerIndex];

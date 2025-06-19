@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 
 class PrayerCalendarStrip extends StatefulWidget {
@@ -53,127 +54,145 @@ class _PrayerCalendarStripState extends State<PrayerCalendarStrip>
       return today.add(Duration(days: index - 7));
     });
     
-    return AppCard(
-      type: CardType.normal,
-      style: CardStyle.glassmorphism,
-      showShadow: true,
-      enableBlur: true,
-      padding: EdgeInsets.zero,
-      child: Column(
-        children: [
-          // رأس التقويم الموحد
-          _buildUnifiedCalendarHeader(context),
-          
-          // شريط التواريخ
-          SizedBox(
-            height: 90,
-            child: AnimatedBuilder(
-              animation: _slideAnimation,
-              builder: (context, child) {
-                return FadeTransition(
-                  opacity: _slideAnimation,
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0, 0.5),
-                      end: Offset.zero,
-                    ).animate(_slideAnimation),
-                    child: ListView.builder(
-                      controller: _pageController,
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: ThemeConstants.space3,
-                        vertical: ThemeConstants.space2,
-                      ),
-                      itemCount: dates.length,
-                      itemBuilder: (context, index) {
-                        final date = dates[index];
-                        final isSelected = _isSameDay(date, widget.selectedDate);
-                        final isToday = _isSameDay(date, today);
-                        
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: ThemeConstants.space1,
-                          ),
-                          child: _buildUnifiedDateItem(
-                            context,
-                            date: date,
-                            isSelected: isSelected,
-                            isToday: isToday,
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              widget.onDateChanged(date);
-                            },
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUnifiedCalendarHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: ThemeConstants.space4,
-        vertical: ThemeConstants.space3,
-      ),
+      height: 120,
+      margin: const EdgeInsets.symmetric(vertical: ThemeConstants.space2),
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
         gradient: LinearGradient(
           colors: [
-            ThemeConstants.primary.withValues(alpha: 0.1),
             ThemeConstants.primary.withValues(alpha: 0.05),
+            ThemeConstants.primary.withValues(alpha: 0.1),
           ],
-        ),
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(ThemeConstants.radius2xl),
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(ThemeConstants.space2),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
             decoration: BoxDecoration(
-              color: ThemeConstants.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              border: Border.all(
+                color: context.dividerColor.withValues(alpha: 0.2),
+                width: 1,
+              ),
+              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
             ),
-            child: const Icon(
-              Icons.calendar_today_rounded,
-              color: ThemeConstants.primary,
-              size: ThemeConstants.iconMd,
-            ),
-          ),
-          ThemeConstants.space3.w,
-          Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'التقويم الهجري',
-                  style: context.titleMedium?.copyWith(
-                    fontWeight: ThemeConstants.semiBold,
+                // رأس التقويم
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: ThemeConstants.space4,
+                    vertical: ThemeConstants.space3,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        ThemeConstants.primary.withValues(alpha: 0.1),
+                        ThemeConstants.primary.withValues(alpha: 0.05),
+                      ],
+                    ),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(ThemeConstants.radius2xl),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(ThemeConstants.space2),
+                        decoration: BoxDecoration(
+                          color: ThemeConstants.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                        ),
+                        child: Icon(
+                          Icons.calendar_today_rounded,
+                          color: ThemeConstants.primary,
+                          size: ThemeConstants.iconMd,
+                        ),
+                      ),
+                      ThemeConstants.space3.w,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'التقويم الهجري',
+                              style: context.titleMedium?.copyWith(
+                                fontWeight: ThemeConstants.semiBold,
+                              ),
+                            ),
+                            Text(
+                              'اختر التاريخ لعرض مواقيت الصلاة',
+                              style: context.bodySmall?.copyWith(
+                                color: context.textSecondaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Text(
-                  'اختر التاريخ لعرض مواقيت الصلاة',
-                  style: context.bodySmall?.copyWith(
-                    color: context.textSecondaryColor,
+                
+                // شريط التواريخ
+                Expanded(
+                  child: AnimatedBuilder(
+                    animation: _slideAnimation,
+                    builder: (context, child) {
+                      return FadeTransition(
+                        opacity: _slideAnimation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0, 0.5),
+                            end: Offset.zero,
+                          ).animate(_slideAnimation),
+                          child: ListView.builder(
+                            controller: _pageController,
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: ThemeConstants.space3,
+                              vertical: ThemeConstants.space2,
+                            ),
+                            itemCount: dates.length,
+                            itemBuilder: (context, index) {
+                              final date = dates[index];
+                              final isSelected = _isSameDay(date, widget.selectedDate);
+                              final isToday = _isSameDay(date, today);
+                              
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: ThemeConstants.space1,
+                                ),
+                                child: _buildDateItem(
+                                  context,
+                                  date: date,
+                                  isSelected: isSelected,
+                                  isToday: isToday,
+                                  onTap: () {
+                                    HapticFeedback.lightImpact();
+                                    widget.onDateChanged(date);
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildUnifiedDateItem(
+  Widget _buildDateItem(
     BuildContext context, {
     required DateTime date,
     required bool isSelected,
