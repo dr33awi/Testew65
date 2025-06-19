@@ -200,7 +200,7 @@ class AppTheme {
     return OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: ThemeConstants.primary,
-        side: BorderSide(
+        side: const BorderSide(
           color: ThemeConstants.primary,
           width: ThemeConstants.borderMedium,
         ),
@@ -261,7 +261,7 @@ class AppTheme {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-        borderSide: BorderSide(
+        borderSide: const BorderSide(
           color: ThemeConstants.primary,
           width: ThemeConstants.borderThick,
         ),
@@ -356,7 +356,7 @@ class AppTheme {
       labelColor: ThemeConstants.primary,
       unselectedLabelColor: config.textSecondary.withValues(alpha: ThemeConstants.opacity70),
       indicatorSize: TabBarIndicatorSize.label,
-      indicator: UnderlineTabIndicator(
+      indicator: const UnderlineTabIndicator(
         borderSide: BorderSide(
           color: ThemeConstants.primary,
           width: ThemeConstants.borderThick,
@@ -432,7 +432,7 @@ class AppTheme {
             color: config.textSecondary.withValues(alpha: ThemeConstants.opacity50),
           );
         }
-        return BorderSide(
+        return const BorderSide(
           width: ThemeConstants.borderMedium,
           color: ThemeConstants.primary,
         );

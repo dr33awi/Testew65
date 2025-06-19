@@ -237,33 +237,33 @@ class ThemeConstants {
   );
 
   // ===== نظام الظلال الجاهزة =====
-  static List<BoxShadow> shadowSm = [
+  static final List<BoxShadow> shadowSm = [
     BoxShadow(
-      color: primary.withOpacity(opacity5),
+      color: primary.withValues(alpha: opacity5),
       blurRadius: 4,
       offset: const Offset(0, 2),
     ),
   ];
 
-  static List<BoxShadow> shadowMd = [
+  static final List<BoxShadow> shadowMd = [
     BoxShadow(
-      color: primary.withOpacity(opacity10),
+      color: primary.withValues(alpha: opacity10),
       blurRadius: 8,
       offset: const Offset(0, 4),
     ),
   ];
 
-  static List<BoxShadow> shadowLg = [
+  static final List<BoxShadow> shadowLg = [
     BoxShadow(
-      color: primary.withOpacity(opacity10),
+      color: primary.withValues(alpha: opacity10),
       blurRadius: 16,
       offset: const Offset(0, 8),
     ),
   ];
 
-  static List<BoxShadow> shadowXl = [
+  static final List<BoxShadow> shadowXl = [
     BoxShadow(
-      color: primary.withOpacity(opacity20),
+      color: primary.withValues(alpha: opacity20),
       blurRadius: 24,
       offset: const Offset(0, 12),
     ),
@@ -406,7 +406,7 @@ class ThemeConstants {
     final hour = DateTime.now().hour;
     
     if (hour < 5) {
-      return LinearGradient(
+      return const LinearGradient(
         colors: [darkCard, darkBackground],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -414,7 +414,7 @@ class ThemeConstants {
     } else if (hour < 8) {
       return fajrGradient;
     } else if (hour < 12) {
-      return LinearGradient(
+      return const LinearGradient(
         colors: [primaryLight, primarySoft],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,

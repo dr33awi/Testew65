@@ -122,7 +122,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.mosque,
               color: Colors.white,
               size: ThemeConstants.iconMd,

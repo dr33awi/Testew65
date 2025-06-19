@@ -127,7 +127,7 @@ extension ColorExtensions on Color {
           : darken(strength - 0.5);
     }
     
-    return MaterialColor(value, swatch);
+    return MaterialColor(toARGB32(), swatch);  // إصلاح: استبدال value بـ toARGB32()
   }
 
   /// تشبع اللون
@@ -425,7 +425,7 @@ extension SnackBarExtensions on BuildContext {
           ],
         ),
         backgroundColor: ThemeConstants.success,
-        duration: duration ?? ThemeConstants.durationSlow.milliseconds,
+        duration: duration ?? const Duration(milliseconds: 2000),
         action: action,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
@@ -446,7 +446,7 @@ extension SnackBarExtensions on BuildContext {
           ],
         ),
         backgroundColor: ThemeConstants.error,
-        duration: duration ?? ThemeConstants.durationSlow.milliseconds,
+        duration: duration ?? const Duration(milliseconds: 2000),
         action: action,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
@@ -467,7 +467,7 @@ extension SnackBarExtensions on BuildContext {
           ],
         ),
         backgroundColor: ThemeConstants.info,
-        duration: duration ?? ThemeConstants.durationSlow.milliseconds,
+        duration: duration ?? const Duration(milliseconds: 2000),
         action: action,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
@@ -488,7 +488,7 @@ extension SnackBarExtensions on BuildContext {
           ],
         ),
         backgroundColor: ThemeConstants.warning,
-        duration: duration ?? ThemeConstants.durationSlow.milliseconds,
+        duration: duration ?? const Duration(milliseconds: 2000),
         action: action,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
