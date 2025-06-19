@@ -26,9 +26,6 @@ import 'package:athkar_app/core/infrastructure/services/permissions/permission_s
 import 'package:athkar_app/core/infrastructure/services/device/battery/battery_service.dart';
 import 'package:athkar_app/core/infrastructure/services/device/battery/battery_service_impl.dart';
 
-// إدارة الثيم
-import 'package:athkar_app/app/themes/core/theme_notifier.dart';
-
 // معالج الأخطاء
 import '../../core/error/error_handler.dart';
 
@@ -75,25 +72,22 @@ class ServiceLocator {
       // 2. خدمات التخزين
       await _registerStorageServices();
 
-      // 3. إدارة الثيم
-      _registerThemeServices();
-
-      // 4. خدمات السجلات
+      // 3. خدمات السجلات
       _registerLoggingServices();
 
-      // 5. خدمات الأذونات
+      // 4. خدمات الأذونات
       _registerPermissionServices();
 
-      // 6. خدمات الإشعارات
+      // 5. خدمات الإشعارات
       await _registerNotificationServices();
 
-      // 7. خدمات الجهاز
+      // 6. خدمات الجهاز
       _registerDeviceServices();
 
-      // 8. معالج الأخطاء
+      // 7. معالج الأخطاء
       _registerErrorHandler();
 
-      // 9. خدمات الميزات
+      // 8. خدمات الميزات
       _registerFeatureServices();
 
       _isInitialized = true;
@@ -139,17 +133,6 @@ class ServiceLocator {
           getIt<SharedPreferences>(),
           logger: getIt.isRegistered<LoggerService>() ? getIt<LoggerService>() : null,
         ),
-      );
-    }
-  }
-
-  /// تسجيل إدارة الثيم
-  void _registerThemeServices() {
-    debugPrint('ServiceLocator: تسجيل خدمات الثيم...');
-    
-    if (!getIt.isRegistered<ThemeNotifier>()) {
-      getIt.registerLazySingleton<ThemeNotifier>(
-        () => ThemeNotifier(getIt<StorageService>()),
       );
     }
   }
@@ -288,18 +271,19 @@ class ServiceLocator {
     }
   }
 
-  /// تسجيل خدمات الإعدادات الموحدة
+  /// تسجيل خدمات الإعدادات الموحدة - الحل المحدث
   void _registerSettingsServices() {
     debugPrint('ServiceLocator: تسجيل خدمات الإعدادات الموحدة...');
     
     if (!getIt.isRegistered<SettingsServicesManager>()) {
-      // استخدام registerSingleton بدلاً من registerLazySingleton 
-      // لضمان عدم إنشاء instances متعددة
+      // إنشاء SettingsServicesManager بدون themeNotifier
+      // يمكن إضافة دالة callback للثيم بدلاً من notifier
       final settingsManager = SettingsServicesManager(
         storage: getIt<StorageService>(),
         permissionService: getIt<PermissionService>(),
         logger: getIt<LoggerService>(),
-        themeNotifier: getIt<ThemeNotifier>(),
+        // إذا كان themeNotifier مطلوب، يمكن تمرير null أو callback
+        // themeCallback: (ThemeMode mode) => AppTheme.setThemeMode(mode),
         notificationManager: NotificationManager.instance,
         batteryService: getIt<BatteryService>(),
         prayerService: getIt<PrayerTimesService>(),
@@ -315,7 +299,6 @@ class ServiceLocator {
     return getIt.isRegistered<StorageService>() &&
            getIt.isRegistered<PermissionService>() &&
            getIt.isRegistered<LoggerService>() &&
-           getIt.isRegistered<ThemeNotifier>() &&
            getIt.isRegistered<BatteryService>() &&
            getIt.isRegistered<PrayerTimesService>() &&
            getIt.isRegistered<SettingsServicesManager>();
@@ -364,11 +347,6 @@ class ServiceLocator {
       // تنظيف مدير الإعدادات الموحد
       if (getIt.isRegistered<SettingsServicesManager>()) {
         await getIt<SettingsServicesManager>().dispose();
-      }
-
-      // تنظيف إدارة الثيم
-      if (getIt.isRegistered<ThemeNotifier>()) {
-        getIt<ThemeNotifier>().dispose();
       }
 
       // تنظيف خدمات الميزات
@@ -467,9 +445,6 @@ extension ServiceLocatorExtensions on BuildContext {
   
   /// الحصول على خدمة الاقتباسات اليومية
   DailyQuoteService get dailyQuoteService => getIt<DailyQuoteService>();
-  
-  /// الحصول على إدارة الثيم
-  ThemeNotifier get themeNotifier => getIt<ThemeNotifier>();
   
   /// الحصول على مدير الخدمات الموحد للإعدادات
   SettingsServicesManager get settingsManager => getIt<SettingsServicesManager>();

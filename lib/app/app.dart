@@ -1,30 +1,33 @@
 // lib/app/app.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:provider/provider.dart';
+// import 'package:provider/provider.dart'; // تم حذفه - غير مستخدم
 
-// استيراد الثيمات
-import 'themes/index.dart';
+// استيراد النظام الجديد المبسط
+import 'themes/app_theme.dart';
 import '../core/constants/app_constants.dart';
 import 'routes/app_router.dart';
+// import '../app/di/service_locator.dart'; // تم حذفه - غير مستخدم
 
 class AthkarApp extends StatelessWidget {
   const AthkarApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeNotifier>(
-      builder: (context, themeNotifier, child) {
+    // استخدام النظام المبسط مع ValueListenableBuilder
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: AppTheme.themeModeNotifier,
+      builder: (context, themeMode, child) {
         return MaterialApp(
           title: AppConstants.appName,
           
-          // استخدام الثيم الجديد
+          // استخدام الثيم المبسط
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
-          themeMode: themeNotifier.themeMode,
+          themeMode: themeMode,
           
           // اللغة والترجمة
-          locale: Locale(themeNotifier.language),
+          locale: const Locale('ar'), // يمكنك ربطها بـ SharedPreferences لاحقاً
           supportedLocales: const [
             Locale('ar'), // العربية
             Locale('en'), // الإنجليزية
@@ -44,9 +47,7 @@ class AthkarApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           builder: (context, child) {
             return Directionality(
-              textDirection: themeNotifier.language == 'ar' 
-                  ? TextDirection.rtl 
-                  : TextDirection.ltr,
+              textDirection: TextDirection.rtl, // يمكنك ربطها باللغة لاحقاً
               child: child ?? const SizedBox.shrink(),
             );
           },

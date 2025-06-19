@@ -1,8 +1,13 @@
 // lib/app/routes/app_router.dart
+import 'package:athkar_app/app/themes/colors.dart';
 import 'package:flutter/material.dart';
-import '../../app/themes/index.dart';
-import '../../features/home/screens/home_screen.dart';
 
+// استيراد النظام المبسط بدلاً من المعقد
+import '../../app/themes/app_theme.dart';
+import '../../app/themes/widgets.dart';
+// import '../../app/themes/index.dart'; // احذف هذا
+
+import '../../features/home/screens/home_screen.dart';
 import '../../features/prayer_times/screens/prayer_times_screen.dart';
 import '../../features/prayer_times/screens/prayer_settings_screen.dart';
 import '../../features/prayer_times/screens/prayer_notifications_settings_screen.dart';
@@ -120,8 +125,8 @@ class AppRouter {
     return PageRouteBuilder<T>(
       settings: settings,
       pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionDuration: AppTheme.durationNormal,
-      reverseTransitionDuration: AppTheme.durationFast,
+      transitionDuration: const Duration(milliseconds: 300), // مدة ثابتة بدلاً من AppTheme.durationNormal
+      reverseTransitionDuration: const Duration(milliseconds: 150),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         return FadeTransition(
           opacity: animation,
@@ -135,8 +140,8 @@ class AppRouter {
     return PageRouteBuilder<T>(
       settings: settings,
       pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionDuration: AppTheme.durationNormal,
-      reverseTransitionDuration: AppTheme.durationFast,
+      transitionDuration: const Duration(milliseconds: 300),
+      reverseTransitionDuration: const Duration(milliseconds: 150),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
         const end = Offset.zero;
@@ -154,10 +159,10 @@ class AppRouter {
     );
   }
 
-  // Screen Builders
+  // Screen Builders - تحديث للنظام المبسط
   static Widget _buildComingSoonScreen(String title) {
     return Scaffold(
-      appBar: CustomAppBar.simple(title: title),
+      appBar: IslamicAppBar(title: title), // استخدام النظام المبسط
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -166,42 +171,45 @@ class AppRouter {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: AppTheme.primary.withValues(alpha: 0.1),
+                color: AppColors.primary.withOpacity(0.1), // النظام المبسط
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 _getIconForFeature(title),
                 size: 60,
-                color: AppTheme.primary,
+                color: AppColors.primary, // النظام المبسط
               ),
             ),
-            AppTheme.space5H,
-            Text(
+            Spaces.extraLarge, // النظام المبسط
+            const Text(
               'قريباً',
-              style: AppTextStyles.h2.copyWith(
-                color: AppTheme.primary,
-                fontWeight: AppTheme.bold,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
               ),
             ),
-            AppTheme.space2H,
+            Spaces.medium,
             Text(
               title,
-              style: AppTextStyles.h4.copyWith(
-                color: AppTheme.lightTextSecondary,
+              style: const TextStyle(
+                fontSize: 20,
+                color: AppColors.lightTextSecondary,
               ),
             ),
-            AppTheme.space1H,
-            Text(
+            Spaces.small,
+            const Text(
               'هذه الميزة قيد التطوير',
-              style: AppTextStyles.body1.copyWith(
-                color: AppTheme.lightTextSecondary,
+              style: TextStyle(
+                fontSize: 16,
+                color: AppColors.lightTextSecondary,
               ),
             ),
-            AppTheme.space6H,
-            AppButton.outline(
+            Spaces.extraLarge,
+            IslamicButton.outlined( // النظام المبسط
               text: 'العودة',
-              onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
               icon: Icons.arrow_back,
+              onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
             ),
           ],
         ),
@@ -219,69 +227,72 @@ class AppRouter {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: AppTheme.error.withValues(alpha: 0.1),
+                color: AppColors.error.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.error_outline,
                 size: 60,
-                color: AppTheme.error,
+                color: AppColors.error,
               ),
             ),
-            AppTheme.space5H,
-            Text(
+            Spaces.extraLarge,
+            const Text(
               '404',
-              style: AppTextStyles.h1.copyWith(
-                color: AppTheme.error,
-                fontWeight: AppTheme.bold,
+              style: TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+                color: AppColors.error,
               ),
             ),
-            AppTheme.space2H,
-            Text(
+            Spaces.medium,
+            const Text(
               'الصفحة غير موجودة',
-              style: AppTextStyles.h4,
+              style: TextStyle(fontSize: 20),
             ),
-            AppTheme.space1H,
-            Text(
+            Spaces.small,
+            const Text(
               'لم نتمكن من العثور على الصفحة المطلوبة',
-              style: AppTextStyles.body1.copyWith(
-                color: AppTheme.lightTextSecondary,
+              style: TextStyle(
+                fontSize: 16,
+                color: AppColors.lightTextSecondary,
               ),
             ),
             if (routeName != null) ...[
-              AppTheme.space2H,
+              Spaces.medium,
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.space3,
-                  vertical: AppTheme.space1,
+                  horizontal: 16,
+                  vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppTheme.lightTextSecondary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                  color: AppColors.lightTextSecondary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   routeName,
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppTheme.lightTextSecondary,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.lightTextSecondary,
                   ),
                 ),
               ),
             ],
-            AppTheme.space6H,
+            Spaces.extraLarge,
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                AppButton.outline(
+                IslamicButton.outlined(
                   text: 'العودة',
-                  onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
                   icon: Icons.arrow_back,
+                  onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
                 ),
-                const SizedBox(width: AppTheme.space3),
-                AppButton.primary(
+                Spaces.mediumH,
+                IslamicButton.primary(
                   text: 'الرئيسية',
+                  icon: Icons.home,
                   onPressed: () => Navigator.of(navigatorKey.currentContext!)
                       .pushNamedAndRemoveUntil(home, (route) => false),
-                  icon: Icons.home,
                 ),
               ],
             ),
@@ -293,7 +304,7 @@ class AppRouter {
 
   static Widget _buildErrorScreen(String message) {
     return Scaffold(
-      appBar: CustomAppBar.simple(title: 'خطأ'),
+      appBar: IslamicAppBar(title: 'خطأ'),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -302,28 +313,29 @@ class AppRouter {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppTheme.error.withValues(alpha: 0.1),
+                color: AppColors.error.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.error_outline,
                 size: 50,
-                color: AppTheme.error,
+                color: AppColors.error,
               ),
             ),
-            AppTheme.space4H,
+            Spaces.large,
             Text(
               message,
-              style: AppTextStyles.h5.copyWith(
-                color: AppTheme.error,
+              style: const TextStyle(
+                fontSize: 18,
+                color: AppColors.error,
               ),
               textAlign: TextAlign.center,
             ),
-            AppTheme.space6H,
-            AppButton.outline(
+            Spaces.extraLarge,
+            IslamicButton.outlined(
               text: 'العودة',
-              onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
               icon: Icons.arrow_back,
+              onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
             ),
           ],
         ),
