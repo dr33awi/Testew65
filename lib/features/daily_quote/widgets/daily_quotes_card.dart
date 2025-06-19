@@ -128,7 +128,13 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
     return Column(
       children: [
         // عنوان القسم البسيط
-        _buildSimpleSectionHeader(context),
+        SimpleSectionHeader(
+          title: 'الاقتباس اليومي',
+          subtitle: 'آية وحديث وادعية مختارة',
+          icon: Icons.auto_stories_rounded,
+          showRefresh: !_isLoading,
+          onTapRefresh: _loadQuotes,
+        ),
         
         ThemeConstants.space4.h,
         
@@ -220,86 +226,8 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
     );
   }
 
-  Widget _buildSimpleSectionHeader(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.cardColor,
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: context.dividerColor.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(ThemeConstants.space4),
-                child: Row(
-                  children: [
-                    // أيقونة ثابتة
-                    Container(
-                      padding: const EdgeInsets.all(ThemeConstants.space2),
-                      decoration: BoxDecoration(
-                        gradient: ThemeConstants.primaryGradient,
-                        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                      ),
-                      child: const Icon(
-                        Icons.auto_stories_rounded,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                    ),
-                    
-                    ThemeConstants.space4.w,
-                    
-                    // النصوص
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'الاقتباس اليومي',
-                            style: context.titleLarge?.copyWith(
-                              fontWeight: ThemeConstants.bold,
-                            ),
-                          ),
-                          Text(
-                            'آية وحديث وادعية مختارة',
-                            style: context.labelMedium?.copyWith(
-                              color: context.textSecondaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    // زر إعادة التحديث
-                    if (!_isLoading)
-                      IconButton(
-                        onPressed: _loadQuotes,
-                        icon: Icon(
-                          Icons.refresh,
-                          color: context.textSecondaryColor,
-                        ),
-                        tooltip: 'تحديث الاقتباسات',
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  // Previously _buildSimpleSectionHeader was defined here but has been
+  // replaced with the reusable [SimpleSectionHeader] widget.
 
   Widget _buildSimpleQuoteCard(BuildContext context, QuoteData quote) {
     return Container(
