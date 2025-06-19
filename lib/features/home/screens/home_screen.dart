@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
             delegate: SliverChildListDelegate([
               ThemeConstants.space4.h,
               
-              // رسالة الترحيب البسيطة
+              // رسالة الترحيب
               const WelcomeMessage(),
               
               ThemeConstants.space4.h,
@@ -71,20 +71,20 @@ class _HomeScreenState extends State<HomeScreen> {
               
               ThemeConstants.space4.h,
               
-              // بطاقة الاقتباسات البسيطة
+              // بطاقة الاقتباسات
               const DailyQuotesCard(),
               
               ThemeConstants.space6.h,
               
-              // عنوان الأقسام البسيط
-              _buildSimpleSectionHeader(context),
+              // عنوان الأقسام الموحد
+              _buildUnifiedSectionHeader(context),
               
               ThemeConstants.space4.h,
             ]),
           ),
         ),
         
-        // شبكة الفئات البسيطة
+        // شبكة الفئات
         const CategoryGrid(),
         
         // مساحة في الأسفل
@@ -95,66 +95,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSimpleSectionHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      decoration: BoxDecoration(
-        color: context.cardColor,
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-      ),
-      child: Row(
-        children: [
-          // المؤشر الجانبي
-          Container(
-            width: 4,
-            height: 32,
-            decoration: BoxDecoration(
-              gradient: ThemeConstants.primaryGradient,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          
-          ThemeConstants.space4.w,
-          
-          // الأيقونة
-          Container(
-            padding: const EdgeInsets.all(ThemeConstants.space2),
-            decoration: BoxDecoration(
-              color: context.primaryColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-            ),
-            child: Icon(
-              Icons.apps_rounded,
-              color: context.primaryColor,
-              size: ThemeConstants.iconMd,
-            ),
-          ),
-          
-          ThemeConstants.space3.w,
-          
-          // النص
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'الأقسام الرئيسية',
-                  style: context.titleLarge?.copyWith(
-                    fontWeight: ThemeConstants.bold,
-                    color: context.textPrimaryColor,
-                  ),
-                ),
-                Text(
-                  'اختر القسم المناسب لك',
-                  style: context.labelMedium?.copyWith(
-                    color: context.textSecondaryColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+  Widget _buildUnifiedSectionHeader(BuildContext context) {
+    return AppCard.info(
+      title: 'الأقسام الرئيسية',
+      subtitle: 'اختر القسم المناسب لك',
+      icon: Icons.apps_rounded,
+      iconColor: context.primaryColor,
     );
   }
 }
