@@ -53,7 +53,7 @@ class AppRouter {
         return _slideRoute(const PrayerTimesScreen(), settings);
         
       case athkar:
-        return _slideRoute(AthkarCategoriesScreen(), settings);
+        return _slideRoute(const AthkarCategoriesScreen(), settings);
         
       case athkarDetails:
         final categoryId = settings.arguments as String?;
@@ -200,7 +200,7 @@ class AppRouter {
             ThemeConstants.space6.h,
             AppButton.outline(
               text: 'العودة',
-              onPressed: () => Navigator.of(_navigatorKey.currentContext!).pop(),
+              onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
               icon: Icons.arrow_back,
             ),
           ],
@@ -274,13 +274,13 @@ class AppRouter {
               children: [
                 AppButton.outline(
                   text: 'العودة',
-                  onPressed: () => Navigator.of(_navigatorKey.currentContext!).pop(),
+                  onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
                   icon: Icons.arrow_back,
                 ),
                 const SizedBox(width: ThemeConstants.space3),
                 AppButton.primary(
                   text: 'الرئيسية',
-                  onPressed: () => Navigator.of(_navigatorKey.currentContext!)
+                  onPressed: () => Navigator.of(navigatorKey.currentContext!)
                       .pushNamedAndRemoveUntil(home, (route) => false),
                   icon: Icons.home,
                 ),
@@ -323,7 +323,7 @@ class AppRouter {
             ThemeConstants.space6.h,
             AppButton.outline(
               text: 'العودة',
-              onPressed: () => Navigator.of(_navigatorKey.currentContext!).pop(),
+              onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
               icon: Icons.arrow_back,
             ),
           ],
@@ -366,21 +366,19 @@ class AppRouter {
   }
 
   // Navigator key for global navigation
-  static final GlobalKey<NavigatorState> _navigatorKey = 
+  static final GlobalKey<NavigatorState> navigatorKey = 
       GlobalKey<NavigatorState>();
-  
-  static GlobalKey<NavigatorState> get navigatorKey => _navigatorKey;
 
   // Navigation helper methods
   static Future<T?> push<T>(String routeName, {Object? arguments}) {
-    return _navigatorKey.currentState!.pushNamed<T>(
+    return navigatorKey.currentState!.pushNamed<T>(
       routeName,
       arguments: arguments,
     );
   }
 
   static Future<T?> pushReplacement<T, TO>(String routeName, {Object? arguments}) {
-    return _navigatorKey.currentState!.pushReplacementNamed<T, TO>(
+    return navigatorKey.currentState!.pushReplacementNamed<T, TO>(
       routeName,
       arguments: arguments,
     );
@@ -391,7 +389,7 @@ class AppRouter {
     bool Function(Route<dynamic>) predicate, {
     Object? arguments,
   }) {
-    return _navigatorKey.currentState!.pushNamedAndRemoveUntil<T>(
+    return navigatorKey.currentState!.pushNamedAndRemoveUntil<T>(
       routeName,
       predicate,
       arguments: arguments,
@@ -399,14 +397,14 @@ class AppRouter {
   }
 
   static void pop<T>([T? result]) {
-    return _navigatorKey.currentState!.pop<T>(result);
+    return navigatorKey.currentState!.pop<T>(result);
   }
 
   static bool canPop() {
-    return _navigatorKey.currentState!.canPop();
+    return navigatorKey.currentState!.canPop();
   }
 
   static void popUntil(bool Function(Route<dynamic>) predicate) {
-    return _navigatorKey.currentState!.popUntil(predicate);
+    return navigatorKey.currentState!.popUntil(predicate);
   }
 }

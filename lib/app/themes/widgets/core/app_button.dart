@@ -208,6 +208,7 @@ class AppButton extends StatelessWidget {
         return Colors.white;
       case ButtonType.success:
         return Colors.white;
+      case ButtonType.outline:
       case ButtonType.text:
         return customColor ?? context.primaryColor;
     }

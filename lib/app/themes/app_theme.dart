@@ -7,7 +7,7 @@ import 'core/theme_extensions.dart';
 
 // ===== التصديرات الموحدة =====
 export 'theme_constants.dart';
-export 'text_styles.dart';
+// تم حذف export 'text_styles.dart' لحل التضارب
 export 'core/theme_extensions.dart';
 
 // Widgets exports

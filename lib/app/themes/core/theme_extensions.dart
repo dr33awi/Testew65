@@ -425,7 +425,7 @@ extension SnackBarExtensions on BuildContext {
           ],
         ),
         backgroundColor: ThemeConstants.success,
-        duration: duration ?? const Duration(milliseconds: ThemeConstants.durationSlow),
+        duration: duration ?? ThemeConstants.durationSlow.milliseconds,
         action: action,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
@@ -446,7 +446,7 @@ extension SnackBarExtensions on BuildContext {
           ],
         ),
         backgroundColor: ThemeConstants.error,
-        duration: duration ?? const Duration(milliseconds: ThemeConstants.durationSlow),
+        duration: duration ?? ThemeConstants.durationSlow.milliseconds,
         action: action,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
@@ -467,7 +467,7 @@ extension SnackBarExtensions on BuildContext {
           ],
         ),
         backgroundColor: ThemeConstants.info,
-        duration: duration ?? const Duration(milliseconds: ThemeConstants.durationSlow),
+        duration: duration ?? ThemeConstants.durationSlow.milliseconds,
         action: action,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
@@ -488,7 +488,7 @@ extension SnackBarExtensions on BuildContext {
           ],
         ),
         backgroundColor: ThemeConstants.warning,
-        duration: duration ?? const Duration(milliseconds: ThemeConstants.durationSlow),
+        duration: duration ?? ThemeConstants.durationSlow.milliseconds,
         action: action,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(

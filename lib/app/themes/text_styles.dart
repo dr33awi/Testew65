@@ -1,6 +1,6 @@
 // lib/app/themes/text_styles.dart
-import 'package:athkar_app/app/themes/theme_constants.dart';
 import 'package:flutter/material.dart';
+import 'theme_constants.dart';
 
 /// أنماط النصوص الموحدة للتطبيق
 class AppTextStyles {
@@ -117,7 +117,7 @@ class AppTextStyles {
   );
 
   // ===== إنشاء TextTheme للتطبيق =====
-static TextTheme createTextTheme({
+  static TextTheme createTextTheme({
     required Color color,
     Color? secondaryColor,
   }) {

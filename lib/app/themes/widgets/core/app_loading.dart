@@ -717,7 +717,7 @@ class _PrayerCirclePainter extends CustomPainter {
     );
 
     // رسم نقاط تمثل أوقات الصلاة
-    final prayerTimes = [0, 0.2, 0.4, 0.6, 0.8];
+    const prayerTimes = [0.0, 0.2, 0.4, 0.6, 0.8];
     for (int i = 0; i < prayerTimes.length; i++) {
       final angle = 2 * math.pi * prayerTimes[i] - math.pi / 2;
       final x = center.dx + radius * math.cos(angle);
@@ -773,7 +773,7 @@ class _IslamicPatternPainter extends CustomPainter {
   void _drawEightPointedStar(Canvas canvas, Offset center, double radius, Paint paint) {
     final path = Path();
     const int points = 8;
-    final double angle = 2 * math.pi / points;
+    const double angle = 2 * math.pi / points;
     
     for (int i = 0; i < points; i++) {
       final outerAngle = i * angle - math.pi / 2 + (animation * math.pi / 4);
