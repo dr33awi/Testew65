@@ -10,7 +10,7 @@ class AppTheme {
 
   // ==================== الألوان الأساسية ====================
   
-  /// الألوان الأساسية
+  /// الألوان الأساسية (مستخرجة من التطبيق الحالي)
   static const Color primary = Color(0xFF2E7D32);
   static const Color primaryLight = Color(0xFF4CAF50);
   static const Color primaryDark = Color(0xFF1B5E20);
@@ -175,7 +175,7 @@ class AppTheme {
 
   // ==================== القياسات والمساحات ====================
   
-  /// المساحات
+  /// المساحات (مستخرجة من الاستخدام الفعلي)
   static const double space1 = 4.0;
   static const double space2 = 8.0;
   static const double space3 = 12.0;
@@ -193,7 +193,7 @@ class AppTheme {
   static const double iconXl = 40.0;
   static const double icon2xl = 48.0;
 
-  /// الزوايا المنحنية
+  /// الزوايا المنحنية (محسنة من الاستخدام)
   static const double radiusXs = 4.0;
   static const double radiusSm = 6.0;
   static const double radiusMd = 8.0;
@@ -287,7 +287,7 @@ class AppTheme {
 
   // ==================== أنماط البطاقات ====================
   
-  /// بطاقة أساسية
+  /// بطاقة أساسية (مستخرجة من التطبيق)
   static BoxDecoration get cardDecoration => BoxDecoration(
     color: lightCard,
     borderRadius: BorderRadius.circular(radius2xl),
@@ -298,7 +298,7 @@ class AppTheme {
     boxShadow: shadowMd,
   );
 
-  /// بطاقة مع تدرج لوني
+  /// بطاقة مع تدرج لوني (كما مستخدم في التطبيق)
   static BoxDecoration cardGradientDecoration(List<Color> colors) => BoxDecoration(
     borderRadius: BorderRadius.circular(radius2xl),
     gradient: LinearGradient(
@@ -320,7 +320,7 @@ class AppTheme {
     ],
   );
 
-  /// بطاقة مع تأثير الزجاج المضبب
+  /// بطاقة مع تأثير الزجاج المضبب (Glass Effect)
   static BoxDecoration get glassCardDecoration => BoxDecoration(
     borderRadius: BorderRadius.circular(radius2xl),
     border: Border.all(
@@ -336,8 +336,92 @@ class AppTheme {
     boxShadow: shadowXl,
   );
 
+  // ==================== أنماط خاصة بالتطبيق ====================
+  
+  /// بطاقة ترحيب (WelcomeCard style)
+  static BoxDecoration welcomeCardDecoration(List<Color> colors) => BoxDecoration(
+    borderRadius: BorderRadius.circular(radius3xl),
+    gradient: LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: colors.map((c) => c.withOpacity(0.9)).toList(),
+    ),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.2),
+      width: borderLight,
+    ),
+  );
+
+  /// بطاقة فئة (CategoryCard style)
+  static BoxDecoration categoryCardDecoration(Color color) => BoxDecoration(
+    borderRadius: BorderRadius.circular(radius2xl),
+    gradient: LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        color.withOpacity(0.9),
+        color.darken(0.1).withOpacity(0.9),
+      ],
+    ),
+    border: Border.all(
+      color: Colors.white.withOpacity(0.2),
+      width: borderLight,
+    ),
+  );
+
+  /// بطاقة إحصائيات (StatsCard style)
+  static BoxDecoration statsCardDecoration(Color color) => BoxDecoration(
+    borderRadius: BorderRadius.circular(radiusXl),
+    gradient: LinearGradient(
+      colors: [
+        color.withOpacity(0.9),
+        color.darken(0.1).withOpacity(0.9),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: color.withOpacity(0.2),
+        blurRadius: 15,
+        offset: const Offset(0, 8),
+        spreadRadius: 1,
+      ),
+    ],
+  );
+
+  /// بطاقة صغيرة (SmallCard style)
+  static BoxDecoration smallCardDecoration(List<Color> colors) => BoxDecoration(
+    borderRadius: BorderRadius.circular(radiusXl),
+    gradient: LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: colors.map((c) => c.withOpacity(0.9)).toList(),
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: colors[0].withOpacity(0.3),
+        blurRadius: 15,
+        offset: const Offset(0, 8),
+      ),
+    ],
+  );
+
   // ==================== أنماط الأزرار ====================
   
+  /// زر أساسي (كما مستخدم في التطبيق)
+  static BoxDecoration primaryButtonDecoration() => BoxDecoration(
+    gradient: primaryGradient,
+    borderRadius: BorderRadius.circular(radiusLg),
+    boxShadow: [
+      BoxShadow(
+        color: primary.withOpacity(0.3),
+        blurRadius: 15,
+        offset: const Offset(0, 8),
+      ),
+    ],
+  );
+
   /// زر مضغوط بتأثير
   static BoxDecoration pressedButtonDecoration(Color color) => BoxDecoration(
     gradient: LinearGradient(
@@ -375,6 +459,15 @@ class AppTheme {
         offset: const Offset(0, 5),
       ),
     ],
+  );
+
+  /// زر إجراء في شريط التطبيق
+  static BoxDecoration appBarActionDecoration(BuildContext context) => BoxDecoration(
+    color: context.cardColor.withOpacity(0.8),
+    borderRadius: BorderRadius.circular(radiusMd),
+    border: Border.all(
+      color: context.dividerColor.withOpacity(0.2),
+    ),
   );
 
   // ==================== أنماط النصوص ====================
@@ -526,6 +619,72 @@ class AppTheme {
     );
   }
 
+  /// حاوية بتأثير النبض
+  static Widget pulseContainer({
+    required Widget child,
+    required Color pulseColor,
+    double minOpacity = 0.5,
+    double maxOpacity = 1.0,
+    Duration duration = durationNormal,
+  }) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: minOpacity, end: maxOpacity),
+      duration: duration,
+      builder: (context, value, child) {
+        return Container(
+          decoration: BoxDecoration(
+            color: pulseColor.withOpacity(value),
+            borderRadius: BorderRadius.circular(radius2xl),
+          ),
+          child: child,
+        );
+      },
+      child: child,
+    );
+  }
+
+  // ==================== تأثيرات خاصة بالتطبيق ====================
+
+  /// تأثير الحدود المتوهجة (للبطاقات المكتملة)
+  static Widget glowBorder({
+    required Widget child,
+    required Color glowColor,
+    double animationValue = 1.0,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(radius2xl),
+        border: Border.all(
+          color: Colors.white.withOpacity(
+            0.5 + (animationValue * 0.3),
+          ),
+          width: 2,
+        ),
+      ),
+      child: child,
+    );
+  }
+
+  /// تأثير الخلفية المتحركة
+  static Widget animatedBackground({
+    required Widget child,
+    required Color color,
+    double animationValue = 0.0,
+  }) {
+    return Stack(
+      children: [
+        CustomPaint(
+          painter: AnimatedBackgroundPainter(
+            animation: animationValue,
+            color: color.withOpacity(0.1),
+          ),
+          size: Size.infinite,
+        ),
+        child,
+      ],
+    );
+  }
+
   // ==================== المساعدات ====================
   
   /// تحويل الارتفاع إلى SizedBox
@@ -559,12 +718,41 @@ class AppTheme {
   static Widget get space6Sliver => SliverToBoxAdapter(child: space6H);
   static Widget get space8Sliver => SliverToBoxAdapter(child: space8H);
 
-  // ==================== Extension Methods ====================
+  // ==================== ثوابت جديدة مستخرجة من التطبيق ====================
+
+  /// ثوابت الأنماط (للحفاظ على التوافق)
+  static const double defaultCardPadding = space5;
+  static const double defaultMargin = space4;
+  static const double defaultBorderRadius = radius2xl;
+  static const double defaultElevation = elevation2;
+
+  /// أحجام الأيقونات المخصصة
+  static const double prayerIconSize = iconLg;
+  static const double categoryIconSize = iconLg;
+  static const double appBarIconSize = iconMd;
+  static const double buttonIconSize = iconSm;
+
+  /// ارتفاعات مخصصة للعناصر
+  static const double appBarHeight = 60.0;
+  static const double bottomNavHeight = 70.0;
+  static const double cardMinHeight = 80.0;
+  static const double buttonHeight = 48.0;
+
+  /// مساحات مخصصة للتخطيط
+  static const double screenPadding = space4;
+  static const double sectionSpacing = space6;
+  static const double itemSpacing = space3;
+  
+  /// ألوان إضافية مستخرجة من التطبيق
+  static const Color backgroundOverlay = Color(0x80000000);
+  static const Color cardOverlay = Color(0x10000000);
+  static const Color shimmerBase = Color(0xFFE0E0E0);
+  static const Color shimmerHighlight = Color(0xFFF5F5F5);
 }
 
 /// Extension لتسهيل الوصول للألوان من خلال BuildContext
 extension AppThemeExtension on BuildContext {
-  // الألوان
+  // الألوان الأساسية
   Color get primaryColor => AppTheme.primary;
   Color get accentColor => AppTheme.accent;
   Color get backgroundColor => _isDarkMode ? AppTheme.darkBackground : AppTheme.lightBackground;
@@ -579,6 +767,7 @@ extension AppThemeExtension on BuildContext {
   Color get infoColor => AppTheme.info;
 
   bool get _isDarkMode => Theme.of(this).brightness == Brightness.dark;
+  bool get isDarkMode => _isDarkMode;
 
   // أنماط النصوص
   TextStyle? get displayLarge => AppTheme.displayLarge.copyWith(color: textPrimaryColor);
@@ -591,10 +780,10 @@ extension AppThemeExtension on BuildContext {
   TextStyle? get titleSmall => AppTheme.titleSmall.copyWith(color: textPrimaryColor);
   TextStyle? get bodyLarge => AppTheme.bodyLarge.copyWith(color: textPrimaryColor);
   TextStyle? get bodyMedium => AppTheme.bodyMedium.copyWith(color: textPrimaryColor);
-  TextStyle? get bodySmall => AppTheme.bodySmall.copyWith(color: textPrimaryColor);
+  TextStyle? get bodySmall => AppTheme.bodySmall.copyWith(color: textSecondaryColor);
   TextStyle? get labelLarge => AppTheme.labelLarge.copyWith(color: textPrimaryColor);
-  TextStyle? get labelMedium => AppTheme.labelMedium.copyWith(color: textPrimaryColor);
-  TextStyle? get labelSmall => AppTheme.labelSmall.copyWith(color: textPrimaryColor);
+  TextStyle? get labelMedium => AppTheme.labelMedium.copyWith(color: textSecondaryColor);
+  TextStyle? get labelSmall => AppTheme.labelSmall.copyWith(color: textSecondaryColor);
 
   // النصوص العربية
   TextStyle? get arabicDisplayLarge => AppTheme.arabicDisplayLarge.copyWith(color: textPrimaryColor);
@@ -608,68 +797,4 @@ extension AppThemeExtension on BuildContext {
   LinearGradient get timeBasedGradient => AppTheme.getTimeBasedGradient();
 
   // أنماط البطاقات
-  BoxDecoration get cardDecoration => AppTheme.cardDecoration.copyWith(
-    color: cardColor,
-    border: Border.all(
-      color: dividerColor.withOpacity(0.2),
-      width: AppTheme.borderLight,
-    ),
-  );
-
-  BoxDecoration cardGradientDecoration(List<Color> colors) => 
-      AppTheme.cardGradientDecoration(colors);
-
-  BoxDecoration get glassCardDecoration => AppTheme.glassCardDecoration;
-  BoxDecoration get elevatedCardDecoration => AppTheme.elevatedCardDecoration.copyWith(
-    color: cardColor,
-  );
-
-  // الظلال
-  List<BoxShadow> get shadowSm => AppTheme.shadowSm;
-  List<BoxShadow> get shadowMd => AppTheme.shadowMd;
-  List<BoxShadow> get shadowLg => AppTheme.shadowLg;
-  List<BoxShadow> get shadowXl => AppTheme.shadowXl;
-
-  // المساعدات
-  Widget glassEffect({required Widget child}) => AppTheme.glassEffect(child: child);
-  Widget glowContainer({required Widget child, required Color glowColor, double glowRadius = 20}) => 
-      AppTheme.glowContainer(child: child, glowColor: glowColor, glowRadius: glowRadius);
-}
-
-/// Extension للألوان
-extension ColorExtension on Color {
-  /// تفتيح اللون
-  Color lighten(double amount) {
-    final hsl = HSLColor.fromColor(this);
-    final lightness = (hsl.lightness + amount).clamp(0.0, 1.0);
-    return hsl.withLightness(lightness).toColor();
-  }
-
-  /// تغميق اللون
-  Color darken(double amount) {
-    final hsl = HSLColor.fromColor(this);
-    final lightness = (hsl.lightness - amount).clamp(0.0, 1.0);
-    return hsl.withLightness(lightness).toColor();
-  }
-
-  /// إضافة شفافية
-  Color withOpacity(double opacity) {
-    return withAlpha((255.0 * opacity).round());
-  }
-}
-
-/// Extension للنصوص
-extension TextStyleExtension on TextStyle {
-  TextStyle get light => copyWith(fontWeight: AppTheme.light);
-  TextStyle get regular => copyWith(fontWeight: AppTheme.regular);
-  TextStyle get medium => copyWith(fontWeight: AppTheme.medium);
-  TextStyle get semiBold => copyWith(fontWeight: AppTheme.semiBold);
-  TextStyle get bold => copyWith(fontWeight: AppTheme.bold);
-}
-
-/// Extension للمساعدات العامة  
-extension NumExtension on num {
-  Widget get h => SizedBox(height: toDouble());
-  Widget get w => SizedBox(width: toDouble());
-  Widget get sliverBox => SliverToBoxAdapter(child: SizedBox(height: toDouble()));
-}
+  BoxDecoration get cardDecoration => AppTheme.cardDecoration
