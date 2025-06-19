@@ -2,8 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
+
+// ✅ استيرادات النظام الموحد الجديد
 import '../../../app/themes/app_theme.dart';
-import '../../../app/themes/widgets/animations/animated_press.dart';
+import '../../../app/themes/widgets.dart';
+import '../../../app/themes/colors.dart';
+import '../../../app/themes/index.dart';
+
 import '../models/athkar_model.dart';
 import '../utils/category_utils.dart';
 
@@ -62,56 +67,25 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
     final categoryIcon = CategoryUtils.getCategoryIcon(widget.category.id);
     final description = CategoryUtils.getCategoryDescription(widget.category.id);
     
-    return AnimatedPress(
+    return AppCard.athkar( // ✅ استخدام النظام الموحد للأذكار
       onTap: () {
         HapticFeedback.lightImpact();
         widget.onTap();
       },
-      scaleFactor: 0.95,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              categoryColor.withValues(alpha: 0.9),
-              categoryColor.darken(0.1).withValues(alpha: 0.9),
-            ],
+      child: Stack(
+        children: [
+          // الحد اللامع للبطاقات المكتملة فقط
+          if (isCompleted) _buildGlowBorder(),
+          
+          // المحتوى الرئيسي
+          _buildCardContent(
+            context,
+            categoryIcon,
+            description,
+            isCompleted,
+            categoryColor,
           ),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Stack(
-              children: [
-                // الحد اللامع للبطاقات المكتملة فقط
-                if (isCompleted) _buildGlowBorder(),
-                
-                // المحتوى الرئيسي
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      width: 1,
-                    ),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(ThemeConstants.space4),
-                    child: _buildCardContent(
-                      context,
-                      categoryIcon,
-                      description,
-                      isCompleted,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        ],
       ),
     );
   }
@@ -122,7 +96,7 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
       builder: (context, child) {
         return Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: Colors.white.withValues(
                 alpha: 0.5 + (_glowAnimation.value * 0.3),
@@ -140,111 +114,64 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
     IconData categoryIcon,
     String description,
     bool isCompleted,
+    Color categoryColor,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return AppColumn( // ✅ النظام الموحد
       children: [
         // الأيقونة
-        Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.25),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
-              width: 1,
-            ),
-          ),
+        IslamicCard.simple( // ✅ النظام الموحد
+          padding: const EdgeInsets.all(16),
           child: Icon(
             categoryIcon,
             color: Colors.white,
-            size: ThemeConstants.iconLg,
+            size: 32,
           ),
         ),
         
         const Spacer(),
         
         // النصوص
-        Column(
+        AppColumn.small( // ✅ النظام الموحد
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // عنوان الفئة
-            Text(
-              widget.category.title,
-              style: context.titleLarge?.copyWith(
-                color: Colors.white,
-                fontWeight: ThemeConstants.bold,
-                fontSize: 18,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            IslamicText.dua( // ✅ النظام الموحد للنصوص الإسلامية
+              text: widget.category.title,
+              color: Colors.white,
+              fontSize: 18,
             ),
-            
-            ThemeConstants.space1.h,
             
             // الوصف
-            Text(
+            AppText.caption( // ✅ النظام الموحد
               description,
-              style: context.bodySmall?.copyWith(
-                color: Colors.white.withValues(alpha: 0.85),
-                fontSize: 12,
-                height: 1.4,
-              ),
+              color: Colors.white.withValues(alpha: 0.85),
               maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
             
-            ThemeConstants.space3.h,
+            Spaces.medium, // ✅ النظام الموحد
             
             // المعلومات السفلية
-            Row(
+            AppRow( // ✅ النظام الموحد
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // عدد الأذكار
-                Container(
+                AppCard.simple(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: ThemeConstants.space3,
-                    vertical: ThemeConstants.space2,
+                    horizontal: 12,
+                    vertical: 6,
                   ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.format_list_numbered_rounded,
-                        color: Colors.white.withValues(alpha: 0.9),
-                        size: ThemeConstants.iconXs,
-                      ),
-                      ThemeConstants.space1.w,
-                      Text(
-                        '${widget.category.athkar.length} ذكر',
-                        style: context.labelSmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: 11,
-                          fontWeight: ThemeConstants.medium,
-                        ),
-                      ),
-                    ],
+                  child: AppRichText( // ✅ النظام الموحد
+                    text: '${widget.category.athkar.length} ذكر',
+                    icon: Icons.format_list_numbered_rounded,
+                    color: Colors.white.withValues(alpha: 0.9),
+                    style: AppTextStyle.caption,
                   ),
                 ),
                 
                 // أيقونة الحالة
                 if (isCompleted)
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.3),
-                        width: 2,
-                      ),
-                    ),
+                  AppCard.simple(
+                    padding: const EdgeInsets.all(8),
                     child: const Icon(
                       Icons.check_rounded,
                       color: Colors.white,
@@ -252,17 +179,8 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
                     ),
                   )
                 else
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        width: 1,
-                      ),
-                    ),
+                  AppCard.simple(
+                    padding: const EdgeInsets.all(8),
                     child: Icon(
                       Icons.arrow_forward_ios_rounded,
                       color: Colors.white.withValues(alpha: 0.8),
@@ -275,5 +193,68 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
         ),
       ],
     );
+  }
+}
+
+// ✅ نسخة محسنة من AppRichText للاستخدام المحلي
+class AppRichText extends StatelessWidget {
+  final String text;
+  final IconData? icon;
+  final Color? color;
+  final Color? iconColor;
+  final AppTextStyle style;
+  final TextAlign? textAlign;
+
+  const AppRichText({
+    super.key,
+    required this.text,
+    this.icon,
+    this.color,
+    this.iconColor,
+    this.style = AppTextStyle.body,
+    this.textAlign,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AppRow.small( // ✅ النظام الموحد
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (icon != null) ...[
+          Icon(
+            icon,
+            size: _getIconSize(),
+            color: iconColor ?? color,
+          ),
+          Flexible(
+            child: AppText( // ✅ النظام الموحد
+              text,
+              style: style,
+              color: color,
+              textAlign: textAlign,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  double _getIconSize() {
+    switch (style) {
+      case AppTextStyle.heading:
+        return 28.0;
+      case AppTextStyle.title:
+        return 24.0;
+      case AppTextStyle.subtitle:
+        return 20.0;
+      case AppTextStyle.body:
+        return 18.0;
+      case AppTextStyle.bodyLarge:
+        return 20.0;
+      case AppTextStyle.caption:
+        return 14.0;
+      case AppTextStyle.label:
+        return 16.0;
+    }
   }
 }

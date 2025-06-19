@@ -5,7 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:ui';
+
+// ✅ استيرادات النظام الموحد الجديد
 import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/widgets.dart';
+import '../../../app/themes/colors.dart';
+import '../../../app/themes/index.dart';
+
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
 import '../../../core/infrastructure/services/utils/extensions/string_extensions.dart';
@@ -48,7 +54,7 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
     _storage = getIt<StorageService>();
     _animationController = AnimationController(
       vsync: this,
-      duration: ThemeConstants.durationNormal,
+      duration: const Duration(milliseconds: 300), // ثابت بدلاً من ThemeConstants
     );
     WidgetsBinding.instance.addObserver(this);
     _load();
@@ -57,7 +63,6 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    // إعادة التهيئة عند العودة للتطبيق
     if (state == AppLifecycleState.resumed && !_isFirstLoad) {
       _resetAndReload();
     }
@@ -75,8 +80,6 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
       final cat = await _service.getCategoryById(widget.categoryId);
       if (!mounted) return;
       
-      // في أول تحميل، تحميل البيانات المحفوظة
-      // في التحميلات التالية، البدء من الصفر
       final savedProgress = _isFirstLoad ? _loadSavedProgress() : <int, int>{};
       
       setState(() {
@@ -103,25 +106,20 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
-      // إزالة SnackBar للخطأ
     }
   }
 
-  /// إعادة تعيين وإعادة تحميل البيانات
   Future<void> _resetAndReload() async {
     if (!mounted || _loading) return;
     
-    // إعادة تعيين البيانات
     setState(() {
       _counts.clear();
       _completedItems.clear();
       _allCompleted = false;
     });
     
-    // حفظ الحالة المعاد تعيينها
     await _saveProgress();
     
-    // إعادة تحميل البيانات
     if (_category != null) {
       setState(() {
         _updateVisibleItems();
@@ -133,7 +131,6 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
   void _updateVisibleItems() {
     if (_category == null) return;
     
-    // عرض الأذكار غير المكتملة فقط
     _visibleItems = _category!.athkar
         .where((item) => !_completedItems.contains(item.id))
         .toList();
@@ -181,8 +178,6 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
         if (_counts[item.id]! >= item.count) {
           _completedItems.add(item.id);
           HapticFeedback.mediumImpact();
-          
-          // تحديث القائمة المرئية لإخفاء الذكر المكتمل
           _updateVisibleItems();
         }
       }
@@ -201,7 +196,6 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
       _counts[item.id] = 0;
       _completedItems.remove(item.id);
       
-      // إذا كان الذكر مكتملاً، إعادته للقائمة المرئية
       if (wasCompleted) {
         _updateVisibleItems();
       }
@@ -211,8 +205,6 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
     
     _saveProgress();
   }
-
-  // إزالة رسالة الإكمال - لا حاجة لأي إشعارات
 
   void _rereadAthkar() {
     setState(() {
@@ -224,16 +216,6 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
     _saveProgress();
   }
 
-  // العودة إلى فئات الأذكار مع إعادة التهيئة للمرة القادمة
-  void _goBackToCategories() {
-    if (mounted) {
-      // إعادة تعيين الأذكار للمرة القادمة
-      _resetAndReload().then((_) {
-        Navigator.of(context).pop();
-      });
-    }
-  }
-
   Future<void> _shareProgress() async {
     final text = '''
 ✨ أكملت ${_category!.title} ✨
@@ -243,16 +225,6 @@ ${_category!.athkar.map((item) => '✓ ${item.text.truncate(50)}').join('\n')}
     ''';
     
     await Share.share(text);
-  }
-
-  void _resetAll() {
-    setState(() {
-      _counts.clear();
-      _completedItems.clear();
-      _allCompleted = false;
-      _updateVisibleItems();
-    });
-    _saveProgress();
   }
 
   Future<void> _shareItem(AthkarItem item) async {
@@ -273,10 +245,9 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     if (_loading) {
       return Scaffold(
         backgroundColor: context.backgroundColor,
-        body: Center(
-          child: AppLoading.page(
-            message: 'جاري تحميل الأذكار...',
-          ),
+        body: AppLoadingWidget( // ✅ النظام الموحد
+          message: 'جاري تحميل الأذكار...',
+          color: context.primaryColor,
         ),
       );
     }
@@ -284,11 +255,8 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     if (_category == null) {
       return Scaffold(
         backgroundColor: context.backgroundColor,
-        appBar: CustomAppBar.simple(title: 'الأذكار'),
-        body: AppEmptyState.error(
-          message: 'تعذر تحميل الأذكار المطلوبة',
-          onRetry: _load,
-        ),
+        appBar: IslamicAppBar(title: 'الأذكار'), // ✅ النظام الموحد
+        body: _buildErrorState(),
       );
     }
 
@@ -296,19 +264,18 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     
     return WillPopScope(
       onWillPop: () async {
-        // إعادة تهيئة الأذكار عند الضغط على زر الرجوع
         await _resetAndReload();
         return true;
       },
       child: Scaffold(
         backgroundColor: context.backgroundColor,
         body: SafeArea(
-          child: Column(
+          child: AppColumn( // ✅ النظام الموحد
             children: [
               // شريط التنقل العلوي
               _buildAppBar(context, category),
               
-              // المحتوى مباشرة
+              // المحتوى
               Expanded(
                 child: _buildContent(category),
               ),
@@ -324,79 +291,52 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     final completedAthkar = _completedItems.length;
     final remainingAthkar = totalAthkar - completedAthkar;
     
-    return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: Column(
+    return AppCard.simple( // ✅ النظام الموحد
+      padding: context.mediumPadding,
+      child: AppColumn.small( // ✅ النظام الموحد
         children: [
-          Row(
+          AppRow( // ✅ النظام الموحد
             children: [
               // زر العودة
-              Container(
-                decoration: BoxDecoration(
-                  color: context.cardColor,
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                  border: Border.all(
-                    color: context.dividerColor.withValues(alpha: 0.2),
-                  ),
-                ),
+              AppCard.simple(
+                padding: const EdgeInsets.all(8),
                 child: IconButton(
                   onPressed: () async {
-                    // إعادة تهيئة الأذكار عند الضغط على زر العودة
                     await _resetAndReload();
                     Navigator.of(context).pop();
                   },
                   icon: Icon(
                     Icons.arrow_back_ios_rounded,
-                    color: context.textPrimaryColor,
+                    color: context.textColor,
                   ),
                 ),
               ),
               
-              ThemeConstants.space3.w,
-              
               // العنوان
               Expanded(
-                child: Column(
+                child: AppColumn.small( // ✅ النظام الموحد
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      category.title,
-                      style: context.titleLarge?.copyWith(
-                        fontWeight: ThemeConstants.bold,
-                      ),
-                    ),
-                    Row(
+                    AppText.title(category.title), // ✅ النظام الموحد
+                    AppRow.small( // ✅ النظام الموحد
                       children: [
-                        Text(
+                        AppText.caption(
                           '$remainingAthkar متبقي',
-                          style: context.bodySmall?.copyWith(
-                            color: remainingAthkar > 0 
-                                ? context.textSecondaryColor 
-                                : ThemeConstants.success,
-                            fontWeight: remainingAthkar == 0 
-                                ? ThemeConstants.bold 
-                                : ThemeConstants.regular,
-                          ),
+                          color: remainingAthkar > 0 
+                              ? context.secondaryTextColor 
+                              : AppColors.success,
                         ),
                         if (completedAthkar > 0) ...[
-                          Text(
-                            ' • ',
-                            style: context.bodySmall?.copyWith(
-                              color: context.textSecondaryColor,
-                            ),
-                          ),
+                          AppText.caption(' • '),
                           Icon(
                             Icons.check_circle,
                             size: 14,
-                            color: ThemeConstants.success,
+                            color: AppColors.success,
                           ),
-                          ThemeConstants.space1.w,
-                          Text(
+                          Spaces.smallH,
+                          AppText.caption(
                             '$completedAthkar مكتمل',
-                            style: context.bodySmall?.copyWith(
-                              color: ThemeConstants.success,
-                              fontWeight: ThemeConstants.medium,
-                            ),
+                            color: AppColors.success,
                           ),
                         ],
                       ],
@@ -406,45 +346,31 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
               ),
               
               // الإجراءات
-              Row(
+              AppRow.small( // ✅ النظام الموحد
                 children: [
                   // زر المفضلة
-                  Container(
-                    decoration: BoxDecoration(
-                      color: context.cardColor,
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                      border: Border.all(
-                        color: context.dividerColor.withValues(alpha: 0.2),
-                      ),
-                    ),
+                  AppCard.simple(
+                    padding: const EdgeInsets.all(8),
                     child: IconButton(
                       onPressed: () {
                         Navigator.pushNamed(context, AppRouter.favorites);
                       },
                       icon: Icon(
                         Icons.favorite_outline,
-                        color: context.textSecondaryColor,
+                        color: context.secondaryTextColor,
                       ),
                       tooltip: 'المفضلة',
                     ),
                   ),
                   
-                  ThemeConstants.space2.w,
-                  
                   // زر المشاركة
-                  Container(
-                    decoration: BoxDecoration(
-                      color: context.cardColor,
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                      border: Border.all(
-                        color: context.dividerColor.withValues(alpha: 0.2),
-                      ),
-                    ),
+                  AppCard.simple(
+                    padding: const EdgeInsets.all(8),
                     child: IconButton(
                       onPressed: _shareProgress,
                       icon: Icon(
                         Icons.share_outlined,
-                        color: context.textSecondaryColor,
+                        color: context.secondaryTextColor,
                       ),
                       tooltip: 'مشاركة',
                     ),
@@ -456,14 +382,13 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
           
           // شريط التقدم
           if (totalAthkar > 0) ...[
-            ThemeConstants.space3.h,
             Container(
               height: 6,
               decoration: BoxDecoration(
                 color: context.cardColor,
                 borderRadius: BorderRadius.circular(3),
                 border: Border.all(
-                  color: context.dividerColor.withValues(alpha: 0.2),
+                  color: context.secondaryTextColor.withValues(alpha: 0.2),
                 ),
               ),
               child: ClipRRect(
@@ -473,7 +398,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                   backgroundColor: Colors.transparent,
                   valueColor: AlwaysStoppedAnimation<Color>(
                     completedAthkar == totalAthkar 
-                        ? ThemeConstants.success 
+                        ? AppColors.success 
                         : CategoryUtils.getCategoryThemeColor(category.id),
                   ),
                 ),
@@ -494,7 +419,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
           ? _buildEmptyState()
           : AnimationLimiter(
               child: ListView.builder(
-                padding: const EdgeInsets.all(ThemeConstants.space4),
+                padding: context.screenPadding, // ✅ النظام الموحد
                 itemCount: _visibleItems.length,
                 itemBuilder: (context, index) {
                   final item = _visibleItems[index];
@@ -506,15 +431,13 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                   
                   return AnimationConfiguration.staggeredList(
                     position: index,
-                    duration: ThemeConstants.durationNormal,
+                    duration: const Duration(milliseconds: 300),
                     child: SlideAnimation(
                       verticalOffset: 50.0,
                       child: FadeInAnimation(
                         child: Padding(
                           padding: EdgeInsets.only(
-                            bottom: index < _visibleItems.length - 1
-                                ? ThemeConstants.space3
-                                : 0,
+                            bottom: index < _visibleItems.length - 1 ? 16 : 0,
                           ),
                           child: AthkarItemCard(
                             item: item,
@@ -539,8 +462,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
 
   Widget _buildEmptyState() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: AppColumn( // ✅ النظام الموحد
         children: [
           Container(
             width: 120,
@@ -548,8 +470,8 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  ThemeConstants.success.withValues(alpha: 0.8),
-                  ThemeConstants.success.darken(0.1).withValues(alpha: 0.8),
+                  AppColors.success.withValues(alpha: 0.8),
+                  AppColors.success.withValues(alpha: 0.6),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -557,7 +479,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: ThemeConstants.success.withValues(alpha: 0.3),
+                  color: AppColors.success.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -570,78 +492,24 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
             ),
           ),
           
-          ThemeConstants.space4.h,
-          
-          Text(
+          AppText.heading( // ✅ النظام الموحد
             'أكملت جميع الأذكار! 🎉',
-            style: context.headlineSmall?.copyWith(
-              color: ThemeConstants.success,
-              fontWeight: ThemeConstants.bold,
-            ),
+            color: AppColors.success,
             textAlign: TextAlign.center,
           ),
           
-          ThemeConstants.space2.h,
-          
-          Text(
+          AppText.body( // ✅ النظام الموحد
             'بارك الله فيك\nجعلها الله في ميزان حسناتك',
-            style: context.bodyLarge?.copyWith(
-              color: context.textSecondaryColor,
-              height: 1.5,
-            ),
+            color: context.secondaryTextColor,
             textAlign: TextAlign.center,
           ),
-          
-          ThemeConstants.space4.h,
           
           // زر إعادة القراءة
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  ThemeConstants.success.withValues(alpha: 0.9),
-                  ThemeConstants.success.darken(0.1).withValues(alpha: 0.9),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-              boxShadow: [
-                BoxShadow(
-                  color: ThemeConstants.success.withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: _rereadAthkar,
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: ThemeConstants.space4,
-                    horizontal: ThemeConstants.space6,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.refresh_rounded,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                      ThemeConstants.space3.w,
-                      Text(
-                        'إعادة القراءة',
-                        style: context.titleMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: ThemeConstants.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+          AppCard.stats( // ✅ النظام الموحد
+            child: IslamicButton.primary( // ✅ النظام الموحد
+              text: 'إعادة القراءة',
+              icon: Icons.refresh_rounded,
+              onPressed: _rereadAthkar,
             ),
           ),
         ],
@@ -649,7 +517,41 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     );
   }
 
+  Widget _buildErrorState() {
+    return Center(
+      child: AppColumn( // ✅ النظام الموحد
+        children: [
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: AppColors.error.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.error_outline,
+              size: 50,
+              color: AppColors.error,
+            ),
+          ),
+          
+          AppText.title( // ✅ النظام الموحد
+            'تعذر تحميل الأذكار المطلوبة',
+            color: AppColors.error,
+            textAlign: TextAlign.center,
+          ),
+          
+          IslamicButton.outlined( // ✅ النظام الموحد
+            text: 'العودة',
+            icon: Icons.arrow_back,
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _toggleFavorite(AthkarItem item) {
-    // إزالة SnackBar للمفضلة
+    // تفعيل المفضلة - يمكن إضافة المنطق هنا
   }
 }

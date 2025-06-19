@@ -1,7 +1,13 @@
 // lib/features/home/screens/home_screen.dart
 
 import 'package:flutter/material.dart';
+
+// ✅ استيرادات النظام الموحد الجديد
 import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/widgets.dart';
+import '../../../app/themes/colors.dart';
+import '../../../app/themes/components/index.dart';
+
 import '../widgets/category_grid.dart';
 import 'package:athkar_app/features/daily_quote/widgets/daily_quotes_card.dart';
 import 'package:athkar_app/features/home/widgets/welcome_message.dart';
@@ -33,11 +39,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      appBar: CustomAppBar(
+      appBar: IslamicAppBar( // ✅ النظام الموحد
         title: 'تطبيق الأذكار',
         actions: [
-          AppBarAction(
-            icon: Icons.settings_outlined,
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
             onPressed: () => Navigator.pushNamed(context, '/settings'),
             tooltip: 'الإعدادات',
           ),
@@ -54,32 +60,30 @@ class _HomeScreenState extends State<HomeScreen> {
       slivers: [
         // المحتوى الرئيسي
         SliverPadding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: ThemeConstants.space4,
-          ),
+          padding: context.screenPadding, // ✅ النظام الموحد
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              ThemeConstants.space4.h,
+              Spaces.large, // ✅ النظام الموحد
               
               // رسالة الترحيب البسيطة
               const WelcomeMessage(),
               
-              ThemeConstants.space4.h,
+              Spaces.large,
               
               // بطاقة مواقيت الصلاة
               const PrayerTimesCard(),
               
-              ThemeConstants.space4.h,
+              Spaces.large,
               
               // بطاقة الاقتباسات البسيطة
               const DailyQuotesCard(),
               
-              ThemeConstants.space6.h,
+              Spaces.extraLarge,
               
               // عنوان الأقسام البسيط
               _buildSimpleSectionHeader(context),
               
-              ThemeConstants.space4.h,
+              Spaces.large,
             ]),
           ),
         ),
@@ -89,66 +93,51 @@ class _HomeScreenState extends State<HomeScreen> {
         
         // مساحة في الأسفل
         SliverToBoxAdapter(
-          child: ThemeConstants.space12.h,
+          child: Spaces.extraLarge,
         ),
       ],
     );
   }
 
   Widget _buildSimpleSectionHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      decoration: BoxDecoration(
-        color: context.cardColor,
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-      ),
-      child: Row(
+    return AppCard.simple( // ✅ النظام الموحد
+      child: AppRow( // ✅ النظام الموحد
         children: [
           // المؤشر الجانبي
           Container(
             width: 4,
             height: 32,
             decoration: BoxDecoration(
-              gradient: ThemeConstants.primaryGradient,
+              gradient: AppTheme.primaryGradient, // ✅ النظام الموحد
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           
-          ThemeConstants.space4.w,
-          
           // الأيقونة
           Container(
-            padding: const EdgeInsets.all(ThemeConstants.space2),
+            padding: context.smallPadding, // ✅ النظام الموحد
             decoration: BoxDecoration(
               color: context.primaryColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              borderRadius: BorderRadius.circular(context.borderRadius),
             ),
             child: Icon(
               Icons.apps_rounded,
               color: context.primaryColor,
-              size: ThemeConstants.iconMd,
+              size: 24,
             ),
           ),
           
-          ThemeConstants.space3.w,
-          
           // النص
           Expanded(
-            child: Column(
+            child: AppColumn.small( // ✅ النظام الموحد
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                AppText.title( // ✅ النظام الموحد
                   'الأقسام الرئيسية',
-                  style: context.titleLarge?.copyWith(
-                    fontWeight: ThemeConstants.bold,
-                    color: context.textPrimaryColor,
-                  ),
                 ),
-                Text(
+                AppText.caption( // ✅ النظام الموحد
                   'اختر القسم المناسب لك',
-                  style: context.labelMedium?.copyWith(
-                    color: context.textSecondaryColor,
-                  ),
+                  color: context.secondaryTextColor,
                 ),
               ],
             ),
@@ -157,4 +146,22 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+}
+
+// ✅ Extension مساعد للبناء
+extension HomeScreenExtensions on BuildContext {
+  // مساعدات سريعة للألوان
+  Color get primaryColor => colorScheme.primary;
+  Color get backgroundColor => scaffoldBackgroundColor;
+  Color get textColor => textTheme.bodyLarge?.color ?? Colors.black;
+  Color get secondaryTextColor => textTheme.bodySmall?.color ?? Colors.grey;
+  
+  // مساعدات سريعة للمساحات
+  EdgeInsets get screenPadding => const EdgeInsets.all(16);
+  double get borderRadius => 12.0;
+  
+  // مساعدات سريعة للنصوص
+  TextStyle? get titleStyle => textTheme.titleLarge;
+  TextStyle? get bodyStyle => textTheme.bodyMedium;
+  TextStyle? get captionStyle => textTheme.bodySmall;
 }

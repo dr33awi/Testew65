@@ -3,7 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'dart:ui';
+
+// ✅ استيرادات النظام الموحد الجديد
 import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/widgets.dart';
+import '../../../app/themes/colors.dart';
+import '../../../app/themes/index.dart';
+
 import '../../../app/di/service_locator.dart';
 import '../../../app/routes/app_router.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
@@ -40,7 +46,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     _permissionService = getIt<PermissionService>();
     _animationController = AnimationController(
       vsync: this,
-      duration: ThemeConstants.durationNormal,
+      duration: const Duration(milliseconds: 300), // ثابت بدلاً من ThemeConstants
     );
     
     _initialize();
@@ -115,9 +121,9 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     return Scaffold(
       backgroundColor: context.backgroundColor,
       body: SafeArea(
-        child: Column(
+        child: AppColumn(
           children: [
-            // شريط التنقل العلوي
+            // شريط التنقل العلوي - استخدام النظام الموحد
             _buildAppBar(context),
             
             // المحتوى
@@ -134,7 +140,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                       child: _buildWelcomeCard(context),
                     ),
                     
-                    ThemeConstants.space4.sliverBox,
+                    Spaces.large.sliverBox, // ✅ استخدام النظام الموحد
                     
                     // قائمة الفئات
                     FutureBuilder<List<AthkarCategory>>(
@@ -142,24 +148,16 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return SliverFillRemaining(
-                            child: Center(
-                              child: AppLoading.page(
-                                message: 'جاري تحميل الأذكار...',
-                              ),
+                            child: AppLoadingWidget( // ✅ النظام الموحد
+                              message: 'جاري تحميل الأذكار...',
+                              color: context.primaryColor,
                             ),
                           );
                         }
                         
                         if (snapshot.hasError) {
                           return SliverFillRemaining(
-                            child: AppEmptyState.error(
-                              message: 'حدث خطأ في تحميل البيانات',
-                              onRetry: () {
-                                setState(() {
-                                  _futureCategories = _service.loadCategories();
-                                });
-                              },
-                            ),
+                            child: _buildErrorState(),
                           );
                         }
                         
@@ -167,20 +165,18 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                         
                         if (categories.isEmpty) {
                           return SliverFillRemaining(
-                            child: AppEmptyState.noData(
-                              message: 'لا توجد أذكار متاحة حالياً',
-                            ),
+                            child: _buildEmptyState(),
                           );
                         }
                         
                         return SliverPadding(
-                          padding: const EdgeInsets.all(ThemeConstants.space4),
+                          padding: context.screenPadding, // ✅ النظام الموحد
                           sliver: AnimationLimiter(
                             child: SliverGrid(
                               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
-                                mainAxisSpacing: ThemeConstants.space4,
-                                crossAxisSpacing: ThemeConstants.space4,
+                                mainAxisSpacing: 16,
+                                crossAxisSpacing: 16,
                                 childAspectRatio: 0.8,
                               ),
                               delegate: SliverChildBuilderDelegate(
@@ -190,7 +186,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                                   
                                   return AnimationConfiguration.staggeredGrid(
                                     position: index,
-                                    duration: ThemeConstants.durationNormal,
+                                    duration: const Duration(milliseconds: 300),
                                     columnCount: 2,
                                     child: ScaleAnimation(
                                       child: FadeInAnimation(
@@ -211,7 +207,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                       },
                     ),
                     
-                    ThemeConstants.space8.sliverBox,
+                    Spaces.extraLarge.sliverBox, // ✅ النظام الموحد
                   ],
                 ),
               ),
@@ -223,82 +219,56 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
   }
 
   Widget _buildAppBar(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: Row(
+    return AppCard.simple( // ✅ استخدام النظام الموحد
+      padding: context.mediumPadding,
+      child: AppRow( // ✅ استخدام النظام الموحد
         children: [
           // أيقونة التطبيق
           Container(
-            padding: const EdgeInsets.all(ThemeConstants.space3),
+            padding: context.smallPadding,
             decoration: BoxDecoration(
-              gradient: ThemeConstants.primaryGradient,
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              gradient: AppTheme.primaryGradient, // ✅ النظام الموحد
+              borderRadius: BorderRadius.circular(context.borderRadius),
             ),
             child: const Icon(
               Icons.auto_awesome,
               color: Colors.white,
-              size: ThemeConstants.iconLg,
+              size: 24,
             ),
           ),
           
-          ThemeConstants.space3.w,
-          
           // العنوان
           Expanded(
-            child: Column(
+            child: AppColumn.small( // ✅ النظام الموحد
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'أذكار المسلم',
-                  style: context.titleLarge?.copyWith(
-                    fontWeight: ThemeConstants.bold,
-                  ),
-                ),
-                Text(
-                  'احرص على الذكر في كل وقت',
-                  style: context.bodySmall?.copyWith(
-                    color: context.textSecondaryColor,
-                  ),
-                ),
+                AppText.title('أذكار المسلم'), // ✅ النظام الموحد
+                AppText.caption('احرص على الذكر في كل وقت'), // ✅ النظام الموحد
               ],
             ),
           ),
           
           // الإجراءات
-          Row(
+          AppRow.small( // ✅ النظام الموحد
             children: [
               // زر المفضلة
-              Container(
-                decoration: BoxDecoration(
-                  color: context.cardColor,
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                  border: Border.all(
-                    color: context.dividerColor.withValues(alpha: 0.2),
-                  ),
-                ),
+              AppCard.simple(
+                padding: const EdgeInsets.all(8),
                 child: IconButton(
                   onPressed: () {
                     Navigator.pushNamed(context, AppRouter.favorites);
                   },
                   icon: Icon(
                     Icons.favorite_outline,
-                    color: context.textSecondaryColor,
+                    color: context.secondaryTextColor,
                   ),
                   tooltip: 'المفضلة',
                 ),
               ),
               
-              ThemeConstants.space2.w,
-              
               // زر إعدادات الإشعارات
-              Container(
-                decoration: BoxDecoration(
-                  color: context.cardColor,
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                  border: Border.all(
-                    color: context.dividerColor.withValues(alpha: 0.2),
-                  ),
-                ),
+              AppCard.simple(
+                padding: const EdgeInsets.all(8),
                 child: IconButton(
                   onPressed: () {
                     Navigator.push(
@@ -310,7 +280,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                   },
                   icon: Icon(
                     Icons.notifications_outlined,
-                    color: context.textSecondaryColor,
+                    color: context.secondaryTextColor,
                   ),
                   tooltip: 'إعدادات الإشعارات',
                 ),
@@ -323,87 +293,118 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
   }
 
   Widget _buildWelcomeCard(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        gradient: LinearGradient(
-          colors: [
-            ThemeConstants.accent.withValues(alpha: 0.9),
-            ThemeConstants.accent.darken(0.1).withValues(alpha: 0.9),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            padding: const EdgeInsets.all(ThemeConstants.space5),
+    return AppCard.athkar( // ✅ استخدام النظام الموحد للأذكار
+      child: AppRow( // ✅ النظام الموحد
+        children: [
+          Container(
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
             ),
-            child: Row(
+            child: const Icon(
+              Icons.auto_awesome,
+              color: Colors.white,
+              size: 40,
+            ),
+          ),
+          
+          Expanded(
+            child: AppColumn.small( // ✅ النظام الموحد
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.auto_awesome,
-                    color: Colors.white,
-                    size: 40,
-                  ),
+                IslamicText.dua( // ✅ النظام الموحد للنصوص الإسلامية
+                  text: 'اختر فئة الأذكار',
+                  color: Colors.white,
+                  fontSize: 24,
                 ),
                 
-                ThemeConstants.space4.w,
+                IslamicText.quran( // ✅ النظام الموحد
+                  text: 'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
                 
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'اختر فئة الأذكار',
-                        style: context.headlineMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: ThemeConstants.bold,
-                        ),
-                      ),
-                      
-                      ThemeConstants.space1.h,
-                      
-                      Text(
-                        'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
-                        style: context.bodyMedium?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontFamily: ThemeConstants.fontFamilyArabic,
-                        ),
-                      ),
-                      
-                      ThemeConstants.space1.h,
-                      
-                      Text(
-                        'اقرأ الأذكار اليومية وحافظ على ذكر الله',
-                        style: context.bodySmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.8),
-                        ),
-                      ),
-                    ],
-                  ),
+                AppText.body( // ✅ النظام الموحد
+                  'اقرأ الأذكار اليومية وحافظ على ذكر الله',
+                  color: Colors.white.withValues(alpha: 0.8),
                 ),
               ],
             ),
           ),
-        ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: AppColumn( // ✅ النظام الموحد
+        children: [
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: AppColors.error.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.error_outline,
+              size: 50,
+              color: AppColors.error,
+            ),
+          ),
+          
+          AppText.title( // ✅ النظام الموحد
+            'حدث خطأ في تحميل البيانات',
+            color: AppColors.error,
+            textAlign: TextAlign.center,
+          ),
+          
+          IslamicButton.outlined( // ✅ النظام الموحد
+            text: 'إعادة المحاولة',
+            icon: Icons.refresh,
+            onPressed: () {
+              setState(() {
+                _futureCategories = _service.loadCategories();
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: AppColumn( // ✅ النظام الموحد
+        children: [
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: context.primaryColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.menu_book_outlined,
+              size: 50,
+              color: context.primaryColor,
+            ),
+          ),
+          
+          AppText.title( // ✅ النظام الموحد
+            'لا توجد أذكار متاحة حالياً',
+            textAlign: TextAlign.center,
+          ),
+          
+          AppText.body( // ✅ النظام الموحد
+            'سيتم إضافة الأذكار قريباً',
+            color: context.secondaryTextColor,
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -418,4 +419,9 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
       _loadProgress();
     });
   }
+}
+
+// ✅ إضافة Extension للSliverBox
+extension SliverBoxExtension on Widget {
+  Widget get sliverBox => SliverToBoxAdapter(child: this);
 }
