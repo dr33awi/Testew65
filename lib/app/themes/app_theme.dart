@@ -8,50 +8,50 @@ import 'dart:ui';
 class AppTheme {
   AppTheme._();
 
-  // ==================== الألوان الأساسية ====================
+  // ===== الألوان الأساسية - الهوية البصرية الجديدة =====
+  static const Color primary = Color(0xFF5D7052); // أخضر زيتي أنيق
+  static const Color primaryLight = Color(0xFF7A8B6F); // أخضر زيتي فاتح
+  static const Color primaryDark = Color(0xFF445A3B); // أخضر زيتي داكن
+  static const Color primarySoft = Color(0xFF8FA584); // أخضر زيتي ناعم
   
-  /// الألوان الأساسية (مستخرجة من التطبيق الحالي)
-  static const Color primary = Color(0xFF2E7D32);
-  static const Color primaryLight = Color(0xFF4CAF50);
-  static const Color primaryDark = Color(0xFF1B5E20);
-  static const Color primarySoft = Color(0xFF81C784);
+  // ===== الألوان الثانوية =====
+  static const Color accent = Color(0xFFB8860B); // ذهبي دافئ
+  static const Color accentLight = Color(0xFFDAA520); // ذهبي فاتح
+  static const Color accentDark = Color(0xFF996515); // ذهبي داكن
   
-  static const Color accent = Color(0xFF00796B);
-  static const Color accentLight = Color(0xFF4DB6AC);
-  static const Color accentDark = Color(0xFF004D40);
-  
-  static const Color tertiary = Color(0xFF5D4037);
-  static const Color tertiaryLight = Color(0xFF8D6E63);
-  static const Color tertiaryDark = Color(0xFF3E2723);
+  // ===== اللون الثالث =====
+  static const Color tertiary = Color(0xFF8B6F47); // بني دافئ
+  static const Color tertiaryLight = Color(0xFFA68B5B); // بني فاتح
+  static const Color tertiaryDark = Color(0xFF6B5637); // بني داكن
 
   /// ألوان الحالة
-  static const Color success = Color(0xFF4CAF50);
-  static const Color successLight = Color(0xFF81C784);
-  static const Color warning = Color(0xFFFF9800);
-  static const Color warningLight = Color(0xFFFFB74D);
-  static const Color error = Color(0xFFF44336);
-  static const Color errorLight = Color(0xFFEF5350);
-  static const Color info = Color(0xFF2196F3);
-  static const Color infoLight = Color(0xFF42A5F5);
+  static const Color success = Color(0xFF5D7052); // نفس اللون الأساسي للتناسق
+  static const Color successLight = Color(0xFF7A8B6F); // أخضر زيتي فاتح للنجاح
+  static const Color warning = Color(0xFFD4A574); // برتقالي دافئ
+  static const Color warningLight = Color(0xFFE8C899); // برتقالي فاتح للتحذير
+  static const Color error = Color(0xFFB85450); // أحمر مخملي ناعم
+  static const Color errorLight = Color(0xFFC76B67); // أحمر فاتح للخطأ
+  static const Color info = Color(0xFF6B8E9F); // أزرق رمادي
+  static const Color infoLight = Color(0xFF8FA9B8); // أزرق رمادي فاتح للمعلومات
 
   /// الخلفيات والأسطح
-  static const Color lightBackground = Color(0xFFFAFAFA);
-  static const Color lightSurface = Color(0xFFFFFFFF);
-  static const Color lightCard = Color(0xFFFFFFFF);
+  static const Color lightBackground = Color(0xFFFAFAF8); // خلفية دافئة
+  static const Color lightSurface = Color(0xFFF5F5F0); // سطح دافئ
+  static const Color lightCard = Color(0xFFFFFFFF); // بطاقات بيضاء
   
-  static const Color darkBackground = Color(0xFF121212);
-  static const Color darkSurface = Color(0xFF1E1E1E);
-  static const Color darkCard = Color(0xFF2C2C2C);
+  static const Color darkBackground = Color(0xFF1A1F1A); // خلفية داكنة دافئة
+  static const Color darkSurface = Color(0xFF242B24); // سطح داكن
+  static const Color darkCard = Color(0xFF2D352D); // بطاقات داكنة
 
   /// النصوص
-  static const Color lightTextPrimary = Color(0xFF212121);
-  static const Color lightTextSecondary = Color(0xFF757575);
-  static const Color darkTextPrimary = Color(0xFFFFFFFF);
-  static const Color darkTextSecondary = Color(0xFFB0B0B0);
+  static const Color lightTextPrimary = Color(0xFF2D2D2D); // نص أساسي
+  static const Color lightTextSecondary = Color(0xFF5F5F5F); // نص ثانوي
+  static const Color darkTextPrimary = Color(0xFFF5F5F0); // نص فاتح
+  static const Color darkTextSecondary = Color(0xFFBDBDB0); // نص ثانوي
 
   /// الحدود والفواصل
-  static const Color lightDivider = Color(0xFFE0E0E0);
-  static const Color darkDivider = Color(0xFF404040);
+  static const Color lightDivider = Color(0xFFE0DDD4); // فواصل دافئة
+  static const Color darkDivider = Color(0xFF3A453A); // فواصل داكنة
 
   // ==================== التدرجات اللونية ====================
   
@@ -118,25 +118,25 @@ class AppTheme {
     }
   }
 
-  // ==================== ألوان الصلوات ====================
+  // ==================== ألوان الصلوات المحدثة ====================
   
   static Color getPrayerColor(String prayerName) {
     switch (prayerName.toLowerCase()) {
       case 'الفجر':
       case 'fajr':
-        return const Color(0xFF5C6BC0);
+        return const Color(0xFF6B8E9F); // أزرق رمادي هادئ للفجر
       case 'الظهر':
       case 'dhuhr':
-        return const Color(0xFFFFB74D);
+        return const Color(0xFFB8860B); // ذهبي دافئ للظهر
       case 'العصر':
       case 'asr':
-        return const Color(0xFFFF8A65);
+        return const Color(0xFFD4A574); // برتقالي دافئ للعصر
       case 'المغرب':
       case 'maghrib':
-        return const Color(0xFFAB47BC);
+        return const Color(0xFF8B6F47); // بني دافئ للمغرب
       case 'العشاء':
       case 'isha':
-        return const Color(0xFF5E35B1);
+        return const Color(0xFF5D7052); // أخضر زيتي للعشاء
       default:
         return primary;
     }
@@ -797,4 +797,77 @@ extension AppThemeExtension on BuildContext {
   LinearGradient get timeBasedGradient => AppTheme.getTimeBasedGradient();
 
   // أنماط البطاقات
-  BoxDecoration get cardDecoration => AppTheme.cardDecoration
+  BoxDecoration get cardDecoration => AppTheme.cardDecoration.copyWith(
+    color: cardColor,
+    border: Border.all(
+      color: dividerColor.withOpacity(0.2),
+      width: AppTheme.borderLight,
+    ),
+  );
+
+  // الظلال
+  List<BoxShadow> get shadowSm => AppTheme.shadowSm;
+  List<BoxShadow> get shadowMd => AppTheme.shadowMd;
+  List<BoxShadow> get shadowLg => AppTheme.shadowLg;
+  List<BoxShadow> get shadowXl => AppTheme.shadowXl;
+}
+
+/// Extension لتعديل الألوان
+extension ColorExtension on Color {
+  Color darken(double amount) {
+    final hsl = HSLColor.fromColor(this);
+    final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
+    return hslDark.toColor();
+  }
+
+  Color lighten(double amount) {
+    final hsl = HSLColor.fromColor(this);
+    final hslLight = hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
+    return hslLight.toColor();
+  }
+}
+
+/// Extension لأنماط النصوص مع FontWeight
+extension TextStyleExtension on TextStyle? {
+  TextStyle? get light => this?.copyWith(fontWeight: AppTheme.light);
+  TextStyle? get regular => this?.copyWith(fontWeight: AppTheme.regular);
+  TextStyle? get medium => this?.copyWith(fontWeight: AppTheme.medium);
+  TextStyle? get semiBold => this?.copyWith(fontWeight: AppTheme.semiBold);
+  TextStyle? get bold => this?.copyWith(fontWeight: AppTheme.bold);
+}
+
+/// رسام الخلفية المتحركة
+class AnimatedBackgroundPainter extends CustomPainter {
+  final double animation;
+  final Color color;
+
+  AnimatedBackgroundPainter({
+    required this.animation,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    // رسم دوائر متحركة
+    for (int i = 0; i < 3; i++) {
+      final radius = 30.0 + (i * 20) + (animation * 10);
+      final alpha = (1 - (i * 0.3)) * (0.8 - animation * 0.3);
+      
+      paint.color = color.withOpacity(alpha.clamp(0.0, 1.0));
+      
+      canvas.drawCircle(
+        Offset(size.width * 0.8, size.height * 0.2),
+        radius,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
