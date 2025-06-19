@@ -1,10 +1,7 @@
-// TODO Implement this library.// lib/app/themes/simple/widgets.dart
+// lib/app/themes/widgets.dart
 import 'package:flutter/material.dart';
-import 'colors.dart';
+import 'theme_constants.dart';
 import 'typography.dart';
-
-/// Widgets مساعدة للتطبيق الإسلامي
-/// بساطة ووضوح في الاستخدام
 
 // ==================== مساحات سريعة ====================
 
@@ -26,15 +23,17 @@ class HSpace extends StatelessWidget {
 
 // المساحات الثابتة
 class Spaces {
-  static const small = VSpace(8);
-  static const medium = VSpace(16);
-  static const large = VSpace(24);
-  static const extraLarge = VSpace(32);
+  static const xs = VSpace(ThemeConstants.spaceXs);
+  static const sm = VSpace(ThemeConstants.spaceSm);
+  static const md = VSpace(ThemeConstants.spaceMd);
+  static const lg = VSpace(ThemeConstants.spaceLg);
+  static const xl = VSpace(ThemeConstants.spaceXl);
   
-  static const smallH = HSpace(8);
-  static const mediumH = HSpace(16);
-  static const largeH = HSpace(24);
-  static const extraLargeH = HSpace(32);
+  static const xsH = HSpace(ThemeConstants.spaceXs);
+  static const smH = HSpace(ThemeConstants.spaceSm);
+  static const mdH = HSpace(ThemeConstants.spaceMd);
+  static const lgH = HSpace(ThemeConstants.spaceLg);
+  static const xlH = HSpace(ThemeConstants.spaceXl);
 }
 
 // ==================== بطاقة إسلامية ====================
@@ -43,20 +42,24 @@ class IslamicCard extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
   final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
   final Color? color;
   final LinearGradient? gradient;
   final double? borderRadius;
   final List<BoxShadow>? boxShadow;
+  final Border? border;
   
   const IslamicCard({
     super.key,
     required this.child,
     this.onTap,
     this.padding,
+    this.margin,
     this.color,
     this.gradient,
     this.borderRadius,
     this.boxShadow,
+    this.border,
   });
   
   /// بطاقة بسيطة
@@ -64,10 +67,12 @@ class IslamicCard extends StatelessWidget {
     required Widget child,
     VoidCallback? onTap,
     EdgeInsetsGeometry? padding,
+    EdgeInsetsGeometry? margin,
   }) {
     return IslamicCard(
       onTap: onTap,
-      padding: padding ?? const EdgeInsets.all(16),
+      padding: padding ?? const EdgeInsets.all(ThemeConstants.spaceMd),
+      margin: margin,
       child: child,
     );
   }
@@ -78,10 +83,12 @@ class IslamicCard extends StatelessWidget {
     required LinearGradient gradient,
     VoidCallback? onTap,
     EdgeInsetsGeometry? padding,
+    EdgeInsetsGeometry? margin,
   }) {
     return IslamicCard(
       onTap: onTap,
-      padding: padding ?? const EdgeInsets.all(16),
+      padding: padding ?? const EdgeInsets.all(ThemeConstants.spaceMd),
+      margin: margin,
       gradient: gradient,
       child: child,
     );
@@ -93,13 +100,15 @@ class IslamicCard extends StatelessWidget {
     required String prayerName,
     VoidCallback? onTap,
     EdgeInsetsGeometry? padding,
+    EdgeInsetsGeometry? margin,
   }) {
-    final prayerColor = AppColors.getPrayerColor(prayerName);
+    final prayerColor = ThemeConstants.getPrayerColor(prayerName);
     return IslamicCard(
       onTap: onTap,
-      padding: padding ?? const EdgeInsets.all(16),
+      padding: padding ?? const EdgeInsets.all(ThemeConstants.spaceMd),
+      margin: margin,
       gradient: LinearGradient(
-        colors: [prayerColor, prayerColor.withOpacity(0.7)],
+        colors: [prayerColor, prayerColor.withValues(alpha: 0.7)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ),
@@ -110,39 +119,43 @@ class IslamicCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final defaultColor = isDark 
+        ? ThemeConstants.darkCard 
+        : ThemeConstants.lightCard;
     
-    Widget card = Container(
+    Widget content = Container(
       width: double.infinity,
-      padding: padding ?? const EdgeInsets.all(16),
+      padding: padding ?? const EdgeInsets.all(ThemeConstants.spaceMd),
+      margin: margin,
       decoration: BoxDecoration(
-        color: gradient == null 
-            ? (color ?? (isDark ? AppColors.darkCard : AppColors.lightCard))
-            : null,
+        color: gradient == null ? (color ?? defaultColor) : null,
         gradient: gradient,
-        borderRadius: BorderRadius.circular(borderRadius ?? 16),
-        boxShadow: boxShadow ?? [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: border,
+        borderRadius: BorderRadius.circular(
+          borderRadius ?? ThemeConstants.radiusLg,
+        ),
+        boxShadow: boxShadow ?? (isDark 
+            ? ThemeConstants.shadowMd.map((shadow) => 
+                shadow.copyWith(color: shadow.color.withValues(alpha: 0.3))).toList()
+            : ThemeConstants.shadowMd),
       ),
       child: child,
     );
     
     if (onTap != null) {
-      card = Material(
+      content = Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(borderRadius ?? 16),
-          child: card,
+          borderRadius: BorderRadius.circular(
+            borderRadius ?? ThemeConstants.radiusLg,
+          ),
+          child: content,
         ),
       );
     }
     
-    return card;
+    return content;
   }
 }
 
@@ -157,6 +170,8 @@ class IslamicButton extends StatelessWidget {
   final Color? color;
   final double? width;
   final double? height;
+  final EdgeInsetsGeometry? padding;
+  final bool isLoading;
   
   const IslamicButton({
     super.key,
@@ -168,6 +183,8 @@ class IslamicButton extends StatelessWidget {
     this.color,
     this.width,
     this.height,
+    this.padding,
+    this.isLoading = false,
   });
   
   /// زر أساسي
@@ -176,12 +193,14 @@ class IslamicButton extends StatelessWidget {
     VoidCallback? onPressed,
     IconData? icon,
     double? width,
+    bool isLoading = false,
   }) {
     return IslamicButton(
       text: text,
       onPressed: onPressed,
       icon: icon,
       width: width,
+      isLoading: isLoading,
     );
   }
   
@@ -191,6 +210,7 @@ class IslamicButton extends StatelessWidget {
     VoidCallback? onPressed,
     IconData? icon,
     double? width,
+    bool isLoading = false,
   }) {
     return IslamicButton(
       text: text,
@@ -198,6 +218,7 @@ class IslamicButton extends StatelessWidget {
       icon: icon,
       isSecondary: true,
       width: width,
+      isLoading: isLoading,
     );
   }
   
@@ -208,6 +229,7 @@ class IslamicButton extends StatelessWidget {
     IconData? icon,
     Color? color,
     double? width,
+    bool isLoading = false,
   }) {
     return IslamicButton(
       text: text,
@@ -216,59 +238,70 @@ class IslamicButton extends StatelessWidget {
       isOutlined: true,
       color: color,
       width: width,
+      isLoading: isLoading,
     );
   }
   
   @override
   Widget build(BuildContext context) {
     final buttonColor = color ?? 
-        (isSecondary ? AppColors.secondary : AppColors.primary);
+        (isSecondary ? ThemeConstants.secondary : ThemeConstants.primary);
+    
+    final effectiveOnPressed = isLoading ? null : onPressed;
     
     final style = isOutlined
         ? OutlinedButton.styleFrom(
             foregroundColor: buttonColor,
             side: BorderSide(color: buttonColor, width: 2),
-            minimumSize: Size(width ?? 0, height ?? 48),
+            minimumSize: Size(width ?? 0, height ?? ThemeConstants.buttonHeightMd),
+            padding: padding,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
             ),
           )
         : ElevatedButton.styleFrom(
             backgroundColor: buttonColor,
             foregroundColor: Colors.white,
-            minimumSize: Size(width ?? 0, height ?? 48),
+            minimumSize: Size(width ?? 0, height ?? ThemeConstants.buttonHeightMd),
+            padding: padding,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
             ),
             elevation: 2,
           );
     
-    if (icon != null) {
-      return isOutlined
-          ? OutlinedButton.icon(
-              onPressed: onPressed,
-              style: style,
-              icon: Icon(icon),
-              label: Text(text),
-            )
-          : ElevatedButton.icon(
-              onPressed: onPressed,
-              style: style,
-              icon: Icon(icon),
-              label: Text(text),
-            );
+    Widget buttonChild = isLoading 
+        ? SizedBox(
+            width: ThemeConstants.iconSm,
+            height: ThemeConstants.iconSm,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: isOutlined ? buttonColor : Colors.white,
+            ),
+          )
+        : Text(text);
+    
+    if (icon != null && !isLoading) {
+      buttonChild = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: ThemeConstants.iconSm),
+          const SizedBox(width: ThemeConstants.spaceSm),
+          Text(text),
+        ],
+      );
     }
     
     return isOutlined
         ? OutlinedButton(
-            onPressed: onPressed,
+            onPressed: effectiveOnPressed,
             style: style,
-            child: Text(text),
+            child: buttonChild,
           )
         : ElevatedButton(
-            onPressed: onPressed,
+            onPressed: effectiveOnPressed,
             style: style,
-            child: Text(text),
+            child: buttonChild,
           );
   }
 }
@@ -281,6 +314,8 @@ class IslamicText extends StatelessWidget {
   final TextAlign? textAlign;
   final Color? color;
   final double? fontSize;
+  final int? maxLines;
+  final TextOverflow? overflow;
   
   const IslamicText({
     super.key,
@@ -289,6 +324,8 @@ class IslamicText extends StatelessWidget {
     this.textAlign,
     this.color,
     this.fontSize,
+    this.maxLines,
+    this.overflow,
   });
   
   /// آية قرآنية
@@ -297,6 +334,7 @@ class IslamicText extends StatelessWidget {
     TextAlign? textAlign,
     Color? color,
     double? fontSize,
+    int? maxLines,
   }) {
     return IslamicText(
       text: text,
@@ -304,6 +342,7 @@ class IslamicText extends StatelessWidget {
       textAlign: textAlign ?? TextAlign.center,
       color: color,
       fontSize: fontSize,
+      maxLines: maxLines,
     );
   }
   
@@ -313,6 +352,7 @@ class IslamicText extends StatelessWidget {
     TextAlign? textAlign,
     Color? color,
     double? fontSize,
+    int? maxLines,
   }) {
     return IslamicText(
       text: text,
@@ -320,6 +360,7 @@ class IslamicText extends StatelessWidget {
       textAlign: textAlign ?? TextAlign.center,
       color: color,
       fontSize: fontSize,
+      maxLines: maxLines,
     );
   }
   
@@ -329,6 +370,7 @@ class IslamicText extends StatelessWidget {
     TextAlign? textAlign,
     Color? color,
     double? fontSize,
+    int? maxLines,
   }) {
     return IslamicText(
       text: text,
@@ -336,6 +378,7 @@ class IslamicText extends StatelessWidget {
       textAlign: textAlign ?? TextAlign.center,
       color: color,
       fontSize: fontSize,
+      maxLines: maxLines,
     );
   }
   
@@ -345,6 +388,7 @@ class IslamicText extends StatelessWidget {
     TextAlign? textAlign,
     Color? color,
     double? fontSize,
+    int? maxLines,
   }) {
     return IslamicText(
       text: text,
@@ -352,13 +396,16 @@ class IslamicText extends StatelessWidget {
       textAlign: textAlign ?? TextAlign.center,
       color: color,
       fontSize: fontSize,
+      maxLines: maxLines,
     );
   }
   
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final defaultColor = color ?? (isDark ? AppColors.darkText : AppColors.lightText);
+    final defaultColor = color ?? (isDark 
+        ? ThemeConstants.darkText 
+        : ThemeConstants.lightText);
     
     TextStyle style = switch (type) {
       IslamicTextType.quran => AppTypography.quran,
@@ -376,6 +423,8 @@ class IslamicText extends StatelessWidget {
       style: style.copyWith(color: defaultColor),
       textAlign: textAlign,
       textDirection: TextDirection.rtl,
+      maxLines: maxLines,
+      overflow: overflow,
     );
   }
 }
@@ -402,16 +451,20 @@ class IslamicLoading extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CircularProgressIndicator(
-            color: color ?? AppColors.primary,
-            strokeWidth: 3,
+          SizedBox(
+            width: size ?? 40,
+            height: size ?? 40,
+            child: CircularProgressIndicator(
+              color: color ?? ThemeConstants.primary,
+              strokeWidth: 3,
+            ),
           ),
           if (message != null) ...[
-            Spaces.medium,
+            Spaces.md,
             Text(
               message!,
               style: AppTypography.body.copyWith(
-                color: color ?? AppColors.primary,
+                color: color ?? ThemeConstants.primary,
               ),
             ),
           ],
@@ -429,6 +482,7 @@ class IslamicSwitch extends StatelessWidget {
   final String? title;
   final String? subtitle;
   final Color? activeColor;
+  final EdgeInsetsGeometry? contentPadding;
   
   const IslamicSwitch({
     super.key,
@@ -437,17 +491,27 @@ class IslamicSwitch extends StatelessWidget {
     this.title,
     this.subtitle,
     this.activeColor,
+    this.contentPadding,
   });
   
   @override
   Widget build(BuildContext context) {
+    if (title == null && subtitle == null) {
+      return Switch(
+        value: value,
+        onChanged: onChanged,
+        activeColor: activeColor ?? ThemeConstants.primary,
+      );
+    }
+    
     return ListTile(
+      contentPadding: contentPadding,
       title: title != null ? Text(title!) : null,
       subtitle: subtitle != null ? Text(subtitle!) : null,
       trailing: Switch(
         value: value,
         onChanged: onChanged,
-        activeColor: activeColor ?? AppColors.primary,
+        activeColor: activeColor ?? ThemeConstants.primary,
       ),
       onTap: onChanged != null ? () => onChanged!(!value) : null,
     );
@@ -464,6 +528,7 @@ class IslamicAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Color? backgroundColor;
   final Color? foregroundColor;
   final PreferredSizeWidget? bottom;
+  final double? elevation;
   
   const IslamicAppBar({
     super.key,
@@ -474,6 +539,7 @@ class IslamicAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.backgroundColor,
     this.foregroundColor,
     this.bottom,
+    this.elevation,
   });
   
   @override
@@ -486,11 +552,15 @@ class IslamicAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: actions,
       centerTitle: centerTitle,
       backgroundColor: backgroundColor ?? 
-          (isDark ? AppColors.darkSurface : AppColors.lightSurface),
+          (isDark ? ThemeConstants.darkSurface : ThemeConstants.lightSurface),
       foregroundColor: foregroundColor ?? 
-          (isDark ? AppColors.darkText : AppColors.lightText),
-      elevation: 0,
+          (isDark ? ThemeConstants.darkText : ThemeConstants.lightText),
+      elevation: elevation ?? 0,
       bottom: bottom,
+      titleTextStyle: AppTypography.title.copyWith(
+        color: foregroundColor ?? 
+            (isDark ? ThemeConstants.darkText : ThemeConstants.lightText),
+      ),
     );
   }
   
@@ -498,4 +568,300 @@ class IslamicAppBar extends StatelessWidget implements PreferredSizeWidget {
   Size get preferredSize => Size.fromHeight(
     kToolbarHeight + (bottom?.preferredSize.height ?? 0),
   );
+}
+
+// ==================== حقل إدخال إسلامي ====================
+
+class IslamicInput extends StatelessWidget {
+  final String? label;
+  final String? hint;
+  final TextEditingController? controller;
+  final ValueChanged<String>? onChanged;
+  final TextInputType? keyboardType;
+  final bool obscureText;
+  final IconData? prefixIcon;
+  final IconData? suffixIcon;
+  final VoidCallback? onSuffixIconPressed;
+  final String? Function(String?)? validator;
+  final bool enabled;
+  final int? maxLines;
+  final int? maxLength;
+  
+  const IslamicInput({
+    super.key,
+    this.label,
+    this.hint,
+    this.controller,
+    this.onChanged,
+    this.keyboardType,
+    this.obscureText = false,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.onSuffixIconPressed,
+    this.validator,
+    this.enabled = true,
+    this.maxLines = 1,
+    this.maxLength,
+  });
+  
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: controller,
+      onChanged: onChanged,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      validator: validator,
+      enabled: enabled,
+      maxLines: maxLines,
+      maxLength: maxLength,
+      style: AppTypography.body,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
+        suffixIcon: suffixIcon != null 
+            ? IconButton(
+                icon: Icon(suffixIcon),
+                onPressed: onSuffixIconPressed,
+              )
+            : null,
+      ),
+    );
+  }
+}
+
+// ==================== حاوي مع تدرج ====================
+
+class GradientContainer extends StatelessWidget {
+  final Widget child;
+  final LinearGradient gradient;
+  final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
+  final double? borderRadius;
+  final List<BoxShadow>? boxShadow;
+  final double? width;
+  final double? height;
+  
+  const GradientContainer({
+    super.key,
+    required this.child,
+    required this.gradient,
+    this.padding,
+    this.margin,
+    this.borderRadius,
+    this.boxShadow,
+    this.width,
+    this.height,
+  });
+  
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      padding: padding,
+      margin: margin,
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: borderRadius != null 
+            ? BorderRadius.circular(borderRadius!)
+            : null,
+        boxShadow: boxShadow,
+      ),
+      child: child,
+    );
+  }
+}
+
+// ==================== شاشة فارغة ====================
+
+class EmptyState extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final Widget? action;
+  final Color? iconColor;
+  
+  const EmptyState({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.action,
+    this.iconColor,
+  });
+  
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(ThemeConstants.spaceLg),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 64,
+              color: iconColor ?? 
+                  (Theme.of(context).brightness == Brightness.dark
+                      ? ThemeConstants.darkTextSecondary
+                      : ThemeConstants.lightTextSecondary),
+            ),
+            Spaces.lg,
+            Text(
+              title,
+              style: AppTypography.title.copyWith(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? ThemeConstants.darkText
+                    : ThemeConstants.lightText,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            if (subtitle != null) ...[
+              Spaces.sm,
+              Text(
+                subtitle!,
+                style: AppTypography.body.copyWith(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? ThemeConstants.darkTextSecondary
+                      : ThemeConstants.lightTextSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+            if (action != null) ...[
+              Spaces.lg,
+              action!,
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ==================== فاصل مع نص ====================
+
+class TextDivider extends StatelessWidget {
+  final String text;
+  final Color? color;
+  final double? thickness;
+  final EdgeInsetsGeometry? padding;
+  
+  const TextDivider({
+    super.key,
+    required this.text,
+    this.color,
+    this.thickness,
+    this.padding,
+  });
+  
+  @override
+  Widget build(BuildContext context) {
+    final dividerColor = color ?? 
+        (Theme.of(context).brightness == Brightness.dark
+            ? ThemeConstants.darkBorder
+            : ThemeConstants.lightBorder);
+    
+    return Padding(
+      padding: padding ?? const EdgeInsets.symmetric(vertical: ThemeConstants.spaceMd),
+      child: Row(
+        children: [
+          Expanded(
+            child: Divider(
+              color: dividerColor,
+              thickness: thickness ?? 1,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.spaceMd),
+            child: Text(
+              text,
+              style: AppTypography.caption.copyWith(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? ThemeConstants.darkTextSecondary
+                    : ThemeConstants.lightTextSecondary,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Divider(
+              color: dividerColor,
+              thickness: thickness ?? 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ==================== عداد مع أيقونة ====================
+
+class IconCounter extends StatelessWidget {
+  final IconData icon;
+  final int count;
+  final String label;
+  final Color? iconColor;
+  final Color? textColor;
+  final VoidCallback? onTap;
+  
+  const IconCounter({
+    super.key,
+    required this.icon,
+    required this.count,
+    required this.label,
+    this.iconColor,
+    this.textColor,
+    this.onTap,
+  });
+  
+  @override
+  Widget build(BuildContext context) {
+    final defaultColor = Theme.of(context).brightness == Brightness.dark
+        ? ThemeConstants.darkText
+        : ThemeConstants.lightText;
+    
+    Widget content = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          icon,
+          color: iconColor ?? ThemeConstants.primary,
+          size: ThemeConstants.iconLg,
+        ),
+        Spaces.xs,
+        Text(
+          count.toString(),
+          style: AppTypography.title.copyWith(
+            color: textColor ?? defaultColor,
+            fontWeight: ThemeConstants.fontBold,
+          ),
+        ),
+        Text(
+          label,
+          style: AppTypography.caption.copyWith(
+            color: textColor ?? 
+                (Theme.of(context).brightness == Brightness.dark
+                    ? ThemeConstants.darkTextSecondary
+                    : ThemeConstants.lightTextSecondary),
+          ),
+        ),
+      ],
+    );
+    
+    if (onTap != null) {
+      content = InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        child: Padding(
+          padding: const EdgeInsets.all(ThemeConstants.spaceSm),
+          child: content,
+        ),
+      );
+    }
+    
+    return content;
+  }
 }

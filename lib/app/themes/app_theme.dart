@@ -1,76 +1,64 @@
-// TODO Implement this library.// lib/app/themes/simple/app_theme.dart
+// lib/app/themes/app_theme.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'colors.dart';
+import 'theme_constants.dart';
 import 'typography.dart';
 
-/// نظام الثيم المبسط للتطبيق الإسلامي
-/// كل ما تحتاجه في مكان واحد - بساطة وفعالية
+/// نظام الثيم الموحد للتطبيق الإسلامي
 class AppTheme {
   AppTheme._();
 
-  // ==================== الثابتات ====================
-  
-  static const double borderRadius = 12.0;
-  static const double cardRadius = 16.0;
-  static const double buttonHeight = 48.0;
-  static const double iconSize = 24.0;
-  
-  static const double paddingSmall = 8.0;
-  static const double paddingMedium = 16.0;
-  static const double paddingLarge = 24.0;
-  
   // ==================== الثيم الفاتح ====================
   
   static ThemeData get lightTheme => ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
-    fontFamily: AppTypography.primaryFont,
+    fontFamily: ThemeConstants.fontPrimary,
     
     // الألوان
-    colorScheme: AppColors.lightColorScheme,
-    scaffoldBackgroundColor: AppColors.lightBackground,
+    colorScheme: ThemeConstants.lightColorScheme,
+    scaffoldBackgroundColor: ThemeConstants.lightBackground,
     
     // النصوص
     textTheme: AppTypography.createTextTheme(
-      AppColors.lightText,
-      AppColors.lightTextSecondary,
+      ThemeConstants.lightText,
+      ThemeConstants.lightTextSecondary,
     ),
     
     // شريط التطبيق
     appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.lightSurface,
-      foregroundColor: AppColors.lightText,
+      backgroundColor: ThemeConstants.lightSurface,
+      foregroundColor: ThemeConstants.lightText,
       elevation: 0,
       centerTitle: true,
       systemOverlayStyle: SystemUiOverlayStyle.dark,
       titleTextStyle: TextStyle(
-        color: AppColors.lightText,
-        fontSize: AppTypography.sizeTitle,
-        fontWeight: AppTypography.semiBold,
-        fontFamily: AppTypography.primaryFont,
+        color: ThemeConstants.lightText,
+        fontSize: ThemeConstants.fontSize2xl,
+        fontWeight: ThemeConstants.fontSemiBold,
+        fontFamily: ThemeConstants.fontPrimary,
       ),
     ),
     
     // البطاقات
     cardTheme: CardThemeData(
-      color: AppColors.lightCard,
+      color: ThemeConstants.lightCard,
       elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.1),
+      shadowColor: Colors.black.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(cardRadius),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
       ),
-      margin: const EdgeInsets.all(8),
+      margin: const EdgeInsets.all(ThemeConstants.spaceSm),
     ),
     
     // الأزرار المرفوعة
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
+        backgroundColor: ThemeConstants.primary,
         foregroundColor: Colors.white,
-        minimumSize: const Size(0, buttonHeight),
+        minimumSize: const Size(0, ThemeConstants.buttonHeightMd),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(borderRadius),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
         elevation: 2,
         textStyle: AppTypography.button,
@@ -80,11 +68,11 @@ class AppTheme {
     // الأزرار المحددة
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primary,
-        side: const BorderSide(color: AppColors.primary, width: 2),
-        minimumSize: const Size(0, buttonHeight),
+        foregroundColor: ThemeConstants.primary,
+        side: const BorderSide(color: ThemeConstants.primary, width: 2),
+        minimumSize: const Size(0, ThemeConstants.buttonHeightMd),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(borderRadius),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
         textStyle: AppTypography.button,
       ),
@@ -93,10 +81,10 @@ class AppTheme {
     // الأزرار النصية
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: AppColors.primary,
-        minimumSize: const Size(0, buttonHeight),
+        foregroundColor: ThemeConstants.primary,
+        minimumSize: const Size(0, ThemeConstants.buttonHeightMd),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(borderRadius),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
         textStyle: AppTypography.button,
       ),
@@ -105,95 +93,95 @@ class AppTheme {
     // حقول النص
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.lightCard,
-      contentPadding: const EdgeInsets.all(paddingMedium),
+      fillColor: ThemeConstants.lightCard,
+      contentPadding: const EdgeInsets.all(ThemeConstants.spaceMd),
       
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
-        borderSide: const BorderSide(color: AppColors.lightBorder),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        borderSide: const BorderSide(color: ThemeConstants.lightBorder),
       ),
       
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
-        borderSide: const BorderSide(color: AppColors.lightBorder),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        borderSide: const BorderSide(color: ThemeConstants.lightBorder),
       ),
       
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
-        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        borderSide: const BorderSide(color: ThemeConstants.primary, width: 2),
       ),
       
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
-        borderSide: const BorderSide(color: AppColors.error),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        borderSide: const BorderSide(color: ThemeConstants.error),
       ),
       
       hintStyle: AppTypography.body.copyWith(
-        color: AppColors.lightTextHint,
+        color: ThemeConstants.lightTextHint,
       ),
       
       labelStyle: AppTypography.body.copyWith(
-        color: AppColors.lightTextSecondary,
+        color: ThemeConstants.lightTextSecondary,
       ),
     ),
     
     // الـ FAB
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: AppColors.primary,
+      backgroundColor: ThemeConstants.primary,
       foregroundColor: Colors.white,
       elevation: 4,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(16)),
+        borderRadius: BorderRadius.all(Radius.circular(ThemeConstants.radiusLg)),
       ),
     ),
     
     // التنقل السفلي
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: AppColors.lightSurface,
-      selectedItemColor: AppColors.primary,
-      unselectedItemColor: AppColors.lightTextSecondary,
+      backgroundColor: ThemeConstants.lightSurface,
+      selectedItemColor: ThemeConstants.primary,
+      unselectedItemColor: ThemeConstants.lightTextSecondary,
       type: BottomNavigationBarType.fixed,
       elevation: 8,
     ),
     
     // الحوارات
     dialogTheme: DialogThemeData(
-      backgroundColor: AppColors.lightCard,
+      backgroundColor: ThemeConstants.lightCard,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(cardRadius),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
       ),
       elevation: 8,
     ),
     
     // SnackBar
     snackBarTheme: SnackBarThemeData(
-      backgroundColor: AppColors.lightText,
+      backgroundColor: ThemeConstants.lightText,
       contentTextStyle: AppTypography.body.copyWith(color: Colors.white),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
       ),
       behavior: SnackBarBehavior.floating,
     ),
     
     // الأيقونات
     iconTheme: const IconThemeData(
-      color: AppColors.lightTextSecondary,
-      size: iconSize,
+      color: ThemeConstants.lightTextSecondary,
+      size: ThemeConstants.iconMd,
     ),
     
     // المفاتيح
     switchTheme: SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.primary;
+          return ThemeConstants.primary;
         }
-        return AppColors.lightTextHint;
+        return ThemeConstants.lightTextHint;
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.primary.withOpacity(0.3);
+          return ThemeConstants.primary.withValues(alpha: 0.3);
         }
-        return AppColors.lightBorder;
+        return ThemeConstants.lightBorder;
       }),
     ),
     
@@ -201,7 +189,7 @@ class AppTheme {
     checkboxTheme: CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.primary;
+          return ThemeConstants.primary;
         }
         return Colors.transparent;
       }),
@@ -210,7 +198,7 @@ class AppTheme {
     
     // الفواصل
     dividerTheme: const DividerThemeData(
-      color: AppColors.lightBorder,
+      color: ThemeConstants.lightBorder,
       thickness: 1,
       space: 1,
     ),
@@ -218,11 +206,11 @@ class AppTheme {
     // القوائم
     listTileTheme: ListTileThemeData(
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: paddingMedium,
-        vertical: paddingSmall,
+        horizontal: ThemeConstants.spaceMd,
+        vertical: ThemeConstants.spaceSm,
       ),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
       ),
     ),
   );
@@ -232,52 +220,52 @@ class AppTheme {
   static ThemeData get darkTheme => ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
-    fontFamily: AppTypography.primaryFont,
+    fontFamily: ThemeConstants.fontPrimary,
     
     // الألوان
-    colorScheme: AppColors.darkColorScheme,
-    scaffoldBackgroundColor: AppColors.darkBackground,
+    colorScheme: ThemeConstants.darkColorScheme,
+    scaffoldBackgroundColor: ThemeConstants.darkBackground,
     
     // النصوص
     textTheme: AppTypography.createTextTheme(
-      AppColors.darkText,
-      AppColors.darkTextSecondary,
+      ThemeConstants.darkText,
+      ThemeConstants.darkTextSecondary,
     ),
     
     // شريط التطبيق
     appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.darkSurface,
-      foregroundColor: AppColors.darkText,
+      backgroundColor: ThemeConstants.darkSurface,
+      foregroundColor: ThemeConstants.darkText,
       elevation: 0,
       centerTitle: true,
       systemOverlayStyle: SystemUiOverlayStyle.light,
       titleTextStyle: TextStyle(
-        color: AppColors.darkText,
-        fontSize: AppTypography.sizeTitle,
-        fontWeight: AppTypography.semiBold,
-        fontFamily: AppTypography.primaryFont,
+        color: ThemeConstants.darkText,
+        fontSize: ThemeConstants.fontSize2xl,
+        fontWeight: ThemeConstants.fontSemiBold,
+        fontFamily: ThemeConstants.fontPrimary,
       ),
     ),
     
     // البطاقات
     cardTheme: CardThemeData(
-      color: AppColors.darkCard,
+      color: ThemeConstants.darkCard,
       elevation: 4,
-      shadowColor: Colors.black.withOpacity(0.3),
+      shadowColor: Colors.black.withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(cardRadius),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
       ),
-      margin: const EdgeInsets.all(8),
+      margin: const EdgeInsets.all(ThemeConstants.spaceSm),
     ),
     
     // الأزرار المرفوعة
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primaryLight,
+        backgroundColor: ThemeConstants.primaryLight,
         foregroundColor: Colors.black,
-        minimumSize: const Size(0, buttonHeight),
+        minimumSize: const Size(0, ThemeConstants.buttonHeightMd),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(borderRadius),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
         elevation: 4,
         textStyle: AppTypography.button,
@@ -287,11 +275,11 @@ class AppTheme {
     // الأزرار المحددة
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primaryLight,
-        side: const BorderSide(color: AppColors.primaryLight, width: 2),
-        minimumSize: const Size(0, buttonHeight),
+        foregroundColor: ThemeConstants.primaryLight,
+        side: const BorderSide(color: ThemeConstants.primaryLight, width: 2),
+        minimumSize: const Size(0, ThemeConstants.buttonHeightMd),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(borderRadius),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
         textStyle: AppTypography.button,
       ),
@@ -300,10 +288,10 @@ class AppTheme {
     // الأزرار النصية
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: AppColors.primaryLight,
-        minimumSize: const Size(0, buttonHeight),
+        foregroundColor: ThemeConstants.primaryLight,
+        minimumSize: const Size(0, ThemeConstants.buttonHeightMd),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(borderRadius),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
         textStyle: AppTypography.button,
       ),
@@ -312,95 +300,95 @@ class AppTheme {
     // حقول النص
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.darkCard,
-      contentPadding: const EdgeInsets.all(paddingMedium),
+      fillColor: ThemeConstants.darkCard,
+      contentPadding: const EdgeInsets.all(ThemeConstants.spaceMd),
       
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
-        borderSide: const BorderSide(color: AppColors.darkBorder),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        borderSide: const BorderSide(color: ThemeConstants.darkBorder),
       ),
       
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
-        borderSide: const BorderSide(color: AppColors.darkBorder),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        borderSide: const BorderSide(color: ThemeConstants.darkBorder),
       ),
       
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
-        borderSide: const BorderSide(color: AppColors.primaryLight, width: 2),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        borderSide: const BorderSide(color: ThemeConstants.primaryLight, width: 2),
       ),
       
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
-        borderSide: const BorderSide(color: AppColors.error),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        borderSide: const BorderSide(color: ThemeConstants.error),
       ),
       
       hintStyle: AppTypography.body.copyWith(
-        color: AppColors.darkTextHint,
+        color: ThemeConstants.darkTextHint,
       ),
       
       labelStyle: AppTypography.body.copyWith(
-        color: AppColors.darkTextSecondary,
+        color: ThemeConstants.darkTextSecondary,
       ),
     ),
     
     // الـ FAB
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: AppColors.primaryLight,
+      backgroundColor: ThemeConstants.primaryLight,
       foregroundColor: Colors.black,
       elevation: 6,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(16)),
+        borderRadius: BorderRadius.all(Radius.circular(ThemeConstants.radiusLg)),
       ),
     ),
     
     // التنقل السفلي
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: AppColors.darkSurface,
-      selectedItemColor: AppColors.primaryLight,
-      unselectedItemColor: AppColors.darkTextSecondary,
+      backgroundColor: ThemeConstants.darkSurface,
+      selectedItemColor: ThemeConstants.primaryLight,
+      unselectedItemColor: ThemeConstants.darkTextSecondary,
       type: BottomNavigationBarType.fixed,
       elevation: 8,
     ),
     
     // الحوارات
     dialogTheme: DialogThemeData(
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: ThemeConstants.darkCard,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(cardRadius),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
       ),
       elevation: 12,
     ),
     
     // SnackBar
     snackBarTheme: SnackBarThemeData(
-      backgroundColor: AppColors.darkText,
+      backgroundColor: ThemeConstants.darkText,
       contentTextStyle: AppTypography.body.copyWith(color: Colors.black),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
       ),
       behavior: SnackBarBehavior.floating,
     ),
     
     // الأيقونات
     iconTheme: const IconThemeData(
-      color: AppColors.darkTextSecondary,
-      size: iconSize,
+      color: ThemeConstants.darkTextSecondary,
+      size: ThemeConstants.iconMd,
     ),
     
     // المفاتيح
     switchTheme: SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryLight;
+          return ThemeConstants.primaryLight;
         }
-        return AppColors.darkTextHint;
+        return ThemeConstants.darkTextHint;
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryLight.withOpacity(0.3);
+          return ThemeConstants.primaryLight.withValues(alpha: 0.3);
         }
-        return AppColors.darkBorder;
+        return ThemeConstants.darkBorder;
       }),
     ),
     
@@ -408,7 +396,7 @@ class AppTheme {
     checkboxTheme: CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return AppColors.primaryLight;
+          return ThemeConstants.primaryLight;
         }
         return Colors.transparent;
       }),
@@ -417,7 +405,7 @@ class AppTheme {
     
     // الفواصل
     dividerTheme: const DividerThemeData(
-      color: AppColors.darkBorder,
+      color: ThemeConstants.darkBorder,
       thickness: 1,
       space: 1,
     ),
@@ -425,11 +413,11 @@ class AppTheme {
     // القوائم
     listTileTheme: ListTileThemeData(
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: paddingMedium,
-        vertical: paddingSmall,
+        horizontal: ThemeConstants.spaceMd,
+        vertical: ThemeConstants.spaceSm,
       ),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(borderRadius),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
       ),
     ),
   );
@@ -441,7 +429,6 @@ class AppTheme {
   
   static void setThemeMode(ThemeMode mode) {
     themeModeNotifier.value = mode;
-    // يمكن إضافة حفظ في SharedPreferences هنا
   }
   
   static void toggleTheme() {
@@ -450,98 +437,5 @@ class AppTheme {
         ? ThemeMode.light 
         : ThemeMode.dark;
     setThemeMode(newMode);
-  }
-  
-  // ==================== التدرجات ====================
-  
-  static const LinearGradient primaryGradient = LinearGradient(
-    colors: [AppColors.primary, AppColors.primaryLight],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-  
-  static const LinearGradient secondaryGradient = LinearGradient(
-    colors: [AppColors.secondary, AppColors.secondaryLight],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-  
-  static LinearGradient getPrayerGradient(String prayerName) {
-    final color = AppColors.getPrayerColor(prayerName);
-    return LinearGradient(
-      colors: [color, color.withOpacity(0.7)],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
-  }
-}
-
-// ==================== Extensions للسهولة ====================
-
-extension BuildContextTheme on BuildContext {
-  // الثيم العام
-  ThemeData get theme => Theme.of(this);
-  ColorScheme get colorScheme => theme.colorScheme;
-  TextTheme get textTheme => theme.textTheme;
-  bool get isDarkMode => theme.brightness == Brightness.dark;
-  
-  // الألوان السريعة
-  Color get primaryColor => colorScheme.primary;
-  Color get secondaryColor => colorScheme.secondary;
-  Color get backgroundColor => theme.scaffoldBackgroundColor;
-  Color get cardColor => theme.cardTheme.color!;
-  Color get textColor => colorScheme.onSurface;
-  Color get secondaryTextColor => isDarkMode 
-      ? AppColors.darkTextSecondary 
-      : AppColors.lightTextSecondary;
-  
-  // الأحجام السريعة
-  double get smallPadding => AppTheme.paddingSmall;
-  double get mediumPadding => AppTheme.paddingMedium;
-  double get largePadding => AppTheme.paddingLarge;
-  
-  double get borderRadius => AppTheme.borderRadius;
-  double get cardRadius => AppTheme.cardRadius;
-  
-  // النصوص الإسلامية
-  TextStyle get quranTextStyle => AppTypography.quran.copyWith(
-    color: textColor,
-  );
-  
-  TextStyle get hadithTextStyle => AppTypography.hadith.copyWith(
-    color: textColor,
-  );
-  
-  TextStyle get duaTextStyle => AppTypography.dua.copyWith(
-    color: textColor,
-  );
-  
-  TextStyle get tasbihTextStyle => AppTypography.tasbih.copyWith(
-    color: textColor,
-  );
-  
-  // مساعدات سريعة
-  void showMessage(String message) {
-    ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-  
-  void showSuccessMessage(String message) {
-    ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.success,
-      ),
-    );
-  }
-  
-  void showErrorMessage(String message) {
-    ScaffoldMessenger.of(this).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.error,
-      ),
-    );
   }
 }
