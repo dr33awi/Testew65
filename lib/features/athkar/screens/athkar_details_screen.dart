@@ -12,7 +12,6 @@ import '../../../core/infrastructure/services/utils/extensions/string_extensions
 import '../services/athkar_service.dart';
 import '../models/athkar_model.dart';
 import '../widgets/athkar_item_card.dart';
-import '../widgets/athkar_completion_dialog.dart';
 import '../utils/category_utils.dart';
 import 'notification_settings_screen.dart';
 
@@ -104,7 +103,7 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
     } catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
-      context.showErrorSnackBar('حدث خطأ في تحميل الأذكار');
+      // إزالة SnackBar للخطأ
     }
   }
 
@@ -185,25 +184,12 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
           
           // تحديث القائمة المرئية لإخفاء الذكر المكتمل
           _updateVisibleItems();
-          
-          // رسالة تأكيد للإكمال
-          context.showSuccessSnackBar('تم إكمال الذكر ✓');
         }
       }
       _calculateCompletion();
     });
     
     _saveProgress();
-    
-    // التحقق من الإكمال الكامل
-    if (_allCompleted && !_loading) {
-      // تأخير بسيط لإظهار التأثير البصري
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (mounted) {
-          _showCompletionDialog();
-        }
-      });
-    }
   }
 
   void _onItemLongPress(AthkarItem item) {
@@ -224,18 +210,9 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
     });
     
     _saveProgress();
-    context.showInfoSnackBar('تم إعادة تعيين العداد');
   }
 
-  Future<void> _showCompletionDialog() async {
-    final result = await AthkarCompletionDialog.show(
-      context: context,
-      categoryName: _category!.title,
-      onShare: _shareProgress,
-      onReread: _rereadAthkar,
-      onClose: _goBackToCategories,
-    );
-  }
+  // إزالة رسالة الإكمال - لا حاجة لأي إشعارات
 
   void _rereadAthkar() {
     setState(() {
@@ -245,9 +222,6 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
       _updateVisibleItems();
     });
     _saveProgress();
-    
-    // رسالة تأكيد
-    context.showSuccessSnackBar('تم إعادة تعيين الأذكار للقراءة مرة أخرى');
   }
 
   // العودة إلى فئات الأذكار مع إعادة التهيئة للمرة القادمة
@@ -676,6 +650,6 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
   }
 
   void _toggleFavorite(AthkarItem item) {
-    context.showInfoSnackBar('سيتم إضافة ميزة المفضلة قريباً');
+    // إزالة SnackBar للمفضلة
   }
 }

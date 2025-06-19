@@ -145,13 +145,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       
       // إظهار رسالة في أول تشغيل
       if (isFirstLaunch && autoEnabledIds.isNotEmpty && mounted) {
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) {
-            context.showSuccessSnackBar(
-              'تم تفعيل الأذكار الأساسية تلقائياً (${autoEnabledIds.length} فئات)'
-            );
-          }
-        });
+        // تم إزالة SnackBar
       }
       
     } catch (e) {
@@ -168,13 +162,9 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       final granted = await _permissionService.requestNotificationPermission();
       setState(() => _hasPermission = granted);
       
-      if (granted) {
-        context.showSuccessSnackBar('تم منح إذن الإشعارات');
-      } else {
-        context.showErrorSnackBar('تم رفض إذن الإشعارات');
-      }
+      // إزالة SnackBars للإذن
     } catch (e) {
-      context.showErrorSnackBar('حدث خطأ أثناء طلب الإذن');
+      // إزالة SnackBar للخطأ
     }
   }
 
@@ -226,14 +216,10 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
         }
       }
       
-      if (mounted) {
-        context.showSuccessSnackBar('تم حفظ الإعدادات بنجاح');
-      }
+      // إزالة SnackBar للحفظ
     } catch (e) {
       debugPrint('خطأ في حفظ الإعدادات: $e');
-      if (mounted) {
-        context.showErrorSnackBar('حدث خطأ في حفظ الإعدادات');
-      }
+      // إزالة SnackBar للخطأ
     } finally {
       if (mounted) {
         setState(() => _saving = false);
@@ -279,13 +265,22 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
   Future<void> _enableAllReminders() async {
     HapticFeedback.mediumImpact();
     
-    final shouldEnable = await AppInfoDialog.showConfirmation(
+    final shouldEnable = await showDialog<bool>(
       context: context,
-      title: 'تفعيل جميع التذكيرات',
-      content: 'هل تريد تفعيل تذكيرات جميع فئات الأذكار بالأوقات الافتراضية؟',
-      confirmText: 'تفعيل الكل',
-      cancelText: 'إلغاء',
-      icon: Icons.notifications_active,
+      builder: (context) => AlertDialog(
+        title: const Text('تفعيل جميع التذكيرات'),
+        content: const Text('هل تريد تفعيل تذكيرات جميع فئات الأذكار بالأوقات الافتراضية؟'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('إلغاء'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('تفعيل الكل'),
+          ),
+        ],
+      ),
     );
     
     if (shouldEnable == true) {
@@ -295,21 +290,29 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
         }
       });
       await _saveChanges();
-      context.showSuccessSnackBar('تم تفعيل جميع التذكيرات');
+      // إزالة SnackBar للتفعيل
     }
   }
 
   Future<void> _disableAllReminders() async {
     HapticFeedback.mediumImpact();
     
-    final shouldDisable = await AppInfoDialog.showConfirmation(
+    final shouldDisable = await showDialog<bool>(
       context: context,
-      title: 'إيقاف جميع التذكيرات',
-      content: 'هل تريد إيقاف جميع تذكيرات الأذكار؟',
-      confirmText: 'إيقاف الكل',
-      cancelText: 'إلغاء',
-      icon: Icons.notifications_off,
-      destructive: true,
+      builder: (context) => AlertDialog(
+        title: const Text('إيقاف جميع التذكيرات'),
+        content: const Text('هل تريد إيقاف جميع تذكيرات الأذكار؟'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('إلغاء'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('إيقاف الكل'),
+          ),
+        ],
+      ),
     );
     
     if (shouldDisable == true) {
@@ -319,7 +322,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
         }
       });
       await _saveChanges();
-      context.showSuccessSnackBar('تم إيقاف جميع التذكيرات');
+      // إزالة SnackBar للإيقاف
     }
   }
 
