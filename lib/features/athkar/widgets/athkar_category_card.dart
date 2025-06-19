@@ -165,7 +165,7 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
         
         const Spacer(),
         
-        // النصوص والتقدم
+        // النصوص
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -197,131 +197,83 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
             
             ThemeConstants.space3.h,
             
-            // شريط التقدم والمعلومات
+            // المعلومات السفلية
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                // عدد الأذكار
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: ThemeConstants.space3,
+                    vertical: ThemeConstants.space2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // شريط التقدم
-                      Container(
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(3),
-                          child: LinearProgressIndicator(
-                            value: widget.progress / 100,
-                            backgroundColor: Colors.transparent,
-                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        ),
+                      Icon(
+                        Icons.format_list_numbered_rounded,
+                        color: Colors.white.withValues(alpha: 0.9),
+                        size: ThemeConstants.iconXs,
                       ),
-                      
-                      ThemeConstants.space2.h,
-                      
-                      // معلومات التقدم
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: ThemeConstants.space2,
-                              vertical: ThemeConstants.space1,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.format_list_numbered_rounded,
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                  size: ThemeConstants.iconXs,
-                                ),
-                                ThemeConstants.space1.w,
-                                Text(
-                                  '${widget.category.athkar.length} ذكر',
-                                  style: context.labelSmall?.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.9),
-                                    fontSize: 11,
-                                    fontWeight: ThemeConstants.medium,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          
-                          // دائرة التقدم
-                          _buildProgressCircle(context, isCompleted),
-                        ],
+                      ThemeConstants.space1.w,
+                      Text(
+                        '${widget.category.athkar.length} ذكر',
+                        style: context.labelSmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontSize: 11,
+                          fontWeight: ThemeConstants.medium,
+                        ),
                       ),
                     ],
                   ),
                 ),
+                
+                // أيقونة الحالة
+                if (isCompleted)
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 2,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  )
+                else
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        width: 1,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: Colors.white.withValues(alpha: 0.8),
+                      size: 16,
+                    ),
+                  ),
               ],
             ),
           ],
         ),
       ],
-    );
-  }
-
-  Widget _buildProgressCircle(BuildContext context, bool isCompleted) {
-    return SizedBox(
-      width: 40,
-      height: 40,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // الخلفية
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
-                width: 2,
-              ),
-            ),
-          ),
-          
-          // دائرة التقدم
-          SizedBox(
-            width: 40,
-            height: 40,
-            child: CircularProgressIndicator(
-              value: widget.progress / 100,
-              strokeWidth: 3,
-              backgroundColor: Colors.transparent,
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
-          ),
-          
-          // النسبة المئوية أو أيقونة الإكمال
-          if (isCompleted)
-            const Icon(
-              Icons.check_rounded,
-              color: Colors.white,
-              size: 20,
-            )
-          else
-            Text(
-              '${widget.progress}%',
-              style: context.labelSmall?.copyWith(
-                color: Colors.white,
-                fontWeight: ThemeConstants.bold,
-                fontSize: 10,
-              ),
-            ),
-        ],
-      ),
     );
   }
 }

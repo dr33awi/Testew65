@@ -113,9 +113,9 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
               backgroundColor: Colors.transparent,
               elevation: 0,
               child: Container(
-                constraints: const BoxConstraints(maxWidth: 350, maxHeight: 500), // حجم أصغر
+                constraints: const BoxConstraints(maxWidth: 350, maxHeight: 500),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl), // تصغير الزاوية
+                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
                   gradient: LinearGradient(
                     colors: [
                       ThemeConstants.success.withValues(alpha: 0.95),
@@ -172,14 +172,14 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
 
   Widget _buildContent(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(ThemeConstants.space4), // تقليل الpadding
+      padding: const EdgeInsets.all(ThemeConstants.space4),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // الأيقونة المبسطة
           _buildSuccessIcon(),
           
-          ThemeConstants.space3.h, // تقليل المسافات
+          ThemeConstants.space3.h,
           
           // العنوان والرسالة
           _buildTitleSection(context),
@@ -200,7 +200,7 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
 
   Widget _buildSuccessIcon() {
     return Container(
-      width: 80, // تصغير الحجم
+      width: 80,
       height: 80,
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.2),
@@ -220,7 +220,7 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
       child: const Icon(
         Icons.check_circle_rounded,
         color: Colors.white,
-        size: 40, // تصغير الأيقونة
+        size: 40,
       ),
     );
   }
@@ -360,33 +360,8 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // زر الإغلاق كأيقونة
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.3),
-                ),
-              ),
-              child: IconButton(
-                onPressed: () {
-                  Navigator.pop(context, false);
-                  widget.onClose?.call();
-                },
-                icon: const Icon(
-                  Icons.close_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
-                tooltip: 'إغلاق',
-              ),
-            ),
-            
+            // زر المشاركة (إذا كان متاحاً)
             if (widget.onShare != null) ...[
-              ThemeConstants.space4.w,
-              
-              // زر المشاركة كأيقونة
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
@@ -408,7 +383,56 @@ class _AthkarCompletionDialogState extends State<AthkarCompletionDialog>
                   tooltip: 'مشاركة الإنجاز',
                 ),
               ),
+              
+              ThemeConstants.space4.w,
             ],
+            
+            // زر الإغلاق والعودة لفئات الأذكار
+            SizedBox(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.pop(context, false);
+                      widget.onClose?.call();
+                    },
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: ThemeConstants.space3,
+                        horizontal: ThemeConstants.space4,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.home_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          ThemeConstants.space2.w,
+                          Text(
+                            'العودة للأذكار',
+                            style: context.titleSmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: ThemeConstants.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ],
