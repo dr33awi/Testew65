@@ -4,8 +4,7 @@
 import 'package:athkar_app/app/themes/typography.dart';
 import 'package:athkar_app/app/themes/widgets.dart';
 import 'package:flutter/material.dart';
-import '../themes/widgets.dart';
-import '../themes/typography.dart';
+
 
 /// نص التطبيق الموحد
 /// لتغيير أنماط النصوص في التطبيق، عدل هنا فقط!
@@ -132,15 +131,15 @@ class AppText extends StatelessWidget {
   TextStyle _getTextStyle(BuildContext context) {
     // هنا يمكنك تغيير التنفيذ الداخلي!
     
-    TextStyle baseStyle = switch (style) {
-      AppTextStyle.heading => AppTypography.heading,
-      AppTextStyle.title => AppTypography.title,
-      AppTextStyle.subtitle => AppTypography.subtitle,
-      AppTextStyle.body => AppTypography.body,
-      AppTextStyle.bodyLarge => AppTypography.bodyLarge,
-      AppTextStyle.caption => AppTypography.caption,
-      AppTextStyle.label => AppTypography.labelText,
-    };
+TextStyle baseStyle = switch (style) {
+  AppTextStyle.heading => AppTypography.heading,
+  AppTextStyle.title => AppTypography.title,
+  AppTextStyle.subtitle => AppTypography.subtitle,
+  AppTextStyle.body => AppTypography.body,
+  AppTextStyle.bodyLarge => AppTypography.bodyLarge,
+  AppTextStyle.caption => AppTypography.caption,
+  AppTextStyle.label => AppTypography.button, // استخدام button بدلاً من labelText
+};
 
     // تطبيق اللون المخصص
     if (color != null) {

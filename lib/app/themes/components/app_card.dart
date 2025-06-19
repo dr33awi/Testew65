@@ -1,13 +1,11 @@
-// lib/app/components/app_card.dart
-// مكون البطاقة الموحد للتطبيق
+
+// lib/app/themes/components/app_card.dart - نسخة منظفة ومبسطة
 
 import 'package:athkar_app/app/themes/colors.dart';
 import 'package:athkar_app/app/themes/widgets.dart';
 import 'package:flutter/material.dart';
 
-
-/// بطاقة التطبيق الموحدة
-/// لتغيير شكل جميع البطاقات في التطبيق، عدل هنا فقط!
+/// بطاقة التطبيق الموحدة - نسخة منظفة
 class AppCard extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
@@ -20,34 +18,24 @@ class AppCard extends StatelessWidget {
     super.key,
     required this.child,
     this.onTap,
-    this.type = AppCardType.standard,
+    this.type = AppCardType.simple,  // ✅ تبسيط الافتراضي
     this.padding,
     this.margin,
     this.heroTag,
   });
 
-  /// بطاقة أساسية
-  factory AppCard.basic({
-    required Widget child,
-    VoidCallback? onTap,
-    EdgeInsetsGeometry? padding,
-  }) {
-    return AppCard(
-      type: AppCardType.basic,
-      onTap: onTap,
-      padding: padding,
-      child: child,
-    );
-  }
+  // ============================================
+  // Factory Constructors المبسطة
+  // ============================================
 
-  /// بطاقة مرفوعة
-  factory AppCard.elevated({
+  /// بطاقة بسيطة (الأكثر استخداماً)
+  factory AppCard.simple({
     required Widget child,
     VoidCallback? onTap,
     EdgeInsetsGeometry? padding,
   }) {
     return AppCard(
-      type: AppCardType.elevated,
+      type: AppCardType.simple,
       onTap: onTap,
       padding: padding,
       child: child,
@@ -62,6 +50,20 @@ class AppCard extends StatelessWidget {
   }) {
     return AppCard(
       type: AppCardType.gradient,
+      onTap: onTap,
+      padding: padding,
+      child: child,
+    );
+  }
+
+  /// بطاقة للأذكار ✅
+  factory AppCard.athkar({
+    required Widget child,
+    VoidCallback? onTap,
+    EdgeInsetsGeometry? padding,
+  }) {
+    return AppCard(
+      type: AppCardType.athkar,
       onTap: onTap,
       padding: padding,
       child: child,
@@ -86,35 +88,7 @@ class AppCard extends StatelessWidget {
     );
   }
 
-  /// بطاقة للأذكار
-  factory AppCard.athkar({
-    required Widget child,
-    VoidCallback? onTap,
-    EdgeInsetsGeometry? padding,
-  }) {
-    return AppCard(
-      type: AppCardType.athkar,
-      onTap: onTap,
-      padding: padding,
-      child: child,
-    );
-  }
-
-  /// بطاقة للقرآن
-  factory AppCard.quran({
-    required Widget child,
-    VoidCallback? onTap,
-    EdgeInsetsGeometry? padding,
-  }) {
-    return AppCard(
-      type: AppCardType.quran,
-      onTap: onTap,
-      padding: padding,
-      child: child,
-    );
-  }
-
-  /// بطاقة إحصائيات
+  /// بطاقة للإحصائيات
   factory AppCard.stats({
     required Widget child,
     VoidCallback? onTap,
@@ -136,7 +110,7 @@ class AppCard extends StatelessWidget {
     EdgeInsetsGeometry? padding,
   }) {
     return AppCard(
-      type: AppCardType.hero,
+      type: AppCardType.simple,
       heroTag: heroTag,
       onTap: onTap,
       padding: padding,
@@ -160,17 +134,8 @@ class AppCard extends StatelessWidget {
   }
 
   Widget _buildCardContent() {
-    // هنا يمكنك تغيير التنفيذ الداخلي!
-    
     switch (type) {
-      case AppCardType.basic:
-        return IslamicCard.simple(
-          onTap: onTap,
-          padding: padding,
-          child: child,
-        );
-        
-      case AppCardType.elevated:
+      case AppCardType.simple:
         return IslamicCard.simple(
           onTap: onTap,
           padding: padding,
@@ -179,7 +144,7 @@ class AppCard extends StatelessWidget {
         
       case AppCardType.gradient:
         return IslamicCard.gradient(
-          gradient: _getGradientForType(),
+          gradient: _getPrimaryGradient(),
           onTap: onTap,
           padding: padding,
           child: child,
@@ -200,14 +165,6 @@ class AppCard extends StatelessWidget {
           child: child,
         );
         
-      case AppCardType.quran:
-        return IslamicCard.gradient(
-          gradient: _getQuranGradient(),
-          onTap: onTap,
-          padding: padding,
-          child: child,
-        );
-        
       case AppCardType.stats:
         return IslamicCard.gradient(
           gradient: _getStatsGradient(),
@@ -215,19 +172,14 @@ class AppCard extends StatelessWidget {
           padding: padding,
           child: child,
         );
-        
-      case AppCardType.hero:
-        return IslamicCard.simple(
-          onTap: onTap,
-          padding: padding,
-          child: child,
-        );
     }
   }
 
-  // ============ التدرجات المخصصة ============
+  // ============================================
+  // التدرجات المساعدة
+  // ============================================
   
-  LinearGradient _getGradientForType() {
+  LinearGradient _getPrimaryGradient() {
     return const LinearGradient(
       colors: [AppColors.primary, AppColors.primaryLight],
       begin: Alignment.topLeft,
@@ -237,15 +189,7 @@ class AppCard extends StatelessWidget {
 
   LinearGradient _getAthkarGradient() {
     return const LinearGradient(
-      colors: [AppColors.success, AppColors.primary],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
-  }
-
-  LinearGradient _getQuranGradient() {
-    return const LinearGradient(
-      colors: [AppColors.secondary, AppColors.secondaryLight],
+      colors: [AppColors.success, AppColors.primaryLight],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     );
@@ -258,25 +202,25 @@ class AppCard extends StatelessWidget {
       end: Alignment.bottomRight,
     );
   }
-
-  // ============ تنفيذ بديل بـ Material Cards ============
-  
-  Widget _buildMaterialCard() {
-    return Card(
-      margin: margin,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: padding ?? const EdgeInsets.all(16),
-          child: child,
-        ),
-      ),
-    );
-  }
 }
 
-/// محتوى بطاقة الصلاة المخصص
+// ============================================
+// Enum منظف ومبسط ✅
+// ============================================
+
+/// أنواع البطاقات - نسخة محسنة
+enum AppCardType {
+  simple,     // بطاقة بسيطة (الافتراضي)
+  gradient,   // بطاقة مع تدرج
+  prayer,     // بطاقة صلاة
+  athkar,     // بطاقة أذكار ✅
+  stats,      // بطاقة إحصائيات
+}
+
+// ============================================
+// محتوى بطاقة الصلاة المخصص
+// ============================================
+
 class _PrayerCardContent extends StatelessWidget {
   final String prayerName;
   final Widget child;
@@ -305,19 +249,10 @@ class _PrayerCardContent extends StatelessWidget {
   }
 }
 
-/// أنواع البطاقات
-enum AppCardType {
-  basic,      // أساسية
-  elevated,   // مرفوعة
-  gradient,   // تدرج
-  prayer,     // صلاة
-  athkar,     // أذكار
-  quran,      // قرآن
-  stats,      // إحصائيات
-  hero,       // انتقال
-}
+// ============================================
+// بطاقة معلومات سريعة ومبسطة
+// ============================================
 
-/// بطاقة سريعة للمعلومات
 class AppInfoCard extends StatelessWidget {
   final String title;
   final String value;
