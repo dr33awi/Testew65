@@ -1,7 +1,7 @@
 // lib/app/themes/components/app_input.dart
 import 'package:flutter/material.dart';
-import '../colors.dart';
-import '../typography.dart';
+import '../app/themes/colors.dart';
+import '../app/themes/typography.dart';
 
 class AppInput extends StatelessWidget {
   final String? label;

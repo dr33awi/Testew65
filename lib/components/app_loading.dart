@@ -1,7 +1,7 @@
 // lib/app/themes/components/app_loading.dart
 import 'package:flutter/material.dart';
-import '../colors.dart';
-import '../typography.dart';
+import '../app/themes/colors.dart';
+import '../app/themes/typography.dart';
 
 class AppLoadingWidget extends StatelessWidget {
   final String? message;

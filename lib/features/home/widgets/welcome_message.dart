@@ -7,7 +7,7 @@ import '../../../app/themes/app_theme.dart';
 import '../../../app/themes/widgets.dart';
 import '../../../app/themes/colors.dart';
 import '../../../app/themes/typography.dart';
-import '../../../app/themes/components/index.dart';
+import '../../../components/index.dart';
 
 class WelcomeMessage extends StatelessWidget {
   const WelcomeMessage({super.key});
