@@ -1,22 +1,61 @@
-// lib/app/themes/index.dart
-// ملف التصدير الرئيسي للثيم - نقطة دخول موحدة
+// lib/app/themes/components/index.dart
+// استيراد المكونات الموجودة فعلاً في المشروع
 
-// ==================== الثيم الأساسي ====================
+import 'package:flutter/material.dart';
+
+// ==================== استيراد الملفات الموجودة ====================
+export 'components/app_button.dart';
+export 'components/app_card.dart';
+export 'components/app_text.dart';
+export 'components/app_input.dart';
+export 'components/app_app_bar.dart';
+export 'components/app_dialog.dart';
+export 'components/app_loading.dart';
+export 'components/app_spacing.dart';
+
+// استيراد الثيم والألوان والخطوط
 export 'app_theme.dart';
 export 'colors.dart';
 export 'typography.dart';
-
-// ==================== المكونات الأساسية ====================
 export 'widgets.dart';
 
-// ==================== المكونات المتقدمة ====================
-export 'components/index.dart';
+// ==================== Extensions بسيطة فقط ====================
 
-// ==================== Extensions مفيدة ====================
-export 'extensions/build_context_extensions.dart';
-export 'extensions/theme_extensions.dart';
-
-// ==================== الثوابت ====================
-export 'constants/app_constants.dart';
-export 'constants/app_durations.dart';
-export 'constants/app_dimensions.dart';
+extension AppBuildContextSimple on BuildContext {
+  // الثيم
+  ThemeData get appTheme => Theme.of(this);
+  ColorScheme get appColors => appTheme.colorScheme;
+  bool get isAppDark => appTheme.brightness == Brightness.dark;
+  
+  // الحجم
+  Size get appScreenSize => MediaQuery.of(this).size;
+  double get appScreenWidth => appScreenSize.width;
+  double get appScreenHeight => appScreenSize.height;
+  
+  // التنقل
+  void appPop<T>([T? result]) => Navigator.of(this).pop(result);
+  Future<T?> appPush<T>(Widget page) => Navigator.of(this).push(
+    MaterialPageRoute(builder: (_) => page),
+  );
+  
+  // الرسائل البسيطة
+  void showAppMessage(String message, {Color? backgroundColor}) {
+    ScaffoldMessenger.of(this).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: backgroundColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+  
+  void showAppSuccess(String message) => 
+      showAppMessage(message, backgroundColor: Colors.green);
+  void showAppError(String message) => 
+      showAppMessage(message, backgroundColor: Colors.red);
+  void showAppInfo(String message) => 
+      showAppMessage(message, backgroundColor: Colors.blue);
+  void showAppWarning(String message) => 
+      showAppMessage(message, backgroundColor: Colors.orange);
+}

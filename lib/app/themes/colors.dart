@@ -1,4 +1,4 @@
-// lib/app/themes/simple/colors.dart
+// TODO Implement this library.// lib/app/themes/simple/colors.dart
 import 'package:flutter/material.dart';
 
 /// ألوان التطبيق الإسلامي - نسخة مبسطة

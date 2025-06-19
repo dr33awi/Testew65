@@ -1,8 +1,13 @@
 // lib/features/home/widgets/welcome_message.dart
-import 'package:athkar_app/features/home/widgets/color_helper.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
+
+// ✅ استيراد النظام الموحد فقط
 import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/widgets.dart';
+import '../../../app/themes/colors.dart';
+import '../../../app/themes/typography.dart';
+import '../../../app/themes/components/index.dart';
 
 class WelcomeMessage extends StatelessWidget {
   const WelcomeMessage({super.key});
@@ -14,37 +19,13 @@ class WelcomeMessage extends StatelessWidget {
     final message = _getMessage(hour);
     final gradient = _getGradientColors(hour);
     
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: gradient.map((c) => c.withValues(alpha: 0.9)).toList(),
-        ),
+    return IslamicCard.gradient(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: gradient.map((c) => c.withValues(alpha: 0.9)).toList(),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-                borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(ThemeConstants.space6),
-                child: _buildContent(context, greeting, message),
-              ),
-            ),
-          ),
-        ),
-      ),
+      child: _buildContent(context, greeting, message),
     );
   }
 
@@ -52,9 +33,9 @@ class WelcomeMessage extends StatelessWidget {
     final hour = DateTime.now().hour;
     final icon = _getGreetingIcon(hour);
     
-    return Row(
+    return AppRow(
       children: [
-        // الأيقونة الثابتة
+        // الأيقونة
         Container(
           width: 80,
           height: 80,
@@ -65,46 +46,29 @@ class WelcomeMessage extends StatelessWidget {
           child: Icon(
             icon,
             color: Colors.white,
-            size: ThemeConstants.icon2xl,
+            size: 40,
           ),
         ),
         
-        ThemeConstants.space5.w,
-        
         // النصوص
         Expanded(
-          child: Column(
+          child: AppColumn.small(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // التحية
-              Text(
+              AppText(
                 greeting,
-                style: context.headlineMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: ThemeConstants.bold,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      offset: const Offset(0, 2),
-                      blurRadius: 4,
-                    ),
-                  ],
-                ),
+                style: AppTextStyle.title,
+                color: Colors.white,
               ),
-              
-              ThemeConstants.space2.h,
               
               // الرسالة
-              Text(
+              AppText(
                 message,
-                style: context.bodyLarge?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.95),
-                  height: 1.5,
-                  fontWeight: ThemeConstants.medium,
-                ),
+                style: AppTextStyle.body,
+                color: Colors.white.withValues(alpha: 0.95),
+                maxLines: 3,
               ),
-              
-              ThemeConstants.space4.h,
               
               // معلومات الوقت والتاريخ
               _buildTimeInfo(context),
@@ -121,54 +85,43 @@ class WelcomeMessage extends StatelessWidget {
     final dateStr = _getArabicDate(now);
     
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: ThemeConstants.space4,
-        vertical: ThemeConstants.space2,
-      ),
+      padding: AppSpacing.paddingMedium,
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      child: AppRow.small(
         children: [
           // أيقونة الوقت
           Container(
-            padding: const EdgeInsets.all(ThemeConstants.space1),
+            padding: AppSpacing.paddingSmall,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.access_time_rounded,
               color: Colors.white,
-              size: ThemeConstants.iconSm,
+              size: 16,
             ),
           ),
-          
-          ThemeConstants.space2.w,
           
           // الوقت
-          Text(
+          AppText(
             timeStr,
-            style: context.titleMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: ThemeConstants.bold,
-            ),
+            style: AppTextStyle.subtitle,
+            color: Colors.white,
           ),
           
-          ThemeConstants.space3.w,
-          
           // التاريخ
-          Text(
+          AppText(
             dateStr,
-            style: context.labelMedium?.copyWith(
-              color: Colors.white.withValues(alpha: 0.9),
-            ),
+            style: AppTextStyle.caption,
+            color: Colors.white.withValues(alpha: 0.9),
           ),
         ],
       ),
@@ -208,8 +161,22 @@ class WelcomeMessage extends StatelessWidget {
   }
 
   List<Color> _getGradientColors(int hour) {
-    final gradient = ColorHelper.getTimeBasedGradient();
-    return gradient.colors;
+    // تدرجات لونية حسب الوقت باستخدام النظام الموحد
+    if (hour < 5) {
+      return [AppColors.primaryDark, AppColors.darkCard]; // ليل
+    } else if (hour < 8) {
+      return [AppColors.primaryDark, AppColors.primary]; // فجر
+    } else if (hour < 12) {
+      return [AppColors.success, AppColors.primaryLight]; // صباح
+    } else if (hour < 15) {
+      return [AppColors.primary, AppColors.primaryLight]; // ظهر
+    } else if (hour < 17) {
+      return [AppColors.warning, AppColors.secondary]; // عصر
+    } else if (hour < 20) {
+      return [AppColors.secondary, AppColors.secondaryLight]; // مغرب
+    } else {
+      return [AppColors.primaryDark, AppColors.primary]; // مساء
+    }
   }
 
   String _getArabicDate(DateTime date) {
@@ -231,15 +198,15 @@ class WelcomeMessage extends StatelessWidget {
 
   IconData _getGreetingIcon(int hour) {
     if (hour < 5) {
-      return Icons.nightlight_round; // ليلة مباركة
+      return Icons.nightlight_round;
     } else if (hour < 12) {
-      return Icons.wb_sunny; // صباح الخير
+      return Icons.wb_sunny;
     } else if (hour < 17) {
-      return Icons.light_mode; // نهارك سعيد
+      return Icons.light_mode;
     } else if (hour < 20) {
-      return Icons.wb_twilight; // مساء النور
+      return Icons.wb_twilight;
     } else {
-      return Icons.nights_stay; // أمسية مباركة
+      return Icons.nights_stay;
     }
   }
 }

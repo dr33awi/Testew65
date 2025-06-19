@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 
-// ✅ استيرادات النظام الموحد الجديد
+// ✅ استيراد النظام الموجود فعلاً
 import '../../../app/themes/app_theme.dart';
 import '../../../app/themes/widgets.dart';
 import '../../../app/themes/colors.dart';
-import '../../../app/themes/components/index.dart';
+// إزالة استيراد components/index.dart حتى يتم إنشاؤه
 
 import '../widgets/category_grid.dart';
 import 'package:athkar_app/features/daily_quote/widgets/daily_quotes_card.dart';
@@ -38,8 +38,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.backgroundColor,
-      appBar: IslamicAppBar( // ✅ النظام الموحد
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: IslamicAppBar(
         title: 'تطبيق الأذكار',
         actions: [
           IconButton(
@@ -49,23 +49,23 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: _buildMainContent(context),
+      body: _buildMainContent(),
     );
   }
 
-  Widget _buildMainContent(BuildContext context) {
+  Widget _buildMainContent() {
     return CustomScrollView(
       controller: _scrollController,
       physics: const BouncingScrollPhysics(),
       slivers: [
         // المحتوى الرئيسي
         SliverPadding(
-          padding: context.screenPadding, // ✅ النظام الموحد
+          padding: const EdgeInsets.all(16), // بدلاً من AppSpacing
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              Spaces.large, // ✅ النظام الموحد
+              Spaces.large, // استخدام النظام الموجود
               
-              // رسالة الترحيب البسيطة
+              // رسالة الترحيب
               const WelcomeMessage(),
               
               Spaces.large,
@@ -75,20 +75,20 @@ class _HomeScreenState extends State<HomeScreen> {
               
               Spaces.large,
               
-              // بطاقة الاقتباسات البسيطة
+              // بطاقة الاقتباسات
               const DailyQuotesCard(),
               
               Spaces.extraLarge,
               
-              // عنوان الأقسام البسيط
-              _buildSimpleSectionHeader(context),
+              // عنوان الأقسام
+              _buildSectionHeader(),
               
               Spaces.large,
             ]),
           ),
         ),
         
-        // شبكة الفئات البسيطة
+        // شبكة الفئات
         const CategoryGrid(),
         
         // مساحة في الأسفل
@@ -99,45 +99,55 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSimpleSectionHeader(BuildContext context) {
-    return AppCard.simple( // ✅ النظام الموحد
-      child: AppRow( // ✅ النظام الموحد
+  Widget _buildSectionHeader() {
+    return IslamicCard.simple( // استخدام النظام الموجود
+      child: Row(
         children: [
           // المؤشر الجانبي
           Container(
             width: 4,
             height: 32,
             decoration: BoxDecoration(
-              gradient: AppTheme.primaryGradient, // ✅ النظام الموحد
+              gradient: AppTheme.primaryGradient,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           
+          Spaces.mediumH, // استخدام النظام الموجود
+          
           // الأيقونة
           Container(
-            padding: context.smallPadding, // ✅ النظام الموحد
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: context.primaryColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(context.borderRadius),
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppTheme.borderRadius),
             ),
             child: Icon(
               Icons.apps_rounded,
-              color: context.primaryColor,
+              color: AppColors.primary,
               size: 24,
             ),
           ),
           
+          Spaces.mediumH,
+          
           // النص
           Expanded(
-            child: AppColumn.small( // ✅ النظام الموحد
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppText.title( // ✅ النظام الموحد
+                Text(
                   'الأقسام الرئيسية',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                AppText.caption( // ✅ النظام الموحد
+                Spaces.small,
+                Text(
                   'اختر القسم المناسب لك',
-                  color: context.secondaryTextColor,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.lightTextSecondary,
+                  ),
                 ),
               ],
             ),
@@ -146,22 +156,4 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
-
-// ✅ Extension مساعد للبناء
-extension HomeScreenExtensions on BuildContext {
-  // مساعدات سريعة للألوان
-  Color get primaryColor => colorScheme.primary;
-  Color get backgroundColor => scaffoldBackgroundColor;
-  Color get textColor => textTheme.bodyLarge?.color ?? Colors.black;
-  Color get secondaryTextColor => textTheme.bodySmall?.color ?? Colors.grey;
-  
-  // مساعدات سريعة للمساحات
-  EdgeInsets get screenPadding => const EdgeInsets.all(16);
-  double get borderRadius => 12.0;
-  
-  // مساعدات سريعة للنصوص
-  TextStyle? get titleStyle => textTheme.titleLarge;
-  TextStyle? get bodyStyle => textTheme.bodyMedium;
-  TextStyle? get captionStyle => textTheme.bodySmall;
 }
