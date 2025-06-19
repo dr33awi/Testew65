@@ -29,11 +29,9 @@ class _QiblaCompassState extends State<QiblaCompass>
     with TickerProviderStateMixin {
   late AnimationController _rotationController;
   late AnimationController _pulseController;
-  late AnimationController _backgroundController;
   late AnimationController _qiblaFoundController;
   
   late Animation<double> _pulseAnimation;
-  late Animation<double> _backgroundAnimation;
   late Animation<double> _qiblaFoundAnimation;
 
   double _previousDirection = 0;
@@ -58,11 +56,6 @@ class _QiblaCompassState extends State<QiblaCompass>
       vsync: this,
     )..repeat(reverse: true);
 
-    _backgroundController = AnimationController(
-      duration: const Duration(seconds: 4),
-      vsync: this,
-    )..repeat();
-
     _qiblaFoundController = AnimationController(
       duration: ThemeConstants.durationSlow,
       vsync: this,
@@ -74,14 +67,6 @@ class _QiblaCompassState extends State<QiblaCompass>
     ).animate(CurvedAnimation(
       parent: _pulseController,
       curve: Curves.easeInOut,
-    ));
-
-    _backgroundAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _backgroundController,
-      curve: Curves.linear,
     ));
 
     _qiblaFoundAnimation = Tween<double>(
@@ -106,7 +91,6 @@ class _QiblaCompassState extends State<QiblaCompass>
     // Check if near Qibla and handle animations
     final relativeAngle = (widget.qiblaDirection - widget.currentDirection + 360) % 360;
     final angleDifference = (relativeAngle > 180 ? 360 - relativeAngle : relativeAngle).abs();
-    final wasNearQibla = _isNearQibla;
     _isNearQibla = angleDifference < 10;
 
     // Haptic feedback when finding Qibla
@@ -124,7 +108,6 @@ class _QiblaCompassState extends State<QiblaCompass>
   void dispose() {
     _rotationController.dispose();
     _pulseController.dispose();
-    _backgroundController.dispose();
     _qiblaFoundController.dispose();
     super.dispose();
   }
@@ -141,8 +124,8 @@ class _QiblaCompassState extends State<QiblaCompass>
         return Stack(
           alignment: Alignment.center,
           children: [
-            // خلفية متحركة مع تأثيرات بصرية
-            _buildAnimatedBackground(size),
+            // خلفية بسيطة بدون حركة
+            _buildStaticBackground(size, context),
             
             // حاوية البوصلة الرئيسية
             _buildCompassContainer(size, context, relativeAngle, angleDifference),
@@ -155,54 +138,62 @@ class _QiblaCompassState extends State<QiblaCompass>
     );
   }
 
-  Widget _buildAnimatedBackground(double size) {
-    return AnimatedBuilder(
-      animation: _backgroundAnimation,
-      builder: (context, child) {
-        return Container(
-          width: size,
-          height: size,
-          child: CustomPaint(
-            painter: CompassBackgroundPainter(
-              animation: _backgroundAnimation.value,
-              accuracy: widget.accuracy,
-              isNearQibla: _isNearQibla,
-              qiblaFoundAnimation: _qiblaFoundAnimation.value,
-              primaryColor: context.primaryColor,
-              isDarkMode: context.isDarkMode,
-            ),
-          ),
-        );
-      },
+  Widget _buildStaticBackground(double size, BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            context.primaryColor.withValues(alpha: 0.05),
+            context.primaryColor.withValues(alpha: 0.02),
+            Colors.transparent,
+          ],
+          stops: const [0.0, 0.7, 1.0],
+        ),
+      ),
+      child: CustomPaint(
+        painter: SimpleBackgroundPainter(
+          accuracy: widget.accuracy,
+          isNearQibla: _isNearQibla,
+          primaryColor: context.primaryColor,
+        ),
+      ),
     );
   }
 
   Widget _buildCompassContainer(double size, BuildContext context, double relativeAngle, double angleDifference) {
     return Container(
-      width: size * 0.95,
-      height: size * 0.95,
+      width: size * 0.9,
+      height: size * 0.9,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: RadialGradient(
           colors: [
+            context.cardColor,
             context.cardColor.withValues(alpha: 0.95),
             context.cardColor.withValues(alpha: 0.8),
-            context.cardColor.withValues(alpha: 0.6),
           ],
-          stops: const [0.3, 0.7, 1.0],
+          stops: const [0.0, 0.8, 1.0],
         ),
         boxShadow: [
           BoxShadow(
             color: context.primaryColor.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, 10),
+            spreadRadius: 2,
           ),
-          ...ThemeConstants.shadowXl,
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
         ],
       ),
       child: ClipOval(
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
           child: Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -246,14 +237,14 @@ class _QiblaCompassState extends State<QiblaCompass>
         return Transform.rotate(
           angle: -smoothDirection * (math.pi / 180),
           child: SizedBox(
-            width: size,
-            height: size,
+            width: size * 0.85,
+            height: size * 0.85,
             child: Stack(
               children: [
                 // علامات البوصلة
                 CustomPaint(
-                  size: Size(size, size),
-                  painter: EnhancedCompassPainter(
+                  size: Size(size * 0.85, size * 0.85),
+                  painter: CleanCompassPainter(
                     accuracy: widget.accuracy,
                     isDarkMode: context.isDarkMode,
                     primaryColor: context.primaryColor,
@@ -263,7 +254,7 @@ class _QiblaCompassState extends State<QiblaCompass>
                 ),
 
                 // تسميات الاتجاهات
-                _buildDirectionLabels(size, context),
+                _buildDirectionLabels(size * 0.85, context),
               ],
             ),
           ),
@@ -277,49 +268,29 @@ class _QiblaCompassState extends State<QiblaCompass>
       animation: Listenable.merge([_qiblaFoundAnimation, _pulseAnimation]),
       builder: (context, child) {
         final isAccurate = angleDifference < 5;
-        final scale = isAccurate ? 1.0 + (_qiblaFoundAnimation.value * 0.2) : 1.0;
-        final glowIntensity = isAccurate ? _qiblaFoundAnimation.value : 0.0;
+        final scale = isAccurate ? 1.0 + (_qiblaFoundAnimation.value * 0.1) : 1.0;
 
         return Transform.rotate(
           angle: relativeAngle * (math.pi / 180),
           child: Transform.scale(
             scale: scale,
             child: Container(
-              width: size * 0.9,
-              height: size * 0.9,
+              width: size * 0.8,
+              height: size * 0.8,
               child: Stack(
                 alignment: Alignment.topCenter,
                 children: [
-                  // توهج القبلة عند الدقة العالية
-                  if (isAccurate)
-                    Positioned(
-                      top: 0,
-                      child: Container(
-                        width: 100,
-                        height: size * 0.5,
-                        decoration: BoxDecoration(
-                          gradient: RadialGradient(
-                            colors: [
-                              ThemeConstants.success.withValues(alpha: glowIntensity * 0.3),
-                              ThemeConstants.success.withValues(alpha: 0.0),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-
                   // سهم القبلة الرئيسي
                   Positioned(
                     top: 0,
                     child: Container(
-                      width: 80,
-                      height: size * 0.45,
+                      width: 60,
+                      height: size * 0.35,
                       child: CustomPaint(
-                        painter: EnhancedQiblaArrowPainter(
+                        painter: CleanQiblaArrowPainter(
                           color: isAccurate ? ThemeConstants.success : context.primaryColor,
-                          accuracy: widget.accuracy,
-                          glowIntensity: glowIntensity,
-                          pulseAnimation: _pulseAnimation.value,
+                          isAccurate: isAccurate,
+                          glowIntensity: isAccurate ? _qiblaFoundAnimation.value : 0.0,
                         ),
                       ),
                     ),
@@ -327,7 +298,7 @@ class _QiblaCompassState extends State<QiblaCompass>
 
                   // تسمية القبلة
                   Positioned(
-                    top: size * 0.12,
+                    top: size * 0.08,
                     child: AnimatedContainer(
                       duration: ThemeConstants.durationNormal,
                       padding: const EdgeInsets.symmetric(
@@ -335,18 +306,13 @@ class _QiblaCompassState extends State<QiblaCompass>
                         vertical: ThemeConstants.space1,
                       ),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            (isAccurate ? ThemeConstants.success : context.primaryColor).withValues(alpha: 0.9),
-                            (isAccurate ? ThemeConstants.success : context.primaryColor).withValues(alpha: 0.7),
-                          ],
-                        ),
+                        color: (isAccurate ? ThemeConstants.success : context.primaryColor).withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
                         boxShadow: [
                           BoxShadow(
                             color: (isAccurate ? ThemeConstants.success : context.primaryColor).withValues(alpha: 0.3),
-                            blurRadius: isAccurate ? 15 : 8,
-                            offset: const Offset(0, 4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
@@ -364,7 +330,6 @@ class _QiblaCompassState extends State<QiblaCompass>
                             style: context.labelMedium?.copyWith(
                               color: Colors.white,
                               fontWeight: ThemeConstants.bold,
-                              fontFamily: ThemeConstants.fontFamilyArabic,
                             ),
                           ),
                         ],
@@ -375,18 +340,25 @@ class _QiblaCompassState extends State<QiblaCompass>
                   // مؤشر المسافة الزاوية
                   if (angleDifference < 30)
                     Positioned(
-                      top: size * 0.2,
+                      top: size * 0.15,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: ThemeConstants.space2,
                           vertical: ThemeConstants.space1,
                         ),
                         decoration: BoxDecoration(
-                          color: context.cardColor.withValues(alpha: 0.9),
+                          color: context.cardColor.withValues(alpha: 0.95),
                           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                           border: Border.all(
-                            color: context.primaryColor.withValues(alpha: 0.3),
+                            color: (isAccurate ? ThemeConstants.success : context.primaryColor).withValues(alpha: 0.3),
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: Text(
                           '${angleDifference.toStringAsFixed(1)}°',
@@ -408,38 +380,34 @@ class _QiblaCompassState extends State<QiblaCompass>
 
   Widget _buildDeviceIndicator(double size, BuildContext context) {
     return Positioned(
-      top: size * 0.04,
+      top: size * 0.02,
       child: AnimatedBuilder(
         animation: _pulseAnimation,
         builder: (context, child) {
           return Container(
-            width: 0,
-            height: 0,
             decoration: BoxDecoration(
               border: Border(
                 left: BorderSide(
-                  width: 12 + (_pulseAnimation.value * 3),
+                  width: 10,
                   color: Colors.transparent,
                 ),
                 right: BorderSide(
-                  width: 12 + (_pulseAnimation.value * 3),
+                  width: 10,
                   color: Colors.transparent,
                 ),
                 bottom: BorderSide(
-                  width: 25 + (_pulseAnimation.value * 5),
-                  color: ThemeConstants.error.withValues(
-                    alpha: 0.8 + (_pulseAnimation.value * 0.2),
-                  ),
+                  width: 20,
+                  color: ThemeConstants.error.withValues(alpha: 0.8),
                 ),
               ),
             ),
             child: Container(
-              margin: const EdgeInsets.only(top: 30),
+              margin: const EdgeInsets.only(top: 25),
               child: Text(
                 'الجهاز',
                 style: context.labelSmall?.copyWith(
                   color: ThemeConstants.error,
-                  fontWeight: ThemeConstants.medium,
+                  fontWeight: ThemeConstants.semiBold,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -460,8 +428,8 @@ class _QiblaCompassState extends State<QiblaCompass>
             : context.primaryColor;
 
         return Container(
-          width: ThemeConstants.iconLg,
-          height: ThemeConstants.iconLg,
+          width: 24,
+          height: 24,
           decoration: BoxDecoration(
             gradient: RadialGradient(
               colors: [
@@ -472,22 +440,21 @@ class _QiblaCompassState extends State<QiblaCompass>
             shape: BoxShape.circle,
             border: Border.all(
               color: context.cardColor,
-              width: ThemeConstants.borderMedium,
+              width: 3,
             ),
             boxShadow: [
               BoxShadow(
                 color: centerColor.withValues(alpha: 0.4),
-                blurRadius: isAccurate ? 20 : 10,
-                offset: const Offset(0, 4),
+                blurRadius: isAccurate ? 15 : 8,
+                offset: const Offset(0, 2),
               ),
-              ...ThemeConstants.shadowMd,
             ],
           ),
           child: isAccurate 
               ? Icon(
                   Icons.check,
                   color: Colors.white,
-                  size: ThemeConstants.iconSm,
+                  size: 14,
                 )
               : null,
         );
@@ -504,38 +471,31 @@ class _QiblaCompassState extends State<QiblaCompass>
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: ThemeConstants.space4,
-              vertical: ThemeConstants.space2,
+              vertical: ThemeConstants.space3,
             ),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  context.cardColor.withValues(alpha: 0.95),
-                  context.cardColor.withValues(alpha: 0.8),
-                ],
-              ),
+              color: context.cardColor.withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
               border: Border.all(
                 color: context.primaryColor.withValues(alpha: 0.2),
               ),
-              boxShadow: ThemeConstants.shadowLg,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                AnimatedBuilder(
-                  animation: _pulseAnimation,
-                  builder: (context, child) {
-                    return Transform.rotate(
-                      angle: _pulseAnimation.value * 0.1,
-                      child: Icon(
-                        Icons.navigation,
-                        color: context.primaryColor,
-                        size: ThemeConstants.iconMd,
-                      ),
-                    );
-                  },
+                Icon(
+                  Icons.navigation,
+                  color: context.primaryColor,
+                  size: ThemeConstants.iconMd,
                 ),
-                ThemeConstants.space2.w,
+                ThemeConstants.space3.w,
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -548,7 +508,7 @@ class _QiblaCompassState extends State<QiblaCompass>
                     ),
                     Text(
                       _getCompassDirection(widget.currentDirection),
-                      style: context.labelSmall?.copyWith(
+                      style: context.labelMedium?.copyWith(
                         color: context.textSecondaryColor,
                       ),
                     ),
@@ -565,9 +525,10 @@ class _QiblaCompassState extends State<QiblaCompass>
             mainAxisSize: MainAxisSize.min,
             children: [
               _buildAccuracyChip(context),
-              ThemeConstants.space2.w,
-              if (!widget.isCalibrated)
+              if (!widget.isCalibrated) ...[
+                ThemeConstants.space2.w,
                 _buildCalibrationChip(context),
+              ],
             ],
           ),
         ],
@@ -578,41 +539,36 @@ class _QiblaCompassState extends State<QiblaCompass>
   Widget _buildAccuracyChip(BuildContext context) {
     final accuracyColor = _getAccuracyColor(widget.accuracy);
     
-    return AnimatedBuilder(
-      animation: _pulseAnimation,
-      builder: (context, child) {
-        return Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: ThemeConstants.space3,
-            vertical: ThemeConstants.space1,
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: ThemeConstants.space3,
+        vertical: ThemeConstants.space2,
+      ),
+      decoration: BoxDecoration(
+        color: accuracyColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+        border: Border.all(
+          color: accuracyColor.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            _getAccuracyIcon(widget.accuracy),
+            size: ThemeConstants.iconSm,
+            color: accuracyColor,
           ),
-          decoration: BoxDecoration(
-            color: accuracyColor.withValues(alpha: 0.1 + (_pulseAnimation.value * 0.1)),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-            border: Border.all(
-              color: accuracyColor.withValues(alpha: 0.3),
+          ThemeConstants.space2.w,
+          Text(
+            _getAccuracyText(widget.accuracy),
+            style: context.labelMedium?.copyWith(
+              color: accuracyColor,
+              fontWeight: ThemeConstants.semiBold,
             ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                _getAccuracyIcon(widget.accuracy),
-                size: ThemeConstants.iconSm,
-                color: accuracyColor,
-              ),
-              ThemeConstants.space1.w,
-              Text(
-                _getAccuracyText(widget.accuracy),
-                style: context.labelSmall?.copyWith(
-                  color: accuracyColor,
-                  fontWeight: ThemeConstants.medium,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -622,49 +578,36 @@ class _QiblaCompassState extends State<QiblaCompass>
         HapticFeedback.lightImpact();
         widget.onCalibrate?.call();
       },
-      child: AnimatedBuilder(
-        animation: _pulseAnimation,
-        builder: (context, child) {
-          return Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: ThemeConstants.space3,
-              vertical: ThemeConstants.space1,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: ThemeConstants.space3,
+          vertical: ThemeConstants.space2,
+        ),
+        decoration: BoxDecoration(
+          color: ThemeConstants.warning.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+          border: Border.all(
+            color: ThemeConstants.warning.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.compass_calibration,
+              size: ThemeConstants.iconSm,
+              color: ThemeConstants.warning,
             ),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  ThemeConstants.warning.withValues(alpha: 0.2 + (_pulseAnimation.value * 0.1)),
-                  ThemeConstants.warning.withValues(alpha: 0.1 + (_pulseAnimation.value * 0.05)),
-                ],
+            ThemeConstants.space2.w,
+            Text(
+              'معايرة',
+              style: context.labelMedium?.copyWith(
+                color: ThemeConstants.warning,
+                fontWeight: ThemeConstants.semiBold,
               ),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-              border: Border.all(
-                color: ThemeConstants.warning.withValues(alpha: 0.4),
-              ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Transform.rotate(
-                  angle: _pulseAnimation.value * 0.2,
-                  child: Icon(
-                    Icons.compass_calibration,
-                    size: ThemeConstants.iconSm,
-                    color: ThemeConstants.warning,
-                  ),
-                ),
-                ThemeConstants.space1.w,
-                Text(
-                  'معايرة',
-                  style: context.labelSmall?.copyWith(
-                    color: ThemeConstants.warning,
-                    fontWeight: ThemeConstants.medium,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }
@@ -672,21 +615,13 @@ class _QiblaCompassState extends State<QiblaCompass>
   Widget _buildDirectionLabels(double size, BuildContext context) {
     final directions = [
       {'text': 'ش', 'angle': 0.0, 'isMain': true, 'color': ThemeConstants.error}, // شمال
-      {'text': 'ش ش', 'angle': 22.5, 'isMain': false, 'color': context.textSecondaryColor},
-      {'text': 'ش ق', 'angle': 45.0, 'isMain': false, 'color': context.textSecondaryColor},
-      {'text': 'ش ق ق', 'angle': 67.5, 'isMain': false, 'color': context.textSecondaryColor},
       {'text': 'ق', 'angle': 90.0, 'isMain': true, 'color': context.textPrimaryColor}, // شرق
-      {'text': 'ج ق ق', 'angle': 112.5, 'isMain': false, 'color': context.textSecondaryColor},
-      {'text': 'ج ق', 'angle': 135.0, 'isMain': false, 'color': context.textSecondaryColor},
-      {'text': 'ج ج ق', 'angle': 157.5, 'isMain': false, 'color': context.textSecondaryColor},
       {'text': 'ج', 'angle': 180.0, 'isMain': true, 'color': context.textPrimaryColor}, // جنوب
-      {'text': 'ج ج غ', 'angle': 202.5, 'isMain': false, 'color': context.textSecondaryColor},
-      {'text': 'ج غ', 'angle': 225.0, 'isMain': false, 'color': context.textSecondaryColor},
-      {'text': 'غ ج ج', 'angle': 247.5, 'isMain': false, 'color': context.textSecondaryColor},
       {'text': 'غ', 'angle': 270.0, 'isMain': true, 'color': context.textPrimaryColor}, // غرب
-      {'text': 'غ ش ش', 'angle': 292.5, 'isMain': false, 'color': context.textSecondaryColor},
+      {'text': 'ش ق', 'angle': 45.0, 'isMain': false, 'color': context.textSecondaryColor},
+      {'text': 'ج ق', 'angle': 135.0, 'isMain': false, 'color': context.textSecondaryColor},
+      {'text': 'ج غ', 'angle': 225.0, 'isMain': false, 'color': context.textSecondaryColor},
       {'text': 'ش غ', 'angle': 315.0, 'isMain': false, 'color': context.textSecondaryColor},
-      {'text': 'ش ش غ', 'angle': 337.5, 'isMain': false, 'color': context.textSecondaryColor},
     ];
 
     return Stack(
@@ -697,15 +632,15 @@ class _QiblaCompassState extends State<QiblaCompass>
         final color = direction['color'] as Color;
 
         final radians = (angle - 90) * (math.pi / 180);
-        final radius = size * 0.38;
+        final radius = size * 0.35;
         final x = radius * math.cos(radians);
         final y = radius * math.sin(radians);
 
         return Transform.translate(
           offset: Offset(x, y),
           child: Container(
-            width: isMain ? 35 : 30,
-            height: isMain ? 35 : 30,
+            width: isMain ? 40 : 35,
+            height: isMain ? 40 : 35,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: angle == 0 
@@ -716,7 +651,7 @@ class _QiblaCompassState extends State<QiblaCompass>
               border: angle == 0 || isMain 
                   ? Border.all(
                       color: color.withValues(alpha: 0.3),
-                      width: 1,
+                      width: 1.5,
                     )
                   : null,
             ),
@@ -724,10 +659,9 @@ class _QiblaCompassState extends State<QiblaCompass>
               child: Text(
                 text,
                 style: TextStyle(
-                  color: color.withValues(alpha: isMain ? 1.0 : 0.7),
-                  fontSize: isMain ? ThemeConstants.textSizeSm : ThemeConstants.textSizeXs,
-                  fontWeight: isMain ? ThemeConstants.bold : ThemeConstants.regular,
-                  fontFamily: ThemeConstants.fontFamilyArabic,
+                  color: color.withValues(alpha: isMain ? 1.0 : 0.8),
+                  fontSize: isMain ? 16 : 14,
+                  fontWeight: isMain ? FontWeight.bold : FontWeight.w500,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -776,22 +710,16 @@ class _QiblaCompassState extends State<QiblaCompass>
   }
 }
 
-/// رسام خلفية البوصلة المحسن
-class CompassBackgroundPainter extends CustomPainter {
-  final double animation;
+/// رسام خلفية بسيط بدون حركة
+class SimpleBackgroundPainter extends CustomPainter {
   final double accuracy;
   final bool isNearQibla;
-  final double qiblaFoundAnimation;
   final Color primaryColor;
-  final bool isDarkMode;
 
-  CompassBackgroundPainter({
-    required this.animation,
+  SimpleBackgroundPainter({
     required this.accuracy,
     required this.isNearQibla,
-    required this.qiblaFoundAnimation,
     required this.primaryColor,
-    required this.isDarkMode,
   });
 
   @override
@@ -799,161 +727,61 @@ class CompassBackgroundPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
 
-    // رسم موجات الدقة
-    _drawAccuracyWaves(canvas, center, radius);
+    // رسم دوائر ثابتة للدقة
+    _drawAccuracyRings(canvas, center, radius);
 
-    // رسم دوائر النجاح عند العثور على القبلة
+    // رسم دائرة النجاح عند العثور على القبلة
     if (isNearQibla) {
-      _drawSuccessRings(canvas, center, radius);
+      _drawSuccessRing(canvas, center, radius);
     }
-
-    // رسم النجوم الإسلامية المتحركة
-    _drawIslamicStars(canvas, size);
-
-    // رسم خطوط الطاقة المغناطيسية
-    _drawMagneticField(canvas, center, radius);
   }
 
-  void _drawAccuracyWaves(Canvas canvas, Offset center, double radius) {
+  void _drawAccuracyRings(Canvas canvas, Offset center, double radius) {
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
+      ..strokeWidth = 1;
 
-    final waveColor = Color.lerp(
-      ThemeConstants.error,
+    final accuracyColor = Color.lerp(
+      Colors.red,
       primaryColor,
       accuracy,
     )!;
 
-    for (int i = 0; i < 4; i++) {
-      final waveRadius = radius * 0.3 + (i * 30) + (animation * 20);
-      final alpha = (1 - (i * 0.2)) * (0.4 - animation * 0.2) * accuracy;
-      
-      paint.color = waveColor.withValues(alpha: alpha.clamp(0.0, 1.0));
-      canvas.drawCircle(center, waveRadius, paint);
-    }
-  }
-
-  void _drawSuccessRings(Canvas canvas, Offset center, double radius) {
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
-
+    // رسم 3 دوائر ثابتة
     for (int i = 0; i < 3; i++) {
-      final ringRadius = radius * 0.4 + (i * 40) + (qiblaFoundAnimation * 30);
-      final alpha = (1 - qiblaFoundAnimation) * (1 - i * 0.3);
+      final ringRadius = radius * (0.3 + i * 0.15);
+      final alpha = (1 - i * 0.3) * 0.2 * accuracy;
       
-      paint.color = ThemeConstants.success.withValues(alpha: alpha.clamp(0.0, 1.0));
+      paint.color = accuracyColor.withValues(alpha: alpha.clamp(0.0, 1.0));
       canvas.drawCircle(center, ringRadius, paint);
     }
   }
 
-  void _drawIslamicStars(Canvas canvas, Size size) {
-    final starPositions = [
-      Offset(size.width * 0.15, size.height * 0.2),
-      Offset(size.width * 0.85, size.height * 0.3),
-      Offset(size.width * 0.2, size.height * 0.8),
-      Offset(size.width * 0.8, size.height * 0.75),
-    ];
-
-    final paint = Paint()
-      ..color = primaryColor.withValues(alpha: 0.2)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    for (int i = 0; i < starPositions.length; i++) {
-      final offset = math.sin(animation * 2 * math.pi + i * math.pi / 2) * 8;
-      final rotation = animation * math.pi / 4;
-      
-      canvas.save();
-      canvas.translate(starPositions[i].dx + offset, starPositions[i].dy + offset);
-      canvas.rotate(rotation);
-      
-      _drawEightPointStar(canvas, Offset.zero, 12, paint);
-      canvas.restore();
-    }
-  }
-
-  void _drawMagneticField(Canvas canvas, Offset center, double radius) {
+  void _drawSuccessRing(Canvas canvas, Offset center, double radius) {
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+      ..strokeWidth = 2
+      ..color = ThemeConstants.success.withValues(alpha: 0.3);
 
-    final fieldColor = isDarkMode 
-        ? primaryColor.withValues(alpha: 0.15)
-        : primaryColor.withValues(alpha: 0.1);
-
-    // خطوط المجال المغناطيسي المنحنية
-    for (int i = 0; i < 8; i++) {
-      final angle = (i * math.pi / 4) + (animation * math.pi / 8);
-      final startRadius = radius * 0.2;
-      final endRadius = radius * 0.9;
-      
-      final path = Path();
-      
-      for (double r = startRadius; r <= endRadius; r += 5) {
-        final adjustedAngle = angle + math.sin(r / 20 + animation * 2 * math.pi) * 0.2;
-        final x = center.dx + r * math.cos(adjustedAngle);
-        final y = center.dy + r * math.sin(adjustedAngle);
-        
-        if (r == startRadius) {
-          path.moveTo(x, y);
-        } else {
-          path.lineTo(x, y);
-        }
-      }
-      
-      paint.color = fieldColor.withValues(alpha: fieldColor.alpha * (1 - i * 0.1));
-      canvas.drawPath(path, paint);
-    }
-  }
-
-  void _drawEightPointStar(Canvas canvas, Offset center, double radius, Paint paint) {
-    final path = Path();
-    const int points = 8;
-    final double angle = 2 * math.pi / points;
-
-    for (int i = 0; i < points; i++) {
-      final outerAngle = i * angle - math.pi / 2;
-      final innerAngle = (i + 0.5) * angle - math.pi / 2;
-
-      final outerX = center.dx + radius * math.cos(outerAngle);
-      final outerY = center.dy + radius * math.sin(outerAngle);
-
-      final innerX = center.dx + (radius * 0.5) * math.cos(innerAngle);
-      final innerY = center.dy + (radius * 0.5) * math.sin(innerAngle);
-
-      if (i == 0) {
-        path.moveTo(outerX, outerY);
-      } else {
-        path.lineTo(outerX, outerY);
-      }
-
-      path.lineTo(innerX, innerY);
-    }
-
-    path.close();
-    canvas.drawPath(path, paint);
+    canvas.drawCircle(center, radius * 0.4, paint);
   }
 
   @override
-  bool shouldRepaint(covariant CompassBackgroundPainter oldDelegate) {
-    return oldDelegate.animation != animation ||
-           oldDelegate.accuracy != accuracy ||
-           oldDelegate.isNearQibla != isNearQibla ||
-           oldDelegate.qiblaFoundAnimation != qiblaFoundAnimation;
+  bool shouldRepaint(covariant SimpleBackgroundPainter oldDelegate) {
+    return oldDelegate.accuracy != accuracy || 
+           oldDelegate.isNearQibla != isNearQibla;
   }
 }
 
-/// رسام البوصلة المحسن
-class EnhancedCompassPainter extends CustomPainter {
+/// رسام البوصلة المبسط
+class CleanCompassPainter extends CustomPainter {
   final double accuracy;
   final bool isDarkMode;
   final Color primaryColor;
   final Color textColor;
   final Color secondaryColor;
 
-  EnhancedCompassPainter({
+  CleanCompassPainter({
     required this.accuracy,
     required this.isDarkMode,
     required this.primaryColor,
@@ -971,78 +799,52 @@ class EnhancedCompassPainter extends CustomPainter {
 
     // رسم علامات الدرجات
     _drawDegreeMarks(canvas, center, radius);
-
-    // رسم الأرقام
-    _drawNumbers(canvas, center, radius);
   }
 
   void _drawMainCircles(Canvas canvas, Offset center, double radius) {
     final circlePaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
+      ..style = PaintingStyle.stroke;
 
     // الدائرة الخارجية
-    circlePaint.color = primaryColor.withValues(alpha: 0.3);
+    circlePaint
+      ..color = primaryColor.withValues(alpha: 0.2)
+      ..strokeWidth = 1;
     canvas.drawCircle(center, radius - 2, circlePaint);
 
     // الدائرة الداخلية
     circlePaint
-      ..color = primaryColor.withValues(alpha: 0.2)
-      ..strokeWidth = 1;
-    canvas.drawCircle(center, radius * 0.85, circlePaint);
-
-    // دائرة المنتصف
-    circlePaint
       ..color = secondaryColor.withValues(alpha: 0.1)
-      ..strokeWidth = 1;
+      ..strokeWidth = 0.5;
     canvas.drawCircle(center, radius * 0.7, circlePaint);
   }
 
   void _drawDegreeMarks(Canvas canvas, Offset center, double radius) {
-    for (int i = 0; i < 360; i += 1) {
+    for (int i = 0; i < 360; i += 5) {
       final angle = i * (math.pi / 180);
       final isMainDirection = i % 90 == 0;
-      final isMediumDirection = i % 45 == 0;
-      final isMinorDirection = i % 15 == 0;
-      final is5DegMark = i % 5 == 0;
+      final isMediumDirection = i % 30 == 0;
 
       Paint linePaint;
       double lineLength;
-      double lineWidth;
 
       if (isMainDirection) {
-        lineLength = 35;
-        lineWidth = 3;
+        lineLength = 25;
         linePaint = Paint()
           ..color = i == 0 ? ThemeConstants.error : primaryColor
-          ..strokeWidth = lineWidth;
+          ..strokeWidth = 2;
       } else if (isMediumDirection) {
-        lineLength = 25;
-        lineWidth = 2;
+        lineLength = 15;
         linePaint = Paint()
-          ..color = primaryColor.withValues(alpha: 0.8)
-          ..strokeWidth = lineWidth;
-      } else if (isMinorDirection) {
-        lineLength = 18;
-        lineWidth = 1.5;
-        linePaint = Paint()
-          ..color = secondaryColor.withValues(alpha: 0.7)
-          ..strokeWidth = lineWidth;
-      } else if (is5DegMark) {
-        lineLength = 12;
-        lineWidth = 1;
-        linePaint = Paint()
-          ..color = secondaryColor.withValues(alpha: 0.5)
-          ..strokeWidth = lineWidth;
+          ..color = primaryColor.withValues(alpha: 0.6)
+          ..strokeWidth = 1;
       } else {
         lineLength = 8;
-        lineWidth = 0.5;
         linePaint = Paint()
-          ..color = secondaryColor.withValues(alpha: 0.3)
-          ..strokeWidth = lineWidth;
+          ..color = secondaryColor.withValues(alpha: 0.4)
+          ..strokeWidth = 0.5;
       }
 
-      final startRadius = radius - lineLength;
+      final startRadius = radius - lineLength - 3;
       final endRadius = radius - 3;
 
       final startPoint = Offset(
@@ -1059,94 +861,44 @@ class EnhancedCompassPainter extends CustomPainter {
     }
   }
 
-  void _drawNumbers(Canvas canvas, Offset center, double radius) {
-    final textPainter = TextPainter(
-      textDirection: TextDirection.ltr,
-      textAlign: TextAlign.center,
-    );
-
-    for (int i = 0; i < 360; i += 30) {
-      final angle = i * (math.pi / 180);
-      final numberRadius = radius - 50;
-
-      final x = center.dx + numberRadius * math.cos(angle - math.pi / 2);
-      final y = center.dy + numberRadius * math.sin(angle - math.pi / 2);
-
-      textPainter.text = TextSpan(
-        text: i.toString(),
-        style: TextStyle(
-          color: i == 0 ? ThemeConstants.error : textColor,
-          fontSize: i % 90 == 0 ? 16 : 12,
-          fontWeight: i % 90 == 0 ? FontWeight.bold : FontWeight.normal,
-        ),
-      );
-
-      textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(x - textPainter.width / 2, y - textPainter.height / 2),
-      );
-    }
-  }
-
   @override
-  bool shouldRepaint(covariant EnhancedCompassPainter oldDelegate) {
+  bool shouldRepaint(covariant CleanCompassPainter oldDelegate) {
     return oldDelegate.accuracy != accuracy || 
            oldDelegate.isDarkMode != isDarkMode ||
            oldDelegate.primaryColor != primaryColor;
   }
 }
 
-/// رسام سهم القبلة المحسن
-class EnhancedQiblaArrowPainter extends CustomPainter {
+/// رسام سهم القبلة المبسط
+class CleanQiblaArrowPainter extends CustomPainter {
   final Color color;
-  final double accuracy;
+  final bool isAccurate;
   final double glowIntensity;
-  final double pulseAnimation;
 
-  EnhancedQiblaArrowPainter({
+  CleanQiblaArrowPainter({
     required this.color,
-    required this.accuracy,
+    required this.isAccurate,
     required this.glowIntensity,
-    required this.pulseAnimation,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    // رسم الظل مع التوهج
-    _drawShadowAndGlow(canvas, size);
+    // رسم التوهج عند الدقة العالية
+    if (isAccurate && glowIntensity > 0) {
+      _drawGlow(canvas, size);
+    }
 
     // رسم السهم الرئيسي
     _drawMainArrow(canvas, size);
-
-    // رسم التفاصيل الزخرفية
-    _drawDecorations(canvas, size);
-
-    // رسم التدرج العلوي
-    _drawGlossEffect(canvas, size);
   }
 
-  void _drawShadowAndGlow(Canvas canvas, Size size) {
+  void _drawGlow(Canvas canvas, Size size) {
     final path = _createArrowPath(size);
+    final glowPaint = Paint()
+      ..color = color.withValues(alpha: glowIntensity * 0.5)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
 
-    // الظل
-    final shadowPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.3)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-
-    canvas.save();
-    canvas.translate(2, 4);
-    canvas.drawPath(path, shadowPaint);
-    canvas.restore();
-
-    // التوهج عند الدقة العالية
-    if (glowIntensity > 0) {
-      final glowPaint = Paint()
-        ..color = color.withValues(alpha: glowIntensity * 0.6)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 8 + (pulseAnimation * 4));
-
-      canvas.drawPath(path, glowPaint);
-    }
+    canvas.drawPath(path, glowPaint);
   }
 
   void _drawMainArrow(Canvas canvas, Size size) {
@@ -1160,9 +912,7 @@ class EnhancedQiblaArrowPainter extends CustomPainter {
         colors: [
           color,
           color.darken(0.2),
-          color.darken(0.4),
         ],
-        stops: const [0.0, 0.6, 1.0],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
     canvas.drawPath(path, mainPaint);
@@ -1171,89 +921,42 @@ class EnhancedQiblaArrowPainter extends CustomPainter {
     final borderPaint = Paint()
       ..color = color.darken(0.3)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
+      ..strokeWidth = 1.5;
 
     canvas.drawPath(path, borderPaint);
-  }
-
-  void _drawDecorations(Canvas canvas, Size size) {
-    final decorPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.3)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-
-    // خطوط زخرفية على السهم
-    final centerX = size.width / 2;
-    final decorationLines = [
-      [Offset(centerX - 8, size.height * 0.6), Offset(centerX + 8, size.height * 0.6)],
-      [Offset(centerX - 6, size.height * 0.7), Offset(centerX + 6, size.height * 0.7)],
-    ];
-
-    for (final line in decorationLines) {
-      canvas.drawLine(line[0], line[1], decorPaint);
-    }
 
     // نقطة مضيئة في الأعلى
     final dotPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.8)
-      ..style = PaintingStyle.fill;
+      ..color = Colors.white.withValues(alpha: 0.9);
 
     canvas.drawCircle(
-      Offset(centerX, size.height * 0.15),
-      3,
+      Offset(size.width / 2, size.height * 0.15),
+      2,
       dotPaint,
     );
-  }
-
-  void _drawGlossEffect(Canvas canvas, Size size) {
-    final glossPath = Path();
-    glossPath.moveTo(size.width * 0.4, size.height * 0.1);
-    glossPath.quadraticBezierTo(
-      size.width / 2, size.height * 0.05,
-      size.width * 0.6, size.height * 0.1,
-    );
-    glossPath.quadraticBezierTo(
-      size.width * 0.55, size.height * 0.4,
-      size.width * 0.45, size.height * 0.4,
-    );
-    glossPath.close();
-
-    final glossPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Colors.white.withValues(alpha: 0.4),
-          Colors.white.withValues(alpha: 0.1),
-          Colors.white.withValues(alpha: 0.0),
-        ],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.4));
-
-    canvas.drawPath(glossPath, glossPaint);
   }
 
   Path _createArrowPath(Size size) {
     final path = Path();
     final centerX = size.width / 2;
 
-    // شكل السهم المحسن
+    // شكل السهم
     path.moveTo(centerX, 0); // رأس السهم
-    path.lineTo(size.width * 0.75, size.height * 0.35); // الجناح الأيمن
-    path.lineTo(size.width * 0.65, size.height * 0.35); // دخول داخلي أيمن
-    path.lineTo(size.width * 0.65, size.height * 0.85); // جانب أيمن طويل
-    path.lineTo(size.width * 0.35, size.height * 0.85); // جانب أيسر طويل
-    path.lineTo(size.width * 0.35, size.height * 0.35); // دخول داخلي أيسر
-    path.lineTo(size.width * 0.25, size.height * 0.35); // الجناح الأيسر
+    path.lineTo(size.width * 0.7, size.height * 0.3); // الجناح الأيمن
+    path.lineTo(size.width * 0.6, size.height * 0.3); // دخول داخلي أيمن
+    path.lineTo(size.width * 0.6, size.height * 0.8); // جانب أيمن طويل
+    path.lineTo(size.width * 0.4, size.height * 0.8); // جانب أيسر طويل
+    path.lineTo(size.width * 0.4, size.height * 0.3); // دخول داخلي أيسر
+    path.lineTo(size.width * 0.3, size.height * 0.3); // الجناح الأيسر
     path.close();
 
     return path;
   }
 
   @override
-  bool shouldRepaint(covariant EnhancedQiblaArrowPainter oldDelegate) {
+  bool shouldRepaint(covariant CleanQiblaArrowPainter oldDelegate) {
     return oldDelegate.color != color ||
-           oldDelegate.accuracy != accuracy ||
-           oldDelegate.glowIntensity != glowIntensity ||
-           oldDelegate.pulseAnimation != pulseAnimation;
+           oldDelegate.isAccurate != isAccurate ||
+           oldDelegate.glowIntensity != glowIntensity;
   }
 }

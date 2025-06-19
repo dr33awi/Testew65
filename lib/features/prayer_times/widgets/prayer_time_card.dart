@@ -294,51 +294,22 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // اسم الصلاة مع تأثير نص
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                widget.prayer.nameAr,
-                style: context.headlineSmall?.copyWith(
-                  color: _getTextColor(context, useGradient, isPassed),
-                  fontWeight: widget.prayer.isNext 
-                      ? ThemeConstants.bold 
-                      : ThemeConstants.semiBold,
-                  shadows: useGradient ? [
-                    Shadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      offset: const Offset(0, 2),
-                      blurRadius: 4,
-                    ),
-                  ] : null,
-                ),
+        // اسم الصلاة
+        Text(
+          widget.prayer.nameAr,
+          style: context.headlineSmall?.copyWith(
+            color: _getTextColor(context, useGradient, isPassed),
+            fontWeight: widget.prayer.isNext 
+                ? ThemeConstants.bold 
+                : ThemeConstants.semiBold,
+            shadows: useGradient ? [
+              Shadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                offset: const Offset(0, 2),
+                blurRadius: 4,
               ),
-            ),
-            // شارة الحالة
-            if (widget.prayer.isNext)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: ThemeConstants.space2,
-                  vertical: ThemeConstants.space1,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.4),
-                  ),
-                ),
-                child: Text(
-                  'القادمة',
-                  style: context.labelSmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: ThemeConstants.bold,
-                    fontSize: 10,
-                  ),
-                ),
-              ),
-          ],
+            ] : null,
+          ),
         ),
         
         ThemeConstants.space2.h,
@@ -437,164 +408,13 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
   }
 
   Widget _buildBottomRow(BuildContext context, bool useGradient, List<Color> gradient) {
-    return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space3),
-      decoration: BoxDecoration(
-        color: useGradient 
-            ? Colors.white.withValues(alpha: 0.1)
-            : context.surfaceColor.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-        border: Border.all(
-          color: useGradient 
-              ? Colors.white.withValues(alpha: 0.2)
-              : context.dividerColor.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        children: [
-          // معلومات الحالة أو العد التنازلي
-          Expanded(
-            child: _buildStatusInfo(context, useGradient),
-          ),
-          
-          // أزرار الإجراءات
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildActionButton(
-                context: context,
-                icon: Icons.notifications_outlined,
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  widget.onNotificationToggle(true);
-                },
-                useGradient: useGradient,
-                tooltip: 'تنبيه الصلاة',
-              ),
-              
-              ThemeConstants.space2.w,
-              
-              _buildActionButton(
-                context: context,
-                icon: Icons.info_outline,
-                onTap: () => _showPrayerDetails(context),
-                useGradient: useGradient,
-                tooltip: 'تفاصيل الصلاة',
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+    // تم حذف هذه الدالة لأنها لم تعد مستخدمة
+    return const SizedBox.shrink();
   }
 
   Widget _buildStatusInfo(BuildContext context, bool useGradient) {
-    if (widget.prayer.isNext) {
-      return StreamBuilder(
-        stream: Stream.periodic(const Duration(seconds: 1)),
-        builder: (context, snapshot) {
-          return Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(ThemeConstants.space1),
-                decoration: BoxDecoration(
-                  color: useGradient 
-                      ? Colors.white.withValues(alpha: 0.2)
-                      : ThemeConstants.primary.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.timer_outlined,
-                  size: ThemeConstants.iconSm,
-                  color: useGradient 
-                      ? Colors.white.withValues(alpha: 0.9)
-                      : ThemeConstants.primary,
-                ),
-              ),
-              ThemeConstants.space2.w,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'الوقت المتبقي',
-                      style: context.labelSmall?.copyWith(
-                        color: _getTextColor(context, useGradient, false).withValues(alpha: 0.8),
-                      ),
-                    ),
-                    Text(
-                      widget.prayer.remainingTimeText,
-                      style: context.labelMedium?.copyWith(
-                        color: _getTextColor(context, useGradient, false),
-                        fontWeight: ThemeConstants.semiBold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
-      );
-    } else if (widget.prayer.isPassed) {
-      return Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(ThemeConstants.space1),
-            decoration: BoxDecoration(
-              color: useGradient 
-                  ? Colors.white.withValues(alpha: 0.2)
-                  : ThemeConstants.success.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.check_circle,
-              size: ThemeConstants.iconSm,
-              color: useGradient 
-                  ? Colors.white.withValues(alpha: 0.9)
-                  : ThemeConstants.success,
-            ),
-          ),
-          ThemeConstants.space2.w,
-          Text(
-            'انتهى وقت الصلاة',
-            style: context.labelMedium?.copyWith(
-              color: _getTextColor(context, useGradient, true),
-              fontWeight: ThemeConstants.medium,
-            ),
-          ),
-        ],
-      );
-    } else {
-      return Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(ThemeConstants.space1),
-            decoration: BoxDecoration(
-              color: useGradient 
-                  ? Colors.white.withValues(alpha: 0.2)
-                  : _getGradient(widget.prayer.type)[0].withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.schedule_outlined,
-              size: ThemeConstants.iconSm,
-              color: useGradient 
-                  ? Colors.white.withValues(alpha: 0.9)
-                  : _getGradient(widget.prayer.type)[0],
-            ),
-          ),
-          ThemeConstants.space2.w,
-          Text(
-            'صلاة قادمة',
-            style: context.labelMedium?.copyWith(
-              color: _getTextColor(context, useGradient, false),
-              fontWeight: ThemeConstants.medium,
-            ),
-          ),
-        ],
-      );
-    }
+    // تم حذف هذه الدالة لأنها لم تعد مستخدمة
+    return const SizedBox.shrink();
   }
 
   Widget _buildActionButton({
@@ -604,36 +424,8 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
     required bool useGradient,
     required String tooltip,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: useGradient 
-            ? Colors.white.withValues(alpha: 0.2)
-            : context.surfaceColor,
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-        border: Border.all(
-          color: useGradient 
-              ? Colors.white.withValues(alpha: 0.3)
-              : context.dividerColor.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-          child: Container(
-            padding: const EdgeInsets.all(ThemeConstants.space2),
-            child: Icon(
-              icon,
-              size: ThemeConstants.iconMd,
-              color: useGradient 
-                  ? Colors.white.withValues(alpha: 0.9)
-                  : context.textSecondaryColor,
-            ),
-          ),
-        ),
-      ),
-    );
+    // تم إزالة هذه الدالة لأنها لم تعد مستخدمة
+    return const SizedBox.shrink();
   }
 
   Color _getTextColor(BuildContext context, bool useGradient, bool isPassed) {
@@ -665,27 +457,6 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
   }
 
   void _showPrayerDetails(BuildContext context) {
-    HapticFeedback.lightImpact();
-    
-    AppInfoDialog.show(
-      context: context,
-      title: widget.prayer.nameAr,
-      content: 'وقت ${widget.prayer.nameAr}: ${_formatTime(widget.prayer.time)}',
-      subtitle: widget.prayer.isPassed 
-          ? 'انتهى وقت الصلاة' 
-          : widget.prayer.remainingTimeText,
-      icon: _getPrayerIcon(widget.prayer.type),
-      accentColor: _getGradient(widget.prayer.type)[0],
-      actions: [
-        DialogAction(
-          label: 'إعدادات الصلاة',
-          onPressed: () {
-            Navigator.pop(context);
-            Navigator.pushNamed(context, '/prayer-settings');
-          },
-          isPrimary: true,
-        ),
-      ],
-    );
+    // تم إزالة هذه الدالة لأنها لم تعد مستخدمة
   }
 }
