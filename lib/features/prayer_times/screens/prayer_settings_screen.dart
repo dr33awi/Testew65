@@ -77,6 +77,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       
       context.showErrorSnackBar('فشل حفظ الإعدادات');
     } finally {
+      // التأكد من أن context ما زال متاحاً قبل تحديث الـ state
       if (mounted) {
         setState(() => _isSaving = false);
       }
@@ -436,7 +437,7 @@ class _CalculationMethodDialog extends StatelessWidget {
               },
               activeColor: ThemeConstants.primary,
             );
-          }).toList(),
+          }),
         ],
       ),
     );

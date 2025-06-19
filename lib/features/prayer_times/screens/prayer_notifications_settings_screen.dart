@@ -158,7 +158,14 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
             _prayerNotifications[prayerKey] = value;
           });
         } : null,
-        activeColor: ThemeConstants.getPrayerColor(prayerKey),
+        // استبدال activeColor المُهمل بـ activeTrackColor
+        activeTrackColor: ThemeConstants.getPrayerColor(prayerKey).withValues(alpha: 0.5),
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return ThemeConstants.getPrayerColor(prayerKey);
+          }
+          return null;
+        }),
       ),
       children: isEnabled ? [
         Padding(
@@ -198,6 +205,9 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                     _prayerReminderMinutes[prayerKey] = value.toInt();
                   });
                 },
+                // استبدال activeColor المُهمل بـ activeColor في ThumbColor
+                thumbColor: ThemeConstants.getPrayerColor(prayerKey),
+                activeColor: ThemeConstants.getPrayerColor(prayerKey),
               ),
             ),
             
@@ -294,7 +304,13 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
       trailing: Switch(
         value: value,
         onChanged: onChanged,
-        activeColor: context.primaryColor,
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return context.primaryColor;
+          }
+          return null;
+        }),
+        activeTrackColor: context.primaryColor.withValues(alpha: 0.5),
       ),
     );
   }

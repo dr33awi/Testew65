@@ -1,6 +1,5 @@
 // lib/features/prayer_times/widgets/prayer_time_card.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 import '../models/prayer_time_model.dart';
@@ -90,7 +89,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () => _showPrayerDetails(context),
+                  onTap: () => {},
                   borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
                   child: Stack(
                     children: [
@@ -215,11 +214,6 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
               _buildEnhancedTimeSection(context, useGradient, gradient),
             ],
           ),
-          
-          ThemeConstants.space4.h,
-          
-          // الصف السفلي - العداد والإعدادات
-          _buildBottomRow(context, useGradient, gradient),
         ],
       ),
     );
@@ -407,27 +401,6 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
     );
   }
 
-  Widget _buildBottomRow(BuildContext context, bool useGradient, List<Color> gradient) {
-    // تم حذف هذه الدالة لأنها لم تعد مستخدمة
-    return const SizedBox.shrink();
-  }
-
-  Widget _buildStatusInfo(BuildContext context, bool useGradient) {
-    // تم حذف هذه الدالة لأنها لم تعد مستخدمة
-    return const SizedBox.shrink();
-  }
-
-  Widget _buildActionButton({
-    required BuildContext context,
-    required IconData icon,
-    required VoidCallback onTap,
-    required bool useGradient,
-    required String tooltip,
-  }) {
-    // تم إزالة هذه الدالة لأنها لم تعد مستخدمة
-    return const SizedBox.shrink();
-  }
-
   Color _getTextColor(BuildContext context, bool useGradient, bool isPassed) {
     if (useGradient) return Colors.white;
     if (isPassed) return context.textSecondaryColor;
@@ -454,9 +427,5 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
     final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
     
     return '$displayHour:$minute $period';
-  }
-
-  void _showPrayerDetails(BuildContext context) {
-    // تم إزالة هذه الدالة لأنها لم تعد مستخدمة
   }
 }

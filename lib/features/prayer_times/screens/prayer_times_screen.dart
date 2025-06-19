@@ -10,7 +10,6 @@ import '../services/prayer_times_service.dart';
 import '../models/prayer_time_model.dart';
 import '../widgets/prayer_time_card.dart';
 import '../widgets/next_prayer_countdown.dart';
-import '../widgets/location_header.dart';
 
 class PrayerTimesScreen extends StatefulWidget {
   const PrayerTimesScreen({super.key});
@@ -276,7 +275,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                   icon: Icons.location_on,
                   iconColor: ThemeConstants.primary,
                   onTap: _requestLocation,
-                  trailing: Icon(
+                  trailing: const Icon(
                     Icons.refresh,
                     color: ThemeConstants.primary,
                   ),
