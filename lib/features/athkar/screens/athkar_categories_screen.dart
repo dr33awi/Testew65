@@ -419,4 +419,3 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     });
   }
 }
-
