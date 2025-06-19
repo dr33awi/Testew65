@@ -1,82 +1,65 @@
 // lib/features/home/widgets/category_grid.dart
-import 'package:athkar_app/features/home/widgets/color_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-import 'dart:math' as math;
 import '../../../app/themes/app_theme.dart';
+import 'color_helper.dart';
 
-class CategoryGrid extends StatefulWidget {
+/// شبكة الفئات المحسنة والمبسطة
+class CategoryGrid extends StatelessWidget {
   const CategoryGrid({super.key});
 
-  @override
-  State<CategoryGrid> createState() => _CategoryGridState();
-}
-
-class _CategoryGridState extends State<CategoryGrid> {
-  final List<CategoryItem> _categories = [
-    CategoryItem(
+  // البيانات الثابتة للفئات
+  static const List<_CategoryData> _categories = [
+    _CategoryData(
       id: 'prayer_times',
       title: 'مواقيت الصلاة',
       subtitle: 'أوقات الصلوات الخمس',
       icon: Icons.mosque,
-      gradient: ColorHelper.getCategoryGradient('prayer_times').colors,
       routeName: '/prayer-times',
+      progress: 0.9,
     ),
-    CategoryItem(
+    _CategoryData(
       id: 'athkar',
       title: 'الأذكار اليومية',
       subtitle: 'أذكار الصباح والمساء',
       icon: Icons.auto_awesome,
-      gradient: ColorHelper.getCategoryGradient('athkar').colors,
       routeName: '/athkar',
+      progress: 0.7,
     ),
-    CategoryItem(
+    _CategoryData(
       id: 'quran',
       title: 'القرآن الكريم',
       subtitle: 'تلاوة وتدبر',
       icon: Icons.menu_book_rounded,
-      gradient: ColorHelper.getCategoryGradient('quran').colors,
       routeName: '/quran',
+      progress: 0.5,
     ),
-    CategoryItem(
+    _CategoryData(
       id: 'qibla',
       title: 'اتجاه القبلة',
       subtitle: 'البوصلة الذكية',
       icon: Icons.explore,
-      gradient: ColorHelper.getCategoryGradient('qibla').colors,
       routeName: '/qibla',
+      progress: 1.0,
     ),
-    CategoryItem(
+    _CategoryData(
       id: 'tasbih',
       title: 'المسبحة الرقمية',
       subtitle: 'عداد التسبيح',
       icon: Icons.radio_button_checked,
-      gradient: ColorHelper.getCategoryGradient('tasbih').colors,
       routeName: '/tasbih',
+      progress: 0.8,
     ),
-    CategoryItem(
+    _CategoryData(
       id: 'dua',
       title: 'الأدعية المأثورة',
       subtitle: 'أدعية من الكتاب والسنة',
       icon: Icons.pan_tool_rounded,
-      gradient: ColorHelper.getCategoryGradient('dua').colors,
       routeName: '/dua',
+      progress: 0.4,
     ),
   ];
-
-  void _onCategoryTap(CategoryItem category) {
-    HapticFeedback.lightImpact();
-    
-    if (category.routeName != null) {
-      Navigator.pushNamed(context, category.routeName!).catchError((error) {
-        if (mounted) {
-          context.showWarningSnackBar('هذه الميزة قيد التطوير');
-        }
-        return null;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,48 +75,69 @@ class _CategoryGridState extends State<CategoryGrid> {
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             if (index >= _categories.length) return null;
-            
-            return _buildSimpleCategoryItem(context, _categories[index]);
+            return _CategoryCard(category: _categories[index]);
           },
           childCount: _categories.length,
         ),
       ),
     );
   }
+}
 
-  Widget _buildSimpleCategoryItem(BuildContext context, CategoryItem category) {
+/// بطاقة الفئة المحسنة
+class _CategoryCard extends StatelessWidget {
+  final _CategoryData category;
+
+  const _CategoryCard({required this.category});
+
+  @override
+  Widget build(BuildContext context) {
+    final gradient = ColorHelper.getCategoryGradient(category.id);
+    
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            category.gradient[0].withValues(alpha: 0.9),
-            category.gradient[1].withValues(alpha: 0.8),
-          ],
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: gradient.colors[0].withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+            spreadRadius: 1,
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => _onCategoryTap(category),
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1,
-                  ),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _onCategoryTap(context),
+            borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    gradient.colors[0].withValues(alpha: 0.9),
+                    gradient.colors[1].withValues(alpha: 0.8),
+                  ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(ThemeConstants.space4),
-                  child: _buildCategoryContent(context, category),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(ThemeConstants.space4),
+                    child: _buildContent(),
+                  ),
                 ),
               ),
             ),
@@ -143,151 +147,176 @@ class _CategoryGridState extends State<CategoryGrid> {
     );
   }
 
-  Widget _buildCategoryContent(BuildContext context, CategoryItem category) {
+  Widget _buildContent() {
     return Stack(
       children: [
-        // خلفية الهلال والنجوم
-        _buildIslamicStarsBackground(),
+        // خلفية النجوم
+        const Positioned.fill(
+          child: _StarsBackground(),
+        ),
         
-        // المحتوى
+        // المحتوى الرئيسي
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // الأيقونة
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.2),
-              ),
-              child: Icon(
-                category.icon,
-                color: Colors.white,
-                size: 32,
-              ),
-            ),
+            _buildIcon(),
             
             const Spacer(),
             
             // النصوص
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  category.title,
-                  style: context.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: ThemeConstants.bold,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        offset: const Offset(0, 2),
-                        blurRadius: 4,
-                      ),
-                    ],
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                
-                ThemeConstants.space1.h,
-                
-                Text(
-                  category.subtitle,
-                  style: context.labelMedium?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    height: 1.3,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
+            _buildTexts(),
             
             ThemeConstants.space3.h,
             
-            // شريط التقدم المضيء
-            Container(
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-              child: FractionallySizedBox(
-                alignment: Alignment.centerLeft,
-                widthFactor: _getCategoryProgress(category.id),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-            ),
+            // شريط التقدم
+            _buildProgressBar(),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildIslamicStarsBackground() {
-    return Positioned.fill(
-      child: CustomPaint(
-        painter: IslamicStarsBackgroundPainter(
-          color: Colors.white.withValues(alpha: 0.15),
+  Widget _buildIcon() {
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withValues(alpha: 0.25),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.4),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Icon(
+        category.icon,
+        color: Colors.white,
+        size: 32,
+      ),
+    );
+  }
+
+  Widget _buildTexts() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          category.title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: ThemeConstants.textSizeLg,
+            fontWeight: ThemeConstants.bold,
+            shadows: [
+              Shadow(
+                color: Colors.black26,
+                offset: Offset(0, 2),
+                blurRadius: 4,
+              ),
+            ],
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        
+        ThemeConstants.space1.h,
+        
+        Text(
+          category.subtitle,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.9),
+            fontSize: ThemeConstants.textSizeSm,
+            height: 1.3,
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProgressBar() {
+    return Container(
+      height: 4,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(2),
+      ),
+      child: FractionallySizedBox(
+        alignment: Alignment.centerLeft,
+        widthFactor: category.progress,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.5),
+                blurRadius: 4,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  double _getCategoryProgress(String categoryId) {
-    // قيم وهمية للتقدم - يجب استبدالها ببيانات حقيقية
-    switch (categoryId) {
-      case 'prayer_times':
-        return 0.9;
-      case 'athkar':
-        return 0.7;
-      case 'quran':
-        return 0.5;
-      case 'qibla':
-        return 1.0;
-      case 'tasbih':
-        return 0.8;
-      case 'dua':
-        return 0.4;
-      default:
-        return 0.6;
+  void _onCategoryTap(BuildContext context) {
+    HapticFeedback.lightImpact();
+    
+    if (category.routeName != null) {
+      Navigator.pushNamed(context, category.routeName!).catchError((error) {
+        if (context.mounted) {
+          context.showWarningSnackBar('هذه الميزة قيد التطوير');
+        }
+        return null;
+      });
     }
   }
 }
 
-/// نموذج بيانات الفئة البسيط
-class CategoryItem {
-  final String id;
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final List<Color> gradient;
-  final String? routeName;
+/// خلفية النجوم المحسنة
+class _StarsBackground extends StatelessWidget {
+  const _StarsBackground();
 
-  const CategoryItem({
-    required this.id,
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.gradient,
-    this.routeName,
-  });
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _StarsBackgroundPainter(
+        color: Colors.white.withValues(alpha: 0.15),
+      ),
+      size: Size.infinite,
+    );
+  }
 }
 
-/// رسام خلفية النجوم
-class IslamicStarsBackgroundPainter extends CustomPainter {
+/// رسام خلفية النجوم المحسن
+class _StarsBackgroundPainter extends CustomPainter {
   final Color color;
 
-  IslamicStarsBackgroundPainter({
-    required this.color,
-  });
+  _StarsBackgroundPainter({required this.color});
+
+  // مواقع النجوم المحددة مسبقاً للأداء
+  static const List<Offset> _starPositions = [
+    Offset(0.1, 0.15), Offset(0.25, 0.08), Offset(0.4, 0.12),
+    Offset(0.6, 0.18), Offset(0.75, 0.05), Offset(0.9, 0.22),
+    Offset(0.05, 0.35), Offset(0.2, 0.28), Offset(0.35, 0.32),
+    Offset(0.55, 0.38), Offset(0.7, 0.25), Offset(0.85, 0.42),
+    Offset(0.95, 0.48), Offset(0.08, 0.55), Offset(0.3, 0.52),
+    Offset(0.45, 0.58), Offset(0.65, 0.62), Offset(0.8, 0.55),
+    Offset(0.92, 0.68), Offset(0.12, 0.75), Offset(0.28, 0.82),
+    Offset(0.42, 0.78), Offset(0.58, 0.85), Offset(0.73, 0.88),
+    Offset(0.88, 0.92), Offset(0.15, 0.45), Offset(0.52, 0.15),
+    Offset(0.38, 0.68), Offset(0.78, 0.35), Offset(0.18, 0.92),
+  ];
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -295,90 +324,46 @@ class IslamicStarsBackgroundPainter extends CustomPainter {
       ..color = color
       ..style = PaintingStyle.fill;
 
-    // رسم النجوم المتناثرة بكثرة
-    _drawRandomStars(canvas, size, paint);
-  }
-
-  void _drawRandomStars(Canvas canvas, Size size, Paint paint) {
-    // مواقع النجوم العشوائية الكثيرة (30 نجمة)
-    final starPositions = [
-      // الصف الأول
-      Offset(size.width * 0.1, size.height * 0.15),
-      Offset(size.width * 0.25, size.height * 0.08),
-      Offset(size.width * 0.4, size.height * 0.12),
-      Offset(size.width * 0.6, size.height * 0.18),
-      Offset(size.width * 0.75, size.height * 0.05),
-      Offset(size.width * 0.9, size.height * 0.22),
+    // رسم النجوم بأحجام متنوعة
+    for (int i = 0; i < _starPositions.length; i++) {
+      final position = Offset(
+        _starPositions[i].dx * size.width,
+        _starPositions[i].dy * size.height,
+      );
       
-      // الصف الثاني
-      Offset(size.width * 0.05, size.height * 0.35),
-      Offset(size.width * 0.2, size.height * 0.28),
-      Offset(size.width * 0.35, size.height * 0.32),
-      Offset(size.width * 0.55, size.height * 0.38),
-      Offset(size.width * 0.7, size.height * 0.25),
-      Offset(size.width * 0.85, size.height * 0.42),
-      Offset(size.width * 0.95, size.height * 0.48),
-      
-      // الصف الثالث
-      Offset(size.width * 0.08, size.height * 0.55),
-      Offset(size.width * 0.3, size.height * 0.52),
-      Offset(size.width * 0.45, size.height * 0.58),
-      Offset(size.width * 0.65, size.height * 0.62),
-      Offset(size.width * 0.8, size.height * 0.55),
-      Offset(size.width * 0.92, size.height * 0.68),
-      
-      // الصف الرابع
-      Offset(size.width * 0.12, size.height * 0.75),
-      Offset(size.width * 0.28, size.height * 0.82),
-      Offset(size.width * 0.42, size.height * 0.78),
-      Offset(size.width * 0.58, size.height * 0.85),
-      Offset(size.width * 0.73, size.height * 0.88),
-      Offset(size.width * 0.88, size.height * 0.92),
-      
-      // نجوم إضافية متناثرة
-      Offset(size.width * 0.15, size.height * 0.45),
-      Offset(size.width * 0.52, size.height * 0.15),
-      Offset(size.width * 0.38, size.height * 0.68),
-      Offset(size.width * 0.78, size.height * 0.35),
-      Offset(size.width * 0.18, size.height * 0.92),
-    ];
-    
-    // رسم النجوم الخماسية بأحجام مختلفة
-    for (int i = 0; i < starPositions.length; i++) {
-      // تنويع أحجام النجوم (3-7 بكسل)
+      // تنويع حجم النجوم (3-7 بكسل)
       final starSize = 3.0 + (i % 5);
       
-      // رسم نجمة خماسية كلاسيكية
-      _drawFivePointStar(canvas, starPositions[i], starSize, paint);
+      _drawStar(canvas, position, starSize, paint);
     }
   }
 
-  void _drawFivePointStar(Canvas canvas, Offset center, double size, Paint paint) {
+  void _drawStar(Canvas canvas, Offset center, double size, Paint paint) {
     final path = Path();
     final outerRadius = size;
     final innerRadius = size * 0.4;
     
-    for (int i = 0; i < 5; i++) {
-      final outerAngle = (i * 2 * math.pi / 5) - math.pi / 2;
-      final innerAngle = ((i + 0.5) * 2 * math.pi / 5) - math.pi / 2;
+    // رسم نجمة خماسية محسنة
+    const int points = 5;
+    final double angleStep = (2 * 3.14159) / points;
+    
+    for (int i = 0; i < points; i++) {
+      final outerAngle = (i * angleStep) - (3.14159 / 2);
+      final innerAngle = ((i + 0.5) * angleStep) - (3.14159 / 2);
       
-      final outerPoint = Offset(
-        center.dx + outerRadius * math.cos(outerAngle),
-        center.dy + outerRadius * math.sin(outerAngle),
-      );
+      final outerX = center.dx + outerRadius * (outerAngle).cos();
+      final outerY = center.dy + outerRadius * (outerAngle).sin();
       
-      final innerPoint = Offset(
-        center.dx + innerRadius * math.cos(innerAngle),
-        center.dy + innerRadius * math.sin(innerAngle),
-      );
+      final innerX = center.dx + innerRadius * (innerAngle).cos();
+      final innerY = center.dy + innerRadius * (innerAngle).sin();
       
       if (i == 0) {
-        path.moveTo(outerPoint.dx, outerPoint.dy);
+        path.moveTo(outerX, outerY);
       } else {
-        path.lineTo(outerPoint.dx, outerPoint.dy);
+        path.lineTo(outerX, outerY);
       }
       
-      path.lineTo(innerPoint.dx, innerPoint.dy);
+      path.lineTo(innerX, innerY);
     }
     
     path.close();
@@ -388,3 +373,31 @@ class IslamicStarsBackgroundPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+
+/// نموذج بيانات الفئة
+class _CategoryData {
+  final String id;
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final String? routeName;
+  final double progress;
+
+  const _CategoryData({
+    required this.id,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    this.routeName,
+    required this.progress,
+  });
+}
+
+/// امتداد لحساب الجيب وجيب التمام
+extension on double {
+  double cos() => math.cos(this);
+  double sin() => math.sin(this);
+}
+
+// استيراد math للحسابات الرياضية
+import 'dart:math' as math;

@@ -2,10 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'theme_constants.dart';
-import 'text_styles.dart';
+import 'text_styles.dart' as app_text_styles;
 import 'core/theme_extensions.dart';
 
-// ===== Barrel Exports =====
+// ===== التصديرات الموحدة =====
 export 'theme_constants.dart';
 export 'text_styles.dart';
 export 'core/theme_extensions.dart';
@@ -21,7 +21,7 @@ export 'widgets/core/app_button.dart';
 export 'widgets/core/app_text_field.dart';
 export 'widgets/core/app_loading.dart';
 
-// Animation exports - إضافة AnimatedPress
+// Animation exports
 export 'widgets/animations/animated_press.dart';
 export 'package:flutter_staggered_animations/flutter_staggered_animations.dart'
     show
@@ -32,150 +32,75 @@ export 'package:flutter_staggered_animations/flutter_staggered_animations.dart'
         ScaleAnimation,
         FlipAnimation;
 
-/// نظام الثيم الموحد للتطبيق
+/// نظام الثيم الموحد والمحسن للتطبيق
 class AppTheme {
   AppTheme._();
 
-  /// الثيم الفاتح
+  // ===== الثيمات الرئيسية =====
+  
+  /// الثيم الفاتح المحسن
   static ThemeData get lightTheme => _buildTheme(
     brightness: Brightness.light,
-    primaryColor: ThemeConstants.primary,
-    backgroundColor: ThemeConstants.lightBackground,
-    surfaceColor: ThemeConstants.lightSurface,
-    cardColor: ThemeConstants.lightCard,
-    textPrimaryColor: ThemeConstants.lightTextPrimary,
-    textSecondaryColor: ThemeConstants.lightTextSecondary,
-    dividerColor: ThemeConstants.lightDivider,
+    colorConfig: _LightColorConfig(),
   );
 
-  /// الثيم الداكن
+  /// الثيم الداكن المحسن
   static ThemeData get darkTheme => _buildTheme(
     brightness: Brightness.dark,
-    primaryColor: ThemeConstants.primaryLight,
-    backgroundColor: ThemeConstants.darkBackground,
-    surfaceColor: ThemeConstants.darkSurface,
-    cardColor: ThemeConstants.darkCard,
-    textPrimaryColor: ThemeConstants.darkTextPrimary,
-    textSecondaryColor: ThemeConstants.darkTextSecondary,
-    dividerColor: ThemeConstants.darkDivider,
+    colorConfig: _DarkColorConfig(),
   );
 
-  /// بناء الثيم
+  // ===== بناء الثيم الموحد =====
   static ThemeData _buildTheme({
     required Brightness brightness,
-    required Color primaryColor,
-    required Color backgroundColor,
-    required Color surfaceColor,
-    required Color cardColor,
-    required Color textPrimaryColor,
-    required Color textSecondaryColor,
-    required Color dividerColor,
+    required _ColorConfig colorConfig,
   }) {
-    final bool isDark = brightness == Brightness.dark;
-    final Color onPrimaryColor = primaryColor.contrastingTextColor;
-    final Color onSecondaryColor = ThemeConstants.accent.contrastingTextColor;
-
-    // Create text theme
-    final textTheme = _createTextTheme(textPrimaryColor, textSecondaryColor);
+    final isDark = brightness == Brightness.dark;
+    
+    // إنشاء ColorScheme محسن
+    final colorScheme = _createColorScheme(brightness, colorConfig);
+    
+    // إنشاء TextTheme
+    final textTheme = app_text_styles.AppTextStyles.createTextTheme(
+      color: colorConfig.textPrimary,
+      secondaryColor: colorConfig.textSecondary,
+    );
 
     return ThemeData(
+      // الإعدادات الأساسية
       brightness: brightness,
-      primaryColor: primaryColor,
-      scaffoldBackgroundColor: backgroundColor,
       useMaterial3: true,
       fontFamily: ThemeConstants.fontFamily,
       
-      // ColorScheme
-      colorScheme: ColorScheme(
-        brightness: brightness,
-        primary: primaryColor,
-        onPrimary: onPrimaryColor,
-        secondary: ThemeConstants.accent,
-        onSecondary: onSecondaryColor,
-        tertiary: ThemeConstants.accentLight,
-        onTertiary: ThemeConstants.accentLight.contrastingTextColor,
-        error: ThemeConstants.error,
-        onError: Colors.white,
-        surface: backgroundColor,
-        onSurface: textPrimaryColor,
-        surfaceContainerHighest: cardColor,
-        onSurfaceVariant: textSecondaryColor,
-        outline: dividerColor,
-      ),
+      // نظام الألوان
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: colorConfig.background,
       
-      // AppBar Theme
-      appBarTheme: AppBarTheme(
-        backgroundColor: backgroundColor,
-        foregroundColor: textPrimaryColor,
-        elevation: 0,
-        centerTitle: true,
-        titleTextStyle: AppTextStyles.h4.copyWith(color: textPrimaryColor),
-        iconTheme: IconThemeData(
-          color: textPrimaryColor,
-          size: ThemeConstants.iconMd,
-        ),
-        systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-          systemNavigationBarColor: backgroundColor,
-          systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-        ),
-      ),
-      
-      // Card Theme
-      cardTheme: CardThemeData(
-        color: cardColor,
-        elevation: ThemeConstants.elevationNone,
-        margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-        ),
-      ),
-      
-      // Text Theme
+      // نظام النصوص
       textTheme: textTheme,
       
-      // Button Themes
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: _elevatedButtonStyle(primaryColor, onPrimaryColor),
-      ),
+      // مكونات الواجهة
+      appBarTheme: _createAppBarTheme(colorConfig, isDark),
+      cardTheme: _createCardTheme(colorConfig),
+      elevatedButtonTheme: _createElevatedButtonTheme(colorConfig),
+      outlinedButtonTheme: _createOutlinedButtonTheme(colorConfig),
+      textButtonTheme: _createTextButtonTheme(colorConfig),
+      inputDecorationTheme: _createInputDecorationTheme(colorConfig, isDark),
+      dividerTheme: _createDividerTheme(colorConfig),
+      iconTheme: _createIconTheme(colorConfig),
+      progressIndicatorTheme: _createProgressIndicatorTheme(colorConfig),
+      bottomNavigationBarTheme: _createBottomNavigationBarTheme(colorConfig),
+      chipTheme: _createChipTheme(colorConfig, brightness),
+      tabBarTheme: _createTabBarTheme(colorConfig),
+      floatingActionButtonTheme: _createFABTheme(colorConfig),
+      dialogTheme: _createDialogTheme(colorConfig),
+      switchTheme: _createSwitchTheme(colorConfig, isDark),
+      checkboxTheme: _createCheckboxTheme(colorConfig, isDark),
+      radioTheme: _createRadioTheme(colorConfig),
+      sliderTheme: _createSliderTheme(colorConfig),
+      tooltipTheme: _createTooltipTheme(colorConfig, isDark),
       
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: _outlinedButtonStyle(primaryColor),
-      ),
-      
-      textButtonTheme: TextButtonThemeData(
-        style: _textButtonStyle(primaryColor),
-      ),
-      
-      // Input Theme
-      inputDecorationTheme: _inputDecorationTheme(
-        isDark: isDark,
-        primaryColor: primaryColor,
-        surfaceColor: surfaceColor,
-        dividerColor: dividerColor,
-        textSecondaryColor: textSecondaryColor,
-      ),
-      
-      // Other Themes
-      dividerTheme: DividerThemeData(
-        color: dividerColor,
-        thickness: ThemeConstants.borderLight,
-        space: ThemeConstants.space1,
-      ),
-      
-      iconTheme: IconThemeData(
-        color: textPrimaryColor,
-        size: ThemeConstants.iconMd,
-      ),
-      
-      progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: primaryColor,
-        linearTrackColor: dividerColor.withValues(alpha: ThemeConstants.opacity50),
-        circularTrackColor: dividerColor.withValues(alpha: ThemeConstants.opacity50),
-      ),
-      
-      // Page Transitions
+      // تحسينات الأداء والتفاعل
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: CupertinoPageTransitionsBuilder(),
@@ -183,219 +108,136 @@ class AppTheme {
         },
       ),
       
-      // Bottom Navigation
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: cardColor,
-        selectedItemColor: primaryColor,
-        unselectedItemColor: textSecondaryColor.withValues(alpha: ThemeConstants.opacity70),
-        type: BottomNavigationBarType.fixed,
-        elevation: ThemeConstants.elevation8,
-        selectedLabelStyle: AppTextStyles.label2.copyWith(
-          fontWeight: ThemeConstants.semiBold,
-        ),
-        unselectedLabelStyle: AppTextStyles.label2,
-        selectedIconTheme: const IconThemeData(size: ThemeConstants.iconMd),
-        unselectedIconTheme: const IconThemeData(size: ThemeConstants.iconMd),
+      // الخصائص المحسنة
+      visualDensity: VisualDensity.adaptivePlatformDensity,
+      materialTapTargetSize: MaterialTapTargetSize.padded,
+    );
+  }
+
+  // ===== إنشاء ColorScheme =====
+  static ColorScheme _createColorScheme(Brightness brightness, _ColorConfig config) {
+    return ColorScheme(
+      brightness: brightness,
+      primary: ThemeConstants.primary,
+      onPrimary: ThemeConstants.primary.contrastingTextColor,
+      secondary: ThemeConstants.accent,
+      onSecondary: ThemeConstants.accent.contrastingTextColor,
+      tertiary: ThemeConstants.tertiary,
+      onTertiary: ThemeConstants.tertiary.contrastingTextColor,
+      error: ThemeConstants.error,
+      onError: Colors.white,
+      surface: config.background,
+      onSurface: config.textPrimary,
+      surfaceContainerHighest: config.card,
+      onSurfaceVariant: config.textSecondary,
+      outline: config.divider,
+      inverseSurface: config.textPrimary,
+      onInverseSurface: config.background,
+    );
+  }
+
+  // ===== مكونات الثيم المحسنة =====
+  
+  static AppBarTheme _createAppBarTheme(_ColorConfig config, bool isDark) {
+    return AppBarTheme(
+      backgroundColor: config.background,
+      foregroundColor: config.textPrimary,
+      elevation: 0,
+      centerTitle: true,
+      titleTextStyle: app_text_styles.AppTextStyles.h4.copyWith(color: config.textPrimary),
+      iconTheme: IconThemeData(
+        color: config.textPrimary,
+        size: ThemeConstants.iconMd,
       ),
-      
-      // Chip Theme
-      chipTheme: ChipThemeData(
-        backgroundColor: surfaceColor,
-        deleteIconColor: textSecondaryColor,
-        disabledColor: ThemeConstants.lightTextHint.withValues(alpha: ThemeConstants.opacity30),
-        selectedColor: primaryColor,
-        secondarySelectedColor: ThemeConstants.accent,
-        labelPadding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space2),
-        padding: const EdgeInsets.symmetric(
-          horizontal: ThemeConstants.space3,
-          vertical: ThemeConstants.space1,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-        ),
-        labelStyle: AppTextStyles.label2.copyWith(color: textPrimaryColor),
-        secondaryLabelStyle: AppTextStyles.label2.copyWith(color: onPrimaryColor),
-        brightness: brightness,
+      actionsIconTheme: IconThemeData(
+        color: config.textPrimary,
+        size: ThemeConstants.iconMd,
       ),
-      
-      // Tab Bar Theme
-      tabBarTheme: TabBarThemeData(
-        labelColor: primaryColor,
-        unselectedLabelColor: textSecondaryColor.withValues(alpha: ThemeConstants.opacity70),
-        indicatorSize: TabBarIndicatorSize.label,
-        indicator: UnderlineTabIndicator(
-          borderSide: BorderSide(
-            color: primaryColor,
-            width: ThemeConstants.borderThick,
-          ),
-        ),
-        labelStyle: AppTextStyles.label1.copyWith(
-          fontWeight: ThemeConstants.semiBold,
-        ),
-        unselectedLabelStyle: AppTextStyles.label1,
-      ),
-      
-      // FAB Theme
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: primaryColor,
-        foregroundColor: onPrimaryColor,
-        elevation: ThemeConstants.elevation4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-        ),
-      ),
-      
-      // Dialog Theme
-      dialogTheme: DialogThemeData(
-        backgroundColor: cardColor,
-        titleTextStyle: AppTextStyles.h5.copyWith(color: textPrimaryColor),
-        contentTextStyle: AppTextStyles.body2.copyWith(color: textSecondaryColor),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-        ),
-        elevation: ThemeConstants.elevation8,
-      ),
-      
-      // Switch Theme
-      switchTheme: _switchTheme(isDark, primaryColor),
-      
-      // Checkbox Theme
-      checkboxTheme: _checkboxTheme(isDark, primaryColor, onPrimaryColor),
-      
-      // Radio Theme
-      radioTheme: _radioTheme(primaryColor, textSecondaryColor),
-      
-      // Slider Theme
-      sliderTheme: SliderThemeData(
-        activeTrackColor: primaryColor,
-        inactiveTrackColor: primaryColor.withValues(alpha: ThemeConstants.opacity30),
-        thumbColor: primaryColor,
-        overlayColor: primaryColor.withValues(alpha: ThemeConstants.opacity20),
-        valueIndicatorColor: primaryColor.darken(0.1),
-        valueIndicatorTextStyle: AppTextStyles.caption.copyWith(color: onPrimaryColor),
-      ),
-      
-      // Tooltip Theme
-      tooltipTheme: TooltipThemeData(
-        decoration: BoxDecoration(
-          color: (isDark ? ThemeConstants.darkSurface : ThemeConstants.lightSurface)
-              .withValues(alpha: ThemeConstants.opacity90),
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
-        ),
-        textStyle: AppTextStyles.caption.copyWith(color: textPrimaryColor),
-        preferBelow: false,
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor: config.background,
+        systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
       ),
     );
   }
 
-  // ===== Private Helper Methods =====
-  
-  static TextTheme _createTextTheme(Color primaryColor, Color secondaryColor) {
-    // Using a map to reduce repetition
-    final styles = {
-      'displayLarge': AppTextStyles.h1,
-      'displayMedium': AppTextStyles.h2,
-      'displaySmall': AppTextStyles.h3,
-      'headlineLarge': AppTextStyles.h1,
-      'headlineMedium': AppTextStyles.h2,
-      'headlineSmall': AppTextStyles.h3,
-      'titleLarge': AppTextStyles.h4,
-      'titleMedium': AppTextStyles.h5,
-      'titleSmall': AppTextStyles.h5.copyWith(fontSize: ThemeConstants.textSizeMd),
-      'bodyLarge': AppTextStyles.body1,
-      'bodyMedium': AppTextStyles.body2,
-      'bodySmall': AppTextStyles.caption,
-      'labelLarge': AppTextStyles.label1,
-      'labelMedium': AppTextStyles.label2,
-      'labelSmall': AppTextStyles.caption,
-    };
-    
-    return TextTheme(
-      displayLarge: styles['displayLarge']!.copyWith(color: primaryColor),
-      displayMedium: styles['displayMedium']!.copyWith(color: primaryColor),
-      displaySmall: styles['displaySmall']!.copyWith(color: primaryColor),
-      headlineLarge: styles['headlineLarge']!.copyWith(color: primaryColor),
-      headlineMedium: styles['headlineMedium']!.copyWith(color: primaryColor),
-      headlineSmall: styles['headlineSmall']!.copyWith(color: primaryColor),
-      titleLarge: styles['titleLarge']!.copyWith(color: primaryColor),
-      titleMedium: styles['titleMedium']!.copyWith(color: primaryColor),
-      titleSmall: styles['titleSmall']!.copyWith(color: primaryColor),
-      bodyLarge: styles['bodyLarge']!.copyWith(color: primaryColor),
-      bodyMedium: styles['bodyMedium']!.copyWith(color: secondaryColor),
-      bodySmall: styles['bodySmall']!.copyWith(color: secondaryColor),
-      labelLarge: styles['labelLarge']!.copyWith(color: primaryColor),
-      labelMedium: styles['labelMedium']!.copyWith(color: secondaryColor),
-      labelSmall: styles['labelSmall']!.copyWith(color: secondaryColor),
-    );
-  }
-
-  // ===== Button Styles =====
-  
-  static ButtonStyle _elevatedButtonStyle(Color primaryColor, Color onPrimaryColor) {
-    return ElevatedButton.styleFrom(
-      backgroundColor: primaryColor,
-      foregroundColor: onPrimaryColor,
-      disabledBackgroundColor: ThemeConstants.lightTextHint.withValues(alpha: ThemeConstants.opacity30),
-      disabledForegroundColor: ThemeConstants.lightTextHint.withValues(alpha: ThemeConstants.opacity70),
+  static CardThemeData _createCardTheme(_ColorConfig config) {
+    return CardThemeData(
+      color: config.card,
       elevation: ThemeConstants.elevationNone,
-      padding: const EdgeInsets.symmetric(
-        horizontal: ThemeConstants.space6,
-        vertical: ThemeConstants.space4,
-      ),
+      margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
       ),
-      textStyle: AppTextStyles.button,
-      minimumSize: const Size(ThemeConstants.heightLg, ThemeConstants.buttonHeight),
+      shadowColor: ThemeConstants.primary.withValues(alpha: 0.1),
     );
   }
 
-  static ButtonStyle _outlinedButtonStyle(Color primaryColor) {
-    return OutlinedButton.styleFrom(
-      foregroundColor: primaryColor,
-      side: BorderSide(
-        color: primaryColor,
-        width: ThemeConstants.borderMedium,
+  static ElevatedButtonThemeData _createElevatedButtonTheme(_ColorConfig config) {
+    return ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: ThemeConstants.primary,
+        foregroundColor: ThemeConstants.primary.contrastingTextColor,
+        disabledBackgroundColor: config.textSecondary.withValues(alpha: 0.3),
+        disabledForegroundColor: config.textSecondary.withValues(alpha: 0.7),
+        elevation: 0,
+        shadowColor: ThemeConstants.primary.withValues(alpha: 0.3),
+        padding: const EdgeInsets.symmetric(
+          horizontal: ThemeConstants.space6,
+          vertical: ThemeConstants.space4,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
+        textStyle: app_text_styles.AppTextStyles.button,
+        minimumSize: const Size(ThemeConstants.heightLg, ThemeConstants.buttonHeight),
       ),
-      disabledForegroundColor: ThemeConstants.lightTextHint.withValues(alpha: ThemeConstants.opacity70),
-      padding: const EdgeInsets.symmetric(
-        horizontal: ThemeConstants.space6,
-        vertical: ThemeConstants.space4,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-      ),
-      textStyle: AppTextStyles.button,
-      minimumSize: const Size(ThemeConstants.heightLg, ThemeConstants.buttonHeight),
     );
   }
 
-  static ButtonStyle _textButtonStyle(Color primaryColor) {
-    return TextButton.styleFrom(
-      foregroundColor: primaryColor,
-      disabledForegroundColor: ThemeConstants.lightTextHint.withValues(alpha: ThemeConstants.opacity70),
-      padding: const EdgeInsets.symmetric(
-        horizontal: ThemeConstants.space4,
-        vertical: ThemeConstants.space2,
+  static OutlinedButtonThemeData _createOutlinedButtonTheme(_ColorConfig config) {
+    return OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: ThemeConstants.primary,
+        side: BorderSide(
+          color: ThemeConstants.primary,
+          width: ThemeConstants.borderMedium,
+        ),
+        disabledForegroundColor: config.textSecondary.withValues(alpha: 0.7),
+        padding: const EdgeInsets.symmetric(
+          horizontal: ThemeConstants.space6,
+          vertical: ThemeConstants.space4,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
+        textStyle: app_text_styles.AppTextStyles.button,
+        minimumSize: const Size(ThemeConstants.heightLg, ThemeConstants.buttonHeight),
       ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-      ),
-      textStyle: AppTextStyles.button,
     );
   }
 
-  // ===== Input Decoration Theme =====
-  
-  static InputDecorationTheme _inputDecorationTheme({
-    required bool isDark,
-    required Color primaryColor,
-    required Color surfaceColor,
-    required Color dividerColor,
-    required Color textSecondaryColor,
-  }) {
+  static TextButtonThemeData _createTextButtonTheme(_ColorConfig config) {
+    return TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: ThemeConstants.primary,
+        disabledForegroundColor: config.textSecondary.withValues(alpha: 0.7),
+        padding: const EdgeInsets.symmetric(
+          horizontal: ThemeConstants.space4,
+          vertical: ThemeConstants.space2,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
+        textStyle: app_text_styles.AppTextStyles.button,
+      ),
+    );
+  }
+
+  static InputDecorationTheme _createInputDecorationTheme(_ColorConfig config, bool isDark) {
     return InputDecorationTheme(
-      fillColor: surfaceColor.withValues(
+      fillColor: config.surface.withValues(
         alpha: isDark ? ThemeConstants.opacity10 : ThemeConstants.opacity50
       ),
       filled: true,
@@ -406,21 +248,21 @@ class AppTheme {
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         borderSide: BorderSide(
-          color: dividerColor,
+          color: config.divider,
           width: ThemeConstants.borderLight,
         ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         borderSide: BorderSide(
-          color: dividerColor,
+          color: config.divider,
           width: ThemeConstants.borderLight,
         ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         borderSide: BorderSide(
-          color: primaryColor,
+          color: ThemeConstants.primary,
           width: ThemeConstants.borderThick,
         ),
       ),
@@ -438,73 +280,161 @@ class AppTheme {
           width: ThemeConstants.borderThick,
         ),
       ),
-      hintStyle: AppTextStyles.body2.copyWith(
-        color: textSecondaryColor.withValues(alpha: ThemeConstants.opacity70),
+      hintStyle: app_text_styles.AppTextStyles.body2.copyWith(
+        color: config.textSecondary.withValues(alpha: ThemeConstants.opacity70),
       ),
-      labelStyle: AppTextStyles.body2.copyWith(color: textSecondaryColor),
-      errorStyle: AppTextStyles.caption.copyWith(color: ThemeConstants.error),
+      labelStyle: app_text_styles.AppTextStyles.body2.copyWith(color: config.textSecondary),
+      errorStyle: app_text_styles.AppTextStyles.caption.copyWith(color: ThemeConstants.error),
       alignLabelWithHint: true,
     );
   }
 
-  // ===== Switch Theme =====
-  
-  static SwitchThemeData _switchTheme(bool isDark, Color primaryColor) {
+  static DividerThemeData _createDividerTheme(_ColorConfig config) {
+    return DividerThemeData(
+      color: config.divider,
+      thickness: ThemeConstants.borderLight,
+      space: ThemeConstants.space1,
+    );
+  }
+
+  static IconThemeData _createIconTheme(_ColorConfig config) {
+    return IconThemeData(
+      color: config.textPrimary,
+      size: ThemeConstants.iconMd,
+    );
+  }
+
+  static ProgressIndicatorThemeData _createProgressIndicatorTheme(_ColorConfig config) {
+    return ProgressIndicatorThemeData(
+      color: ThemeConstants.primary,
+      linearTrackColor: config.divider.withValues(alpha: ThemeConstants.opacity50),
+      circularTrackColor: config.divider.withValues(alpha: ThemeConstants.opacity50),
+    );
+  }
+
+  static BottomNavigationBarThemeData _createBottomNavigationBarTheme(_ColorConfig config) {
+    return BottomNavigationBarThemeData(
+      backgroundColor: config.card,
+      selectedItemColor: ThemeConstants.primary,
+      unselectedItemColor: config.textSecondary.withValues(alpha: ThemeConstants.opacity70),
+      type: BottomNavigationBarType.fixed,
+      elevation: ThemeConstants.elevation8,
+      selectedLabelStyle: app_text_styles.AppTextStyles.label2.copyWith(
+        fontWeight: ThemeConstants.semiBold,
+      ),
+      unselectedLabelStyle: app_text_styles.AppTextStyles.label2,
+      selectedIconTheme: const IconThemeData(size: ThemeConstants.iconMd),
+      unselectedIconTheme: const IconThemeData(size: ThemeConstants.iconMd),
+    );
+  }
+
+  static ChipThemeData _createChipTheme(_ColorConfig config, Brightness brightness) {
+    return ChipThemeData(
+      backgroundColor: config.surface,
+      deleteIconColor: config.textSecondary,
+      disabledColor: config.textSecondary.withValues(alpha: ThemeConstants.opacity30),
+      selectedColor: ThemeConstants.primary,
+      secondarySelectedColor: ThemeConstants.accent,
+      labelPadding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space2),
+      padding: const EdgeInsets.symmetric(
+        horizontal: ThemeConstants.space3,
+        vertical: ThemeConstants.space1,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+      ),
+      labelStyle: app_text_styles.AppTextStyles.label2.copyWith(color: config.textPrimary),
+      secondaryLabelStyle: app_text_styles.AppTextStyles.label2.copyWith(
+        color: ThemeConstants.primary.contrastingTextColor
+      ),
+      brightness: brightness,
+    );
+  }
+
+  static TabBarThemeData _createTabBarTheme(_ColorConfig config) {
+    return TabBarThemeData(
+      labelColor: ThemeConstants.primary,
+      unselectedLabelColor: config.textSecondary.withValues(alpha: ThemeConstants.opacity70),
+      indicatorSize: TabBarIndicatorSize.label,
+      indicator: UnderlineTabIndicator(
+        borderSide: BorderSide(
+          color: ThemeConstants.primary,
+          width: ThemeConstants.borderThick,
+        ),
+      ),
+      labelStyle: app_text_styles.AppTextStyles.label1.copyWith(
+        fontWeight: ThemeConstants.semiBold,
+      ),
+      unselectedLabelStyle: app_text_styles.AppTextStyles.label1,
+    );
+  }
+
+  static FloatingActionButtonThemeData _createFABTheme(_ColorConfig config) {
+    return FloatingActionButtonThemeData(
+      backgroundColor: ThemeConstants.primary,
+      foregroundColor: ThemeConstants.primary.contrastingTextColor,
+      elevation: ThemeConstants.elevation4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+      ),
+    );
+  }
+
+  static DialogThemeData _createDialogTheme(_ColorConfig config) {
+    return DialogThemeData(
+      backgroundColor: config.card,
+      titleTextStyle: app_text_styles.AppTextStyles.h5.copyWith(color: config.textPrimary),
+      contentTextStyle: app_text_styles.AppTextStyles.body2.copyWith(color: config.textSecondary),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+      ),
+      elevation: ThemeConstants.elevation8,
+    );
+  }
+
+  static SwitchThemeData _createSwitchTheme(_ColorConfig config, bool isDark) {
     return SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) return primaryColor;
-        if (states.contains(WidgetState.disabled)) {
-          return isDark ? ThemeConstants.darkSurface : ThemeConstants.lightSurface;
-        }
-        return isDark ? ThemeConstants.darkTextSecondary : ThemeConstants.lightTextHint;
+        if (states.contains(WidgetState.selected)) return ThemeConstants.primary;
+        if (states.contains(WidgetState.disabled)) return config.surface;
+        return isDark ? config.textSecondary : config.textSecondary;
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return primaryColor.withValues(alpha: ThemeConstants.opacity50);
+          return ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity50);
         }
         if (states.contains(WidgetState.disabled)) {
-          return (isDark ? ThemeConstants.darkSurface : ThemeConstants.lightSurface)
-              .withValues(alpha: ThemeConstants.opacity50);
+          return config.surface.withValues(alpha: ThemeConstants.opacity50);
         }
-        return (isDark ? ThemeConstants.darkTextSecondary : ThemeConstants.lightTextHint)
-            .withValues(alpha: ThemeConstants.opacity30);
+        return config.textSecondary.withValues(alpha: ThemeConstants.opacity30);
       }),
       overlayColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) {
-          return primaryColor.withValues(alpha: ThemeConstants.opacity10);
+          return ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity10);
         }
         return null;
       }),
     );
   }
 
-  // ===== Checkbox Theme =====
-  
-  static CheckboxThemeData _checkboxTheme(
-    bool isDark,
-    Color primaryColor,
-    Color onPrimaryColor,
-  ) {
+  static CheckboxThemeData _createCheckboxTheme(_ColorConfig config, bool isDark) {
     return CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) return primaryColor;
-        if (states.contains(WidgetState.disabled)) {
-          return isDark ? ThemeConstants.darkSurface : ThemeConstants.lightSurface;
-        }
+        if (states.contains(WidgetState.selected)) return ThemeConstants.primary;
+        if (states.contains(WidgetState.disabled)) return config.surface;
         return Colors.transparent;
       }),
-      checkColor: WidgetStateProperty.all(onPrimaryColor),
+      checkColor: WidgetStateProperty.all(ThemeConstants.primary.contrastingTextColor),
       side: WidgetStateBorderSide.resolveWith((states) {
         if (states.contains(WidgetState.disabled)) {
           return BorderSide(
             width: ThemeConstants.borderMedium,
-            color: (isDark ? ThemeConstants.darkTextSecondary : ThemeConstants.lightTextHint)
-                .withValues(alpha: ThemeConstants.opacity50),
+            color: config.textSecondary.withValues(alpha: ThemeConstants.opacity50),
           );
         }
         return BorderSide(
           width: ThemeConstants.borderMedium,
-          color: primaryColor,
+          color: ThemeConstants.primary,
         );
       }),
       shape: RoundedRectangleBorder(
@@ -512,30 +442,104 @@ class AppTheme {
       ),
       overlayColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) {
-          return primaryColor.withValues(alpha: ThemeConstants.opacity10);
+          return ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity10);
         }
         return null;
       }),
     );
   }
 
-  // ===== Radio Theme =====
-  
-  static RadioThemeData _radioTheme(Color primaryColor, Color textSecondaryColor) {
+  static RadioThemeData _createRadioTheme(_ColorConfig config) {
     return RadioThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) return primaryColor;
+        if (states.contains(WidgetState.selected)) return ThemeConstants.primary;
         if (states.contains(WidgetState.disabled)) {
-          return textSecondaryColor.withValues(alpha: ThemeConstants.opacity50);
+          return config.textSecondary.withValues(alpha: ThemeConstants.opacity50);
         }
-        return textSecondaryColor;
+        return config.textSecondary;
       }),
       overlayColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) {
-          return primaryColor.withValues(alpha: ThemeConstants.opacity10);
+          return ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity10);
         }
         return null;
       }),
     );
   }
+
+  static SliderThemeData _createSliderTheme(_ColorConfig config) {
+    return SliderThemeData(
+      activeTrackColor: ThemeConstants.primary,
+      inactiveTrackColor: ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity30),
+      thumbColor: ThemeConstants.primary,
+      overlayColor: ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity20),
+      valueIndicatorColor: ThemeConstants.primary.darken(0.1),
+      valueIndicatorTextStyle: app_text_styles.AppTextStyles.caption.copyWith(
+        color: ThemeConstants.primary.contrastingTextColor
+      ),
+    );
+  }
+
+  static TooltipThemeData _createTooltipTheme(_ColorConfig config, bool isDark) {
+    return TooltipThemeData(
+      decoration: BoxDecoration(
+        color: (isDark ? config.surface : config.surface)
+            .withValues(alpha: ThemeConstants.opacity90),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
+      ),
+      textStyle: app_text_styles.AppTextStyles.caption.copyWith(color: config.textPrimary),
+      preferBelow: false,
+    );
+  }
+}
+
+// ===== نماذج تكوين الألوان =====
+
+abstract class _ColorConfig {
+  Color get background;
+  Color get surface;
+  Color get card;
+  Color get divider;
+  Color get textPrimary;
+  Color get textSecondary;
+}
+
+class _LightColorConfig implements _ColorConfig {
+  @override
+  Color get background => ThemeConstants.lightBackground;
+  
+  @override
+  Color get surface => ThemeConstants.lightSurface;
+  
+  @override
+  Color get card => ThemeConstants.lightCard;
+  
+  @override
+  Color get divider => ThemeConstants.lightDivider;
+  
+  @override
+  Color get textPrimary => ThemeConstants.lightTextPrimary;
+  
+  @override
+  Color get textSecondary => ThemeConstants.lightTextSecondary;
+}
+
+class _DarkColorConfig implements _ColorConfig {
+  @override
+  Color get background => ThemeConstants.darkBackground;
+  
+  @override
+  Color get surface => ThemeConstants.darkSurface;
+  
+  @override
+  Color get card => ThemeConstants.darkCard;
+  
+  @override
+  Color get divider => ThemeConstants.darkDivider;
+  
+  @override
+  Color get textPrimary => ThemeConstants.darkTextPrimary;
+  
+  @override
+  Color get textSecondary => ThemeConstants.darkTextSecondary;
 }

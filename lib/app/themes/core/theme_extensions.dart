@@ -1,15 +1,16 @@
 // lib/app/themes/core/theme_extensions.dart
-import 'package:athkar_app/app/themes/text_styles.dart';
 import 'package:flutter/material.dart';
 import '../theme_constants.dart';
+import '../text_styles.dart';
 
-/// Extensions لتسهيل الوصول للثيم
+/// امتدادات سياق الثيم - وصول موحد لخصائص الثيم
 extension ThemeExtension on BuildContext {
+  // ===== الثيم الأساسي =====
   ThemeData get theme => Theme.of(this);
   TextTheme get textTheme => theme.textTheme;
   ColorScheme get colorScheme => theme.colorScheme;
 
-  // الألوان الأساسية
+  // ===== الألوان الأساسية =====
   Color get primaryColor => theme.primaryColor;
   Color get backgroundColor => theme.scaffoldBackgroundColor;
   Color get surfaceColor => colorScheme.surface;
@@ -17,20 +18,20 @@ extension ThemeExtension on BuildContext {
   Color get errorColor => colorScheme.error;
   Color get dividerColor => theme.dividerTheme.color ?? ThemeConstants.divider(this);
 
-  // ألوان النصوص
+  // ===== ألوان النصوص =====
   Color get textPrimaryColor => ThemeConstants.textPrimary(this);
   Color get textSecondaryColor => ThemeConstants.textSecondary(this);
 
-  // الألوان الدلالية
+  // ===== الألوان الدلالية =====
   Color get successColor => ThemeConstants.success;
   Color get warningColor => ThemeConstants.warning;
   Color get infoColor => ThemeConstants.info;
 
-  // حالة الثيم
+  // ===== حالة الثيم =====
   bool get isDarkMode => theme.brightness == Brightness.dark;
   bool get isLightMode => !isDarkMode;
 
-  // أنماط النصوص - مباشرة من TextTheme
+  // ===== أنماط النصوص من TextTheme =====
   TextStyle? get displayLarge => textTheme.displayLarge;
   TextStyle? get displayMedium => textTheme.displayMedium;
   TextStyle? get displaySmall => textTheme.displaySmall;
@@ -47,47 +48,46 @@ extension ThemeExtension on BuildContext {
   TextStyle? get labelMedium => textTheme.labelMedium;
   TextStyle? get labelSmall => textTheme.labelSmall;
 
-  // أنماط خاصة
+  // ===== أنماط خاصة =====
   TextStyle get quranStyle => AppTextStyles.quran;
   TextStyle get athkarStyle => AppTextStyles.athkar;
   TextStyle get duaStyle => AppTextStyles.dua;
 
-  // معلومات الشاشة
+  // ===== معلومات الشاشة =====
   double get screenWidth => MediaQuery.sizeOf(this).width;
   double get screenHeight => MediaQuery.sizeOf(this).height;
   EdgeInsets get screenPadding => MediaQuery.paddingOf(this);
   EdgeInsets get viewInsets => MediaQuery.viewInsetsOf(this);
 
-  // نوع الجهاز
+  // ===== نوع الجهاز =====
   bool get isMobile => screenWidth < ThemeConstants.breakpointMobile;
   bool get isTablet => screenWidth >= ThemeConstants.breakpointMobile && screenWidth < ThemeConstants.breakpointTablet;
   bool get isDesktop => screenWidth >= ThemeConstants.breakpointTablet;
 
-  // الحشوات المتجاوبة
+  // ===== الحشوات المتجاوبة =====
   EdgeInsets get responsivePadding {
     if (isMobile) return const EdgeInsets.all(ThemeConstants.space4);
     if (isTablet) return const EdgeInsets.all(ThemeConstants.space6);
     return const EdgeInsets.all(ThemeConstants.space8);
   }
 
-  // معلومات النظام
+  // ===== معلومات النظام =====
   bool get isIOS => theme.platform == TargetPlatform.iOS;
   bool get isAndroid => theme.platform == TargetPlatform.android;
 
-  // لوحة المفاتيح
+  // ===== لوحة المفاتيح =====
   bool get isKeyboardOpen => viewInsets.bottom > 0;
   double get keyboardHeight => viewInsets.bottom;
 
-  // المناطق الآمنة
+  // ===== المناطق الآمنة =====
   double get safeTop => screenPadding.top;
   double get safeBottom => screenPadding.bottom;
 }
 
-/// Extensions للألوان - موحدة من جميع الملفات
+/// امتدادات الألوان - عمليات متقدمة على الألوان
 extension ColorExtensions on Color {
-  /// إنشاء لون بشفافية - تم إصلاحها لاستخدام withValues بدلاً من withOpacity المكرر
+  /// تطبيق شفافية آمنة
   Color withOpacitySafe(double opacity) {
-    // التأكد من أن القيمة في النطاق الصحيح
     final safeOpacity = opacity.clamp(0.0, 1.0);
     return withValues(alpha: safeOpacity);
   }
@@ -108,7 +108,7 @@ extension ColorExtensions on Color {
     return hsl.withLightness(lightness).toColor();
   }
 
-  /// الحصول على لون متباين للنص
+  /// الحصول على لون نص متباين
   Color get contrastingTextColor {
     return ThemeData.estimateBrightnessForColor(this) == Brightness.dark
         ? Colors.white
@@ -127,30 +127,63 @@ extension ColorExtensions on Color {
           : darken(strength - 0.5);
     }
     
-    // استخدام value بدلاً من toARGB32() غير الموجود
     return MaterialColor(value, swatch);
+  }
+
+  /// تشبع اللون
+  Color saturate([double amount = 0.1]) {
+    final hsl = HSLColor.fromColor(this);
+    final saturation = (hsl.saturation + amount).clamp(0.0, 1.0);
+    return hsl.withSaturation(saturation).toColor();
+  }
+
+  /// إزالة التشبع
+  Color desaturate([double amount = 0.1]) {
+    final hsl = HSLColor.fromColor(this);
+    final saturation = (hsl.saturation - amount).clamp(0.0, 1.0);
+    return hsl.withSaturation(saturation).toColor();
   }
 }
 
-/// Extensions للنصوص
+/// امتدادات أنماط النص - تخصيص سريع
 extension TextStyleExtensions on TextStyle {
+  // ===== أوزان الخط =====
   TextStyle get bold => copyWith(fontWeight: ThemeConstants.bold);
   TextStyle get semiBold => copyWith(fontWeight: ThemeConstants.semiBold);
   TextStyle get medium => copyWith(fontWeight: ThemeConstants.medium);
   TextStyle get regular => copyWith(fontWeight: ThemeConstants.regular);
   TextStyle get light => copyWith(fontWeight: ThemeConstants.light);
 
+  // ===== خصائص النص =====
   TextStyle size(double fontSize) => copyWith(fontSize: fontSize);
   TextStyle textColor(Color color) => copyWith(color: color);
   TextStyle withHeight(double height) => copyWith(height: height);
   TextStyle withSpacing(double letterSpacing) => copyWith(letterSpacing: letterSpacing);
   
+  // ===== تأثيرات النص =====
   TextStyle get italic => copyWith(fontStyle: FontStyle.italic);
   TextStyle get underline => copyWith(decoration: TextDecoration.underline);
   TextStyle get lineThrough => copyWith(decoration: TextDecoration.lineThrough);
+  
+  /// ظل للنص
+  TextStyle withShadow({
+    Color color = Colors.black26,
+    Offset offset = const Offset(0, 2),
+    double blurRadius = 4,
+  }) {
+    return copyWith(
+      shadows: [
+        Shadow(
+          color: color,
+          offset: offset,
+          blurRadius: blurRadius,
+        ),
+      ],
+    );
+  }
 }
 
-/// Extensions للحواف
+/// امتدادات الحواف - عمليات على EdgeInsets
 extension EdgeInsetsExtensions on EdgeInsets {
   EdgeInsets add(EdgeInsets other) => EdgeInsets.only(
     left: left + other.left,
@@ -166,22 +199,22 @@ extension EdgeInsetsExtensions on EdgeInsets {
     bottom: (bottom - other.bottom).clamp(0.0, double.infinity),
   );
 
-  EdgeInsets get copyWith => EdgeInsets.only(
-    left: left,
-    top: top,
-    right: right,
-    bottom: bottom,
+  EdgeInsets scale(double factor) => EdgeInsets.only(
+    left: left * factor,
+    top: top * factor,
+    right: right * factor,
+    bottom: bottom * factor,
   );
 }
 
-/// Extensions للأرقام - لإنشاء widgets بسرعة
+/// امتدادات الأرقام - بناء widgets سريع
 extension NumberExtensions on num {
-  // مسافات
+  // ===== مسافات =====
   SizedBox get w => SizedBox(width: toDouble());
   SizedBox get h => SizedBox(height: toDouble());
   SizedBox get wh => SizedBox(width: toDouble(), height: toDouble());
 
-  // حشوات
+  // ===== حشوات =====
   EdgeInsets get all => EdgeInsets.all(toDouble());
   EdgeInsets get horizontal => EdgeInsets.symmetric(horizontal: toDouble());
   EdgeInsets get vertical => EdgeInsets.symmetric(vertical: toDouble());
@@ -190,7 +223,7 @@ extension NumberExtensions on num {
   EdgeInsets get right => EdgeInsets.only(right: toDouble());
   EdgeInsets get bottom => EdgeInsets.only(bottom: toDouble());
 
-  // زوايا دائرية
+  // ===== زوايا دائرية =====
   BorderRadius get circular => BorderRadius.circular(toDouble());
   BorderRadius get topCircular => BorderRadius.only(
     topLeft: Radius.circular(toDouble()),
@@ -201,18 +234,21 @@ extension NumberExtensions on num {
     bottomRight: Radius.circular(toDouble()),
   );
 
-  /// إنشاء SliverToBoxAdapter للمسافات العمودية - الإصلاح المطلوب
+  // ===== Slivers =====
   Widget get sliverBox => SliverToBoxAdapter(
     child: SizedBox(height: toDouble()),
   );
   
-  /// إنشاء SliverToBoxAdapter للمسافات الأفقية
   Widget get sliverBoxHorizontal => SliverToBoxAdapter(
     child: SizedBox(width: toDouble()),
   );
+
+  // ===== مدة زمنية =====
+  Duration get milliseconds => Duration(milliseconds: toInt());
+  Duration get seconds => Duration(seconds: toInt());
 }
 
-/// Extensions للـ Lists
+/// امتدادات القوائم - عمليات على Lists
 extension ListExtensions<T> on List<T> {
   /// فصل العناصر بـ separator
   List<T> separated(T separator) {
@@ -227,30 +263,43 @@ extension ListExtensions<T> on List<T> {
     }
     return result;
   }
+
+  /// إدراج separator بين العناصر
+  List<Widget> separatedBy(Widget separator) {
+    if (whereType<Widget>().isEmpty) return <Widget>[];
+    
+    final widgets = whereType<Widget>().toList();
+    final result = <Widget>[];
+    
+    for (var i = 0; i < widgets.length; i++) {
+      result.add(widgets[i]);
+      if (i < widgets.length - 1) {
+        result.add(separator);
+      }
+    }
+    return result;
+  }
 }
 
-/// Extensions للـ Widgets
+/// امتدادات الـ Widgets - تحسينات سريعة
 extension WidgetExtensions on Widget {
-  /// إضافة padding
+  // ===== التخطيط =====
   Widget padded(EdgeInsetsGeometry padding) => Padding(
     padding: padding,
     child: this,
   );
 
-  /// توسيط Widget
   Widget get centered => Center(child: this);
 
-  /// إضافة Expanded
   Widget get expanded => Expanded(child: this);
 
-  /// إضافة Flexible
   Widget flexible({int flex = 1, FlexFit fit = FlexFit.loose}) => Flexible(
     flex: flex,
     fit: fit,
     child: this,
   );
 
-  /// إضافة حاوية
+  // ===== الحاويات =====
   Widget container({
     EdgeInsetsGeometry? padding,
     EdgeInsetsGeometry? margin,
@@ -268,7 +317,7 @@ extension WidgetExtensions on Widget {
     child: this,
   );
 
-  /// إضافة InkWell
+  // ===== التفاعل =====
   Widget inkWell({
     VoidCallback? onTap,
     VoidCallback? onLongPress,
@@ -280,9 +329,19 @@ extension WidgetExtensions on Widget {
     child: this,
   );
 
-  /// إضافة تأثير تلاشي - مع التأكد من صحة قيمة opacity
+  Widget gestureDetector({
+    VoidCallback? onTap,
+    VoidCallback? onLongPress,
+    VoidCallback? onDoubleTap,
+  }) => GestureDetector(
+    onTap: onTap,
+    onLongPress: onLongPress,
+    onDoubleTap: onDoubleTap,
+    child: this,
+  );
+
+  // ===== التأثيرات =====
   Widget opacity(double opacity) {
-    // التأكد من أن القيمة في النطاق الصحيح
     final safeOpacity = opacity.clamp(0.0, 1.0);
     return Opacity(
       opacity: safeOpacity,
@@ -290,15 +349,156 @@ extension WidgetExtensions on Widget {
     );
   }
 
-  /// إضافة دوران
   Widget rotate(double angle) => Transform.rotate(
     angle: angle,
     child: this,
   );
 
-  /// إضافة تحجيم
   Widget scale(double scale) => Transform.scale(
     scale: scale,
     child: this,
   );
+
+  // ===== الحركات =====
+  Widget fadeIn({
+    Duration duration = ThemeConstants.durationNormal,
+    Curve curve = ThemeConstants.curveDefault,
+  }) => AnimatedOpacity(
+    opacity: 1.0,
+    duration: duration,
+    curve: curve,
+    child: this,
+  );
+
+  Widget slideInFromBottom({
+    Duration duration = ThemeConstants.durationNormal,
+    Curve curve = ThemeConstants.curveDefault,
+  }) => AnimatedSlide(
+    offset: Offset.zero,
+    duration: duration,
+    curve: curve,
+    child: this,
+  );
+
+  // ===== الأمان =====
+  Widget safeArea({
+    bool top = true,
+    bool bottom = true,
+    bool left = true,
+    bool right = true,
+  }) => SafeArea(
+    top: top,
+    bottom: bottom,
+    left: left,
+    right: right,
+    child: this,
+  );
+
+  // ===== التمرير =====
+  Widget scrollable({
+    ScrollPhysics? physics,
+    EdgeInsetsGeometry? padding,
+  }) => SingleChildScrollView(
+    physics: physics,
+    padding: padding,
+    child: this,
+  );
+
+  // ===== الشرطية =====
+  Widget conditional(bool condition) => condition ? this : const SizedBox.shrink();
+
+  Widget conditionalWrap(bool condition, Widget Function(Widget) wrapper) {
+    return condition ? wrapper(this) : this;
+  }
+}
+
+/// امتدادات SnackBar - رسائل سريعة
+extension SnackBarExtensions on BuildContext {
+  void showSuccessSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
+    ScaffoldMessenger.of(this).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white, size: ThemeConstants.iconSm),
+            ThemeConstants.space2.w,
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: ThemeConstants.success,
+        duration: duration ?? const Duration(milliseconds: ThemeConstants.durationSlow),
+        action: action,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
+      ),
+    );
+  }
+
+  void showErrorSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
+    ScaffoldMessenger.of(this).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.white, size: ThemeConstants.iconSm),
+            ThemeConstants.space2.w,
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: ThemeConstants.error,
+        duration: duration ?? const Duration(milliseconds: ThemeConstants.durationSlow),
+        action: action,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
+      ),
+    );
+  }
+
+  void showInfoSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
+    ScaffoldMessenger.of(this).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.info_outline, color: Colors.white, size: ThemeConstants.iconSm),
+            ThemeConstants.space2.w,
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: ThemeConstants.info,
+        duration: duration ?? const Duration(milliseconds: ThemeConstants.durationSlow),
+        action: action,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
+      ),
+    );
+  }
+
+  void showWarningSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
+    ScaffoldMessenger.of(this).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Colors.black87, size: ThemeConstants.iconSm),
+            ThemeConstants.space2.w,
+            Expanded(child: Text(message, style: const TextStyle(color: Colors.black87))),
+          ],
+        ),
+        backgroundColor: ThemeConstants.warning,
+        duration: duration ?? const Duration(milliseconds: ThemeConstants.durationSlow),
+        action: action,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
+      ),
+    );
+  }
+
+  void hideSnackBars() {
+    ScaffoldMessenger.of(this).hideCurrentSnackBar();
+  }
 }
