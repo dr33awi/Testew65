@@ -1,7 +1,7 @@
 // lib/app/themes/components/app_app_bar.dart
 import 'package:flutter/material.dart';
-import '../app/themes/colors.dart';
-import '../app/themes/typography.dart';
+import '../colors.dart';
+import '../typography.dart';
 
 class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;

@@ -1,7 +1,7 @@
 // lib/app/themes/components/app_dialog.dart
 import 'package:flutter/material.dart';
-import '../app/themes/colors.dart';
-import '../app/themes/typography.dart';
+import '../colors.dart';
+import '../typography.dart';
 
 class AppDialog {
   static Future<bool?> show({
