@@ -18,7 +18,6 @@ class WelcomeMessage extends StatelessWidget {
       subtitle: timeData.timeString,
       gradientColors: timeData.gradient,
       showShadow: true,
-      enableBlur: true,
       padding: const EdgeInsets.all(ThemeConstants.space6),
       child: Column(
         children: [
@@ -96,7 +95,7 @@ class WelcomeMessage extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.access_time_rounded,
                     color: Colors.white,
                     size: ThemeConstants.iconSm,

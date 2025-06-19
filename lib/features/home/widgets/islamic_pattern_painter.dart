@@ -1,4 +1,4 @@
-// lib/features/home/widgets/enhanced_islamic_pattern_painter.dart
+// lib/features/home/widgets/islamic_pattern_painter.dart
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
@@ -48,7 +48,7 @@ class IslamicPatternPainter extends CustomPainter {
 
   void _drawGeometricPattern(Canvas canvas, double centerX, double centerY, Paint paint) {
     // رسم نمط هندسي معقد
-    final radius = 40.0;
+    const radius = 40.0;
     
     // دائرة مركزية
     canvas.drawCircle(Offset(centerX, centerY), radius / 3, paint);
@@ -73,9 +73,10 @@ class IslamicPatternPainter extends CustomPainter {
     final path = Path();
     
     for (int i = 0; i < 6; i++) {
-      final angle = (i * math.pi / 3);
-      final x = centerX + radius * math.cos(angle);
-      final y = centerY + radius * math.sin(angle);
+      const angle = (math.pi / 3);
+      final currentAngle = i * angle;
+      final x = centerX + radius * math.cos(currentAngle);
+      final y = centerY + radius * math.sin(currentAngle);
       
       if (i == 0) {
         path.moveTo(x, y);
@@ -90,22 +91,26 @@ class IslamicPatternPainter extends CustomPainter {
 
   void _drawOctagonalStars(Canvas canvas, Size size, Paint paint) {
     // رسم نجوم ثمانية في الزوايا
-    final positions = [
-      Offset(size.width * 0.15, size.height * 0.15),
-      Offset(size.width * 0.85, size.height * 0.15),
-      Offset(size.width * 0.15, size.height * 0.85),
-      Offset(size.width * 0.85, size.height * 0.85),
+    const positions = [
+      Offset(15, 15),
+      Offset(85, 15),
+      Offset(15, 85),
+      Offset(85, 85),
     ];
     
     for (final pos in positions) {
-      _drawEightPointedStar(canvas, pos, 15, paint);
+      final adjustedPos = Offset(
+        pos.dx * size.width / 100,
+        pos.dy * size.height / 100,
+      );
+      _drawEightPointedStar(canvas, adjustedPos, 15, paint);
     }
   }
 
   void _drawEightPointedStar(Canvas canvas, Offset center, double radius, Paint paint) {
     final path = Path();
     const int points = 8;
-    final double angle = 2 * math.pi / points;
+    const double angle = 2 * math.pi / points;
     
     for (int i = 0; i < points; i++) {
       final outerAngle = i * angle - math.pi / 2 + (animation * math.pi / 4);

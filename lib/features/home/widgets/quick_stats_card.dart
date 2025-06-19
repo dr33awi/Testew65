@@ -185,7 +185,6 @@ class _QuickStatsSectionState extends State<QuickStatsSection>
             style: CardStyle.gradient,
             gradientColors: ColorHelper.getProgressGradient(dailyProgress / 100).colors,
             showShadow: true,
-            enableBlur: true,
             onTap: () {
               HapticFeedback.lightImpact();
               // التنقل لصفحة الإحصائيات التفصيلية

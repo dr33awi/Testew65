@@ -114,7 +114,8 @@ class _UnifiedCategoryCard extends StatelessWidget {
     if (category.routeName != null) {
       Navigator.pushNamed(context, category.routeName!).catchError((error) {
         if (context.mounted) {
-          context.showWarningSnackBar('هذه الميزة قيد التطوير');
+          // استخدام امتداد الـ SnackBar الموحد الجديد
+          context.showAppWarningSnackBar('هذه الميزة قيد التطوير');
         }
         return null;
       });

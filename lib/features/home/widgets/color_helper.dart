@@ -92,7 +92,7 @@ class ColorHelper {
   /// الحصول على تدرج لوني حسب الفئة
   static LinearGradient getCategoryGradient(String categoryId) {
     final colors = _categoryGradients[categoryId.toLowerCase()] ?? 
-                  [ThemeConstants.primary, ThemeConstants.primaryLight];
+                  const [ThemeConstants.primary, ThemeConstants.primaryLight];
     
     return LinearGradient(
       colors: colors,
@@ -104,7 +104,7 @@ class ColorHelper {
   /// الحصول على تدرج لوني حسب نوع المحتوى
   static LinearGradient getContentGradient(String contentType) {
     final colors = _contentGradients[contentType.toLowerCase()] ?? 
-                  [ThemeConstants.primary, ThemeConstants.primaryLight];
+                  const [ThemeConstants.primary, ThemeConstants.primaryLight];
     
     return LinearGradient(
       colors: colors,
@@ -133,17 +133,17 @@ class ColorHelper {
     List<Color> colors;
     
     if (progress < 0.3) {
-      colors = [
-        ThemeConstants.error.withValues(alpha: 0.8), 
+      colors = const [
+        ThemeConstants.error, 
         ThemeConstants.warning,
       ];
     } else if (progress < 0.7) {
-      colors = [
+      colors = const [
         ThemeConstants.warning, 
         ThemeConstants.accent,
       ];
     } else {
-      colors = [
+      colors = const [
         ThemeConstants.success, 
         ThemeConstants.primary,
       ];
@@ -165,25 +165,25 @@ class ColorHelper {
     
     if (hour < 5) {
       // ليل عميق
-      colors = [ThemeConstants.darkBackground, ThemeConstants.darkCard];
+      colors = const [ThemeConstants.darkBackground, ThemeConstants.darkCard];
     } else if (hour < 8) {
       // فجر
-      colors = [ThemeConstants.primaryDark, ThemeConstants.primary];
+      colors = const [ThemeConstants.primaryDark, ThemeConstants.primary];
     } else if (hour < 12) {
       // صباح
-      colors = [ThemeConstants.accent, ThemeConstants.accentLight];
+      colors = const [ThemeConstants.accent, ThemeConstants.accentLight];
     } else if (hour < 15) {
       // ظهر
-      colors = [ThemeConstants.primary, ThemeConstants.primaryLight];
+      colors = const [ThemeConstants.primary, ThemeConstants.primaryLight];
     } else if (hour < 17) {
       // عصر
-      colors = [ThemeConstants.primaryLight, ThemeConstants.primarySoft];
+      colors = const [ThemeConstants.primaryLight, ThemeConstants.primarySoft];
     } else if (hour < 20) {
       // مغرب
-      colors = [ThemeConstants.tertiary, ThemeConstants.tertiaryLight];
+      colors = const [ThemeConstants.tertiary, ThemeConstants.tertiaryLight];
     } else {
       // عشاء ومساء
-      colors = [ThemeConstants.primaryDark, ThemeConstants.darkSurface];
+      colors = const [ThemeConstants.primaryDark, ThemeConstants.darkSurface];
     }
     
     return LinearGradient(
@@ -198,48 +198,48 @@ class ColorHelper {
     switch (prayerName.toLowerCase()) {
       case 'fajr':
       case 'الفجر':
-        return LinearGradient(
+        return const LinearGradient(
           colors: [ThemeConstants.primaryDark, ThemeConstants.primary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
       case 'dhuhr':
       case 'الظهر':
-        return LinearGradient(
+        return const LinearGradient(
           colors: [ThemeConstants.accent, ThemeConstants.accentLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
       case 'asr':
       case 'العصر':
-        return LinearGradient(
+        return const LinearGradient(
           colors: [ThemeConstants.primaryLight, ThemeConstants.primarySoft],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
       case 'maghrib':
       case 'المغرب':
-        return LinearGradient(
+        return const LinearGradient(
           colors: [ThemeConstants.tertiary, ThemeConstants.tertiaryLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
       case 'isha':
       case 'العشاء':
-        return LinearGradient(
+        return const LinearGradient(
           colors: [ThemeConstants.darkCard, ThemeConstants.darkBackground],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
       case 'sunrise':
       case 'الشروق':
-        return LinearGradient(
+        return const LinearGradient(
           colors: [ThemeConstants.accentLight, ThemeConstants.accent],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
       default:
-        return LinearGradient(
+        return const LinearGradient(
           colors: [ThemeConstants.primary, ThemeConstants.primaryLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -256,16 +256,16 @@ class ColorHelper {
     
     if (month >= 12 || month <= 2) {
       // شتاء
-      colors = [const Color(0xFF1E3A8A), const Color(0xFF3B82F6)];
+      colors = const [Color(0xFF1E3A8A), Color(0xFF3B82F6)];
     } else if (month >= 3 && month <= 5) {
       // ربيع
-      colors = [ThemeConstants.success, ThemeConstants.successLight];
+      colors = const [ThemeConstants.success, ThemeConstants.successLight];
     } else if (month >= 6 && month <= 8) {
       // صيف
-      colors = [ThemeConstants.warning, ThemeConstants.warningLight];
+      colors = const [ThemeConstants.warning, ThemeConstants.warningLight];
     } else {
       // خريف
-      colors = [ThemeConstants.tertiary, ThemeConstants.tertiaryLight];
+      colors = const [ThemeConstants.tertiary, ThemeConstants.tertiaryLight];
     }
     
     return LinearGradient(
@@ -277,7 +277,7 @@ class ColorHelper {
 
   /// الحصول على ألوان متناسقة للرسوم البيانية
   static List<Color> getChartColors({int count = 5}) {
-    final baseColors = [
+    const baseColors = [
       ThemeConstants.primary,
       ThemeConstants.accent,
       ThemeConstants.tertiary,
@@ -310,46 +310,49 @@ class ColorHelper {
 
   /// الحصول على تدرج لوني للخلفية حسب السياق
   static LinearGradient getContextualGradient(BuildContext context, String type) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
     switch (type.toLowerCase()) {
       case 'success':
         return LinearGradient(
-          colors: isDark
-              ? [ThemeConstants.success.withValues(alpha: 0.2), ThemeConstants.success.withValues(alpha: 0.1)]
-              : [ThemeConstants.success.withValues(alpha: 0.1), ThemeConstants.success.withValues(alpha: 0.05)],
+          colors: [
+            ThemeConstants.success.withValues(alpha: 0.1), 
+            ThemeConstants.success.withValues(alpha: 0.05)
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
       case 'error':
         return LinearGradient(
-          colors: isDark
-              ? [ThemeConstants.error.withValues(alpha: 0.2), ThemeConstants.error.withValues(alpha: 0.1)]
-              : [ThemeConstants.error.withValues(alpha: 0.1), ThemeConstants.error.withValues(alpha: 0.05)],
+          colors: [
+            ThemeConstants.error.withValues(alpha: 0.1), 
+            ThemeConstants.error.withValues(alpha: 0.05)
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
       case 'warning':
         return LinearGradient(
-          colors: isDark
-              ? [ThemeConstants.warning.withValues(alpha: 0.2), ThemeConstants.warning.withValues(alpha: 0.1)]
-              : [ThemeConstants.warning.withValues(alpha: 0.1), ThemeConstants.warning.withValues(alpha: 0.05)],
+          colors: [
+            ThemeConstants.warning.withValues(alpha: 0.1), 
+            ThemeConstants.warning.withValues(alpha: 0.05)
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
       case 'info':
         return LinearGradient(
-          colors: isDark
-              ? [ThemeConstants.info.withValues(alpha: 0.2), ThemeConstants.info.withValues(alpha: 0.1)]
-              : [ThemeConstants.info.withValues(alpha: 0.1), ThemeConstants.info.withValues(alpha: 0.05)],
+          colors: [
+            ThemeConstants.info.withValues(alpha: 0.1), 
+            ThemeConstants.info.withValues(alpha: 0.05)
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
       default:
         return LinearGradient(
-          colors: isDark
-              ? [ThemeConstants.primary.withValues(alpha: 0.2), ThemeConstants.primary.withValues(alpha: 0.1)]
-              : [ThemeConstants.primary.withValues(alpha: 0.1), ThemeConstants.primary.withValues(alpha: 0.05)],
+          colors: [
+            ThemeConstants.primary.withValues(alpha: 0.1), 
+            ThemeConstants.primary.withValues(alpha: 0.05)
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         );
@@ -363,7 +366,6 @@ class ColorHelper {
     Color? baseColor,
   }) {
     final color = baseColor ?? ThemeConstants.primary;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     double opacity = 0.05;
     if (isPressed) {
@@ -384,9 +386,9 @@ class ColorHelper {
 
   /// الحصول على ألوان للتقويم الهجري
   static Map<String, Color> getHijriCalendarColors() {
-    return {
-      'muharram': const Color(0xFF1F2937),
-      'safar': const Color(0xFF374151),
+    return const {
+      'muharram': Color(0xFF1F2937),
+      'safar': Color(0xFF374151),
       'rabi_al_awwal': ThemeConstants.success,
       'rabi_al_thani': ThemeConstants.successLight,
       'jumada_al_awwal': ThemeConstants.primary,

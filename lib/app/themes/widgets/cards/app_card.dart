@@ -1,6 +1,7 @@
 // lib/app/themes/widgets/cards/app_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui';
 import '../../theme_constants.dart';
 import '../../core/theme_extensions.dart';
 
@@ -37,7 +38,7 @@ class CardAction {
     required this.onPressed,
     this.color,
     this.isPrimary = false,
-  });
+});
 }
 
 /// بطاقة موحدة ومحسنة للتطبيق
@@ -74,6 +75,7 @@ class AppCard extends StatelessWidget {
   final double? elevation;
   final bool isSelected;
   final bool showShadow;
+  final bool enableBlur; // إضافة الخاصية المفقودة
   
   // خصائص خاصة
   final int? currentCount;
@@ -110,6 +112,7 @@ class AppCard extends StatelessWidget {
     this.elevation,
     this.isSelected = false,
     this.showShadow = true,
+    this.enableBlur = false, // إضافة القيمة الافتراضية
     this.currentCount,
     this.totalCount,
     this.isFavorite,
@@ -130,6 +133,7 @@ class AppCard extends StatelessWidget {
       borderRadius: borderRadius ?? ThemeConstants.radiusLg,
       elevation: elevation,
       showShadow: showShadow,
+      enableBlur: enableBlur, // تمرير الخاصية
       margin: margin ?? _getDefaultMargin(),
       onTap: onTap,
       onLongPress: onLongPress,
@@ -411,6 +415,7 @@ class _CardContainer extends StatelessWidget {
   final double borderRadius;
   final double? elevation;
   final bool showShadow;
+  final bool enableBlur;
   final EdgeInsetsGeometry? margin;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
@@ -424,6 +429,7 @@ class _CardContainer extends StatelessWidget {
     required this.borderRadius,
     this.elevation,
     required this.showShadow,
+    required this.enableBlur,
     this.margin,
     this.onTap,
     this.onLongPress,
@@ -431,7 +437,7 @@ class _CardContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    Widget container = Container(
       margin: margin,
       child: Material(
         elevation: showShadow ? (elevation ?? _getDefaultElevation()) : 0,
@@ -450,6 +456,19 @@ class _CardContainer extends StatelessWidget {
         ),
       ),
     );
+
+    // تطبيق تأثير الضبابية إذا طُلب
+    if (enableBlur) {
+      container = ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: container,
+        ),
+      );
+    }
+
+    return container;
   }
 
   BoxDecoration _getDecoration(BuildContext context) {

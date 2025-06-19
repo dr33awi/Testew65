@@ -117,7 +117,7 @@ extension ColorExtensions on Color {
 
   /// تحويل إلى Material Color
   MaterialColor toMaterialColor() {
-    final strengths = <double>[.05, .1, .2, .3, .4, .5, .6, .7, .8, .9];
+    const strengths = <double>[.05, .1, .2, .3, .4, .5, .6, .7, .8, .9];
     final swatch = <int, Color>{};
     
     for (var i = 0; i < strengths.length; i++) {
@@ -127,7 +127,7 @@ extension ColorExtensions on Color {
           : darken(strength - 0.5);
     }
     
-    return MaterialColor(toARGB32(), swatch);  // إصلاح: استبدال value بـ toARGB32()
+    return MaterialColor(toARGB32(), swatch);
   }
 
   /// تشبع اللون
@@ -412,9 +412,9 @@ extension WidgetExtensions on Widget {
   }
 }
 
-/// امتدادات SnackBar - رسائل سريعة
-extension SnackBarExtensions on BuildContext {
-  void showSuccessSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
+/// امتدادات SnackBar - رسائل سريعة (بدون تضارب)
+extension AppSnackBarExtensions on BuildContext {
+  void showAppSuccessSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(
         content: Row(
@@ -435,7 +435,7 @@ extension SnackBarExtensions on BuildContext {
     );
   }
 
-  void showErrorSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
+  void showAppErrorSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(
         content: Row(
@@ -456,7 +456,7 @@ extension SnackBarExtensions on BuildContext {
     );
   }
 
-  void showInfoSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
+  void showAppInfoSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(
         content: Row(
@@ -477,7 +477,7 @@ extension SnackBarExtensions on BuildContext {
     );
   }
 
-  void showWarningSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
+  void showAppWarningSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(
         content: Row(
@@ -498,7 +498,7 @@ extension SnackBarExtensions on BuildContext {
     );
   }
 
-  void hideSnackBars() {
+  void hideAppSnackBars() {
     ScaffoldMessenger.of(this).hideCurrentSnackBar();
   }
 }
