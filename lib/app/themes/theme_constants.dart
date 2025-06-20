@@ -239,29 +239,29 @@ class ThemeConstants {
   }
   
   /// الحصول على أيقونة الصلاة
-  static IconData getPrayerIcon(String prayerName) {
-    final normalizedName = prayerName.toLowerCase();
-    
-    switch (normalizedName) {
-      case 'الفجر':
-      case 'fajr':
-        return Icons.wb_twilight;
-      case 'الظهر':
-      case 'dhuhr':
-        return Icons.wb_sunny;
-      case 'العصر':
-      case 'asr':
-        return Icons.wb_cloudy;
-      case 'المغرب':
-      case 'maghrib':
-        return Icons.sunset;
-      case 'العشاء':
-      case 'isha':
-        return Icons.nights_stay;
-      default:
-        return Icons.mosque;
-    }
+static IconData getPrayerIcon(String prayerName) {
+  final normalizedName = prayerName.toLowerCase();
+  
+  switch (normalizedName) {
+    case 'الفجر':
+    case 'fajr':
+      return Icons.wb_twilight;
+    case 'الظهر':
+    case 'dhuhr':
+      return Icons.wb_sunny;
+    case 'العصر':
+    case 'asr':
+      return Icons.wb_cloudy;
+    case 'المغرب':
+    case 'maghrib':
+      return Icons.brightness_3;
+    case 'العشاء':
+    case 'isha':
+      return Icons.nights_stay;
+    default:
+      return Icons.place;
   }
+}
   
   /// الحصول على تدرج للصلاة مع اسم
   static LinearGradient prayerGradient(String prayerName) {

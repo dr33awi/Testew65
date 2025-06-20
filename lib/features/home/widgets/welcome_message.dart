@@ -274,7 +274,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
     } else if (hour >= 12 && hour < 17) {
       return Icons.wb_cloudy; // ظهيرة
     } else if (hour >= 17 && hour < 20) {
-      return Icons.sunset; // مساء
+      return Icons.brightness_3; // مساء
     } else {
       return Icons.nights_stay; // ليل
     }

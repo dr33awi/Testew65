@@ -417,8 +417,13 @@ extension ColorExtensions on Color {
     return withValues(alpha: alpha);
   }
   
-  /// تحويل إلى نص hex
+  /// تحويل إلى نص hex - FIXED VERSION
   String toHex() {
-    return '#${(0xFF000000 | value).toRadixString(16).substring(2).toUpperCase()}';
+    // Fixed: Use component accessors instead of deprecated 'value'
+    final argb = (a * 255).round() << 24 |
+                 (r * 255).round() << 16 |
+                 (g * 255).round() << 8 |
+                 (b * 255).round();
+    return '#${argb.toRadixString(16).substring(2).toUpperCase()}';
   }
 }

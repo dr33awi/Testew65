@@ -1,10 +1,10 @@
 // lib/features/prayer_times/screens/prayer_settings_screen.dart
+
 import 'package:flutter/material.dart';
 import '../../../app/themes/index.dart';
 import '../../../app/di/service_locator.dart';
-import '../../../core/infrastructure/services/logging/logger_service.dart';
-import '../services/prayer_times_service.dart';
 import '../models/prayer_time_model.dart';
+import '../services/prayer_times_service.dart';
 
 class PrayerSettingsScreen extends StatefulWidget {
   const PrayerSettingsScreen({super.key});
@@ -14,494 +14,503 @@ class PrayerSettingsScreen extends StatefulWidget {
 }
 
 class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
-  late final LoggerService _logger;
   late final PrayerTimesService _prayerService;
-  
-  // إعدادات الحساب
-  late PrayerCalculationSettings _calculationSettings;
-  
-  // حالة التحميل
+  late PrayerCalculationSettings _settings;
   bool _isLoading = true;
   bool _isSaving = false;
-  bool _hasChanges = false;
+
+  // Controllers للتعديلات اليدوية
+  final Map<String, TextEditingController> _adjustmentControllers = {};
 
   @override
   void initState() {
     super.initState();
-    _initializeServices();
-    _loadSettings();
+    _prayerService = getService<PrayerTimesService>();
+    _loadCurrentSettings();
   }
 
-  void _initializeServices() {
-    _logger = getIt<LoggerService>();
-    _prayerService = getIt<PrayerTimesService>();
+  @override
+  void dispose() {
+    for (final controller in _adjustmentControllers.values) {
+      controller.dispose();
+    }
+    super.dispose();
   }
 
-  void _loadSettings() {
+  Future<void> _loadCurrentSettings() async {
     setState(() {
-      _calculationSettings = _prayerService.calculationSettings;
-      _isLoading = false;
+      _isLoading = true;
     });
+
+    try {
+      _settings = _prayerService.calculationSettings;
+      _initializeControllers();
+      
+      setState(() {
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      
+      if (mounted) {
+        context.showErrorMessage('فشل تحميل الإعدادات');
+      }
+    }
   }
 
-  void _markAsChanged() {
-    setState(() {
-      _hasChanges = true;
-    });
+  void _initializeControllers() {
+    final prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+    for (final prayer in prayers) {
+      final adjustment = _settings.manualAdjustments[prayer] ?? 0;
+      _adjustmentControllers[prayer] = TextEditingController(
+        text: adjustment.toString(),
+      );
+    }
   }
 
   Future<void> _saveSettings() async {
-    setState(() => _isSaving = true);
-    
+    setState(() {
+      _isSaving = true;
+    });
+
     try {
-      // حفظ إعدادات الحساب
-      await _prayerService.updateCalculationSettings(_calculationSettings);
-      
-      _logger.logEvent('prayer_settings_updated', parameters: {
-        'calculation_method': _calculationSettings.method.toString(),
-      });
-      
-      if (!mounted) return;
-      
-      context.showSuccessMessage('تم حفظ الإعدادات بنجاح');
-      setState(() {
-        _hasChanges = false;
-      });
-      
-      // العودة للشاشة السابقة
-      Navigator.pop(context);
-    } catch (e) {
-      _logger.error(
-        message: 'خطأ في حفظ الإعدادات',
-        error: e,
-      );
-      
-      if (!mounted) return;
-      
-      context.showErrorMessage('فشل حفظ الإعدادات');
-    } finally {
-      if (mounted) {
-        setState(() => _isSaving = false);
+      // تحديث التعديلات اليدوية
+      final adjustments = <String, int>{};
+      for (final entry in _adjustmentControllers.entries) {
+        final value = int.tryParse(entry.value.text) ?? 0;
+        adjustments[entry.key] = value;
       }
+
+      final updatedSettings = _settings.copyWith(
+        manualAdjustments: adjustments,
+      );
+
+      await _prayerService.updateCalculationSettings(updatedSettings);
+      
+      if (mounted) {
+        context.showSuccessMessage('تم حفظ الإعدادات بنجاح');
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        context.showErrorMessage('فشل حفظ الإعدادات');
+      }
+    } finally {
+      setState(() {
+        _isSaving = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.backgroundColor,
       appBar: IslamicAppBar(
-        title: 'إعدادات مواقيت الصلاة',
+        title: 'إعدادات الحساب',
         actions: [
-          if (_hasChanges && !_isSaving)
+          if (!_isLoading)
             IconButton(
-              icon: const Icon(Icons.save),
-              onPressed: _saveSettings,
-              tooltip: 'حفظ التغييرات',
+              onPressed: _isSaving ? null : _saveSettings,
+              icon: _isSaving
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: context.primaryColor,
+                      ),
+                    )
+                  : const Icon(Icons.save),
+              tooltip: 'حفظ الإعدادات',
             ),
         ],
-        leading: BackButton(
-          onPressed: () {
-            if (_hasChanges) {
-              _showUnsavedChangesDialog();
-            } else {
-              Navigator.pop(context);
-            }
-          },
-        ),
       ),
       body: _isLoading
-          ? const Center(child: IslamicLoading(message: 'جاري التحميل...'))
-          : CustomScrollView(
-              slivers: [
-                // إعدادات طريقة الحساب
-                SliverToBoxAdapter(
-                  child: _buildCalculationSection(),
-                ),
-                
-                // إعدادات المذهب
-                SliverToBoxAdapter(
-                  child: _buildJuristicSection(),
-                ),
-                
-                // تعديلات يدوية
-                SliverToBoxAdapter(
-                  child: _buildManualAdjustmentsSection(),
-                ),
-                
-                // زر الحفظ
-                SliverToBoxAdapter(
-                  child: _buildSaveButton(),
-                ),
-                
-                // مساحة في الأسفل
-                const SliverToBoxAdapter(
-                  child: VSpace(ThemeConstants.spaceXl),
-                ),
-              ],
-            ),
+          ? const Center(child: IslamicLoading(message: 'جارٍ تحميل الإعدادات...'))
+          : _buildSettingsContent(),
     );
   }
 
-  void _showUnsavedChangesDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('تغييرات غير محفوظة'),
-        content: const Text('لديك تغييرات لم يتم حفظها. هل تريد حفظ التغييرات قبل المغادرة؟'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            child: const Text('تجاهل التغييرات'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _saveSettings();
-            },
-            child: const Text('حفظ وخروج'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCalculationSection() {
-    return SettingsSection(
-      title: 'طريقة الحساب',
-      icon: Icons.calculate,
+  Widget _buildSettingsContent() {
+    return ListView(
+      padding: EdgeInsets.all(context.mediumPadding),
       children: [
-        _buildCalculationMethodTile(),
+        // طريقة الحساب
+        _buildCalculationMethodSection(),
+        
+        Spaces.large,
+        
+        // المذهب الفقهي
+        _buildJuristicSection(),
+        
+        Spaces.large,
+        
+        // زوايا الحساب (للطريقة المخصصة)
+        if (_settings.method == CalculationMethod.other)
+          _buildAnglesSection(),
+        
+        Spaces.large,
+        
+        // التعديلات اليدوية
+        _buildManualAdjustmentsSection(),
+        
+        Spaces.large,
+        
+        // إعدادات إضافية
+        _buildAdditionalSettings(),
+        
+        // مساحة إضافية
+        const SizedBox(height: 100),
       ],
     );
   }
 
-  Widget _buildCalculationMethodTile() {
-    final methodNames = {
-      CalculationMethod.muslimWorldLeague: 'رابطة العالم الإسلامي',
-      CalculationMethod.egyptian: 'الهيئة المصرية العامة للمساحة',
-      CalculationMethod.karachi: 'جامعة العلوم الإسلامية، كراتشي',
-      CalculationMethod.ummAlQura: 'أم القرى',
-      CalculationMethod.dubai: 'دبي',
-      CalculationMethod.qatar: 'قطر',
-      CalculationMethod.kuwait: 'الكويت',
-      CalculationMethod.singapore: 'سنغافورة',
-      CalculationMethod.northAmerica: 'الجمعية الإسلامية لأمريكا الشمالية',
-      CalculationMethod.other: 'أخرى',
-    };
-    
-    return ListTile(
-      title: const Text('طريقة الحساب'),
-      subtitle: Text(methodNames[_calculationSettings.method] ?? ''),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () {
-        _showCalculationMethodDialog();
-      },
-    );
-  }
-
-  void _showCalculationMethodDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => CalculationMethodDialog(
-        currentMethod: _calculationSettings.method,
-        onMethodSelected: (method) {
-          setState(() {
-            _calculationSettings = _calculationSettings.copyWith(
-              method: method,
+  Widget _buildCalculationMethodSection() {
+    return IslamicCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.calculate,
+                color: context.primaryColor,
+              ),
+              Spaces.smallH,
+              Text(
+                'طريقة الحساب',
+                style: context.titleStyle,
+              ),
+            ],
+          ),
+          
+          Spaces.medium,
+          
+          Text(
+            'اختر طريقة حساب مواقيت الصلاة المناسبة لمنطقتك',
+            style: context.bodyStyle.copyWith(
+              color: context.secondaryTextColor,
+            ),
+          ),
+          
+          Spaces.medium,
+          
+          ...CalculationMethod.values.map((method) {
+            return RadioListTile<CalculationMethod>(
+              title: Text(_getMethodName(method)),
+              subtitle: Text(_getMethodDescription(method)),
+              value: method,
+              groupValue: _settings.method,
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _settings = _settings.copyWith(method: value);
+                  });
+                }
+              },
+              contentPadding: EdgeInsets.zero,
             );
-            _markAsChanged();
-          });
-          Navigator.pop(context);
-        },
+          }),
+        ],
       ),
     );
   }
 
   Widget _buildJuristicSection() {
-    return SettingsSection(
-      title: 'المذهب الفقهي',
-      icon: Icons.school,
+    return IslamicCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.school,
+                color: context.secondaryColor,
+              ),
+              Spaces.smallH,
+              Text(
+                'المذهب الفقهي',
+                style: context.titleStyle,
+              ),
+            ],
+          ),
+          
+          Spaces.medium,
+          
+          Text(
+            'اختر المذهب الفقهي لحساب وقت صلاة العصر',
+            style: context.bodyStyle.copyWith(
+              color: context.secondaryTextColor,
+            ),
+          ),
+          
+          Spaces.medium,
+          
+          RadioListTile<AsrJuristic>(
+            title: const Text('الجمهور (الشافعي، المالكي، الحنبلي)'),
+            subtitle: const Text('عندما يصبح ظل الشيء مثله'),
+            value: AsrJuristic.standard,
+            groupValue: _settings.asrJuristic,
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  _settings = _settings.copyWith(asrJuristic: value);
+                });
+              }
+            },
+            contentPadding: EdgeInsets.zero,
+          ),
+          
+          RadioListTile<AsrJuristic>(
+            title: const Text('الحنفي'),
+            subtitle: const Text('عندما يصبح ظل الشيء ضعفه'),
+            value: AsrJuristic.hanafi,
+            groupValue: _settings.asrJuristic,
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  _settings = _settings.copyWith(asrJuristic: value);
+                });
+              }
+            },
+            contentPadding: EdgeInsets.zero,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnglesSection() {
+    return IslamicCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.architecture,
+                color: context.infoColor,
+              ),
+              Spaces.smallH,
+              Text(
+                'زوايا الحساب المخصصة',
+                style: context.titleStyle,
+              ),
+            ],
+          ),
+          
+          Spaces.medium,
+          
+          Row(
+            children: [
+              Expanded(
+                child: _buildAngleField(
+                  'زاوية الفجر',
+                  _settings.fajrAngle,
+                  (value) => _settings = _settings.copyWith(fajrAngle: value),
+                ),
+              ),
+              Spaces.mediumH,
+              Expanded(
+                child: _buildAngleField(
+                  'زاوية العشاء',
+                  _settings.ishaAngle,
+                  (value) => _settings = _settings.copyWith(ishaAngle: value),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAngleField(String label, int currentValue, Function(int) onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        RadioListTile<AsrJuristic>(
-          title: const Text('الجمهور'),
-          subtitle: const Text('الشافعي، المالكي، الحنبلي'),
-          value: AsrJuristic.standard,
-          groupValue: _calculationSettings.asrJuristic,
-          onChanged: (value) {
-            if (value != null) {
-              setState(() {
-                _calculationSettings = _calculationSettings.copyWith(
-                  asrJuristic: value,
-                );
-                _markAsChanged();
-              });
-            }
-          },
-          activeColor: context.primaryColor,
+        Text(
+          label,
+          style: context.bodyStyle.medium,
         ),
-        RadioListTile<AsrJuristic>(
-          title: const Text('الحنفي'),
-          subtitle: const Text('المذهب الحنفي'),
-          value: AsrJuristic.hanafi,
-          groupValue: _calculationSettings.asrJuristic,
+        Spaces.small,
+        IslamicInput(
+          keyboardType: TextInputType.number,
+          controller: TextEditingController(text: currentValue.toString()),
           onChanged: (value) {
-            if (value != null) {
-              setState(() {
-                _calculationSettings = _calculationSettings.copyWith(
-                  asrJuristic: value,
-                );
-                _markAsChanged();
-              });
+            final intValue = int.tryParse(value);
+            if (intValue != null && intValue >= 10 && intValue <= 25) {
+              onChanged(intValue);
             }
           },
-          activeColor: context.primaryColor,
+          suffixIcon: Icons.straighten,
         ),
       ],
     );
   }
 
   Widget _buildManualAdjustmentsSection() {
-    return SettingsSection(
-      title: 'تعديلات يدوية',
-      icon: Icons.tune,
-      subtitle: 'تعديل أوقات الصلاة بالدقائق',
-      children: [
-        _buildAdjustmentTile('الفجر', 'fajr'),
-        _buildAdjustmentTile('الشروق', 'sunrise'),
-        _buildAdjustmentTile('الظهر', 'dhuhr'),
-        _buildAdjustmentTile('العصر', 'asr'),
-        _buildAdjustmentTile('المغرب', 'maghrib'),
-        _buildAdjustmentTile('العشاء', 'isha'),
-      ],
-    );
-  }
+    final prayers = [
+      {'key': 'fajr', 'name': 'الفجر'},
+      {'key': 'dhuhr', 'name': 'الظهر'},
+      {'key': 'asr', 'name': 'العصر'},
+      {'key': 'maghrib', 'name': 'المغرب'},
+      {'key': 'isha', 'name': 'العشاء'},
+    ];
 
-  Widget _buildAdjustmentTile(String name, String key) {
-    final adjustment = _calculationSettings.manualAdjustments[key] ?? 0;
-    
-    return ListTile(
-      title: Text(name),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
+    return IslamicCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          IconButton(
-            icon: const Icon(Icons.remove_circle_outline),
-            color: context.primaryColor,
-            onPressed: () {
-              _updateAdjustment(key, adjustment - 1);
-            },
-          ),
-          SizedBox(
-            width: 50,
-            child: Text(
-              adjustment > 0 ? '+$adjustment' : adjustment.toString(),
-              textAlign: TextAlign.center,
-              style: context.titleStyle.copyWith(
-                fontWeight: ThemeConstants.fontSemiBold,
-              ),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline),
-            color: context.primaryColor,
-            onPressed: () {
-              _updateAdjustment(key, adjustment + 1);
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _updateAdjustment(String key, int value) {
-    setState(() {
-      final adjustments = Map<String, int>.from(
-        _calculationSettings.manualAdjustments,
-      );
-      adjustments[key] = value.clamp(-30, 30);
-      
-      _calculationSettings = _calculationSettings.copyWith(
-        manualAdjustments: adjustments,
-      );
-      _markAsChanged();
-    });
-  }
-
-  Widget _buildSaveButton() {
-    return Padding(
-      padding: const EdgeInsets.all(ThemeConstants.spaceLg),
-      child: IslamicButton.primary(
-        text: 'حفظ الإعدادات',
-        onPressed: _isSaving || !_hasChanges ? null : _saveSettings,
-        isLoading: _isSaving,
-        width: double.infinity,
-        icon: Icons.save,
-      ),
-    );
-  }
-}
-
-/// قسم في شاشة الإعدادات
-class SettingsSection extends StatelessWidget {
-  final String title;
-  final String? subtitle;
-  final IconData icon;
-  final List<Widget> children;
-
-  const SettingsSection({
-    super.key,
-    required this.title,
-    this.subtitle,
-    required this.icon,
-    required this.children,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(ThemeConstants.spaceLg),
-          child: Row(
+          Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(ThemeConstants.spaceMd),
-                decoration: BoxDecoration(
-                  color: context.primaryColor.withAlpha(26),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                ),
-                child: Icon(
-                  icon,
-                  color: context.primaryColor,
-                  size: ThemeConstants.iconMd,
-                ),
+              Icon(
+                Icons.tune,
+                color: context.warningColor,
               ),
-              const HSpace(ThemeConstants.spaceMd),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: context.titleStyle.copyWith(
-                        fontWeight: ThemeConstants.fontSemiBold,
-                      ),
-                    ),
-                    if (subtitle != null) ...[
-                      const VSpace(ThemeConstants.spaceSm),
-                      Text(
-                        subtitle!,
-                        style: context.captionStyle,
-                      ),
-                    ],
-                  ],
-                ),
+              Spaces.smallH,
+              Text(
+                'التعديلات اليدوية',
+                style: context.titleStyle,
               ),
             ],
           ),
-        ),
-        
-        IslamicCard(
-          color: context.cardColor,
-          margin: const EdgeInsets.symmetric(
-            horizontal: ThemeConstants.spaceLg,
-            vertical: ThemeConstants.spaceMd,
+          
+          Spaces.medium,
+          
+          Text(
+            'اضبط المواقيت بالدقائق (+ للتأخير، - للتقديم)',
+            style: context.bodyStyle.copyWith(
+              color: context.secondaryTextColor,
+            ),
           ),
-          padding: EdgeInsets.zero,
-          child: Column(children: children),
-        ),
-      ],
+          
+          Spaces.medium,
+          
+          ...prayers.map((prayer) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 80,
+                    child: Text(
+                      prayer['name']!,
+                      style: context.bodyStyle.medium,
+                    ),
+                  ),
+                  
+                  Spaces.mediumH,
+                  
+                  Expanded(
+                    child: IslamicInput(
+                      controller: _adjustmentControllers[prayer['key']]!,
+                      keyboardType: TextInputType.number,
+                      hint: '0',
+                      suffixIcon: Icons.access_time,
+                    ),
+                  ),
+                  
+                  Spaces.smallH,
+                  
+                  Text(
+                    'دقيقة',
+                    style: context.captionStyle,
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
-}
 
-/// مربع حوار اختيار طريقة الحساب
-class CalculationMethodDialog extends StatelessWidget {
-  final CalculationMethod currentMethod;
-  final Function(CalculationMethod) onMethodSelected;
-
-  const CalculationMethodDialog({
-    super.key,
-    required this.currentMethod,
-    required this.onMethodSelected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final methods = [
-      (CalculationMethod.muslimWorldLeague, 'رابطة العالم الإسلامي', 'الفجر 18°، العشاء 17°'),
-      (CalculationMethod.egyptian, 'الهيئة المصرية العامة للمساحة', 'الفجر 19.5°، العشاء 17.5°'),
-      (CalculationMethod.karachi, 'جامعة العلوم الإسلامية، كراتشي', 'الفجر 18°، العشاء 18°'),
-      (CalculationMethod.ummAlQura, 'أم القرى', 'الفجر 18.5°، العشاء 90 دقيقة بعد المغرب'),
-      (CalculationMethod.dubai, 'دبي', 'الفجر 18.2°، العشاء 18.2°'),
-      (CalculationMethod.qatar, 'قطر', 'الفجر 18°، العشاء 90 دقيقة بعد المغرب'),
-      (CalculationMethod.kuwait, 'الكويت', 'الفجر 18°، العشاء 17.5°'),
-      (CalculationMethod.singapore, 'سنغافورة', 'الفجر 20°، العشاء 18°'),
-      (CalculationMethod.northAmerica, 'الجمعية الإسلامية لأمريكا الشمالية', 'الفجر 15°، العشاء 15°'),
-    ];
-    
-    return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-      ),
+  Widget _buildAdditionalSettings() {
+    return IslamicCard(
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(ThemeConstants.spaceLg),
-            child: Text(
-              'اختر طريقة الحساب',
-              style: context.titleStyle.copyWith(
-                fontWeight: ThemeConstants.fontSemiBold,
+          Row(
+            children: [
+              Icon(
+                Icons.settings,
+                color: context.primaryColor,
               ),
-            ),
+              Spaces.smallH,
+              Text(
+                'إعدادات إضافية',
+                style: context.titleStyle,
+              ),
+            ],
           ),
           
-          const Divider(),
+          Spaces.medium,
           
-          Flexible(
-            child: SingleChildScrollView(
-              child: Column(
-                children: methods.map((method) {
-                  return RadioListTile<CalculationMethod>(
-                    title: Text(method.$2),
-                    subtitle: Text(
-                      method.$3,
-                      style: context.captionStyle,
-                    ),
-                    value: method.$1,
-                    groupValue: currentMethod,
-                    onChanged: (value) {
-                      if (value != null) {
-                        onMethodSelected(value);
-                      }
-                    },
-                    activeColor: context.primaryColor,
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-          
-          const Divider(),
-          
-          Padding(
-            padding: const EdgeInsets.all(ThemeConstants.spaceMd),
-            child: TextButton(
-              onPressed: () => Navigator.pop(context),
-              style: TextButton.styleFrom(
-                foregroundColor: context.primaryColor,
-              ),
-              child: const Text('إلغاء'),
-            ),
+          IslamicSwitch(
+            title: 'تطبيق التوقيت الصيفي',
+            subtitle: 'تعديل تلقائي للتوقيت الصيفي',
+            value: _settings.summerTimeAdjustment,
+            onChanged: (value) {
+              setState(() {
+                _settings = _settings.copyWith(summerTimeAdjustment: value);
+              });
+            },
           ),
         ],
       ),
     );
+  }
+
+  String _getMethodName(CalculationMethod method) {
+    switch (method) {
+      case CalculationMethod.muslimWorldLeague:
+        return 'رابطة العالم الإسلامي';
+      case CalculationMethod.egyptian:
+        return 'الهيئة المصرية العامة للمساحة';
+      case CalculationMethod.karachi:
+        return 'جامعة العلوم الإسلامية، كراتشي';
+      case CalculationMethod.ummAlQura:
+        return 'أم القرى';
+      case CalculationMethod.dubai:
+        return 'دبي';
+      case CalculationMethod.qatar:
+        return 'قطر';
+      case CalculationMethod.kuwait:
+        return 'الكويت';
+      case CalculationMethod.singapore:
+        return 'سنغافورة';
+      case CalculationMethod.northAmerica:
+        return 'الجمعية الإسلامية لأمريكا الشمالية';
+      case CalculationMethod.other:
+        return 'مخصص';
+    }
+  }
+
+  String _getMethodDescription(CalculationMethod method) {
+    switch (method) {
+      case CalculationMethod.muslimWorldLeague:
+        return 'الطريقة الأكثر انتشاراً عالمياً';
+      case CalculationMethod.egyptian:
+        return 'مناسبة لمصر والدول المجاورة';
+      case CalculationMethod.karachi:
+        return 'مناسبة لباكستان وجنوب آسيا';
+      case CalculationMethod.ummAlQura:
+        return 'المعتمدة في السعودية';
+      case CalculationMethod.dubai:
+        return 'المعتمدة في الإمارات';
+      case CalculationMethod.qatar:
+        return 'المعتمدة في قطر';
+      case CalculationMethod.kuwait:
+        return 'المعتمدة في الكويت';
+      case CalculationMethod.singapore:
+        return 'مناسبة لجنوب شرق آسيا';
+      case CalculationMethod.northAmerica:
+        return 'مناسبة لأمريكا الشمالية';
+      case CalculationMethod.other:
+        return 'تخصيص الزوايا يدوياً';
+    }
   }
 }
