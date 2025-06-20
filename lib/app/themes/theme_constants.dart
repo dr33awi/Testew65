@@ -1,14 +1,13 @@
 // lib/app/themes/theme_constants.dart
 import 'package:flutter/material.dart';
 
-/// ثوابت الثيم الموحد للتطبيق الإسلامي
-/// جميع القيم الثابتة في مكان واحد
+/// ثوابت الثيم الموحد للتطبيق الإسلامي - نسخة مبسطة ونظيفة
 class ThemeConstants {
   ThemeConstants._();
 
   // ==================== الألوان الأساسية ====================
   
-  /// اللون الأساسي - أخضر زيتي هادئ
+  /// اللون الأساسي - أخضر إسلامي هادئ
   static const Color primary = Color(0xFF2E7D57);
   static const Color primaryLight = Color(0xFF4CAF79);
   static const Color primaryDark = Color(0xFF1E5A3E);
@@ -16,7 +15,6 @@ class ThemeConstants {
   /// اللون الثانوي - ذهبي أنيق
   static const Color secondary = Color(0xFFD4AF37);
   static const Color secondaryLight = Color(0xFFE6C76A);
-  static const Color secondaryDark = Color(0xFFB8941F);
   
   /// اللون الثالث - بني دافئ
   static const Color accent = Color(0xFF8B6B47);
@@ -80,6 +78,7 @@ class ThemeConstants {
   static const double iconSm = 18.0;
   static const double iconMd = 24.0;
   static const double iconLg = 32.0;
+  static const double iconXl = 40.0;
   
   /// أحجام الأزرار
   static const double buttonHeightSm = 36.0;
@@ -101,6 +100,7 @@ class ThemeConstants {
   static const double fontSizeXl = 20.0;
   static const double fontSize2xl = 24.0;
   static const double fontSize3xl = 28.0;
+  static const double fontSize4xl = 32.0;
   
   /// أوزان الخطوط
   static const FontWeight fontLight = FontWeight.w300;
@@ -149,6 +149,12 @@ class ThemeConstants {
     end: Alignment.bottomRight,
   );
   
+  static const LinearGradient successGradient = LinearGradient(
+    colors: [success, Color(0xFF58D68D)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
   // ==================== المدد الزمنية ====================
   
   static const Duration durationFast = Duration(milliseconds: 150);
@@ -187,6 +193,16 @@ class ThemeConstants {
     }
   }
   
+  /// الحصول على تدرج الصلاة
+  static LinearGradient getPrayerGradient(String prayerName) {
+    final color = getPrayerColor(prayerName);
+    return LinearGradient(
+      colors: [color, color.withValues(alpha: 0.7)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+  }
+  
   /// إنشاء ColorScheme للوضع الفاتح
   static ColorScheme get lightColorScheme => ColorScheme.fromSeed(
     seedColor: primary,
@@ -216,4 +232,48 @@ class ThemeConstants {
     onSurface: darkText,
     onError: Colors.white,
   );
+  
+  // ==================== مساعدات سريعة ====================
+  
+  /// الحصول على لون الخلفية حسب الثيم
+  static Color getBackgroundColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? darkBackground 
+        : lightBackground;
+  }
+  
+  /// الحصول على لون السطح حسب الثيم
+  static Color getSurfaceColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? darkSurface 
+        : lightSurface;
+  }
+  
+  /// الحصول على لون البطاقة حسب الثيم
+  static Color getCardColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? darkCard 
+        : lightCard;
+  }
+  
+  /// الحصول على لون النص الأساسي حسب الثيم
+  static Color getTextColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? darkText 
+        : lightText;
+  }
+  
+  /// الحصول على لون النص الثانوي حسب الثيم
+  static Color getSecondaryTextColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? darkTextSecondary 
+        : lightTextSecondary;
+  }
+  
+  /// الحصول على لون الحدود حسب الثيم
+  static Color getBorderColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark 
+        ? darkBorder 
+        : lightBorder;
+  }
 }

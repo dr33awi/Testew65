@@ -1,12 +1,8 @@
 // lib/features/home/screens/home_screen.dart
-
 import 'package:flutter/material.dart';
 
-// ✅ استيراد النظام الموجود فعلاً
-import '../../../app/themes/app_theme.dart';
-import '../../../app/themes/widgets.dart';
-import '../../../app/themes/colors.dart';
-// إزالة استيراد components/index.dart حتى يتم إنشاؤه
+// ✅ استيراد النظام المبسط الجديد فقط
+import '../../../app/themes/index.dart';
 
 import '../widgets/category_grid.dart';
 import 'package:athkar_app/features/daily_quote/widgets/daily_quotes_card.dart';
@@ -38,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: context.backgroundColor,
       appBar: IslamicAppBar(
         title: 'تطبيق الأذكار',
         actions: [
@@ -60,10 +56,10 @@ class _HomeScreenState extends State<HomeScreen> {
       slivers: [
         // المحتوى الرئيسي
         SliverPadding(
-          padding: const EdgeInsets.all(16), // بدلاً من AppSpacing
+          padding: context.mediumPadding.paddingAll,
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              Spaces.large, // استخدام النظام الموجود
+              Spaces.large,
               
               // رسالة الترحيب
               const WelcomeMessage(),
@@ -100,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildSectionHeader() {
-    return IslamicCard.simple( // استخدام النظام الموجود
+    return IslamicCard.simple(
       child: Row(
         children: [
           // المؤشر الجانبي
@@ -108,23 +104,23 @@ class _HomeScreenState extends State<HomeScreen> {
             width: 4,
             height: 32,
             decoration: BoxDecoration(
-              gradient: AppTheme.primaryGradient,
+              gradient: ThemeConstants.primaryGradient,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           
-          Spaces.mediumH, // استخدام النظام الموجود
+          Spaces.mediumH,
           
           // الأيقونة
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+              color: context.primaryColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(context.mediumRadius),
             ),
             child: Icon(
               Icons.apps_rounded,
-              color: AppColors.primary,
+              color: context.primaryColor,
               size: 24,
             ),
           ),
@@ -138,16 +134,12 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   'الأقسام الرئيسية',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: context.titleStyle,
                 ),
                 Spaces.small,
                 Text(
                   'اختر القسم المناسب لك',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.lightTextSecondary,
-                  ),
+                  style: context.captionStyle,
                 ),
               ],
             ),

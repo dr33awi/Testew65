@@ -1,13 +1,11 @@
 // lib/app/app.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-// import 'package:provider/provider.dart'; // تم حذفه - غير مستخدم
 
-// استيراد النظام الجديد المبسط
-import 'themes/app_theme.dart';
+// ✅ استيراد النظام المبسط الجديد فقط
+import 'themes/index.dart';
 import '../core/constants/app_constants.dart';
 import 'routes/app_router.dart';
-// import '../app/di/service_locator.dart'; // تم حذفه - غير مستخدم
 
 class AthkarApp extends StatelessWidget {
   const AthkarApp({super.key});
@@ -21,13 +19,13 @@ class AthkarApp extends StatelessWidget {
         return MaterialApp(
           title: AppConstants.appName,
           
-          // استخدام الثيم المبسط
+          // ✅ استخدام الثيم المبسط الجديد
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeMode,
           
           // اللغة والترجمة
-          locale: const Locale('ar'), // يمكنك ربطها بـ SharedPreferences لاحقاً
+          locale: const Locale('ar'),
           supportedLocales: const [
             Locale('ar'), // العربية
             Locale('en'), // الإنجليزية
@@ -47,7 +45,7 @@ class AthkarApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           builder: (context, child) {
             return Directionality(
-              textDirection: TextDirection.rtl, // يمكنك ربطها باللغة لاحقاً
+              textDirection: TextDirection.rtl,
               child: child ?? const SizedBox.shrink(),
             );
           },

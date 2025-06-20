@@ -4,12 +4,8 @@ import 'package:flutter/services.dart';
 import 'dart:ui';
 import 'dart:math' as math;
 
-// ✅ استيراد النظام الموحد فقط
-import '../../../app/themes/app_theme.dart';
-import '../../../app/themes/widgets.dart';
-import '../../../app/themes/colors.dart';
-import '../../../app/themes/typography.dart';
-import '../../../components/index.dart';
+// ✅ استيراد النظام المبسط الجديد فقط
+import '../../../app/themes/index.dart';
 
 class CategoryGrid extends StatefulWidget {
   const CategoryGrid({super.key});
@@ -25,7 +21,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'مواقيت الصلاة',
       subtitle: 'أوقات الصلوات الخمس',
       icon: Icons.mosque,
-      colors: [AppColors.primary, AppColors.primaryLight],
+      colors: [ThemeConstants.primary, ThemeConstants.primaryLight],
       routeName: '/prayer-times',
     ),
     CategoryItem(
@@ -33,7 +29,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'الأذكار اليومية',
       subtitle: 'أذكار الصباح والمساء',
       icon: Icons.auto_awesome,
-      colors: [AppColors.success, AppColors.primaryLight],
+      colors: [ThemeConstants.success, ThemeConstants.primaryLight],
       routeName: '/athkar',
     ),
     CategoryItem(
@@ -41,7 +37,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'القرآن الكريم',
       subtitle: 'تلاوة وتدبر',
       icon: Icons.menu_book_rounded,
-      colors: [AppColors.secondary, AppColors.secondaryLight],
+      colors: [ThemeConstants.secondary, ThemeConstants.secondaryLight],
       routeName: '/quran',
     ),
     CategoryItem(
@@ -49,7 +45,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'اتجاه القبلة',
       subtitle: 'البوصلة الذكية',
       icon: Icons.explore,
-      colors: [AppColors.info, AppColors.primary],
+      colors: [ThemeConstants.info, ThemeConstants.primary],
       routeName: '/qibla',
     ),
     CategoryItem(
@@ -57,7 +53,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'المسبحة الرقمية',
       subtitle: 'عداد التسبيح',
       icon: Icons.radio_button_checked,
-      colors: [AppColors.accent, AppColors.primary],
+      colors: [ThemeConstants.accent, ThemeConstants.primary],
       routeName: '/tasbih',
     ),
     CategoryItem(
@@ -65,7 +61,7 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'الأدعية المأثورة',
       subtitle: 'أدعية من الكتاب والسنة',
       icon: Icons.pan_tool_rounded,
-      colors: [AppColors.warning, AppColors.secondary],
+      colors: [ThemeConstants.warning, ThemeConstants.secondary],
       routeName: '/dua',
     ),
   ];
@@ -76,7 +72,7 @@ class _CategoryGridState extends State<CategoryGrid> {
     if (category.routeName != null) {
       Navigator.pushNamed(context, category.routeName!).catchError((error) {
         if (mounted) {
-          context.showWarning('هذه الميزة قيد التطوير');
+          context.showWarningMessage('هذه الميزة قيد التطوير');
         }
         return null;
       });
@@ -86,7 +82,7 @@ class _CategoryGridState extends State<CategoryGrid> {
   @override
   Widget build(BuildContext context) {
     return SliverPadding(
-      padding: AppSpacing.paddingMedium,
+      padding: context.mediumPadding.paddingAll,
       sliver: SliverGrid(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
@@ -152,29 +148,34 @@ class _CategoryGridState extends State<CategoryGrid> {
         
         // النصوص
         Expanded(
-          child: AppColumn.small(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppText(
-                category.title,
-                style: AppTextStyle.title,
+          child: [
+            Text(
+              category.title,
+              style: context.titleStyle.copyWith(
                 color: Colors.white,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+                fontWeight: ThemeConstants.fontBold,
               ),
-              
-              AppText(
-                category.subtitle,
-                style: AppTextStyle.caption,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            
+            Spaces.small,
+            
+            Text(
+              category.subtitle,
+              style: context.captionStyle.copyWith(
                 color: Colors.white.withValues(alpha: 0.9),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
-            ],
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ].separatedVertical(context.smallPadding).toColumn(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
           ),
         ),
         
-        AppSpacing.verticalMedium,
+        context.mediumPadding.verticalSpace,
         
         // شريط التقدم
         _buildProgressBar(category.id),
@@ -235,7 +236,7 @@ class _CategoryGridState extends State<CategoryGrid> {
   }
 }
 
-/// نموذج بيانات الفئة المحدث
+/// نموذج بيانات الفئة
 class CategoryItem {
   final String id;
   final String title;
@@ -254,7 +255,7 @@ class CategoryItem {
   });
 }
 
-/// رسام خلفية النجوم الإسلامية - محدث للنظام الموحد
+/// رسام خلفية النجوم الإسلامية - محدث للنظام المبسط
 class IslamicStarsBackgroundPainter extends CustomPainter {
   final Color color;
 

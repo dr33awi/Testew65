@@ -1,11 +1,8 @@
 // lib/app/routes/app_router.dart
-import 'package:athkar_app/app/themes/colors.dart';
 import 'package:flutter/material.dart';
 
-// استيراد النظام المبسط بدلاً من المعقد
-import '../../app/themes/app_theme.dart';
-import '../../app/themes/widgets.dart';
-// import '../../app/themes/index.dart'; // احذف هذا
+// ✅ استيراد النظام المبسط الجديد فقط
+import '../themes/index.dart';
 
 import '../../features/home/screens/home_screen.dart';
 import '../../features/prayer_times/screens/prayer_times_screen.dart';
@@ -125,8 +122,8 @@ class AppRouter {
     return PageRouteBuilder<T>(
       settings: settings,
       pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionDuration: const Duration(milliseconds: 300), // مدة ثابتة بدلاً من AppTheme.durationNormal
-      reverseTransitionDuration: const Duration(milliseconds: 150),
+      transitionDuration: ThemeConstants.durationNormal,
+      reverseTransitionDuration: ThemeConstants.durationFast,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         return FadeTransition(
           opacity: animation,
@@ -140,8 +137,8 @@ class AppRouter {
     return PageRouteBuilder<T>(
       settings: settings,
       pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionDuration: const Duration(milliseconds: 300),
-      reverseTransitionDuration: const Duration(milliseconds: 150),
+      transitionDuration: ThemeConstants.durationNormal,
+      reverseTransitionDuration: ThemeConstants.durationFast,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
         const end = Offset.zero;
@@ -159,10 +156,10 @@ class AppRouter {
     );
   }
 
-  // Screen Builders - تحديث للنظام المبسط
+  // Screen Builders - محدث للنظام المبسط
   static Widget _buildComingSoonScreen(String title) {
     return Scaffold(
-      appBar: IslamicAppBar(title: title), // استخدام النظام المبسط
+      appBar: IslamicAppBar(title: title),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -171,42 +168,46 @@ class AppRouter {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1), // النظام المبسط
+                color: ThemeConstants.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 _getIconForFeature(title),
                 size: 60,
-                color: AppColors.primary, // النظام المبسط
+                color: ThemeConstants.primary,
               ),
             ),
-            Spaces.extraLarge, // النظام المبسط
-            const Text(
+            
+            Spaces.extraLarge,
+            
+            Text(
               'قريباً',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+              style: AppTypography.heading.copyWith(
+                color: ThemeConstants.primary,
               ),
             ),
+            
             Spaces.medium,
+            
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 20,
-                color: AppColors.lightTextSecondary,
+              style: AppTypography.title.copyWith(
+                color: ThemeConstants.lightTextSecondary,
               ),
             ),
+            
             Spaces.small,
-            const Text(
+            
+            Text(
               'هذه الميزة قيد التطوير',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.lightTextSecondary,
+              style: AppTypography.body.copyWith(
+                color: ThemeConstants.lightTextSecondary,
               ),
             ),
+            
             Spaces.extraLarge,
-            IslamicButton.outlined( // النظام المبسط
+            
+            IslamicButton.outlined(
               text: 'العودة',
               icon: Icons.arrow_back,
               onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
@@ -227,37 +228,41 @@ class AppRouter {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.1),
+                color: ThemeConstants.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.error_outline,
                 size: 60,
-                color: AppColors.error,
+                color: ThemeConstants.error,
               ),
             ),
+            
             Spaces.extraLarge,
-            const Text(
+            
+            Text(
               '404',
-              style: TextStyle(
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-                color: AppColors.error,
+              style: AppTypography.heading.copyWith(
+                color: ThemeConstants.error,
               ),
             ),
+            
             Spaces.medium,
+            
             const Text(
               'الصفحة غير موجودة',
-              style: TextStyle(fontSize: 20),
+              style: AppTypography.title,
             ),
+            
             Spaces.small,
-            const Text(
+            
+            Text(
               'لم نتمكن من العثور على الصفحة المطلوبة',
-              style: TextStyle(
-                fontSize: 16,
-                color: AppColors.lightTextSecondary,
+              style: AppTypography.body.copyWith(
+                color: ThemeConstants.lightTextSecondary,
               ),
             ),
+            
             if (routeName != null) ...[
               Spaces.medium,
               Container(
@@ -266,19 +271,20 @@ class AppRouter {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.lightTextSecondary.withOpacity(0.1),
+                  color: ThemeConstants.lightTextSecondary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   routeName,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.lightTextSecondary,
+                  style: AppTypography.caption.copyWith(
+                    color: ThemeConstants.lightTextSecondary,
                   ),
                 ),
               ),
             ],
+            
             Spaces.extraLarge,
+            
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -287,7 +293,9 @@ class AppRouter {
                   icon: Icons.arrow_back,
                   onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
                 ),
+                
                 Spaces.mediumH,
+                
                 IslamicButton.primary(
                   text: 'الرئيسية',
                   icon: Icons.home,
@@ -304,7 +312,7 @@ class AppRouter {
 
   static Widget _buildErrorScreen(String message) {
     return Scaffold(
-      appBar: IslamicAppBar(title: 'خطأ'),
+      appBar: const IslamicAppBar(title: 'خطأ'),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -313,25 +321,28 @@ class AppRouter {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.1),
+                color: ThemeConstants.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.error_outline,
                 size: 50,
-                color: AppColors.error,
+                color: ThemeConstants.error,
               ),
             ),
+            
             Spaces.large,
+            
             Text(
               message,
-              style: const TextStyle(
-                fontSize: 18,
-                color: AppColors.error,
+              style: AppTypography.body.copyWith(
+                color: ThemeConstants.error,
               ),
               textAlign: TextAlign.center,
             ),
+            
             Spaces.extraLarge,
+            
             IslamicButton.outlined(
               text: 'العودة',
               icon: Icons.arrow_back,

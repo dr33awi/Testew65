@@ -4,10 +4,29 @@ import 'package:flutter/services.dart';
 import 'theme_constants.dart';
 import 'typography.dart';
 
-/// نظام الثيم الموحد للتطبيق الإسلامي
+/// نظام الثيم الموحد للتطبيق الإسلامي - مبسط ونظيف
 class AppTheme {
   AppTheme._();
 
+  // ==================== مدير الثيم ====================
+  
+  static ValueNotifier<ThemeMode> themeModeNotifier = 
+      ValueNotifier(ThemeMode.system);
+  
+  static void setThemeMode(ThemeMode mode) {
+    themeModeNotifier.value = mode;
+  }
+  
+  static void toggleTheme() {
+    final currentMode = themeModeNotifier.value;
+    final newMode = currentMode == ThemeMode.dark 
+        ? ThemeMode.light 
+        : ThemeMode.dark;
+    setThemeMode(newMode);
+  }
+  
+  static bool get isDarkMode => themeModeNotifier.value == ThemeMode.dark;
+  
   // ==================== الثيم الفاتح ====================
   
   static ThemeData get lightTheme => ThemeData(
@@ -26,29 +45,32 @@ class AppTheme {
     ),
     
     // شريط التطبيق
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
       backgroundColor: ThemeConstants.lightSurface,
       foregroundColor: ThemeConstants.lightText,
       elevation: 0,
       centerTitle: true,
       systemOverlayStyle: SystemUiOverlayStyle.dark,
-      titleTextStyle: TextStyle(
+      titleTextStyle: AppTypography.title.copyWith(
         color: ThemeConstants.lightText,
-        fontSize: ThemeConstants.fontSize2xl,
-        fontWeight: ThemeConstants.fontSemiBold,
-        fontFamily: ThemeConstants.fontPrimary,
+      ),
+      iconTheme: const IconThemeData(
+        color: ThemeConstants.lightText,
       ),
     ),
     
     // البطاقات
     cardTheme: CardThemeData(
       color: ThemeConstants.lightCard,
-      elevation: 2,
+      elevation: 0,
       shadowColor: Colors.black.withValues(alpha: 0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
       ),
-      margin: const EdgeInsets.all(ThemeConstants.spaceSm),
+      margin: const EdgeInsets.symmetric(
+        horizontal: ThemeConstants.spaceSm,
+        vertical: ThemeConstants.spaceSm / 2,
+      ),
     ),
     
     // الأزرار المرفوعة
@@ -61,7 +83,11 @@ class AppTheme {
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
         elevation: 2,
+        shadowColor: ThemeConstants.primary.withValues(alpha: 0.3),
         textStyle: AppTypography.button,
+        padding: const EdgeInsets.symmetric(
+          horizontal: ThemeConstants.spaceMd,
+        ),
       ),
     ),
     
@@ -75,6 +101,9 @@ class AppTheme {
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
         textStyle: AppTypography.button,
+        padding: const EdgeInsets.symmetric(
+          horizontal: ThemeConstants.spaceMd,
+        ),
       ),
     ),
     
@@ -87,6 +116,22 @@ class AppTheme {
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
         textStyle: AppTypography.button,
+        padding: const EdgeInsets.symmetric(
+          horizontal: ThemeConstants.spaceMd,
+        ),
+      ),
+    ),
+    
+    // أزرار الأيقونات
+    iconButtonTheme: IconButtonThemeData(
+      style: IconButton.styleFrom(
+        foregroundColor: ThemeConstants.lightText,
+        backgroundColor: Colors.transparent,
+        minimumSize: const Size(ThemeConstants.buttonHeightSm, ThemeConstants.buttonHeightSm),
+        padding: const EdgeInsets.all(ThemeConstants.spaceSm),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
+        ),
       ),
     ),
     
@@ -116,6 +161,11 @@ class AppTheme {
         borderSide: const BorderSide(color: ThemeConstants.error),
       ),
       
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        borderSide: const BorderSide(color: ThemeConstants.error, width: 2),
+      ),
+      
       hintStyle: AppTypography.body.copyWith(
         color: ThemeConstants.lightTextHint,
       ),
@@ -123,13 +173,19 @@ class AppTheme {
       labelStyle: AppTypography.body.copyWith(
         color: ThemeConstants.lightTextSecondary,
       ),
+      
+      errorStyle: AppTypography.caption.copyWith(
+        color: ThemeConstants.error,
+      ),
     ),
     
-    // الـ FAB
+    // الـ FloatingActionButton
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: ThemeConstants.primary,
       foregroundColor: Colors.white,
       elevation: 4,
+      focusElevation: 6,
+      hoverElevation: 8,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(ThemeConstants.radiusLg)),
       ),
@@ -142,6 +198,14 @@ class AppTheme {
       unselectedItemColor: ThemeConstants.lightTextSecondary,
       type: BottomNavigationBarType.fixed,
       elevation: 8,
+      selectedLabelStyle: TextStyle(
+        fontWeight: ThemeConstants.fontSemiBold,
+        fontSize: ThemeConstants.fontSizeXs,
+      ),
+      unselectedLabelStyle: TextStyle(
+        fontWeight: ThemeConstants.fontRegular,
+        fontSize: ThemeConstants.fontSizeXs,
+      ),
     ),
     
     // الحوارات
@@ -151,6 +215,12 @@ class AppTheme {
         borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
       ),
       elevation: 8,
+      titleTextStyle: AppTypography.title.copyWith(
+        color: ThemeConstants.lightText,
+      ),
+      contentTextStyle: AppTypography.body.copyWith(
+        color: ThemeConstants.lightText,
+      ),
     ),
     
     // SnackBar
@@ -161,6 +231,8 @@ class AppTheme {
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
       ),
       behavior: SnackBarBehavior.floating,
+      elevation: 4,
+      actionTextColor: ThemeConstants.primary,
     ),
     
     // الأيقونات
@@ -175,11 +247,17 @@ class AppTheme {
         if (states.contains(WidgetState.selected)) {
           return ThemeConstants.primary;
         }
-        return ThemeConstants.lightTextHint;
+        if (states.contains(WidgetState.disabled)) {
+          return ThemeConstants.lightTextHint;
+        }
+        return Colors.white;
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
           return ThemeConstants.primary.withValues(alpha: 0.3);
+        }
+        if (states.contains(WidgetState.disabled)) {
+          return ThemeConstants.lightBorder;
         }
         return ThemeConstants.lightBorder;
       }),
@@ -194,6 +272,19 @@ class AppTheme {
         return Colors.transparent;
       }),
       checkColor: WidgetStateProperty.all(Colors.white),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
+      ),
+    ),
+    
+    // أزرار الراديو
+    radioTheme: RadioThemeData(
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return ThemeConstants.primary;
+        }
+        return ThemeConstants.lightTextSecondary;
+      }),
     ),
     
     // الفواصل
@@ -211,6 +302,49 @@ class AppTheme {
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+      ),
+      tileColor: Colors.transparent,
+      selectedTileColor: ThemeConstants.primary.withValues(alpha: 0.1),
+      iconColor: ThemeConstants.lightTextSecondary,
+      textColor: ThemeConstants.lightText,
+    ),
+    
+    // شرائح التمرير
+    sliderTheme: SliderThemeData(
+      activeTrackColor: ThemeConstants.primary,
+      inactiveTrackColor: ThemeConstants.lightBorder,
+      thumbColor: ThemeConstants.primary,
+      overlayColor: ThemeConstants.primary.withValues(alpha: 0.2),
+      valueIndicatorColor: ThemeConstants.primary,
+      valueIndicatorTextStyle: AppTypography.caption.copyWith(
+        color: Colors.white,
+      ),
+    ),
+    
+    // شريط التقدم
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      color: ThemeConstants.primary,
+      linearTrackColor: ThemeConstants.lightBorder,
+      circularTrackColor: ThemeConstants.lightBorder,
+    ),
+    
+    // شرائح البحث
+    searchBarTheme: SearchBarThemeData(
+      backgroundColor: WidgetStateProperty.all(ThemeConstants.lightCard),
+      shadowColor: WidgetStateProperty.all(Colors.transparent),
+      surfaceTintColor: WidgetStateProperty.all(Colors.transparent),
+      overlayColor: WidgetStateProperty.all(Colors.transparent),
+      side: WidgetStateProperty.all(
+        const BorderSide(color: ThemeConstants.lightBorder),
+      ),
+      shape: WidgetStateProperty.all(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
+      ),
+      textStyle: WidgetStateProperty.all(AppTypography.body),
+      hintStyle: WidgetStateProperty.all(
+        AppTypography.body.copyWith(color: ThemeConstants.lightTextHint),
       ),
     ),
   );
@@ -233,29 +367,32 @@ class AppTheme {
     ),
     
     // شريط التطبيق
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
       backgroundColor: ThemeConstants.darkSurface,
       foregroundColor: ThemeConstants.darkText,
       elevation: 0,
       centerTitle: true,
       systemOverlayStyle: SystemUiOverlayStyle.light,
-      titleTextStyle: TextStyle(
+      titleTextStyle: AppTypography.title.copyWith(
         color: ThemeConstants.darkText,
-        fontSize: ThemeConstants.fontSize2xl,
-        fontWeight: ThemeConstants.fontSemiBold,
-        fontFamily: ThemeConstants.fontPrimary,
+      ),
+      iconTheme: const IconThemeData(
+        color: ThemeConstants.darkText,
       ),
     ),
     
     // البطاقات
     cardTheme: CardThemeData(
       color: ThemeConstants.darkCard,
-      elevation: 4,
+      elevation: 0,
       shadowColor: Colors.black.withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
       ),
-      margin: const EdgeInsets.all(ThemeConstants.spaceSm),
+      margin: const EdgeInsets.symmetric(
+        horizontal: ThemeConstants.spaceSm,
+        vertical: ThemeConstants.spaceSm / 2,
+      ),
     ),
     
     // الأزرار المرفوعة
@@ -268,7 +405,11 @@ class AppTheme {
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
         elevation: 4,
+        shadowColor: ThemeConstants.primaryLight.withValues(alpha: 0.3),
         textStyle: AppTypography.button,
+        padding: const EdgeInsets.symmetric(
+          horizontal: ThemeConstants.spaceMd,
+        ),
       ),
     ),
     
@@ -282,6 +423,9 @@ class AppTheme {
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
         textStyle: AppTypography.button,
+        padding: const EdgeInsets.symmetric(
+          horizontal: ThemeConstants.spaceMd,
+        ),
       ),
     ),
     
@@ -294,6 +438,22 @@ class AppTheme {
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
         textStyle: AppTypography.button,
+        padding: const EdgeInsets.symmetric(
+          horizontal: ThemeConstants.spaceMd,
+        ),
+      ),
+    ),
+    
+    // أزرار الأيقونات
+    iconButtonTheme: IconButtonThemeData(
+      style: IconButton.styleFrom(
+        foregroundColor: ThemeConstants.darkText,
+        backgroundColor: Colors.transparent,
+        minimumSize: const Size(ThemeConstants.buttonHeightSm, ThemeConstants.buttonHeightSm),
+        padding: const EdgeInsets.all(ThemeConstants.spaceSm),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
+        ),
       ),
     ),
     
@@ -323,6 +483,11 @@ class AppTheme {
         borderSide: const BorderSide(color: ThemeConstants.error),
       ),
       
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        borderSide: const BorderSide(color: ThemeConstants.error, width: 2),
+      ),
+      
       hintStyle: AppTypography.body.copyWith(
         color: ThemeConstants.darkTextHint,
       ),
@@ -330,13 +495,19 @@ class AppTheme {
       labelStyle: AppTypography.body.copyWith(
         color: ThemeConstants.darkTextSecondary,
       ),
+      
+      errorStyle: AppTypography.caption.copyWith(
+        color: ThemeConstants.error,
+      ),
     ),
     
-    // الـ FAB
+    // الـ FloatingActionButton
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: ThemeConstants.primaryLight,
       foregroundColor: Colors.black,
       elevation: 6,
+      focusElevation: 8,
+      hoverElevation: 10,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(ThemeConstants.radiusLg)),
       ),
@@ -349,6 +520,14 @@ class AppTheme {
       unselectedItemColor: ThemeConstants.darkTextSecondary,
       type: BottomNavigationBarType.fixed,
       elevation: 8,
+      selectedLabelStyle: TextStyle(
+        fontWeight: ThemeConstants.fontSemiBold,
+        fontSize: ThemeConstants.fontSizeXs,
+      ),
+      unselectedLabelStyle: TextStyle(
+        fontWeight: ThemeConstants.fontRegular,
+        fontSize: ThemeConstants.fontSizeXs,
+      ),
     ),
     
     // الحوارات
@@ -358,6 +537,12 @@ class AppTheme {
         borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
       ),
       elevation: 12,
+      titleTextStyle: AppTypography.title.copyWith(
+        color: ThemeConstants.darkText,
+      ),
+      contentTextStyle: AppTypography.body.copyWith(
+        color: ThemeConstants.darkText,
+      ),
     ),
     
     // SnackBar
@@ -368,6 +553,8 @@ class AppTheme {
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
       ),
       behavior: SnackBarBehavior.floating,
+      elevation: 6,
+      actionTextColor: ThemeConstants.primaryLight,
     ),
     
     // الأيقونات
@@ -382,11 +569,17 @@ class AppTheme {
         if (states.contains(WidgetState.selected)) {
           return ThemeConstants.primaryLight;
         }
-        return ThemeConstants.darkTextHint;
+        if (states.contains(WidgetState.disabled)) {
+          return ThemeConstants.darkTextHint;
+        }
+        return ThemeConstants.darkCard;
       }),
       trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
           return ThemeConstants.primaryLight.withValues(alpha: 0.3);
+        }
+        if (states.contains(WidgetState.disabled)) {
+          return ThemeConstants.darkBorder;
         }
         return ThemeConstants.darkBorder;
       }),
@@ -401,6 +594,19 @@ class AppTheme {
         return Colors.transparent;
       }),
       checkColor: WidgetStateProperty.all(Colors.black),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
+      ),
+    ),
+    
+    // أزرار الراديو
+    radioTheme: RadioThemeData(
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return ThemeConstants.primaryLight;
+        }
+        return ThemeConstants.darkTextSecondary;
+      }),
     ),
     
     // الفواصل
@@ -419,23 +625,89 @@ class AppTheme {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
       ),
+      tileColor: Colors.transparent,
+      selectedTileColor: ThemeConstants.primaryLight.withValues(alpha: 0.1),
+      iconColor: ThemeConstants.darkTextSecondary,
+      textColor: ThemeConstants.darkText,
+    ),
+    
+    // شرائح التمرير
+    sliderTheme: SliderThemeData(
+      activeTrackColor: ThemeConstants.primaryLight,
+      inactiveTrackColor: ThemeConstants.darkBorder,
+      thumbColor: ThemeConstants.primaryLight,
+      overlayColor: ThemeConstants.primaryLight.withValues(alpha: 0.2),
+      valueIndicatorColor: ThemeConstants.primaryLight,
+      valueIndicatorTextStyle: AppTypography.caption.copyWith(
+        color: Colors.black,
+      ),
+    ),
+    
+    // شريط التقدم
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      color: ThemeConstants.primaryLight,
+      linearTrackColor: ThemeConstants.darkBorder,
+      circularTrackColor: ThemeConstants.darkBorder,
+    ),
+    
+    // شرائح البحث
+    searchBarTheme: SearchBarThemeData(
+      backgroundColor: WidgetStateProperty.all(ThemeConstants.darkCard),
+      shadowColor: WidgetStateProperty.all(Colors.transparent),
+      surfaceTintColor: WidgetStateProperty.all(Colors.transparent),
+      overlayColor: WidgetStateProperty.all(Colors.transparent),
+      side: WidgetStateProperty.all(
+        const BorderSide(color: ThemeConstants.darkBorder),
+      ),
+      shape: WidgetStateProperty.all(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
+      ),
+      textStyle: WidgetStateProperty.all(AppTypography.body),
+      hintStyle: WidgetStateProperty.all(
+        AppTypography.body.copyWith(color: ThemeConstants.darkTextHint),
+      ),
     ),
   );
   
-  // ==================== مدير الثيم ====================
+  // ==================== دوال مساعدة ====================
   
-  static ValueNotifier<ThemeMode> themeModeNotifier = 
-      ValueNotifier(ThemeMode.system);
-  
-  static void setThemeMode(ThemeMode mode) {
-    themeModeNotifier.value = mode;
+  /// الحصول على الثيم الحالي
+  static ThemeData getCurrentTheme(BuildContext context) {
+    return Theme.of(context);
   }
   
-  static void toggleTheme() {
-    final currentMode = themeModeNotifier.value;
-    final newMode = currentMode == ThemeMode.dark 
-        ? ThemeMode.light 
-        : ThemeMode.dark;
-    setThemeMode(newMode);
+  /// فحص إذا كان الثيم الداكن نشط
+  static bool isDarkTheme(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark;
+  }
+  
+  /// الحصول على اللون الأساسي للثيم الحالي
+  static Color getPrimaryColor(BuildContext context) {
+    return isDarkTheme(context) 
+        ? ThemeConstants.primaryLight 
+        : ThemeConstants.primary;
+  }
+  
+  /// الحصول على لون النص الأساسي للثيم الحالي
+  static Color getTextColor(BuildContext context) {
+    return isDarkTheme(context) 
+        ? ThemeConstants.darkText 
+        : ThemeConstants.lightText;
+  }
+  
+  /// الحصول على لون الخلفية للثيم الحالي
+  static Color getBackgroundColor(BuildContext context) {
+    return isDarkTheme(context) 
+        ? ThemeConstants.darkBackground 
+        : ThemeConstants.lightBackground;
+  }
+  
+  /// الحصول على لون السطح للثيم الحالي
+  static Color getSurfaceColor(BuildContext context) {
+    return isDarkTheme(context) 
+        ? ThemeConstants.darkSurface 
+        : ThemeConstants.lightSurface;
   }
 }

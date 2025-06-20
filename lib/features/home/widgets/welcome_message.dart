@@ -2,12 +2,8 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
-// ✅ استيراد النظام الموحد فقط
-import '../../../app/themes/app_theme.dart';
-import '../../../app/themes/widgets.dart';
-import '../../../app/themes/colors.dart';
-import '../../../app/themes/typography.dart';
-import '../../../components/index.dart';
+// ✅ استيراد النظام المبسط الجديد فقط
+import '../../../app/themes/index.dart';
 
 class WelcomeMessage extends StatelessWidget {
   const WelcomeMessage({super.key});
@@ -33,7 +29,7 @@ class WelcomeMessage extends StatelessWidget {
     final hour = DateTime.now().hour;
     final icon = _getGreetingIcon(hour);
     
-    return AppRow(
+    return Row(
       children: [
         // الأيقونة
         Container(
@@ -50,25 +46,34 @@ class WelcomeMessage extends StatelessWidget {
           ),
         ),
         
+        Spaces.mediumH,
+        
         // النصوص
         Expanded(
-          child: AppColumn.small(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // التحية
-              AppText(
+              Text(
                 greeting,
-                style: AppTextStyle.title,
-                color: Colors.white,
+                style: context.titleStyle.copyWith(
+                  color: Colors.white,
+                  fontWeight: ThemeConstants.fontBold,
+                ),
               ),
               
+              Spaces.small,
+              
               // الرسالة
-              AppText(
+              Text(
                 message,
-                style: AppTextStyle.body,
-                color: Colors.white.withValues(alpha: 0.95),
+                style: context.bodyStyle.copyWith(
+                  color: Colors.white.withValues(alpha: 0.95),
+                ),
                 maxLines: 3,
               ),
+              
+              Spaces.medium,
               
               // معلومات الوقت والتاريخ
               _buildTimeInfo(context),
@@ -85,7 +90,7 @@ class WelcomeMessage extends StatelessWidget {
     final dateStr = _getArabicDate(now);
     
     return Container(
-      padding: AppSpacing.paddingMedium,
+      padding: context.mediumPadding.paddingAll,
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(20),
@@ -94,11 +99,12 @@ class WelcomeMessage extends StatelessWidget {
           width: 1,
         ),
       ),
-      child: AppRow.small(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           // أيقونة الوقت
           Container(
-            padding: AppSpacing.paddingSmall,
+            padding: context.smallPadding.paddingAll,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
@@ -110,18 +116,25 @@ class WelcomeMessage extends StatelessWidget {
             ),
           ),
           
+          Spaces.smallH,
+          
           // الوقت
-          AppText(
+          Text(
             timeStr,
-            style: AppTextStyle.subtitle,
-            color: Colors.white,
+            style: context.subtitleStyle.copyWith(
+              color: Colors.white,
+              fontWeight: ThemeConstants.fontBold,
+            ),
           ),
           
+          Spaces.smallH,
+          
           // التاريخ
-          AppText(
+          Text(
             dateStr,
-            style: AppTextStyle.caption,
-            color: Colors.white.withValues(alpha: 0.9),
+            style: context.captionStyle.copyWith(
+              color: Colors.white.withValues(alpha: 0.9),
+            ),
           ),
         ],
       ),
@@ -161,21 +174,21 @@ class WelcomeMessage extends StatelessWidget {
   }
 
   List<Color> _getGradientColors(int hour) {
-    // تدرجات لونية حسب الوقت باستخدام النظام الموحد
+    // تدرجات لونية حسب الوقت باستخدام النظام المبسط
     if (hour < 5) {
-      return [AppColors.primaryDark, AppColors.darkCard]; // ليل
+      return [ThemeConstants.primaryDark, ThemeConstants.darkCard]; // ليل
     } else if (hour < 8) {
-      return [AppColors.primaryDark, AppColors.primary]; // فجر
+      return [ThemeConstants.primaryDark, ThemeConstants.primary]; // فجر
     } else if (hour < 12) {
-      return [AppColors.success, AppColors.primaryLight]; // صباح
+      return [ThemeConstants.success, ThemeConstants.primaryLight]; // صباح
     } else if (hour < 15) {
-      return [AppColors.primary, AppColors.primaryLight]; // ظهر
+      return [ThemeConstants.primary, ThemeConstants.primaryLight]; // ظهر
     } else if (hour < 17) {
-      return [AppColors.warning, AppColors.secondary]; // عصر
+      return [ThemeConstants.warning, ThemeConstants.secondary]; // عصر
     } else if (hour < 20) {
-      return [AppColors.secondary, AppColors.secondaryLight]; // مغرب
+      return [ThemeConstants.secondary, ThemeConstants.secondaryLight]; // مغرب
     } else {
-      return [AppColors.primaryDark, AppColors.primary]; // مساء
+      return [ThemeConstants.primaryDark, ThemeConstants.primary]; // مساء
     }
   }
 
