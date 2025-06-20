@@ -58,7 +58,7 @@ class QiblaModel {
   static double _calculateQiblaDirection(double userLat, double userLng) {
     // تحويل الدرجات إلى راديان
     final phi1 = userLat * (math.pi / 180);
-    final phi2 = kaabaLatitude * (math.pi / 180);
+    const phi2 = kaabaLatitude * (math.pi / 180);
     final deltaLambda = (kaabaLongitude - userLng) * (math.pi / 180);
 
     // حساب الاتجاه باستخدام معادلة أكثر دقة

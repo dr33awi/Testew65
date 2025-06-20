@@ -4,12 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:share_plus/share_plus.dart';
-import 'dart:ui';
 
-// ✅ استيرادات النظام الموحد الجديد
-import '../../../app/themes/app_theme.dart';
-import '../../../app/themes/widgets.dart';
-import '../../../app/themes/colors.dart';
+// ✅ استيرادات النظام الموحد الموجود فقط
 import '../../../app/themes/index.dart';
 
 import '../../../app/di/service_locator.dart';
@@ -54,7 +50,7 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
     _storage = getIt<StorageService>();
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300), // ثابت بدلاً من ThemeConstants
+      duration: const Duration(milliseconds: 300),
     );
     WidgetsBinding.instance.addObserver(this);
     _load();
@@ -245,7 +241,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     if (_loading) {
       return Scaffold(
         backgroundColor: context.backgroundColor,
-        body: AppLoadingWidget( // ✅ النظام الموحد
+        body: IslamicLoading(
           message: 'جاري تحميل الأذكار...',
           color: context.primaryColor,
         ),
@@ -255,7 +251,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     if (_category == null) {
       return Scaffold(
         backgroundColor: context.backgroundColor,
-        appBar: IslamicAppBar(title: 'الأذكار'), // ✅ النظام الموحد
+        appBar: IslamicAppBar(title: 'الأذكار'),
         body: _buildErrorState(),
       );
     }
@@ -270,7 +266,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
       child: Scaffold(
         backgroundColor: context.backgroundColor,
         body: SafeArea(
-          child: AppColumn( // ✅ النظام الموحد
+          child: Column(
             children: [
               // شريط التنقل العلوي
               _buildAppBar(context, category),
@@ -291,14 +287,14 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     final completedAthkar = _completedItems.length;
     final remainingAthkar = totalAthkar - completedAthkar;
     
-    return AppCard.simple( // ✅ النظام الموحد
-      padding: context.mediumPadding,
-      child: AppColumn.small( // ✅ النظام الموحد
+    return IslamicCard.simple(
+      padding: EdgeInsets.all(context.mediumPadding),
+      child: Column(
         children: [
-          AppRow( // ✅ النظام الموحد
+          Row(
             children: [
               // زر العودة
-              AppCard.simple(
+              IslamicCard.simple(
                 padding: const EdgeInsets.all(8),
                 child: IconButton(
                   onPressed: () async {
@@ -312,31 +308,37 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                 ),
               ),
               
+              SizedBox(width: context.mediumPadding),
+              
               // العنوان
               Expanded(
-                child: AppColumn.small( // ✅ النظام الموحد
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AppText.title(category.title), // ✅ النظام الموحد
-                    AppRow.small( // ✅ النظام الموحد
+                    Text(category.title, style: context.titleStyle),
+                    Row(
                       children: [
-                        AppText.caption(
+                        Text(
                           '$remainingAthkar متبقي',
-                          color: remainingAthkar > 0 
-                              ? context.secondaryTextColor 
-                              : AppColors.success,
+                          style: context.captionStyle.copyWith(
+                            color: remainingAthkar > 0 
+                                ? context.secondaryTextColor 
+                                : ThemeConstants.success,
+                          ),
                         ),
                         if (completedAthkar > 0) ...[
-                          AppText.caption(' • '),
+                          Text(' • ', style: context.captionStyle),
                           Icon(
                             Icons.check_circle,
                             size: 14,
-                            color: AppColors.success,
+                            color: ThemeConstants.success,
                           ),
-                          Spaces.smallH,
-                          AppText.caption(
+                          SizedBox(width: context.smallPadding),
+                          Text(
                             '$completedAthkar مكتمل',
-                            color: AppColors.success,
+                            style: context.captionStyle.copyWith(
+                              color: ThemeConstants.success,
+                            ),
                           ),
                         ],
                       ],
@@ -346,10 +348,11 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
               ),
               
               // الإجراءات
-              AppRow.small( // ✅ النظام الموحد
+              Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // زر المفضلة
-                  AppCard.simple(
+                  IslamicCard.simple(
                     padding: const EdgeInsets.all(8),
                     child: IconButton(
                       onPressed: () {
@@ -363,8 +366,10 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                     ),
                   ),
                   
+                  SizedBox(width: context.smallPadding),
+                  
                   // زر المشاركة
-                  AppCard.simple(
+                  IslamicCard.simple(
                     padding: const EdgeInsets.all(8),
                     child: IconButton(
                       onPressed: _shareProgress,
@@ -379,6 +384,8 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
               ),
             ],
           ),
+          
+          SizedBox(height: context.smallPadding),
           
           // شريط التقدم
           if (totalAthkar > 0) ...[
@@ -398,7 +405,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                   backgroundColor: Colors.transparent,
                   valueColor: AlwaysStoppedAnimation<Color>(
                     completedAthkar == totalAthkar 
-                        ? AppColors.success 
+                        ? ThemeConstants.success 
                         : CategoryUtils.getCategoryThemeColor(category.id),
                   ),
                 ),
@@ -419,7 +426,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
           ? _buildEmptyState()
           : AnimationLimiter(
               child: ListView.builder(
-                padding: context.screenPadding, // ✅ النظام الموحد
+                padding: context.screenPadding,
                 itemCount: _visibleItems.length,
                 itemBuilder: (context, index) {
                   final item = _visibleItems[index];
@@ -462,7 +469,8 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
 
   Widget _buildEmptyState() {
     return Center(
-      child: AppColumn( // ✅ النظام الموحد
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
             width: 120,
@@ -470,8 +478,8 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.success.withValues(alpha: 0.8),
-                  AppColors.success.withValues(alpha: 0.6),
+                  ThemeConstants.success.withValues(alpha: 0.8),
+                  ThemeConstants.success.withValues(alpha: 0.6),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -479,7 +487,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.success.withValues(alpha: 0.3),
+                  color: ThemeConstants.success.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -492,21 +500,35 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
             ),
           ),
           
-          AppText.heading( // ✅ النظام الموحد
+          Spaces.extraLarge,
+          
+          Text(
             'أكملت جميع الأذكار! 🎉',
-            color: AppColors.success,
+            style: context.headingStyle.copyWith(color: ThemeConstants.success),
             textAlign: TextAlign.center,
           ),
           
-          AppText.body( // ✅ النظام الموحد
+          Spaces.medium,
+          
+          Text(
             'بارك الله فيك\nجعلها الله في ميزان حسناتك',
-            color: context.secondaryTextColor,
+            style: context.bodyStyle.copyWith(color: context.secondaryTextColor),
             textAlign: TextAlign.center,
           ),
+          
+          Spaces.extraLarge,
           
           // زر إعادة القراءة
-          AppCard.stats( // ✅ النظام الموحد
-            child: IslamicButton.primary( // ✅ النظام الموحد
+          Container(
+            padding: EdgeInsets.all(context.mediumPadding),
+            decoration: BoxDecoration(
+              color: ThemeConstants.success.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(context.largeRadius),
+              border: Border.all(
+                color: ThemeConstants.success.withValues(alpha: 0.3),
+              ),
+            ),
+            child: IslamicButton.primary(
               text: 'إعادة القراءة',
               icon: Icons.refresh_rounded,
               onPressed: _rereadAthkar,
@@ -519,29 +541,34 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
 
   Widget _buildErrorState() {
     return Center(
-      child: AppColumn( // ✅ النظام الموحد
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: AppColors.error.withValues(alpha: 0.1),
+              color: ThemeConstants.error.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.error_outline,
               size: 50,
-              color: AppColors.error,
+              color: ThemeConstants.error,
             ),
           ),
           
-          AppText.title( // ✅ النظام الموحد
+          Spaces.large,
+          
+          Text(
             'تعذر تحميل الأذكار المطلوبة',
-            color: AppColors.error,
+            style: context.titleStyle.copyWith(color: ThemeConstants.error),
             textAlign: TextAlign.center,
           ),
           
-          IslamicButton.outlined( // ✅ النظام الموحد
+          Spaces.large,
+          
+          IslamicButton.outlined(
             text: 'العودة',
             icon: Icons.arrow_back,
             onPressed: () => Navigator.of(context).pop(),

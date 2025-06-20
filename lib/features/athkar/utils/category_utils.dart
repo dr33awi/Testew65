@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/index.dart';
 
 /// أدوات مساعدة لفئات الأذكار
 class CategoryUtils {
@@ -290,7 +290,7 @@ class CategoryUtils {
     final baseColor = getCategoryThemeColor(categoryId);
     return LinearGradient(
       colors: [
-        baseColor.withOpacity(0.8),
+        baseColor.withValues(alpha: 0.8),
         baseColor,
         baseColor.darken(0.1),
       ],

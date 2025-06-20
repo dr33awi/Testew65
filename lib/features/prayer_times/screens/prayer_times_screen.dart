@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'dart:ui';
 
-// ✅ استيراد النظام المبسط الجديد فقط
 import '../../../app/themes/index.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
@@ -209,7 +208,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
       backgroundColor: context.backgroundColor,
       body: RefreshIndicator(
         onRefresh: _loadPrayerTimes,
-        color: ThemeConstants.primary,
+        color: context.primaryColor,
         backgroundColor: context.cardColor,
         child: CustomScrollView(
           controller: _scrollController,
@@ -247,8 +246,8 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
             end: Alignment.bottomCenter,
             colors: [
               context.backgroundColor,
-              context.backgroundColor.withValues(alpha: 0.95),
-              context.backgroundColor.withValues(alpha: 0.9),
+              context.backgroundColor.withAlpha(242),
+              context.backgroundColor.withAlpha(230),
             ],
           ),
         ),
@@ -259,7 +258,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: context.borderColor.withValues(alpha: 0.1),
+                    color: context.borderColor.withAlpha(25),
                     width: 1,
                   ),
                 ),
@@ -277,7 +276,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
               borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
               boxShadow: [
                 BoxShadow(
-                  color: ThemeConstants.primary.withValues(alpha: 0.3),
+                  color: context.primaryColor.withAlpha(77),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
@@ -289,7 +288,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
               size: ThemeConstants.iconMd,
             ),
           ),
-          Spaces.mediumH,
+          const HSpace(ThemeConstants.spaceMd),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -313,10 +312,10 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
         Container(
           margin: const EdgeInsets.only(right: ThemeConstants.spaceMd),
           decoration: BoxDecoration(
-            color: context.cardColor.withValues(alpha: 0.8),
+            color: context.cardColor.withAlpha(204),
             borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
             border: Border.all(
-              color: context.borderColor.withValues(alpha: 0.2),
+              color: context.borderColor.withAlpha(51),
             ),
           ),
           child: IconButton(
@@ -326,12 +325,12 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                     height: 20, 
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(ThemeConstants.primary),
+                      valueColor: AlwaysStoppedAnimation<Color>(context.primaryColor),
                     ),
                   )
                 : Icon(
                     Icons.my_location,
-                    color: ThemeConstants.primary,
+                    color: context.primaryColor,
                   ),
             onPressed: _isRetryingLocation ? null : _requestLocation,
             tooltip: 'تحديث الموقع',
@@ -342,16 +341,16 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
         Container(
           margin: const EdgeInsets.only(right: ThemeConstants.spaceMd),
           decoration: BoxDecoration(
-            color: context.cardColor.withValues(alpha: 0.8),
+            color: context.cardColor.withAlpha(204),
             borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
             border: Border.all(
-              color: context.borderColor.withValues(alpha: 0.2),
+              color: context.borderColor.withAlpha(51),
             ),
           ),
           child: IconButton(
             icon: Icon(
               Icons.notifications_outlined,
-              color: ThemeConstants.primary,
+              color: context.primaryColor,
             ),
             onPressed: () => Navigator.pushNamed(context, '/prayer-notifications-settings'),
             tooltip: 'إعدادات الإشعارات',
@@ -362,16 +361,16 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
         Container(
           margin: const EdgeInsets.only(right: ThemeConstants.spaceLg),
           decoration: BoxDecoration(
-            color: context.cardColor.withValues(alpha: 0.8),
+            color: context.cardColor.withAlpha(204),
             borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
             border: Border.all(
-              color: context.borderColor.withValues(alpha: 0.2),
+              color: context.borderColor.withAlpha(51),
             ),
           ),
           child: IconButton(
             icon: Icon(
               Icons.settings_outlined,
-              color: ThemeConstants.primary,
+              color: context.primaryColor,
             ),
             onPressed: () => Navigator.pushNamed(context, '/prayer-settings'),
             tooltip: 'الإعدادات',
@@ -441,13 +440,13 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      ThemeConstants.primary.withValues(alpha: 0.05),
-                      ThemeConstants.primary.withValues(alpha: 0.1),
+                      context.primaryColor.withAlpha(13),
+                      context.primaryColor.withAlpha(26),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
                   border: Border.all(
-                    color: ThemeConstants.primary.withValues(alpha: 0.1),
+                    color: context.primaryColor.withAlpha(26),
                   ),
                 ),
                 child: Row(
@@ -455,16 +454,16 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                     Container(
                       padding: const EdgeInsets.all(ThemeConstants.spaceMd),
                       decoration: BoxDecoration(
-                        color: ThemeConstants.primary.withValues(alpha: 0.1),
+                        color: context.primaryColor.withAlpha(26),
                         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                       ),
                       child: Icon(
                         Icons.schedule_rounded,
-                        color: ThemeConstants.primary,
+                        color: context.primaryColor,
                         size: ThemeConstants.iconMd,
                       ),
                     ),
-                    Spaces.mediumH,
+                    const HSpace(ThemeConstants.spaceMd),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -551,8 +550,8 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
       ),
       
       // مساحة في الأسفل
-      SliverToBoxAdapter(
-        child: Spaces.extraLarge,
+      const SliverToBoxAdapter(
+        child: VSpace(ThemeConstants.spaceXl),
       ),
     ];
   }
@@ -566,7 +565,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
             end: Alignment.bottomCenter,
             colors: [
               context.backgroundColor,
-              ThemeConstants.primary.withValues(alpha: 0.05),
+              context.primaryColor.withAlpha(13),
             ],
           ),
         ),
@@ -581,25 +580,25 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: ThemeConstants.primary.withValues(alpha: 0.3),
+                      color: context.primaryColor.withAlpha(77),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                     ),
                   ],
                 ),
-                child: CircularProgressIndicator(
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                child: const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   strokeWidth: 3,
                 ),
               ),
-              Spaces.extraLarge,
+              const VSpace(ThemeConstants.spaceXl),
               Text(
                 'جاري تحميل مواقيت الصلاة...',
                 style: context.titleStyle.copyWith(
                   fontWeight: ThemeConstants.fontSemiBold,
                 ),
               ),
-              Spaces.medium,
+              const VSpace(ThemeConstants.spaceMd),
               Text(
                 'الرجاء الانتظار بينما نحصل على موقعك',
                 style: context.bodyStyle.copyWith(
@@ -624,11 +623,11 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
             color: context.cardColor,
             borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
             border: Border.all(
-              color: ThemeConstants.error.withValues(alpha: 0.2),
+              color: ThemeConstants.error.withAlpha(51),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: Colors.black.withAlpha(13),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -640,23 +639,23 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
               Container(
                 padding: const EdgeInsets.all(ThemeConstants.spaceLg),
                 decoration: BoxDecoration(
-                  color: ThemeConstants.error.withValues(alpha: 0.1),
+                  color: ThemeConstants.error.withAlpha(26),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.error_outline,
                   size: 64,
                   color: ThemeConstants.error,
                 ),
               ),
-              Spaces.large,
+              const VSpace(ThemeConstants.spaceLg),
               Text(
                 'خطأ في تحميل المواقيت',
                 style: context.titleStyle.copyWith(
                   fontWeight: ThemeConstants.fontBold,
                 ),
               ),
-              Spaces.medium,
+              const VSpace(ThemeConstants.spaceMd),
               Text(
                 _errorMessage ?? 'حدث خطأ غير متوقع',
                 style: context.bodyStyle.copyWith(
@@ -664,7 +663,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                 ),
                 textAlign: TextAlign.center,
               ),
-              Spaces.large,
+              const VSpace(ThemeConstants.spaceLg),
               IslamicButton.primary(
                 text: 'المحاولة مرة أخرى',
                 icon: Icons.refresh,
@@ -688,7 +687,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
             borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: Colors.black.withAlpha(13),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -699,7 +698,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
             children: [
               Container(
                 padding: const EdgeInsets.all(ThemeConstants.spaceLg),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   gradient: ThemeConstants.primaryGradient,
                   shape: BoxShape.circle,
                 ),
@@ -709,14 +708,14 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                   color: Colors.white,
                 ),
               ),
-              Spaces.large,
+              const VSpace(ThemeConstants.spaceLg),
               Text(
                 'لم يتم تحديد الموقع',
                 style: context.titleStyle.copyWith(
                   fontWeight: ThemeConstants.fontBold,
                 ),
               ),
-              Spaces.medium,
+              const VSpace(ThemeConstants.spaceMd),
               Text(
                 'نحتاج لتحديد موقعك لعرض مواقيت الصلاة الصحيحة',
                 style: context.bodyStyle.copyWith(
@@ -724,7 +723,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                 ),
                 textAlign: TextAlign.center,
               ),
-              Spaces.large,
+              const VSpace(ThemeConstants.spaceLg),
               IslamicButton.primary(
                 text: 'تحديد الموقع',
                 icon: Icons.my_location,

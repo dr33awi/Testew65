@@ -1,12 +1,8 @@
 // lib/features/athkar/widgets/athkar_category_card.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:ui';
 
-// ✅ استيرادات النظام الموحد الجديد
-import '../../../app/themes/app_theme.dart';
-import '../../../app/themes/widgets.dart';
-import '../../../app/themes/colors.dart';
+// ✅ استيرادات النظام الموحد الموجود فقط
 import '../../../app/themes/index.dart';
 
 import '../models/athkar_model.dart';
@@ -67,194 +63,154 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
     final categoryIcon = CategoryUtils.getCategoryIcon(widget.category.id);
     final description = CategoryUtils.getCategoryDescription(widget.category.id);
     
-    return AppCard.athkar( // ✅ استخدام النظام الموحد للأذكار
+    return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
         widget.onTap();
       },
-      child: Stack(
-        children: [
-          // الحد اللامع للبطاقات المكتملة فقط
-          if (isCompleted) _buildGlowBorder(),
-          
-          // المحتوى الرئيسي
-          _buildCardContent(
-            context,
-            categoryIcon,
-            description,
-            isCompleted,
-            categoryColor,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGlowBorder() {
-    return AnimatedBuilder(
-      animation: _glowAnimation,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withValues(
-                alpha: 0.5 + (_glowAnimation.value * 0.3),
+      child: AnimatedBuilder(
+        animation: _glowAnimation,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  categoryColor.withValues(alpha: 0.9),
+                  categoryColor.darken(0.1).withValues(alpha: 0.9),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              width: 2,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCardContent(
-    BuildContext context,
-    IconData categoryIcon,
-    String description,
-    bool isCompleted,
-    Color categoryColor,
-  ) {
-    return AppColumn( // ✅ النظام الموحد
-      children: [
-        // الأيقونة
-        IslamicCard.simple( // ✅ النظام الموحد
-          padding: const EdgeInsets.all(16),
-          child: Icon(
-            categoryIcon,
-            color: Colors.white,
-            size: 32,
-          ),
-        ),
-        
-        const Spacer(),
-        
-        // النصوص
-        AppColumn.small( // ✅ النظام الموحد
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // عنوان الفئة
-            IslamicText.dua( // ✅ النظام الموحد للنصوص الإسلامية
-              text: widget.category.title,
-              color: Colors.white,
-              fontSize: 18,
-            ),
-            
-            // الوصف
-            AppText.caption( // ✅ النظام الموحد
-              description,
-              color: Colors.white.withValues(alpha: 0.85),
-              maxLines: 2,
-            ),
-            
-            Spaces.medium, // ✅ النظام الموحد
-            
-            // المعلومات السفلية
-            AppRow( // ✅ النظام الموحد
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // عدد الأذكار
-                AppCard.simple(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  child: AppRichText( // ✅ النظام الموحد
-                    text: '${widget.category.athkar.length} ذكر',
-                    icon: Icons.format_list_numbered_rounded,
-                    color: Colors.white.withValues(alpha: 0.9),
-                    style: AppTextStyle.caption,
-                  ),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+              boxShadow: [
+                BoxShadow(
+                  color: categoryColor.withValues(alpha: 0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
-                
-                // أيقونة الحالة
+                // حد لامع للبطاقات المكتملة
                 if (isCompleted)
-                  AppCard.simple(
-                    padding: const EdgeInsets.all(8),
-                    child: const Icon(
-                      Icons.check_rounded,
-                      color: Colors.white,
-                      size: 20,
+                  BoxShadow(
+                    color: Colors.white.withValues(
+                      alpha: 0.3 + (_glowAnimation.value * 0.2),
                     ),
-                  )
-                else
-                  AppCard.simple(
-                    padding: const EdgeInsets.all(8),
-                    child: Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: Colors.white.withValues(alpha: 0.8),
-                      size: 16,
-                    ),
+                    blurRadius: 15,
+                    spreadRadius: 2,
                   ),
               ],
+              border: isCompleted ? Border.all(
+                color: Colors.white.withValues(
+                  alpha: 0.4 + (_glowAnimation.value * 0.2),
+                ),
+                width: 2,
+              ) : null,
             ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-// ✅ نسخة محسنة من AppRichText للاستخدام المحلي
-class AppRichText extends StatelessWidget {
-  final String text;
-  final IconData? icon;
-  final Color? color;
-  final Color? iconColor;
-  final AppTextStyle style;
-  final TextAlign? textAlign;
-
-  const AppRichText({
-    super.key,
-    required this.text,
-    this.icon,
-    this.color,
-    this.iconColor,
-    this.style = AppTextStyle.body,
-    this.textAlign,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AppRow.small( // ✅ النظام الموحد
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (icon != null) ...[
-          Icon(
-            icon,
-            size: _getIconSize(),
-            color: iconColor ?? color,
-          ),
-          Flexible(
-            child: AppText( // ✅ النظام الموحد
-              text,
-              style: style,
-              color: color,
-              textAlign: textAlign,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+              child: Padding(
+                padding: const EdgeInsets.all(ThemeConstants.spaceMd),
+                child: Column(
+                  children: [
+                    // الأيقونة
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                      ),
+                      child: Icon(
+                        categoryIcon,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                    ),
+                    
+                    const Spacer(),
+                    
+                    // النصوص
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // عنوان الفئة
+                        IslamicText.dua(
+                          text: widget.category.title,
+                          color: Colors.white,
+                          fontSize: 18,
+                        ),
+                        
+                        SizedBox(height: context.smallPadding),
+                        
+                        // الوصف
+                        Text(
+                          description,
+                          style: context.captionStyle.copyWith(
+                            color: Colors.white.withValues(alpha: 0.85),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        
+                        SizedBox(height: context.mediumPadding),
+                        
+                        // المعلومات السفلية
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // عدد الأذكار
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.format_list_numbered_rounded,
+                                    size: 14,
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                  ),
+                                  SizedBox(width: context.smallPadding / 2),
+                                  Text(
+                                    '${widget.category.athkar.length} ذكر',
+                                    style: context.captionStyle.copyWith(
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            
+                            // أيقونة الحالة
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                isCompleted 
+                                    ? Icons.check_rounded 
+                                    : Icons.arrow_forward_ios_rounded,
+                                color: Colors.white,
+                                size: isCompleted ? 20 : 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ],
-      ],
+          );
+        },
+      ),
     );
-  }
-
-  double _getIconSize() {
-    switch (style) {
-      case AppTextStyle.heading:
-        return 28.0;
-      case AppTextStyle.title:
-        return 24.0;
-      case AppTextStyle.subtitle:
-        return 20.0;
-      case AppTextStyle.body:
-        return 18.0;
-      case AppTextStyle.bodyLarge:
-        return 20.0;
-      case AppTextStyle.caption:
-        return 14.0;
-      case AppTextStyle.label:
-        return 16.0;
-    }
   }
 }

@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/index.dart';
 
 class QiblaAccuracyIndicator extends StatefulWidget {
   final double accuracy; // Accuracy from 0.0 to 100.0 (percentage)
@@ -93,29 +93,32 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
     final accuracyColor = _getAccuracyColor(widget.accuracy);
     
     return Container(
-      margin: const EdgeInsets.all(ThemeConstants.space4),
+      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.spaceMd),
+      padding: const EdgeInsets.all(ThemeConstants.spaceMd),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        gradient: LinearGradient(
-          colors: [
-            accuracyColor.withValues(alpha: 0.05),
-            accuracyColor.withValues(alpha: 0.1),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: context.cardColor,
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        boxShadow: ThemeConstants.shadowMd,
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  accuracyColor.withValues(alpha: 0.05),
+                  accuracyColor.withValues(alpha: 0.1),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               border: Border.all(
-                color: context.dividerColor.withValues(alpha: 0.2),
+                color: context.borderColor.withValues(alpha: 0.2),
                 width: 1,
               ),
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
             ),
             child: Stack(
               children: [
@@ -153,7 +156,7 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
       children: [
         // رأس البطاقة
         Container(
-          padding: const EdgeInsets.all(ThemeConstants.space4),
+          padding: const EdgeInsets.all(ThemeConstants.spaceMd),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
@@ -164,7 +167,7 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
               end: Alignment.bottomRight,
             ),
             borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(ThemeConstants.radius2xl),
+              top: Radius.circular(ThemeConstants.radiusLg),
             ),
           ),
           child: Row(
@@ -208,7 +211,7 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                 },
               ),
               
-              ThemeConstants.space4.w,
+              Spaces.mediumH,
               
               // معلومات الدقة
               Expanded(
@@ -217,15 +220,15 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                   children: [
                     Text(
                       'دقة البوصلة',
-                      style: context.titleLarge?.copyWith(
-                        fontWeight: ThemeConstants.bold,
+                      style: context.titleStyle.copyWith(
+                        fontWeight: ThemeConstants.fontBold,
                       ),
                     ),
-                    ThemeConstants.space1.h,
+                    Spaces.small,
                     Text(
                       _getAccuracyDescription(widget.accuracy),
-                      style: context.bodyMedium?.copyWith(
-                        color: context.textSecondaryColor,
+                      style: context.bodyStyle.copyWith(
+                        color: context.secondaryTextColor,
                       ),
                     ),
                   ],
@@ -234,13 +237,12 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
               
               // زر المعايرة
               if (!widget.isCalibrated && widget.onCalibrate != null)
-                AppButton.outline(
+                IslamicButton.outlined(
                   text: 'معايرة',
                   onPressed: () {
                     HapticFeedback.lightImpact();
                     widget.onCalibrate?.call();
                   },
-                  size: ButtonSize.small,
                   icon: Icons.compass_calibration,
                   color: ThemeConstants.warning,
                 ),
@@ -250,7 +252,7 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
         
         // مؤشر الدقة
         Padding(
-          padding: const EdgeInsets.all(ThemeConstants.space5),
+          padding: const EdgeInsets.all(ThemeConstants.spaceMd),
           child: Column(
             children: [
               // مقياس الدقة الدائري
@@ -270,7 +272,7 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                             painter: AccuracyGaugePainter(
                               progress: _progressAnimation.value / 100,
                               color: accuracyColor,
-                              backgroundColor: context.dividerColor.withValues(alpha: 0.2),
+                              backgroundColor: context.borderColor.withValues(alpha: 0.2),
                             ),
                           ),
                         ),
@@ -281,16 +283,16 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                           children: [
                             Text(
                               '${_progressAnimation.value.toStringAsFixed(0)}%',
-                              style: context.displaySmall?.copyWith(
+                              style: context.headingStyle.copyWith(
                                 color: accuracyColor,
-                                fontWeight: ThemeConstants.bold,
+                                fontWeight: ThemeConstants.fontBold,
                                 fontSize: 32,
                               ),
                             ),
                             Text(
                               'الدقة',
-                              style: context.bodyMedium?.copyWith(
-                                color: context.textSecondaryColor,
+                              style: context.bodyStyle.copyWith(
+                                color: context.secondaryTextColor,
                               ),
                             ),
                           ],
@@ -301,16 +303,16 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                 ),
               ),
               
-              ThemeConstants.space5.h,
+              Spaces.large,
               
               // معلومات إضافية
               Container(
-                padding: const EdgeInsets.all(ThemeConstants.space4),
+                padding: const EdgeInsets.all(ThemeConstants.spaceMd),
                 decoration: BoxDecoration(
                   color: context.cardColor,
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                   border: Border.all(
-                    color: context.dividerColor.withValues(alpha: 0.2),
+                    color: context.borderColor.withValues(alpha: 0.2),
                   ),
                 ),
                 child: Column(
@@ -322,11 +324,11 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                       widget.isCalibrated ? ThemeConstants.success : ThemeConstants.warning,
                     ),
                     
-                    ThemeConstants.space3.h,
+                    Spaces.medium,
                     
-                    Divider(color: context.dividerColor.withValues(alpha: 0.2)),
+                    Divider(color: context.borderColor.withValues(alpha: 0.2)),
                     
-                    ThemeConstants.space3.h,
+                    Spaces.medium,
                     
                     _buildStatusRow(
                       context,
@@ -340,7 +342,7 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
               
               // نصائح لتحسين الدقة
               if (widget.accuracy < 70) ...[
-                ThemeConstants.space4.h,
+                Spaces.large,
                 _buildTipsCard(context),
               ],
             ],
@@ -356,14 +358,14 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
       children: [
         Text(
           label,
-          style: context.bodyMedium?.copyWith(
-            color: context.textSecondaryColor,
+          style: context.bodyStyle.copyWith(
+            color: context.secondaryTextColor,
           ),
         ),
         Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: ThemeConstants.space3,
-            vertical: ThemeConstants.space1,
+            horizontal: ThemeConstants.spaceSm,
+            vertical: ThemeConstants.spaceXs,
           ),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
@@ -371,9 +373,9 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
           ),
           child: Text(
             value,
-            style: context.bodySmall?.copyWith(
+            style: context.captionStyle.copyWith(
               color: color,
-              fontWeight: ThemeConstants.semiBold,
+              fontWeight: ThemeConstants.fontSemiBold,
             ),
           ),
         ),
@@ -383,15 +385,10 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
 
   Widget _buildTipsCard(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
+      padding: const EdgeInsets.all(ThemeConstants.spaceMd),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            ThemeConstants.info.withValues(alpha: 0.1),
-            ThemeConstants.info.withValues(alpha: 0.05),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        color: ThemeConstants.info.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         border: Border.all(
           color: ThemeConstants.info.withValues(alpha: 0.3),
         ),
@@ -402,7 +399,7 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(ThemeConstants.space2),
+                padding: const EdgeInsets.all(ThemeConstants.spaceSm),
                 decoration: BoxDecoration(
                   color: ThemeConstants.info.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
@@ -413,23 +410,23 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                   size: ThemeConstants.iconMd,
                 ),
               ),
-              ThemeConstants.space3.w,
+              Spaces.mediumH,
               Expanded(
                 child: Text(
                   'نصائح لتحسين الدقة',
-                  style: context.titleMedium?.copyWith(
+                  style: context.titleStyle.copyWith(
                     color: ThemeConstants.info,
-                    fontWeight: ThemeConstants.semiBold,
+                    fontWeight: ThemeConstants.fontSemiBold,
                   ),
                 ),
               ),
             ],
           ),
           
-          ThemeConstants.space3.h,
+          Spaces.medium,
           
           ..._getTips(widget.accuracy).map((tip) => Padding(
-            padding: const EdgeInsets.only(top: ThemeConstants.space2),
+            padding: const EdgeInsets.only(top: ThemeConstants.spaceSm),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -437,7 +434,7 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                   width: 6,
                   height: 6,
                   margin: const EdgeInsets.only(top: 8, right: 8),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: ThemeConstants.info,
                     shape: BoxShape.circle,
                   ),
@@ -445,8 +442,8 @@ class _QiblaAccuracyIndicatorState extends State<QiblaAccuracyIndicator>
                 Expanded(
                   child: Text(
                     tip,
-                    style: context.bodyMedium?.copyWith(
-                      color: context.textSecondaryColor,
+                    style: context.bodyStyle.copyWith(
+                      color: context.secondaryTextColor,
                       height: 1.5,
                     ),
                   ),
@@ -633,7 +630,7 @@ class AccuracyBackgroundPainter extends CustomPainter {
     
     for (int i = 0; i < 4; i++) {
       final angle = (i * math.pi / 2) + (animation * math.pi / 4);
-      final length = 15.0;
+      const length = 15.0;
       
       final endX = center.dx + length * math.cos(angle);
       final endY = center.dy + length * math.sin(angle);

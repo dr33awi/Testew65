@@ -1,5 +1,4 @@
 // lib/features/prayer_times/screens/prayer_settings_screen.dart
-
 import 'package:flutter/material.dart';
 import '../../../app/themes/index.dart';
 import '../../../app/di/service_locator.dart';
@@ -137,7 +136,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
                 
                 // مساحة في الأسفل
                 const SliverToBoxAdapter(
-                  child: Spaces.extraLarge,
+                  child: VSpace(ThemeConstants.spaceXl),
                 ),
               ],
             ),
@@ -242,7 +241,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
               });
             }
           },
-          activeColor: ThemeConstants.primary,
+          activeColor: context.primaryColor,
         ),
         RadioListTile<AsrJuristic>(
           title: const Text('الحنفي'),
@@ -259,7 +258,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
               });
             }
           },
-          activeColor: ThemeConstants.primary,
+          activeColor: context.primaryColor,
         ),
       ],
     );
@@ -291,7 +290,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
         children: [
           IconButton(
             icon: const Icon(Icons.remove_circle_outline),
-            color: ThemeConstants.primary,
+            color: context.primaryColor,
             onPressed: () {
               _updateAdjustment(key, adjustment - 1);
             },
@@ -308,7 +307,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
-            color: ThemeConstants.primary,
+            color: context.primaryColor,
             onPressed: () {
               _updateAdjustment(key, adjustment + 1);
             },
@@ -373,16 +372,16 @@ class SettingsSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(ThemeConstants.spaceMd),
                 decoration: BoxDecoration(
-                  color: ThemeConstants.primary.withValues(alpha: 0.1),
+                  color: context.primaryColor.withAlpha(26),
                   borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                 ),
                 child: Icon(
                   icon,
-                  color: ThemeConstants.primary,
+                  color: context.primaryColor,
                   size: ThemeConstants.iconMd,
                 ),
               ),
-              Spaces.mediumH,
+              const HSpace(ThemeConstants.spaceMd),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,7 +393,7 @@ class SettingsSection extends StatelessWidget {
                       ),
                     ),
                     if (subtitle != null) ...[
-                      Spaces.small,
+                      const VSpace(ThemeConstants.spaceSm),
                       Text(
                         subtitle!,
                         style: context.captionStyle,
@@ -407,7 +406,8 @@ class SettingsSection extends StatelessWidget {
           ),
         ),
         
-        IslamicCard.simple(
+        IslamicCard(
+          color: context.cardColor,
           margin: const EdgeInsets.symmetric(
             horizontal: ThemeConstants.spaceLg,
             vertical: ThemeConstants.spaceMd,
@@ -481,7 +481,7 @@ class CalculationMethodDialog extends StatelessWidget {
                         onMethodSelected(value);
                       }
                     },
-                    activeColor: ThemeConstants.primary,
+                    activeColor: context.primaryColor,
                   );
                 }).toList(),
               ),
@@ -495,7 +495,7 @@ class CalculationMethodDialog extends StatelessWidget {
             child: TextButton(
               onPressed: () => Navigator.pop(context),
               style: TextButton.styleFrom(
-                foregroundColor: ThemeConstants.primary,
+                foregroundColor: context.primaryColor,
               ),
               child: const Text('إلغاء'),
             ),

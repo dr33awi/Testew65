@@ -169,7 +169,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       return _buildEmptyState();
     }
 
-    return IslamicCard.gradient(
+    return IslamicCard(
       gradient: ThemeConstants.getPrayerGradient(nextPrayer.nameAr),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
@@ -185,9 +185,9 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                 child: Column(
                   children: [
                     _buildHeader(context, nextPrayer),
-                    Spaces.medium,
+                    const VSpace(ThemeConstants.spaceMd),
                     _buildNextPrayerSection(context, nextPrayer),
-                    Spaces.large,
+                    const VSpace(ThemeConstants.spaceLg),
                     _buildPrayerTimeline(context),
                   ],
                 ),
@@ -266,16 +266,16 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
         Container(
           padding: const EdgeInsets.all(ThemeConstants.spaceMd),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withAlpha(51),
             borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
           ),
-          child: Icon(
+          child: const Icon(
             Icons.mosque,
             color: Colors.white,
             size: ThemeConstants.iconLg,
           ),
         ),
-        Spaces.largeH,
+        const HSpace(ThemeConstants.spaceLg),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -290,7 +290,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
               Text(
                 _location?.displayName ?? 'جاري تحديد الموقع...',
                 style: context.captionStyle.copyWith(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withAlpha(204),
                 ),
               ),
             ],
@@ -302,7 +302,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
 
   Widget _buildNextPrayerSection(BuildContext context, PrayerTime nextPrayer) {
     return IslamicCard.simple(
-      color: Colors.white.withOpacity(0.15),
+      color: Colors.white.withAlpha(38),
       child: Column(
         children: [
           Row(
@@ -310,19 +310,19 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
             children: [
               Icon(
                 Icons.schedule_rounded,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withAlpha(204),
                 size: ThemeConstants.iconSm,
               ),
-              Spaces.smallH,
+              const HSpace(ThemeConstants.spaceSm),
               Text(
                 'الصلاة القادمة',
                 style: context.bodyStyle.copyWith(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withAlpha(204),
                 ),
               ),
             ],
           ),
-          Spaces.medium,
+          const VSpace(ThemeConstants.spaceMd),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -339,7 +339,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                   Text(
                     _getNextPrayerMessage(nextPrayer.nameAr),
                     style: context.captionStyle.copyWith(
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withAlpha(204),
                     ),
                   ),
                 ],
@@ -355,7 +355,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                         vertical: ThemeConstants.spaceSm,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withAlpha(229),
                         borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
                       ),
                       child: Text(
@@ -371,7 +371,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
               ),
             ],
           ),
-          Spaces.medium,
+          const VSpace(ThemeConstants.spaceMd),
           _buildTimeRemaining(context, nextPrayer),
         ],
       ),
@@ -390,7 +390,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
             vertical: ThemeConstants.spaceSm,
           ),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withAlpha(51),
             borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
           ),
           child: Row(
@@ -398,14 +398,14 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
             children: [
               Icon(
                 Icons.timer_outlined,
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withAlpha(204),
                 size: ThemeConstants.iconSm,
               ),
-              Spaces.smallH,
+              const HSpace(ThemeConstants.spaceSm),
               Text(
                 remainingTime,
                 style: context.bodyStyle.copyWith(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withAlpha(204),
                   fontWeight: ThemeConstants.fontMedium,
                 ),
               ),
@@ -432,19 +432,19 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
               children: [
                 Icon(
                   Icons.timeline_rounded,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withAlpha(204),
                   size: ThemeConstants.iconSm,
                 ),
-                Spaces.smallH,
+                const HSpace(ThemeConstants.spaceSm),
                 Text(
                   'جدول اليوم',
                   style: context.bodyStyle.copyWith(
-                    color: Colors.white.withOpacity(0.8),
+                    color: Colors.white.withAlpha(204),
                   ),
                 ),
               ],
             ),
-            Spaces.medium,
+            const VSpace(ThemeConstants.spaceMd),
             SizedBox(
               height: 70,
               child: Stack(
@@ -456,7 +456,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                     child: Container(
                       height: 2,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withAlpha(51),
                         borderRadius: BorderRadius.circular(1),
                       ),
                     ),
@@ -501,9 +501,9 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
           height: isActive ? 32 : 28,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isPassed || isActive ? Colors.white : Colors.white.withOpacity(0.4),
+            color: isPassed || isActive ? Colors.white : Colors.white.withAlpha(102),
             border: Border.all(
-              color: Colors.white.withOpacity(0.6),
+              color: Colors.white.withAlpha(153),
               width: 2,
             ),
           ),
@@ -516,12 +516,12 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
           ),
         ),
         
-        Spaces.xs,
+        const VSpace(ThemeConstants.spaceXs),
         
         Text(
           prayer.nameAr,
           style: context.captionStyle.copyWith(
-            color: Colors.white.withOpacity(isActive ? 1.0 : 0.7),
+            color: Colors.white.withAlpha(isActive ? 255 : 179),
             fontWeight: isActive ? ThemeConstants.fontSemiBold : ThemeConstants.fontRegular,
             fontSize: 11,
           ),
@@ -530,7 +530,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
         Text(
           _formatTime(prayer.time),
           style: context.captionStyle.copyWith(
-            color: Colors.white.withOpacity(isActive ? 0.9 : 0.6),
+            color: Colors.white.withAlpha(isActive ? 229 : 153),
             fontSize: 10,
           ),
         ),

@@ -25,8 +25,8 @@ class _LocationHeaderState extends State<LocationHeader> {
     return IslamicCard.gradient(
       gradient: LinearGradient(
         colors: [
-          ThemeConstants.primary.withOpacity(0.9),
-          ThemeConstants.primary.darken(0.1).withOpacity(0.9),
+          context.primaryColor.withAlpha(229),
+          context.primaryColor.darken(0.1).withAlpha(229),
         ],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -59,10 +59,10 @@ class _LocationHeaderState extends State<LocationHeader> {
           width: 70,
           height: 70,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withAlpha(51),
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withAlpha(77),
               width: 2,
             ),
           ),
@@ -73,7 +73,7 @@ class _LocationHeaderState extends State<LocationHeader> {
           ),
         ),
         
-        Spaces.mediumH,
+        const HSpace(ThemeConstants.spaceMd),
         
         Expanded(
           child: Column(
@@ -82,11 +82,11 @@ class _LocationHeaderState extends State<LocationHeader> {
               Text(
                 'موقعك الحالي',
                 style: context.captionStyle.copyWith(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withAlpha(204),
                   fontWeight: ThemeConstants.fontMedium,
                 ),
               ),
-              Spaces.xs,
+              const VSpace(ThemeConstants.spaceXs),
               Row(
                 children: [
                   Expanded(
@@ -107,13 +107,13 @@ class _LocationHeaderState extends State<LocationHeader> {
                         vertical: ThemeConstants.spaceXs,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withAlpha(51),
                         borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
                       ),
                       child: Text(
                         widget.location.countryName!,
                         style: context.captionStyle.copyWith(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withAlpha(229),
                           fontWeight: ThemeConstants.fontSemiBold,
                         ),
                       ),
@@ -121,9 +121,9 @@ class _LocationHeaderState extends State<LocationHeader> {
                   ],
                 ],
               ),
-              Spaces.small,
+              const VSpace(ThemeConstants.spaceSm),
               IslamicCard.simple(
-                color: Colors.white.withOpacity(0.15),
+                color: Colors.white.withAlpha(38),
                 child: Row(
                   children: [
                     Expanded(
@@ -136,7 +136,7 @@ class _LocationHeaderState extends State<LocationHeader> {
                     Container(
                       width: 1,
                       height: 30,
-                      color: Colors.white.withOpacity(0.3),
+                      color: Colors.white.withAlpha(77),
                       margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.spaceSm),
                     ),
                     Expanded(
@@ -153,11 +153,11 @@ class _LocationHeaderState extends State<LocationHeader> {
           ),
         ),
         
-        Spaces.mediumH,
+        const HSpace(ThemeConstants.spaceMd),
         
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withAlpha(51),
             shape: BoxShape.circle,
           ),
           child: IconButton(
@@ -182,14 +182,14 @@ class _LocationHeaderState extends State<LocationHeader> {
       children: [
         Icon(
           icon,
-          color: Colors.white.withOpacity(0.7),
+          color: Colors.white.withAlpha(179),
           size: ThemeConstants.iconSm,
         ),
-        Spaces.xs,
+        const VSpace(ThemeConstants.spaceXs),
         Text(
           label,
           style: context.captionStyle.copyWith(
-            color: Colors.white.withOpacity(0.7),
+            color: Colors.white.withAlpha(179),
             fontSize: 10,
           ),
         ),

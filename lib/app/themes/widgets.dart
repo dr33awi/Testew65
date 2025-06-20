@@ -75,7 +75,7 @@ class IslamicCard extends StatelessWidget {
     required Widget child,
     VoidCallback? onTap,
     EdgeInsetsGeometry? padding,
-    EdgeInsetsGeometry? margin,
+    EdgeInsetsGeometry? margin, required Color color,
   }) {
     return IslamicCard(
       onTap: onTap,

@@ -69,13 +69,13 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
               boxShadow: useGradient 
                   ? [
                       BoxShadow(
-                        color: prayerColor.withOpacity(0.3),
+                        color: prayerColor.withAlpha(77),
                         blurRadius: 25,
                         offset: const Offset(0, 12),
                         spreadRadius: 2,
                       ),
                       BoxShadow(
-                        color: prayerColor.withOpacity(0.1),
+                        color: prayerColor.withAlpha(26),
                         blurRadius: 40,
                         offset: const Offset(0, 20),
                         spreadRadius: 5,
@@ -100,7 +100,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
                         decoration: BoxDecoration(
                           border: Border.all(
                             color: useGradient 
-                                ? Colors.white.withOpacity(0.2)
+                                ? Colors.white.withAlpha(51)
                                 : context.borderColor,
                             width: useGradient ? 1.5 : 1,
                           ),
@@ -122,8 +122,8 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
                                 begin: Alignment.topCenter,
                                 end: Alignment.bottomCenter,
                                 colors: [
-                                  Colors.white.withOpacity(0.2),
-                                  Colors.white.withOpacity(0.05),
+                                  Colors.white.withAlpha(51),
+                                  Colors.white.withAlpha(13),
                                   Colors.transparent,
                                 ],
                               ),
@@ -186,21 +186,21 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
               // أيقونة الحالة
               _buildStatusIcon(context, useGradient, prayerColor, isPassed),
               
-              Spaces.mediumH,
+              const HSpace(ThemeConstants.spaceMd),
               
               // معلومات الصلاة
               Expanded(
                 child: _buildPrayerInfo(context, useGradient, isPassed),
               ),
               
-              Spaces.mediumH,
+              const HSpace(ThemeConstants.spaceMd),
               
               // الوقت
               _buildTimeSection(context, useGradient, prayerColor),
             ],
           ),
           
-          Spaces.medium,
+          const VSpace(ThemeConstants.spaceMd),
           
           // الصف السفلي
           _buildBottomRow(context, useGradient, prayerColor),
@@ -223,20 +223,20 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
       icon = Icons.schedule_rounded;
       iconColor = useGradient ? Colors.white : prayerColor;
       backgroundColor = useGradient 
-          ? Colors.white.withOpacity(0.25)
-          : prayerColor.withOpacity(0.15);
+          ? Colors.white.withAlpha(64)
+          : prayerColor.withAlpha(38);
     } else if (isPassed) {
       icon = Icons.check_circle_rounded;
       iconColor = useGradient ? Colors.white : ThemeConstants.success;
       backgroundColor = useGradient 
-          ? Colors.white.withOpacity(0.25)
-          : ThemeConstants.success.withOpacity(0.15);
+          ? Colors.white.withAlpha(64)
+          : ThemeConstants.success.withAlpha(38);
     } else {
       icon = ThemeConstants.getPrayerIcon(widget.prayer.nameAr);
       iconColor = useGradient ? Colors.white : prayerColor;
       backgroundColor = useGradient 
-          ? Colors.white.withOpacity(0.25)
-          : prayerColor.withOpacity(0.15);
+          ? Colors.white.withAlpha(64)
+          : prayerColor.withAlpha(38);
     }
     
     return Container(
@@ -246,7 +246,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
         color: backgroundColor,
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         border: Border.all(
-          color: iconColor.withOpacity(0.4),
+          color: iconColor.withAlpha(102),
           width: 2,
         ),
       ),
@@ -275,12 +275,12 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
                 : ThemeConstants.fontSemiBold,
           ),
         ),
-        Spaces.small,
+        const VSpace(ThemeConstants.spaceSm),
         Text(
           widget.prayer.nameEn,
           style: context.captionStyle.copyWith(
             color: useGradient 
-                ? Colors.white.withOpacity(0.8)
+                ? Colors.white.withAlpha(204)
                 : context.secondaryTextColor,
           ),
         ),
@@ -293,13 +293,13 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
       padding: const EdgeInsets.all(ThemeConstants.spaceMd),
       decoration: BoxDecoration(
         color: useGradient 
-            ? Colors.white.withOpacity(0.25)
-            : prayerColor.withOpacity(0.15),
+            ? Colors.white.withAlpha(64)
+            : prayerColor.withAlpha(38),
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         border: Border.all(
           color: useGradient 
-              ? Colors.white.withOpacity(0.3)
-              : prayerColor.withOpacity(0.2),
+              ? Colors.white.withAlpha(77)
+              : prayerColor.withAlpha(51),
         ),
       ),
       child: Column(
@@ -313,7 +313,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
             ),
           ),
           if (widget.prayer.iqamaTime != null) ...[
-            Spaces.xs,
+            const VSpace(ThemeConstants.spaceXs),
             Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: ThemeConstants.spaceSm,
@@ -321,7 +321,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
               ),
               decoration: BoxDecoration(
                 color: useGradient 
-                    ? Colors.black.withOpacity(0.2)
+                    ? Colors.black.withAlpha(51)
                     : context.surfaceColor,
                 borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
               ),
@@ -329,7 +329,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
                 'الإقامة ${_formatTime(widget.prayer.iqamaTime!)}',
                 style: context.captionStyle.copyWith(
                   color: useGradient 
-                      ? Colors.white.withOpacity(0.9)
+                      ? Colors.white.withAlpha(229)
                       : context.secondaryTextColor,
                 ),
               ),
@@ -341,11 +341,11 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
   }
 
   Widget _buildBottomRow(BuildContext context, bool useGradient, Color prayerColor) {
-    return IslamicCard.simple(
-      padding: const EdgeInsets.all(ThemeConstants.spaceMd),
+    return IslamicCard(
       color: useGradient 
-          ? Colors.white.withOpacity(0.1)
-          : context.surfaceColor.withOpacity(0.5),
+          ? Colors.white.withAlpha(38)
+          : context.surfaceColor.withAlpha(128),
+      padding: const EdgeInsets.all(ThemeConstants.spaceMd),
       child: Row(
         children: [
           Expanded(
@@ -361,7 +361,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
                 useGradient: useGradient,
                 tooltip: 'تبديل التنبيه',
               ),
-              Spaces.smallH,
+              const HSpace(ThemeConstants.spaceSm),
               _buildActionButton(
                 context: context,
                 icon: Icons.more_vert,
@@ -387,15 +387,15 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
                 Icons.schedule,
                 size: ThemeConstants.iconSm,
                 color: useGradient 
-                    ? Colors.white.withOpacity(0.8) 
+                    ? Colors.white.withAlpha(204) 
                     : context.primaryColor,
               ),
-              Spaces.smallH,
+              const HSpace(ThemeConstants.spaceSm),
               Text(
                 'متبقي ${widget.prayer.remainingTimeText}',
                 style: context.captionStyle.copyWith(
                   color: useGradient 
-                      ? Colors.white.withOpacity(0.9) 
+                      ? Colors.white.withAlpha(229) 
                       : context.textColor,
                   fontWeight: ThemeConstants.fontMedium,
                 ),
@@ -411,15 +411,15 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
             Icons.check_circle,
             size: ThemeConstants.iconSm,
             color: useGradient 
-                ? Colors.white.withOpacity(0.8) 
+                ? Colors.white.withAlpha(204) 
                 : ThemeConstants.success,
           ),
-          Spaces.smallH,
+          const HSpace(ThemeConstants.spaceSm),
           Text(
             'انتهت',
             style: context.captionStyle.copyWith(
               color: useGradient 
-                  ? Colors.white.withOpacity(0.9) 
+                  ? Colors.white.withAlpha(229) 
                   : context.secondaryTextColor,
             ),
           ),
@@ -432,15 +432,15 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
             Icons.access_time,
             size: ThemeConstants.iconSm,
             color: useGradient 
-                ? Colors.white.withOpacity(0.8) 
+                ? Colors.white.withAlpha(204) 
                 : context.secondaryTextColor,
           ),
-          Spaces.smallH,
+          const HSpace(ThemeConstants.spaceSm),
           Text(
             'قادمة',
             style: context.captionStyle.copyWith(
               color: useGradient 
-                  ? Colors.white.withOpacity(0.9) 
+                  ? Colors.white.withAlpha(229) 
                   : context.secondaryTextColor,
             ),
           ),
@@ -459,8 +459,8 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
     return Container(
       decoration: BoxDecoration(
         color: useGradient 
-            ? Colors.white.withOpacity(0.2)
-            : context.primaryColor.withOpacity(0.1),
+            ? Colors.white.withAlpha(51)
+            : context.primaryColor.withAlpha(26),
         borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
       ),
       child: IconButton(
@@ -506,7 +506,8 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
   }
 
   Widget _buildPrayerDetailsSheet(BuildContext context) {
-    return IslamicCard.simple(
+    return IslamicCard(
+      color: context.cardColor,
       margin: const EdgeInsets.all(ThemeConstants.spaceMd),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -519,7 +520,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
                 color: ThemeConstants.getPrayerColor(widget.prayer.nameAr),
                 size: ThemeConstants.iconMd,
               ),
-              Spaces.mediumH,
+              const HSpace(ThemeConstants.spaceMd),
               Text(
                 'صلاة ${widget.prayer.nameAr}',
                 style: context.titleStyle.copyWith(
@@ -529,13 +530,13 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
             ],
           ),
           
-          Spaces.large,
+          const VSpace(ThemeConstants.spaceLg),
           
           _buildDetailRow(context, 'الوقت', _formatTime(widget.prayer.time)),
           if (widget.prayer.iqamaTime != null)
             _buildDetailRow(context, 'الإقامة', _formatTime(widget.prayer.iqamaTime!)),
           
-          Spaces.large,
+          const VSpace(ThemeConstants.spaceLg),
           
           IslamicButton.outlined(
             text: 'إغلاق',
@@ -548,7 +549,8 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
   }
 
   Widget _buildPrayerOptionsSheet(BuildContext context) {
-    return IslamicCard.simple(
+    return IslamicCard(
+      color: context.cardColor,
       margin: const EdgeInsets.all(ThemeConstants.spaceMd),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -560,7 +562,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
             ),
           ),
           
-          Spaces.large,
+          const VSpace(ThemeConstants.spaceLg),
           
           ListTile(
             leading: Icon(
@@ -586,7 +588,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
             },
           ),
           
-          Spaces.medium,
+          const VSpace(ThemeConstants.spaceMd),
           
           IslamicButton.outlined(
             text: 'إلغاء',
