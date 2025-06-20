@@ -34,6 +34,7 @@ import '../../features/prayer_times/services/prayer_times_service.dart';
 import 'package:athkar_app/features/qibla/services/qibla_service.dart';
 import 'package:athkar_app/features/athkar/services/athkar_service.dart';
 import '../../features/daily_quote/services/daily_quote_service.dart';
+import '../../features/tasbih/services/tasbih_service.dart';
 
 // خدمات الإعدادات الموحدة
 import '../../features/settings/services/settings_services_manager.dart';
@@ -248,6 +249,16 @@ class ServiceLocator {
         ),
       );
     }
+
+    // خدمة التسبيح
+    if (!getIt.isRegistered<TasbihService>()) {
+      getIt.registerLazySingleton<TasbihService>(
+        () => TasbihService(
+          storage: getIt<StorageService>(),
+          logger: getIt<LoggerService>(),
+        ),
+      );
+    }
     
     // تسجيل خدمة القبلة
     _registerQiblaServices();
@@ -301,6 +312,7 @@ class ServiceLocator {
            getIt.isRegistered<LoggerService>() &&
            getIt.isRegistered<BatteryService>() &&
            getIt.isRegistered<PrayerTimesService>() &&
+           getIt.isRegistered<TasbihService>() &&
            getIt.isRegistered<SettingsServicesManager>();
   }
 
@@ -310,6 +322,10 @@ class ServiceLocator {
       // التنظيف إذا كانت الخدمة تحتاج ذلك
       if (T == PrayerTimesService && getIt.isRegistered<PrayerTimesService>()) {
         getIt<PrayerTimesService>().dispose();
+      }
+      
+      if (T == TasbihService && getIt.isRegistered<TasbihService>()) {
+        getIt<TasbihService>().dispose();
       }
       
       if (T == SettingsServicesManager && getIt.isRegistered<SettingsServicesManager>()) {
@@ -352,6 +368,11 @@ class ServiceLocator {
       // تنظيف خدمات الميزات
       if (getIt.isRegistered<PrayerTimesService>()) {
         getIt<PrayerTimesService>().dispose();
+      }
+
+      // تنظيف خدمة التسبيح
+      if (getIt.isRegistered<TasbihService>()) {
+        getIt<TasbihService>().dispose();
       }
 
       // تنظيف خدمة البطارية
@@ -445,6 +466,9 @@ extension ServiceLocatorExtensions on BuildContext {
   
   /// الحصول على خدمة الاقتباسات اليومية
   DailyQuoteService get dailyQuoteService => getIt<DailyQuoteService>();
+
+  /// الحصول على خدمة التسبيح
+  TasbihService get tasbihService => getIt<TasbihService>();
   
   /// الحصول على مدير الخدمات الموحد للإعدادات
   SettingsServicesManager get settingsManager => getIt<SettingsServicesManager>();

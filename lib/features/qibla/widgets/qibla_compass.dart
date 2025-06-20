@@ -341,18 +341,11 @@ class _QiblaCompassState extends State<QiblaCompass>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // استخدام أيقونات بديلة متوفرة
             Icon(
-              widget.accuracyPercentage > 70 
-                  ? Icons.signal_cellular_4_bar
-                  : widget.accuracyPercentage > 40
-                      ? Icons.signal_cellular_2_bar
-                      : Icons.signal_cellular_1_bar,
+              _getSignalIcon(widget.accuracyPercentage),
               size: 16,
-              color: widget.accuracyPercentage > 70 
-                  ? context.successColor
-                  : widget.accuracyPercentage > 40
-                      ? context.warningColor
-                      : context.errorColor,
+              color: _getSignalColor(context, widget.accuracyPercentage),
             ),
             const SizedBox(width: 4),
             Text(
@@ -365,6 +358,28 @@ class _QiblaCompassState extends State<QiblaCompass>
         ),
       ),
     );
+  }
+
+  // دالة مساعدة لاختيار الأيقونة المناسبة
+  IconData _getSignalIcon(double percentage) {
+    if (percentage > 70) {
+      return Icons.signal_cellular_4_bar;
+    } else if (percentage > 40) {
+      return Icons.signal_cellular_alt; // بديل للمستوى المتوسط
+    } else {
+      return Icons.signal_cellular_connected_no_internet_0_bar; // بديل للمستوى المنخفض
+    }
+  }
+
+  // دالة مساعدة لاختيار لون الإشارة
+  Color _getSignalColor(BuildContext context, double percentage) {
+    if (percentage > 70) {
+      return context.successColor;
+    } else if (percentage > 40) {
+      return context.warningColor;
+    } else {
+      return context.errorColor;
+    }
   }
 }
 
