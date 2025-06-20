@@ -1,5 +1,4 @@
 // lib/features/prayer_times/widgets/prayer_calendar_strip.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
@@ -57,29 +56,12 @@ class _PrayerCalendarStripState extends State<PrayerCalendarStrip>
     return Container(
       height: 120,
       margin: const EdgeInsets.symmetric(vertical: ThemeConstants.spaceSm),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-        gradient: LinearGradient(
-          colors: [
-            ThemeConstants.primary.withAlpha(0.05),
-            ThemeConstants.primary.withAlpha(0.1),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: context.borderColor.withAlpha(0.2),
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-            ),
+      child: IslamicCard.simple(
+        color: ThemeConstants.primary.withOpacity(0.05),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Column(
               children: [
                 // رأس التقويم
@@ -91,8 +73,8 @@ class _PrayerCalendarStripState extends State<PrayerCalendarStrip>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        ThemeConstants.primary.withAlpha(0.1),
-                        ThemeConstants.primary.withAlpha(0.05),
+                        ThemeConstants.primary.withOpacity(0.1),
+                        ThemeConstants.primary.withOpacity(0.05),
                       ],
                     ),
                     borderRadius: const BorderRadius.vertical(
@@ -104,7 +86,7 @@ class _PrayerCalendarStripState extends State<PrayerCalendarStrip>
                       Container(
                         padding: const EdgeInsets.all(ThemeConstants.spaceSm),
                         decoration: BoxDecoration(
-                          color: ThemeConstants.primary.withAlpha(0.1),
+                          color: ThemeConstants.primary.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                         ),
                         child: Icon(
@@ -213,8 +195,8 @@ class _PrayerCalendarStripState extends State<PrayerCalendarStrip>
               : isToday
                   ? LinearGradient(
                       colors: [
-                        ThemeConstants.primary.withAlpha(0.1),
-                        ThemeConstants.primary.withAlpha(0.05),
+                        ThemeConstants.primary.withOpacity(0.1),
+                        ThemeConstants.primary.withOpacity(0.05),
                       ],
                     )
                   : null,
@@ -222,31 +204,21 @@ class _PrayerCalendarStripState extends State<PrayerCalendarStrip>
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
           border: Border.all(
             color: isSelected
-                ? ThemeConstants.primary.withAlpha(0.3)
+                ? ThemeConstants.primary.withOpacity(0.3)
                 : isToday
-                    ? ThemeConstants.primary.withAlpha(0.2)
-                    : context.borderColor.withAlpha(0.2),
+                    ? ThemeConstants.primary.withOpacity(0.2)
+                    : context.borderColor.withOpacity(0.2),
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: ThemeConstants.primary.withAlpha(0.3),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-              spreadRadius: 1,
-            ),
-          ] : isToday ? [
-            BoxShadow(
-              color: ThemeConstants.primary.withAlpha(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ] : null,
+          boxShadow: isSelected 
+              ? ThemeConstants.shadowLg
+              : isToday 
+                  ? ThemeConstants.shadowSm 
+                  : null,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // اسم اليوم
             Text(
               dayName,
               style: context.captionStyle.copyWith(
@@ -261,16 +233,13 @@ class _PrayerCalendarStripState extends State<PrayerCalendarStrip>
                 fontSize: 11,
               ),
             ),
-            
             Spaces.xs,
-            
-            // رقم اليوم
             Container(
               width: 32,
               height: 32,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.white.withAlpha(0.2)
+                    ? Colors.white.withOpacity(0.2)
                     : Colors.transparent,
                 shape: BoxShape.circle,
               ),
@@ -289,15 +258,13 @@ class _PrayerCalendarStripState extends State<PrayerCalendarStrip>
                 ),
               ),
             ),
-            
-            // اسم الشهر
             Text(
               monthName,
               style: context.captionStyle.copyWith(
                 color: isSelected
-                    ? Colors.white.withAlpha(0.8)
+                    ? Colors.white.withOpacity(0.8)
                     : isToday
-                        ? ThemeConstants.primary.withAlpha(0.8)
+                        ? ThemeConstants.primary.withOpacity(0.8)
                         : context.secondaryTextColor,
                 fontSize: 10,
               ),
