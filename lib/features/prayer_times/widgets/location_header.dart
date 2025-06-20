@@ -1,9 +1,8 @@
 // lib/features/prayer_times/widgets/location_header.dart
-import 'package:athkar_app/app/themes/theme_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/index.dart';
 import '../models/prayer_time_model.dart';
 
 class LocationHeader extends StatefulWidget {
@@ -25,20 +24,20 @@ class _LocationHeaderState extends State<LocationHeader> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(ThemeConstants.space4),
+      margin: const EdgeInsets.all(ThemeConstants.spaceLg),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
         gradient: LinearGradient(
           colors: [
-            ThemeConstants.primary.withValues(alpha: 0.9),
-            ThemeConstants.primary.darken(0.1).withValues(alpha: 0.9),
+            ThemeConstants.primary.withAlpha(0.9),
+            ThemeConstants.primary.darken(0.1).withAlpha(0.9),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Material(
@@ -48,15 +47,15 @@ class _LocationHeaderState extends State<LocationHeader> {
                 HapticFeedback.lightImpact();
                 widget.onTap();
               },
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
               child: Container(
-                padding: const EdgeInsets.all(ThemeConstants.space5),
+                padding: const EdgeInsets.all(ThemeConstants.spaceLg),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withAlpha(0.2),
                     width: 1,
                   ),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
                 ),
                 child: _buildContent(context),
               ),
@@ -75,10 +74,10 @@ class _LocationHeaderState extends State<LocationHeader> {
           width: 70,
           height: 70,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
+            color: Colors.white.withAlpha(0.2),
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
+              color: Colors.white.withAlpha(0.3),
               width: 2,
             ),
           ),
@@ -89,7 +88,7 @@ class _LocationHeaderState extends State<LocationHeader> {
           ),
         ),
         
-        ThemeConstants.space4.w,
+        Spaces.mediumH,
         
         // معلومات الموقع
         Expanded(
@@ -99,13 +98,13 @@ class _LocationHeaderState extends State<LocationHeader> {
               // العنوان
               Text(
                 'موقعك الحالي',
-                style: context.labelMedium?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.8),
-                  fontWeight: ThemeConstants.medium,
+                style: context.captionStyle.copyWith(
+                  color: Colors.white.withAlpha(0.8),
+                  fontWeight: ThemeConstants.fontMedium,
                 ),
               ),
               
-              ThemeConstants.space1.h,
+              Spaces.xs,
               
               // اسم المدينة والدولة
               Row(
@@ -113,9 +112,9 @@ class _LocationHeaderState extends State<LocationHeader> {
                   Expanded(
                     child: Text(
                       widget.location.cityName ?? 'غير محدد',
-                      style: context.titleLarge?.copyWith(
+                      style: context.titleStyle.copyWith(
                         color: Colors.white,
-                        fontWeight: ThemeConstants.bold,
+                        fontWeight: ThemeConstants.fontBold,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -124,18 +123,18 @@ class _LocationHeaderState extends State<LocationHeader> {
                   if (widget.location.countryName != null) ...[
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: ThemeConstants.space2,
-                        vertical: ThemeConstants.space1,
+                        horizontal: ThemeConstants.spaceSm,
+                        vertical: ThemeConstants.spaceXs,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white.withAlpha(0.2),
                         borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
                       ),
                       child: Text(
                         widget.location.countryName!,
-                        style: context.labelSmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontWeight: ThemeConstants.semiBold,
+                        style: context.captionStyle.copyWith(
+                          color: Colors.white.withAlpha(0.9),
+                          fontWeight: ThemeConstants.fontSemiBold,
                         ),
                       ),
                     ),
@@ -143,16 +142,16 @@ class _LocationHeaderState extends State<LocationHeader> {
                 ],
               ),
               
-              ThemeConstants.space2.h,
+              Spaces.small,
               
               // الإحداثيات
               Container(
-                padding: const EdgeInsets.all(ThemeConstants.space3),
+                padding: const EdgeInsets.all(ThemeConstants.spaceMd),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
+                  color: Colors.white.withAlpha(0.15),
                   borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withAlpha(0.2),
                   ),
                 ),
                 child: Row(
@@ -169,8 +168,8 @@ class _LocationHeaderState extends State<LocationHeader> {
                     Container(
                       width: 1,
                       height: 30,
-                      color: Colors.white.withValues(alpha: 0.3),
-                      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space2),
+                      color: Colors.white.withAlpha(0.3),
+                      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.spaceSm),
                     ),
                     
                     // خط الطول
@@ -188,12 +187,12 @@ class _LocationHeaderState extends State<LocationHeader> {
           ),
         ),
         
-        ThemeConstants.space3.w,
+        Spaces.mediumH,
         
         // زر التحديث - بدون حركة
         Container(
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
+            color: Colors.white.withAlpha(0.2),
             shape: BoxShape.circle,
           ),
           child: IconButton(
@@ -218,22 +217,22 @@ class _LocationHeaderState extends State<LocationHeader> {
       children: [
         Icon(
           icon,
-          color: Colors.white.withValues(alpha: 0.7),
+          color: Colors.white.withAlpha(0.7),
           size: ThemeConstants.iconSm,
         ),
-        ThemeConstants.space1.h,
+        Spaces.xs,
         Text(
           label,
-          style: context.labelSmall?.copyWith(
-            color: Colors.white.withValues(alpha: 0.7),
+          style: context.captionStyle.copyWith(
+            color: Colors.white.withAlpha(0.7),
             fontSize: 10,
           ),
         ),
         Text(
           value,
-          style: context.labelMedium?.copyWith(
+          style: context.captionStyle.copyWith(
             color: Colors.white,
-            fontWeight: ThemeConstants.semiBold,
+            fontWeight: ThemeConstants.fontSemiBold,
           ),
         ),
       ],

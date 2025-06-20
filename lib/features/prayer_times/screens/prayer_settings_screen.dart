@@ -112,7 +112,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
         ),
       ),
       body: _isLoading
-          ? Center(child: IslamicLoading(message: 'جاري التحميل...'))
+          ? const Center(child: IslamicLoading(message: 'جاري التحميل...'))
           : CustomScrollView(
               slivers: [
                 // إعدادات طريقة الحساب
@@ -136,7 +136,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
                 ),
                 
                 // مساحة في الأسفل
-                SliverToBoxAdapter(
+                const SliverToBoxAdapter(
                   child: Spaces.extraLarge,
                 ),
               ],

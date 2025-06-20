@@ -88,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
         const CategoryGrid(),
         
         // مساحة في الأسفل
-        SliverToBoxAdapter(
+        const SliverToBoxAdapter(
           child: Spaces.extraLarge,
         ),
       ],
