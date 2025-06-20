@@ -1,9 +1,9 @@
-// lib/app/routes/app_router.dart
-import 'package:flutter/material.dart';
+// lib/app/routes/app_router.dart (محدث لشاشات الإعدادات)
 
-// ✅ استيراد النظام المبسط الجديد فقط
+import 'package:flutter/material.dart';
 import '../themes/index.dart';
 
+// الشاشات الأساسية
 import '../../features/home/screens/home_screen.dart';
 import '../../features/prayer_times/screens/prayer_times_screen.dart';
 import '../../features/prayer_times/screens/prayer_settings_screen.dart';
@@ -13,7 +13,14 @@ import '../../features/athkar/screens/athkar_categories_screen.dart';
 import '../../features/athkar/screens/athkar_details_screen.dart';
 import '../../features/athkar/screens/notification_settings_screen.dart';
 import '../../features/tasbih/screens/tasbih_screen.dart';
+
+// شاشات الإعدادات الجديدة
 import '../../features/settings/screens/settings_screen.dart';
+import '../../features/settings/screens/theme_settings_screen.dart';
+import '../../features/settings/screens/notifications_settings_screen.dart';
+import '../../features/settings/screens/permissions_settings_screen.dart';
+import '../../features/settings/screens/about_settings_screen.dart';
+import '../../features/settings/screens/data_settings_screen.dart';
 
 class AppRouter {
   // Main Routes
@@ -42,15 +49,40 @@ class AppRouter {
   static const String prayerNotificationsSettings = '/prayer-notifications-settings';
   static const String athkarNotificationsSettings = '/athkar-notifications-settings';
 
+  // ==================== Settings Routes الجديدة ====================
+  
+  // المظهر والعرض
+  static const String themeSettings = '/settings/theme';
+  static const String displaySettings = '/settings/display';
+  static const String languageSettings = '/settings/language';
+  
+  // الإشعارات والتنبيهات
+  static const String generalNotifications = '/settings/notifications';
+  static const String prayerNotifications = '/settings/notifications/prayer';
+  static const String athkarNotifications = '/settings/notifications/athkar';
+  static const String notificationHistory = '/settings/notifications/history';
+  
+  // الأذونات والصلاحيات
+  static const String permissionsSettings = '/settings/permissions';
+  static const String privacySettings = '/settings/privacy';
+  
+  // البيانات والتخزين
+  static const String dataSettings = '/settings/data';
+  static const String backupSettings = '/settings/backup';
+  
+  // الدعم والمعلومات
+  static const String aboutSettings = '/settings/about';
+  static const String helpSettings = '/settings/help';
+  static const String supportSettings = '/settings/support';
+
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     debugPrint('AppRouter: Generating route for ${settings.name}');
     
     switch (settings.name) {
-      // Main Screen
+      // ==================== Main Screens ====================
       case home:
         return _fadeRoute(const HomeScreen(), settings);
       
-      // Main Features
       case prayerTimes:
         return _slideRoute(const PrayerTimesScreen(), settings);
         
@@ -83,7 +115,7 @@ class AppRouter {
       case dua:
         return _slideRoute(_buildComingSoonScreen('الأدعية'), settings);
         
-      // Feature Routes
+      // ==================== Feature Routes ====================
       case favorites:
         return _slideRoute(_buildComingSoonScreen('المفضلة'), settings);
         
@@ -110,6 +142,55 @@ class AppRouter {
         
       case athkarNotificationsSettings:
         return _slideRoute(const AthkarNotificationSettingsScreen(), settings);
+
+      // ==================== Settings Routes الجديدة ====================
+      
+      // المظهر والعرض
+      case themeSettings:
+        return _slideRoute(const ThemeSettingsScreen(), settings);
+        
+      case displaySettings:
+        return _slideRoute(_buildComingSoonScreen('إعدادات العرض'), settings);
+        
+      case languageSettings:
+        return _slideRoute(_buildComingSoonScreen('إعدادات اللغة'), settings);
+      
+      // الإشعارات والتنبيهات
+      case generalNotifications:
+        return _slideRoute(const NotificationsSettingsScreen(), settings);
+        
+      case prayerNotifications:
+        return _slideRoute(_buildComingSoonScreen('إشعارات الصلاة'), settings);
+        
+      case athkarNotifications:
+        return _slideRoute(_buildComingSoonScreen('إشعارات الأذكار'), settings);
+        
+      case notificationHistory:
+        return _slideRoute(_buildComingSoonScreen('سجل الإشعارات'), settings);
+      
+      // الأذونات والصلاحيات
+      case permissionsSettings:
+        return _slideRoute(const PermissionsSettingsScreen(), settings);
+        
+      case privacySettings:
+        return _slideRoute(_buildComingSoonScreen('إعدادات الخصوصية'), settings);
+      
+      // البيانات والتخزين
+      case dataSettings:
+        return _slideRoute(const DataSettingsScreen(), settings);
+        
+      case backupSettings:
+        return _slideRoute(_buildComingSoonScreen('إعدادات النسخ الاحتياطي'), settings);
+      
+      // الدعم والمعلومات
+      case aboutSettings:
+        return _slideRoute(const AboutSettingsScreen(), settings);
+        
+      case helpSettings:
+        return _slideRoute(_buildComingSoonScreen('مركز المساعدة'), settings);
+        
+      case supportSettings:
+        return _slideRoute(_buildComingSoonScreen('الدعم الفني'), settings);
         
       // Default
       default:
@@ -156,7 +237,7 @@ class AppRouter {
     );
   }
 
-  // Screen Builders - محدث للنظام المبسط
+  // Screen Builders
   static Widget _buildComingSoonScreen(String title) {
     return Scaffold(
       appBar: IslamicAppBar(title: title),
@@ -382,6 +463,27 @@ class AppRouter {
         return Icons.notifications_active;
       case 'إعدادات الصلاة':
         return Icons.mosque;
+      
+      // Settings Icons
+      case 'إعدادات العرض':
+        return Icons.display_settings;
+      case 'إعدادات اللغة':
+        return Icons.language;
+      case 'إشعارات الصلاة':
+        return Icons.mosque;
+      case 'إشعارات الأذكار':
+        return Icons.menu_book;
+      case 'سجل الإشعارات':
+        return Icons.history;
+      case 'إعدادات الخصوصية':
+        return Icons.privacy_tip;
+      case 'إعدادات النسخ الاحتياطي':
+        return Icons.backup;
+      case 'مركز المساعدة':
+        return Icons.help_center;
+      case 'الدعم الفني':
+        return Icons.support_agent;
+      
       default:
         return Icons.construction;
     }
@@ -428,5 +530,117 @@ class AppRouter {
 
   static void popUntil(bool Function(Route<dynamic>) predicate) {
     return navigatorKey.currentState!.popUntil(predicate);
+  }
+
+  // ==================== Settings Navigation Helpers ====================
+
+  /// Navigate to specific settings screen
+  static Future<void> navigateToSettings({
+    required String settingsType,
+    Object? arguments,
+  }) async {
+    String route;
+    
+    switch (settingsType.toLowerCase()) {
+      case 'theme':
+        route = themeSettings;
+        break;
+      case 'display':
+        route = displaySettings;
+        break;
+      case 'language':
+        route = languageSettings;
+        break;
+      case 'notifications':
+        route = generalNotifications;
+        break;
+      case 'permissions':
+        route = permissionsSettings;
+        break;
+      case 'privacy':
+        route = privacySettings;
+        break;
+      case 'data':
+        route = dataSettings;
+        break;
+      case 'backup':
+        route = backupSettings;
+        break;
+      case 'about':
+        route = aboutSettings;
+        break;
+      case 'help':
+        route = helpSettings;
+        break;
+      case 'support':
+        route = supportSettings;
+        break;
+      default:
+        route = appSettings;
+    }
+
+    await push(route, arguments: arguments);
+  }
+
+  /// Navigate to notification settings by type
+  static Future<void> navigateToNotificationSettings(String type) async {
+    String route;
+    
+    switch (type.toLowerCase()) {
+      case 'prayer':
+        route = prayerNotifications;
+        break;
+      case 'athkar':
+        route = athkarNotifications;
+        break;
+      case 'history':
+        route = notificationHistory;
+        break;
+      default:
+        route = generalNotifications;
+    }
+
+    await push(route);
+  }
+
+  /// Quick navigation to main settings sections
+  static Future<void> openThemeSettings() => push(themeSettings);
+  static Future<void> openNotificationSettings() => push(generalNotifications);
+  static Future<void> openPermissionSettings() => push(permissionsSettings);
+  static Future<void> openDataSettings() => push(dataSettings);
+  static Future<void> openAboutSettings() => push(aboutSettings);
+
+  /// Navigation with result handling
+  static Future<T?> pushForResult<T>(
+    String routeName, {
+    Object? arguments,
+    Duration? timeout,
+  }) async {
+    final future = push<T>(routeName, arguments: arguments);
+    
+    if (timeout != null) {
+      return await future.timeout(timeout);
+    }
+    
+    return await future;
+  }
+
+  /// Safe navigation (checks if route exists)
+  static Future<bool> safePush(String routeName, {Object? arguments}) async {
+    try {
+      await push(routeName, arguments: arguments);
+      return true;
+    } catch (e) {
+      debugPrint('Navigation error: $e');
+      return false;
+    }
+  }
+
+  /// Reset to main settings screen
+  static Future<void> resetToMainSettings() async {
+    await pushAndRemoveUntil(
+      appSettings,
+      (route) => route.settings.name == home,
+    );
   }
 }

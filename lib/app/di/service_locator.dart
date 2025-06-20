@@ -297,7 +297,7 @@ class ServiceLocator {
         // themeCallback: (ThemeMode mode) => AppTheme.setThemeMode(mode),
         notificationManager: NotificationManager.instance,
         batteryService: getIt<BatteryService>(),
-        prayerService: getIt<PrayerTimesService>(),
+        PrayerService: getIt<PrayerTimesService>(),
       );
       
       getIt.registerSingleton<SettingsServicesManager>(settingsManager);
