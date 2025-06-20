@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/index.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
 import '../services/prayer_times_service.dart';
@@ -25,9 +25,6 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
   bool _isSaving = false;
   bool _hasChanges = false;
   bool _showAdvancedSettings = false;
-
-  // استخدام اللون الأخضر الموحد
-  final Color _primaryGreenColor = ThemeConstants.success;
 
   @override
   void initState() {
@@ -67,7 +64,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
       
       if (!mounted) return;
       
-      context.showSuccessSnackBar('تم حفظ إعدادات الإشعارات بنجاح');
+      context.showSuccessMessage('تم حفظ إعدادات الإشعارات بنجاح');
       setState(() {
         _hasChanges = false;
       });
@@ -79,7 +76,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
       
       if (!mounted) return;
       
-      context.showErrorSnackBar('فشل حفظ إعدادات الإشعارات');
+      context.showErrorMessage('فشل حفظ إعدادات الإشعارات');
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -91,13 +88,8 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      appBar: AppBar(
-        backgroundColor: context.backgroundColor,
-        elevation: 0,
-        title: Text(
-          'إعدادات إشعارات الصلوات',
-          style: context.titleLarge?.semiBold,
-        ),
+      appBar: IslamicAppBar(
+        title: 'إعدادات إشعارات الصلوات',
         actions: [
           if (_hasChanges && !_isSaving)
             IconButton(
@@ -117,7 +109,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
         ),
       ),
       body: _isLoading
-          ? Center(child: AppLoading.circular())
+          ? Center(child: IslamicLoading(message: 'جاري التحميل...'))
           : _buildContent(),
     );
   }
@@ -146,75 +138,61 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
         ),
         
         // مساحة في الأسفل
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 80),
+        SliverToBoxAdapter(
+          child: Spaces.extraLarge,
         ),
       ],
     );
   }
 
   Widget _buildMainSettingsSection() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: context.cardColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return IslamicCard.simple(
+      margin: const EdgeInsets.all(ThemeConstants.spaceLg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // عنوان القسم
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: _primaryGreenColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.notifications_active,
-                    color: _primaryGreenColor,
-                    size: 24,
-                  ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(ThemeConstants.spaceMd),
+                decoration: BoxDecoration(
+                  color: ThemeConstants.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'إعدادات الإشعارات العامة',
-                        style: context.titleMedium?.semiBold,
-                      ),
-                      Text(
-                        'تفعيل أو تعطيل الإشعارات لجميع الصلوات',
-                        style: context.bodySmall?.copyWith(
-                          color: context.textSecondaryColor,
-                        ),
-                      ),
-                    ],
-                  ),
+                child: Icon(
+                  Icons.notifications_active,
+                  color: ThemeConstants.primary,
+                  size: ThemeConstants.iconMd,
                 ),
-              ],
-            ),
+              ),
+              Spaces.mediumH,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'إعدادات الإشعارات العامة',
+                      style: context.titleStyle.copyWith(
+                        fontWeight: ThemeConstants.fontSemiBold,
+                      ),
+                    ),
+                    Text(
+                      'تفعيل أو تعطيل الإشعارات لجميع الصلوات',
+                      style: context.captionStyle,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           
-          const Divider(),
+          Spaces.large,
           
           // تفعيل/تعطيل الإشعارات
-          SwitchListTile(
-            title: const Text('تفعيل الإشعارات'),
-            subtitle: const Text('تلقي تنبيهات أوقات الصلاة'),
+          IslamicSwitch(
+            title: 'تفعيل الإشعارات',
+            subtitle: 'تلقي تنبيهات أوقات الصلاة',
             value: _notificationSettings.enabled,
             onChanged: (value) {
               setState(() {
@@ -224,13 +202,13 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 _markAsChanged();
               });
             },
-            activeColor: _primaryGreenColor,
+            activeColor: ThemeConstants.primary,
           ),
           
           // الاهتزاز
-          SwitchListTile(
-            title: const Text('الاهتزاز'),
-            subtitle: const Text('اهتزاز الجهاز عند التنبيه'),
+          IslamicSwitch(
+            title: 'الاهتزاز',
+            subtitle: 'اهتزاز الجهاز عند التنبيه',
             value: _notificationSettings.vibrate,
             onChanged: _notificationSettings.enabled
                 ? (value) {
@@ -242,13 +220,13 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                     });
                   }
                 : null,
-            activeColor: _primaryGreenColor,
+            activeColor: ThemeConstants.primary,
           ),
           
           // تشغيل الأذان
-          SwitchListTile(
-            title: const Text('تشغيل الأذان'),
-            subtitle: const Text('تشغيل صوت الأذان عند حلول وقت الصلاة'),
+          IslamicSwitch(
+            title: 'تشغيل الأذان',
+            subtitle: 'تشغيل صوت الأذان عند حلول وقت الصلاة',
             value: _notificationSettings.playAdhan,
             onChanged: _notificationSettings.enabled
                 ? (value) {
@@ -260,17 +238,17 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                     });
                   }
                 : null,
-            activeColor: _primaryGreenColor,
+            activeColor: ThemeConstants.primary,
           ),
           
           // اختيار نوع صوت الأذان (يظهر فقط عند تفعيل الأذان)
           if (_notificationSettings.enabled && _notificationSettings.playAdhan)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.only(top: ThemeConstants.spaceMd),
               child: Row(
                 children: [
                   const Text('صوت الأذان:'),
-                  const SizedBox(width: 12),
+                  Spaces.mediumH,
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       value: _notificationSettings.adhanSound,
@@ -307,8 +285,6 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 ],
               ),
             ),
-          
-          const SizedBox(height: 8),
         ],
       ),
     );
@@ -323,59 +299,45 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
       (PrayerType.isha, 'العشاء', Icons.bedtime),
     ];
     
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: context.cardColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return IslamicCard.simple(
+      margin: const EdgeInsets.all(ThemeConstants.spaceLg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // عنوان القسم
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: _primaryGreenColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.mosque,
-                    color: _primaryGreenColor,
-                    size: 24,
-                  ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(ThemeConstants.spaceMd),
+                decoration: BoxDecoration(
+                  color: ThemeConstants.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'إعدادات إشعارات الصلوات',
-                        style: context.titleMedium?.semiBold,
-                      ),
-                      Text(
-                        'تخصيص الإشعارات لكل صلاة على حدة',
-                        style: context.bodySmall?.copyWith(
-                          color: context.textSecondaryColor,
-                        ),
-                      ),
-                    ],
-                  ),
+                child: Icon(
+                  Icons.mosque,
+                  color: ThemeConstants.primary,
+                  size: ThemeConstants.iconMd,
                 ),
-              ],
-            ),
+              ),
+              Spaces.mediumH,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'إعدادات إشعارات الصلوات',
+                      style: context.titleStyle.copyWith(
+                        fontWeight: ThemeConstants.fontSemiBold,
+                      ),
+                    ),
+                    Text(
+                      'تخصيص الإشعارات لكل صلاة على حدة',
+                      style: context.captionStyle,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           
           const Divider(),
@@ -404,12 +366,12 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: _primaryGreenColor.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(10),
+          color: ThemeConstants.primary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
         child: Icon(
           icon,
-          color: _primaryGreenColor,
+          color: ThemeConstants.primary,
           size: 20,
         ),
       ),
@@ -436,19 +398,19 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 });
               }
             : null,
-        activeColor: _primaryGreenColor,
+        activeColor: ThemeConstants.primary,
       ),
       children: [
         if (isEnabled && _notificationSettings.enabled)
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
+              horizontal: ThemeConstants.spaceLg,
+              vertical: ThemeConstants.spaceMd,
             ),
             child: Row(
               children: [
                 const Text('التنبيه قبل'),
-                const SizedBox(width: 12),
+                Spaces.mediumH,
                 SizedBox(
                   width: 80,
                   child: DropdownButtonFormField<int>(
@@ -483,7 +445,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                     },
                   ),
                 ),
-                const SizedBox(width: 8),
+                Spaces.small,
                 const Text('دقيقة'),
               ],
             ),
@@ -493,19 +455,8 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
   }
 
   Widget _buildAdvancedSettingsSection() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: context.cardColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+    return IslamicCard.simple(
+      margin: const EdgeInsets.all(ThemeConstants.spaceLg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -517,64 +468,62 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
               });
             },
             leading: Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(ThemeConstants.spaceMd),
               decoration: BoxDecoration(
-                color: _primaryGreenColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                color: ThemeConstants.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
               ),
               child: Icon(
                 Icons.settings,
-                color: _primaryGreenColor,
-                size: 24,
+                color: ThemeConstants.primary,
+                size: ThemeConstants.iconMd,
               ),
             ),
             title: Text(
               'إعدادات متقدمة',
-              style: context.titleMedium?.semiBold,
+              style: context.titleStyle.copyWith(
+                fontWeight: ThemeConstants.fontSemiBold,
+              ),
             ),
             subtitle: Text(
               'إعدادات إضافية للإشعارات',
-              style: context.bodySmall?.copyWith(
-                color: context.textSecondaryColor,
-              ),
+              style: context.captionStyle,
             ),
             children: [
               const Divider(),
               
               // تنبيه لصلاة الجماعة
-              SwitchListTile(
-                title: const Text('تنبيه لصلاة الجماعة'),
-                subtitle: const Text('تذكير إضافي بوقت الإقامة'),
+              IslamicSwitch(
+                title: 'تنبيه لصلاة الجماعة',
+                subtitle: 'تذكير إضافي بوقت الإقامة',
                 value: false, // يمكن إضافة هذه الميزة لاحقًا
                 onChanged: _notificationSettings.enabled ? (_) {
-                  context.showInfoSnackBar('هذه الميزة قيد التطوير');
+                  context.showInfoMessage('هذه الميزة قيد التطوير');
                 } : null,
-                activeColor: _primaryGreenColor,
+                activeColor: ThemeConstants.primary,
               ),
               
               // تنبيه للصلوات الفائتة
-              SwitchListTile(
-                title: const Text('تنبيه للصلوات الفائتة'),
-                subtitle: const Text('تذكير بالصلوات التي لم تتم في وقتها'),
+              IslamicSwitch(
+                title: 'تنبيه للصلوات الفائتة',
+                subtitle: 'تذكير بالصلوات التي لم تتم في وقتها',
                 value: false, // يمكن إضافة هذه الميزة لاحقًا
                 onChanged: _notificationSettings.enabled ? (_) {
-                  context.showInfoSnackBar('هذه الميزة قيد التطوير');
+                  context.showInfoMessage('هذه الميزة قيد التطوير');
                 } : null,
-                activeColor: _primaryGreenColor,
+                activeColor: ThemeConstants.primary,
               ),
               
               // عدم إزعاج أثناء النوم
-              SwitchListTile(
-                title: const Text('عدم إزعاج أثناء النوم'),
-                subtitle: const Text('كتم صوت الإشعارات أثناء ساعات النوم'),
+              IslamicSwitch(
+                title: 'عدم إزعاج أثناء النوم',
+                subtitle: 'كتم صوت الإشعارات أثناء ساعات النوم',
                 value: false, // يمكن إضافة هذه الميزة لاحقًا
                 onChanged: _notificationSettings.enabled ? (_) {
-                  context.showInfoSnackBar('هذه الميزة قيد التطوير');
+                  context.showInfoMessage('هذه الميزة قيد التطوير');
                 } : null,
-                activeColor: _primaryGreenColor,
+                activeColor: ThemeConstants.primary,
               ),
-              
-              const SizedBox(height: 8),
             ],
           ),
         ],
@@ -584,37 +533,13 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
 
   Widget _buildSaveButton() {
     return Padding(
-      padding: const EdgeInsets.all(16),
-      child: SizedBox(
+      padding: const EdgeInsets.all(ThemeConstants.spaceLg),
+      child: IslamicButton.primary(
+        text: 'حفظ الإعدادات',
+        onPressed: _isSaving || !_hasChanges ? null : _saveSettings,
+        isLoading: _isSaving,
         width: double.infinity,
-        height: 50,
-        child: ElevatedButton(
-          onPressed: _isSaving || !_hasChanges ? null : _saveSettings,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: _primaryGreenColor,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            elevation: 2,
-          ),
-          child: _isSaving
-              ? SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : const Text(
-                  'حفظ الإعدادات',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-        ),
+        icon: Icons.save,
       ),
     );
   }

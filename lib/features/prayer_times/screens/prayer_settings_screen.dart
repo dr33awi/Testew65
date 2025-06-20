@@ -1,7 +1,7 @@
 // lib/features/prayer_times/screens/prayer_settings_screen.dart
 
 import 'package:flutter/material.dart';
-import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/index.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
 import '../services/prayer_times_service.dart';
@@ -64,7 +64,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       
       if (!mounted) return;
       
-      context.showSuccessSnackBar('تم حفظ الإعدادات بنجاح');
+      context.showSuccessMessage('تم حفظ الإعدادات بنجاح');
       setState(() {
         _hasChanges = false;
       });
@@ -79,7 +79,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       
       if (!mounted) return;
       
-      context.showErrorSnackBar('فشل حفظ الإعدادات');
+      context.showErrorMessage('فشل حفظ الإعدادات');
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -91,7 +91,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      appBar: CustomAppBar(
+      appBar: IslamicAppBar(
         title: 'إعدادات مواقيت الصلاة',
         actions: [
           if (_hasChanges && !_isSaving)
@@ -112,7 +112,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
         ),
       ),
       body: _isLoading
-          ? Center(child: AppLoading.circular())
+          ? Center(child: IslamicLoading(message: 'جاري التحميل...'))
           : CustomScrollView(
               slivers: [
                 // إعدادات طريقة الحساب
@@ -136,8 +136,8 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
                 ),
                 
                 // مساحة في الأسفل
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: ThemeConstants.space8),
+                SliverToBoxAdapter(
+                  child: Spaces.extraLarge,
                 ),
               ],
             ),
@@ -145,20 +145,29 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
   }
 
   void _showUnsavedChangesDialog() {
-    AppInfoDialog.showConfirmation(
+    showDialog(
       context: context,
-      title: 'تغييرات غير محفوظة',
-      content: 'لديك تغييرات لم يتم حفظها. هل تريد حفظ التغييرات قبل المغادرة؟',
-      confirmText: 'حفظ وخروج',
-      cancelText: 'تجاهل التغييرات',
-      // يمكن تمرير confirmButtonColor هنا إذا كان مطلوباً
-    ).then((result) {
-      if (result == true) {
-        _saveSettings();
-      } else {
-        Navigator.pop(context);
-      }
-    });
+      builder: (context) => AlertDialog(
+        title: const Text('تغييرات غير محفوظة'),
+        content: const Text('لديك تغييرات لم يتم حفظها. هل تريد حفظ التغييرات قبل المغادرة؟'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: const Text('تجاهل التغييرات'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _saveSettings();
+            },
+            child: const Text('حفظ وخروج'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildCalculationSection() {
@@ -233,7 +242,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
               });
             }
           },
-          activeColor: ThemeConstants.success, // استخدام اللون الأخضر
+          activeColor: ThemeConstants.primary,
         ),
         RadioListTile<AsrJuristic>(
           title: const Text('الحنفي'),
@@ -250,7 +259,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
               });
             }
           },
-          activeColor: ThemeConstants.success, // استخدام اللون الأخضر
+          activeColor: ThemeConstants.primary,
         ),
       ],
     );
@@ -282,7 +291,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
         children: [
           IconButton(
             icon: const Icon(Icons.remove_circle_outline),
-            color: ThemeConstants.success, // استخدام اللون الأخضر
+            color: ThemeConstants.primary,
             onPressed: () {
               _updateAdjustment(key, adjustment - 1);
             },
@@ -292,12 +301,14 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
             child: Text(
               adjustment > 0 ? '+$adjustment' : adjustment.toString(),
               textAlign: TextAlign.center,
-              style: context.titleMedium?.semiBold,
+              style: context.titleStyle.copyWith(
+                fontWeight: ThemeConstants.fontSemiBold,
+              ),
             ),
           ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
-            color: ThemeConstants.success, // استخدام اللون الأخضر
+            color: ThemeConstants.primary,
             onPressed: () {
               _updateAdjustment(key, adjustment + 1);
             },
@@ -323,16 +334,13 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
 
   Widget _buildSaveButton() {
     return Padding(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: AppButton.primary(
+      padding: const EdgeInsets.all(ThemeConstants.spaceLg),
+      child: IslamicButton.primary(
         text: 'حفظ الإعدادات',
         onPressed: _isSaving || !_hasChanges ? null : _saveSettings,
         isLoading: _isSaving,
-        isFullWidth: true,
+        width: double.infinity,
         icon: Icons.save,
-        // استخدام الخاصية backgroundColor إذا كانت مدعومة في AppButton.primary
-        // وإلا يمكن استخدام customColor من خلال الطريقة العادية
-        backgroundColor: ThemeConstants.success,
       ),
     );
   }
@@ -359,37 +367,37 @@ class SettingsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.all(ThemeConstants.space4),
+          padding: const EdgeInsets.all(ThemeConstants.spaceLg),
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(ThemeConstants.space2),
+                padding: const EdgeInsets.all(ThemeConstants.spaceMd),
                 decoration: BoxDecoration(
-                  color: ThemeConstants.success.withValues(alpha: 0.1),
+                  color: ThemeConstants.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                 ),
                 child: Icon(
                   icon,
-                  color: ThemeConstants.success,
+                  color: ThemeConstants.primary,
                   size: ThemeConstants.iconMd,
                 ),
               ),
-              ThemeConstants.space3.w,
+              Spaces.mediumH,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: context.titleMedium?.semiBold,
+                      style: context.titleStyle.copyWith(
+                        fontWeight: ThemeConstants.fontSemiBold,
+                      ),
                     ),
                     if (subtitle != null) ...[
-                      ThemeConstants.space1.h,
+                      Spaces.small,
                       Text(
                         subtitle!,
-                        style: context.bodySmall?.copyWith(
-                          color: context.textSecondaryColor,
-                        ),
+                        style: context.captionStyle,
                       ),
                     ],
                   ],
@@ -399,12 +407,12 @@ class SettingsSection extends StatelessWidget {
           ),
         ),
         
-        Card(
+        IslamicCard.simple(
           margin: const EdgeInsets.symmetric(
-            horizontal: ThemeConstants.space4,
-            vertical: ThemeConstants.space2,
+            horizontal: ThemeConstants.spaceLg,
+            vertical: ThemeConstants.spaceMd,
           ),
-          color: context.cardColor,
+          padding: EdgeInsets.zero,
           child: Column(children: children),
         ),
       ],
@@ -445,10 +453,12 @@ class CalculationMethodDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            padding: const EdgeInsets.all(ThemeConstants.space4),
+            padding: const EdgeInsets.all(ThemeConstants.spaceLg),
             child: Text(
               'اختر طريقة الحساب',
-              style: context.titleLarge?.semiBold,
+              style: context.titleStyle.copyWith(
+                fontWeight: ThemeConstants.fontSemiBold,
+              ),
             ),
           ),
           
@@ -462,9 +472,7 @@ class CalculationMethodDialog extends StatelessWidget {
                     title: Text(method.$2),
                     subtitle: Text(
                       method.$3,
-                      style: context.bodySmall?.copyWith(
-                        color: context.textSecondaryColor,
-                      ),
+                      style: context.captionStyle,
                     ),
                     value: method.$1,
                     groupValue: currentMethod,
@@ -473,7 +481,7 @@ class CalculationMethodDialog extends StatelessWidget {
                         onMethodSelected(value);
                       }
                     },
-                    activeColor: ThemeConstants.success, // استخدام اللون الأخضر
+                    activeColor: ThemeConstants.primary,
                   );
                 }).toList(),
               ),
@@ -483,13 +491,13 @@ class CalculationMethodDialog extends StatelessWidget {
           const Divider(),
           
           Padding(
-            padding: const EdgeInsets.all(ThemeConstants.space3),
+            padding: const EdgeInsets.all(ThemeConstants.spaceMd),
             child: TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('إلغاء'),
               style: TextButton.styleFrom(
-                foregroundColor: ThemeConstants.success, // استخدام اللون الأخضر
+                foregroundColor: ThemeConstants.primary,
               ),
+              child: const Text('إلغاء'),
             ),
           ),
         ],

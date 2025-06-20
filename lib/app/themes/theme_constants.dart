@@ -73,8 +73,11 @@ class ThemeConstants {
   static const double radiusMd = 12.0;
   static const double radiusLg = 16.0;
   static const double radiusXl = 20.0;
+  static const double radius2xl = 24.0;
+  static const double radiusFull = 9999.0;
   
   /// أحجام الأيقونات
+  static const double iconXs = 16.0;
   static const double iconSm = 18.0;
   static const double iconMd = 24.0;
   static const double iconLg = 32.0;
@@ -91,6 +94,7 @@ class ThemeConstants {
   static const String fontPrimary = 'Cairo';
   static const String fontArabic = 'Amiri';
   static const String fontQuran = 'Uthmanic';
+  static const String fontFamilyArabic = 'Amiri';
   
   /// أحجام الخطوط
   static const double fontSizeXs = 12.0;
@@ -102,12 +106,29 @@ class ThemeConstants {
   static const double fontSize3xl = 28.0;
   static const double fontSize4xl = 32.0;
   
+  /// أحجام النصوص
+  static const double textSizeXs = 12.0;
+  static const double textSizeSm = 14.0;
+  static const double textSizeMd = 16.0;
+  static const double textSizeLg = 18.0;
+  
   /// أوزان الخطوط
   static const FontWeight fontLight = FontWeight.w300;
   static const FontWeight fontRegular = FontWeight.w400;
   static const FontWeight fontMedium = FontWeight.w500;
   static const FontWeight fontSemiBold = FontWeight.w600;
   static const FontWeight fontBold = FontWeight.w700;
+  
+  /// أوزان الخطوط - أسماء مختصرة
+  static const FontWeight regular = FontWeight.w400;
+  static const FontWeight medium = FontWeight.w500;
+  static const FontWeight semiBold = FontWeight.w600;
+  static const FontWeight bold = FontWeight.w700;
+  
+  /// سماكة الحدود
+  static const double borderThin = 1.0;
+  static const double borderMedium = 2.0;
+  static const double borderThick = 3.0;
   
   // ==================== الظلال ====================
   
@@ -132,6 +153,14 @@ class ThemeConstants {
       color: Colors.black.withValues(alpha: 0.15),
       offset: const Offset(0, 8),
       blurRadius: 16,
+    ),
+  ];
+  
+  static List<BoxShadow> get shadowXl => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.2),
+      offset: const Offset(0, 12),
+      blurRadius: 24,
     ),
   ];
   
@@ -160,6 +189,12 @@ class ThemeConstants {
   static const Duration durationFast = Duration(milliseconds: 150);
   static const Duration durationNormal = Duration(milliseconds: 300);
   static const Duration durationSlow = Duration(milliseconds: 500);
+  static const Duration durationExtraSlow = Duration(milliseconds: 800);
+  
+  // ==================== المنحنيات ====================
+  
+  static const Curve curveSmooth = Curves.easeInOut;
+  static const Curve curveBounce = Curves.elasticOut;
   
   // ==================== الدوال المساعدة ====================
   
@@ -201,6 +236,36 @@ class ThemeConstants {
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     );
+  }
+  
+  /// الحصول على أيقونة الصلاة
+  static IconData getPrayerIcon(String prayerName) {
+    final normalizedName = prayerName.toLowerCase();
+    
+    switch (normalizedName) {
+      case 'الفجر':
+      case 'fajr':
+        return Icons.wb_twilight;
+      case 'الظهر':
+      case 'dhuhr':
+        return Icons.wb_sunny;
+      case 'العصر':
+      case 'asr':
+        return Icons.wb_cloudy;
+      case 'المغرب':
+      case 'maghrib':
+        return Icons.sunset;
+      case 'العشاء':
+      case 'isha':
+        return Icons.nights_stay;
+      default:
+        return Icons.mosque;
+    }
+  }
+  
+  /// الحصول على تدرج للصلاة مع اسم
+  static LinearGradient prayerGradient(String prayerName) {
+    return getPrayerGradient(prayerName);
   }
   
   /// إنشاء ColorScheme للوضع الفاتح
