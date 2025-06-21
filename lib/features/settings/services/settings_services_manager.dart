@@ -1,4 +1,4 @@
-// lib/features/settings/services/settings_service_manager.dart
+// lib/features/settings/services/settings_services_manager.dart (مصحح)
 
 import 'package:flutter/material.dart';
 import 'package:athkar_app/core/infrastructure/services/storage/storage_service.dart';
@@ -6,6 +6,7 @@ import 'package:athkar_app/core/infrastructure/services/permissions/permission_s
 import 'package:athkar_app/core/infrastructure/services/logging/logger_service.dart';
 import 'package:athkar_app/core/infrastructure/services/device/battery/battery_service.dart';
 import 'package:athkar_app/core/infrastructure/services/notifications/notification_manager.dart';
+import 'package:athkar_app/features/prayer_times/services/prayer_times_service.dart';
 import 'package:athkar_app/app/themes/app_theme.dart';
 
 /// مدير موحد لجميع إعدادات التطبيق
@@ -16,6 +17,7 @@ class SettingsServicesManager {
   final LoggerService _logger;
   final NotificationManager _notificationManager;
   final BatteryService _batteryService;
+  final PrayerTimesService _prayerTimesService; // إضافة المعامل المفقود
 
   // Settings Keys
   static const String _themeKey = 'app_theme_mode';
@@ -37,11 +39,13 @@ class SettingsServicesManager {
     required LoggerService logger,
     required NotificationManager notificationManager,
     required BatteryService batteryService,
+    required PrayerTimesService prayerTimesService, // إضافة المعامل
   })  : _storage = storage,
         _permissionService = permissionService,
         _logger = logger,
         _notificationManager = notificationManager,
-        _batteryService = batteryService {
+        _batteryService = batteryService,
+        _prayerTimesService = prayerTimesService {
     _initializeSettings();
   }
 

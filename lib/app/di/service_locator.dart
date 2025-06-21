@@ -1,4 +1,6 @@
-// lib/app/di/service_locator.dart
+// lib/app/di/service_locator.dart (مصحح)
+
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -282,22 +284,20 @@ class ServiceLocator {
     }
   }
 
-  /// تسجيل خدمات الإعدادات الموحدة - الحل المحدث
+  /// تسجيل خدمات الإعدادات الموحدة - مصحح
   void _registerSettingsServices() {
     debugPrint('ServiceLocator: تسجيل خدمات الإعدادات الموحدة...');
     
     if (!getIt.isRegistered<SettingsServicesManager>()) {
-      // إنشاء SettingsServicesManager بدون themeNotifier
-      // يمكن إضافة دالة callback للثيم بدلاً من notifier
+      // إنشاء SettingsServicesManager بالمعاملات الصحيحة
       final settingsManager = SettingsServicesManager(
         storage: getIt<StorageService>(),
         permissionService: getIt<PermissionService>(),
         logger: getIt<LoggerService>(),
-        // إذا كان themeNotifier مطلوب، يمكن تمرير null أو callback
-        // themeCallback: (ThemeMode mode) => AppTheme.setThemeMode(mode),
         notificationManager: NotificationManager.instance,
         batteryService: getIt<BatteryService>(),
-        PrayerService: getIt<PrayerTimesService>(),
+        // إضافة المعامل المفقود prayerTimesService
+        prayerTimesService: getIt<PrayerTimesService>(),
       );
       
       getIt.registerSingleton<SettingsServicesManager>(settingsManager);
