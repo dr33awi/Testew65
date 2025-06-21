@@ -70,7 +70,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
   }
 
   void _startAnimations() {
-    Future.delayed(const Duration(milliseconds: 300), () {
+    Future.delayed(const Duration(milliseconds: 200), () {
       if (mounted) {
         _animationController.forward();
       }
