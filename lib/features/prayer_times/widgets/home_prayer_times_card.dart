@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-import 'dart:math' as math;
 import 'dart:async';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
@@ -29,6 +28,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
   PrayerTime? _nextPrayer;
   PrayerLocation? _location;
   bool _isLoading = true;
+  bool _isLoadingLocation = false; // إضافة حالة تحميل الموقع
   String? _errorMessage;
   
   // Subscriptions
@@ -84,6 +84,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
               _dailyTimes = times;
               _location = times.location;
               _isLoading = false;
+              _isLoadingLocation = false;
               _errorMessage = null;
             });
           }
@@ -93,6 +94,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
             setState(() {
               _errorMessage = 'فشل في تحميل مواقيت الصلاة';
               _isLoading = false;
+              _isLoadingLocation = false;
             });
           }
         },
@@ -132,16 +134,60 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       }
       
       // تحديث البيانات في الخلفية
-      if (_prayerService.currentLocation == null) {
-        await _prayerService.getCurrentLocation();
-      }
-      await _prayerService.updatePrayerTimes();
+      await _updatePrayerTimes();
     } catch (e) {
       if (mounted) {
         setState(() {
           _errorMessage = 'فشل في تحميل مواقيت الصلاة';
           _isLoading = false;
         });
+      }
+    }
+  }
+
+  // دالة جديدة لتحديث مواقيت الصلاة
+  Future<void> _updatePrayerTimes() async {
+    if (_isLoadingLocation) return; // منع التحديث المتعدد
+    
+    setState(() {
+      _isLoadingLocation = true;
+      _errorMessage = null;
+    });
+
+    try {
+      // التحقق من وجود موقع محفوظ
+      if (_prayerService.currentLocation == null) {
+        // طلب الموقع الجديد
+        await _prayerService.getCurrentLocation();
+      }
+      
+      // تحديث المواقيت
+      await _prayerService.updatePrayerTimes();
+      
+      if (mounted) {
+        setState(() {
+          _isLoadingLocation = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'فشل في تحديث الموقع أو مواقيت الصلاة';
+          _isLoadingLocation = false;
+        });
+        
+        // عرض رسالة خطأ
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('فشل في تحديث الموقع. تحقق من إعدادات الموقع.'),
+            backgroundColor: ThemeConstants.error,
+            action: SnackBarAction(
+              label: 'إعادة المحاولة',
+              textColor: Colors.white,
+              onPressed: _updatePrayerTimes,
+            ),
+          ),
+        );
       }
     }
   }
@@ -186,7 +232,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: _navigateToPrayerTimes,
+              onTap: _navigateToPrayerTimes, // الانتقال لشاشة مواقيت الصلاة
               borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
               child: Container(
                 padding: const EdgeInsets.all(ThemeConstants.space5),
@@ -199,7 +245,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                 ),
                 child: Column(
                   children: [
-                    // رأس البطاقة
+                    // رأس البطاقة مع زر التحديث
                     _buildHeader(context, nextPrayer),
                     
                     ThemeConstants.space3.h,
@@ -258,7 +304,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: _loadInitialData,
+          onTap: _updatePrayerTimes, // تحديث البيانات عند الضغط
           borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
           child: Padding(
             padding: const EdgeInsets.all(ThemeConstants.space5),
@@ -303,26 +349,34 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: _loadInitialData,
+          onTap: _updatePrayerTimes, // تحديث الموقع عند الضغط
           borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
           child: Padding(
             padding: const EdgeInsets.all(ThemeConstants.space5),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.location_on,
-                  size: 48,
-                  color: context.textSecondaryColor,
-                ),
+                _isLoadingLocation
+                    ? CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(context.primaryColor),
+                      )
+                    : Icon(
+                        Icons.location_on,
+                        size: 48,
+                        color: context.textSecondaryColor,
+                      ),
                 ThemeConstants.space3.h,
                 Text(
-                  'لم يتم تحديد الموقع',
+                  _isLoadingLocation 
+                      ? 'جاري تحديد الموقع...'
+                      : 'لم يتم تحديد الموقع',
                   style: context.titleMedium?.semiBold,
                 ),
                 ThemeConstants.space2.h,
                 Text(
-                  'اضغط لتحديد موقعك وعرض مواقيت الصلاة',
+                  _isLoadingLocation
+                      ? 'الرجاء الانتظار'
+                      : 'اضغط لتحديد موقعك وعرض مواقيت الصلاة',
                   style: context.bodySmall?.copyWith(
                     color: context.textSecondaryColor,
                   ),
@@ -374,6 +428,32 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                 ),
               ),
             ],
+          ),
+        ),
+        
+        // زر التحديث
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            onPressed: _isLoadingLocation ? null : _updatePrayerTimes,
+            icon: _isLoadingLocation
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Icon(
+                    Icons.refresh,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+            tooltip: 'تحديث الموقع',
           ),
         ),
       ],
@@ -657,7 +737,12 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     HapticFeedback.lightImpact();
     Navigator.pushNamed(context, '/prayer-times').catchError((error) {
       if (context.mounted) {
-        context.showInfoSnackBar('هذه الميزة قيد التطوير');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('هذه الميزة قيد التطوير'),
+            backgroundColor: ThemeConstants.info,
+          ),
+        );
       }
       return null;
     });

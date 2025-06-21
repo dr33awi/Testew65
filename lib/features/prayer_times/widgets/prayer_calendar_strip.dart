@@ -107,7 +107,7 @@ class _PrayerCalendarStripState extends State<PrayerCalendarStrip>
                           color: ThemeConstants.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.calendar_today_rounded,
                           color: ThemeConstants.primary,
                           size: ThemeConstants.iconMd,

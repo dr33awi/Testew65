@@ -134,11 +134,6 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
           child: _buildPrayerNotificationsSection(),
         ),
         
-        // قسم الإعدادات المتقدمة
-        SliverToBoxAdapter(
-          child: _buildAdvancedSettingsSection(),
-        ),
-        
         // زر الحفظ
         SliverToBoxAdapter(
           child: _buildSaveButton(),
@@ -244,74 +239,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
             activeColor: _primaryGreenColor,
           ),
           
-          // تشغيل الأذان
-          SwitchListTile(
-            title: const Text('تشغيل الأذان'),
-            subtitle: const Text('تشغيل صوت الأذان عند حلول وقت الصلاة'),
-            value: _notificationSettings.playAdhan,
-            onChanged: _notificationSettings.enabled
-                ? (value) {
-                    setState(() {
-                      _notificationSettings = _notificationSettings.copyWith(
-                        playAdhan: value,
-                      );
-                      _markAsChanged();
-                    });
-                  }
-                : null,
-            activeColor: _primaryGreenColor,
-          ),
-          
-          // اختيار نوع صوت الأذان (يظهر فقط عند تفعيل الأذان)
-          if (_notificationSettings.enabled && _notificationSettings.playAdhan)
-            _buildAdhanSoundSelector(),
-          
           const SizedBox(height: 8),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAdhanSoundSelector() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: [
-          const Text('صوت الأذان:'),
-          const SizedBox(width: 12),
-          Expanded(
-            child: DropdownButtonFormField<String>(
-              value: _notificationSettings.adhanSound,
-              decoration: const InputDecoration(
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-              items: const [
-                DropdownMenuItem(
-                  value: 'default',
-                  child: Text('الأذان الافتراضي'),
-                ),
-                DropdownMenuItem(
-                  value: 'makkah',
-                  child: Text('أذان الحرم المكي'),
-                ),
-                DropdownMenuItem(
-                  value: 'madinah',
-                  child: Text('أذان المسجد النبوي'),
-                ),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _notificationSettings = _notificationSettings.copyWith(
-                      adhanSound: value,
-                    );
-                    _markAsChanged();
-                  });
-                }
-              },
-            ),
-          ),
         ],
       ),
     );
@@ -501,85 +429,6 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
     );
   }
 
-  Widget _buildAdvancedSettingsSection() {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: context.cardColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ExpansionTile(
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: _primaryGreenColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            Icons.settings,
-            color: _primaryGreenColor,
-            size: 24,
-          ),
-        ),
-        title: Text(
-          'إعدادات متقدمة',
-          style: context.titleMedium?.semiBold,
-        ),
-        subtitle: Text(
-          'إعدادات إضافية للإشعارات',
-          style: context.bodySmall?.copyWith(
-            color: context.textSecondaryColor,
-          ),
-        ),
-        children: [
-          const Divider(),
-          
-          // تنبيه لصلاة الجماعة
-          SwitchListTile(
-            title: const Text('تنبيه لصلاة الجماعة'),
-            subtitle: const Text('تذكير إضافي بوقت الإقامة'),
-            value: false, // يمكن إضافة هذه الميزة لاحقًا
-            onChanged: _notificationSettings.enabled ? (_) {
-              context.showInfoSnackBar('هذه الميزة قيد التطوير');
-            } : null,
-            activeColor: _primaryGreenColor,
-          ),
-          
-          // تنبيه للصلوات الفائتة
-          SwitchListTile(
-            title: const Text('تنبيه للصلوات الفائتة'),
-            subtitle: const Text('تذكير بالصلوات التي لم تتم في وقتها'),
-            value: false, // يمكن إضافة هذه الميزة لاحقًا
-            onChanged: _notificationSettings.enabled ? (_) {
-              context.showInfoSnackBar('هذه الميزة قيد التطوير');
-            } : null,
-            activeColor: _primaryGreenColor,
-          ),
-          
-          // عدم إزعاج أثناء النوم
-          SwitchListTile(
-            title: const Text('عدم إزعاج أثناء النوم'),
-            subtitle: const Text('كتم صوت الإشعارات أثناء ساعات النوم'),
-            value: false, // يمكن إضافة هذه الميزة لاحقًا
-            onChanged: _notificationSettings.enabled ? (_) {
-              context.showInfoSnackBar('هذه الميزة قيد التطوير');
-            } : null,
-            activeColor: _primaryGreenColor,
-          ),
-          
-          const SizedBox(height: 8),
-        ],
-      ),
-    );
-  }
-
   Widget _buildSaveButton() {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -646,5 +495,12 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
         ],
       ),
     );
+  }
+}
+
+// إضافة AppLoading المفقود
+class AppLoading {
+  static Widget circular() {
+    return const CircularProgressIndicator();
   }
 }
