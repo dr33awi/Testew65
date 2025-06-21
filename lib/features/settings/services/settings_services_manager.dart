@@ -1,4 +1,4 @@
-// lib/features/settings/services/settings_services_manager.dart (مصحح)
+// lib/features/settings/services/settings_services_manager.dart (منظف)
 
 import 'package:flutter/material.dart';
 import 'package:athkar_app/core/infrastructure/services/storage/storage_service.dart';
@@ -17,21 +17,15 @@ class SettingsServicesManager {
   final LoggerService _logger;
   final NotificationManager _notificationManager;
   final BatteryService _batteryService;
-  final PrayerTimesService _prayerTimesService; // إضافة المعامل المفقود
+  final PrayerTimesService _prayerTimesService;
 
-  // Settings Keys
+  // Settings Keys - مفاتيح الإعدادات المطلوبة فقط
   static const String _themeKey = 'app_theme_mode';
-  static const String _languageKey = 'app_language';
-  static const String _fontSizeKey = 'app_font_size';
   static const String _notificationsEnabledKey = 'notifications_enabled';
   static const String _vibrationEnabledKey = 'vibration_enabled';
   static const String _quietTimeStartKey = 'quiet_time_start';
   static const String _quietTimeEndKey = 'quiet_time_end';
   static const String _minBatteryLevelKey = 'min_battery_level';
-  static const String _autoBackupKey = 'auto_backup_enabled';
-  static const String _dataCompressionKey = 'data_compression_enabled';
-  static const String _analyticsEnabledKey = 'analytics_enabled';
-  static const String _crashReportingKey = 'crash_reporting_enabled';
 
   SettingsServicesManager({
     required StorageService storage,
@@ -39,7 +33,7 @@ class SettingsServicesManager {
     required LoggerService logger,
     required NotificationManager notificationManager,
     required BatteryService batteryService,
-    required PrayerTimesService prayerTimesService, // إضافة المعامل
+    required PrayerTimesService prayerTimesService,
   })  : _storage = storage,
         _permissionService = permissionService,
         _logger = logger,
@@ -119,60 +113,6 @@ class SettingsServicesManager {
       message: '[SettingsManager] تم تطبيق السمة المحفوظة',
       data: {'theme': themeMode.toString()},
     );
-  }
-
-  // ==================== Language Settings ====================
-
-  /// الحصول على اللغة الحالية
-  String getLanguage() {
-    return _storage.getString(_languageKey) ?? 'ar';
-  }
-
-  /// تحديث اللغة
-  Future<bool> setLanguage(String languageCode) async {
-    try {
-      final success = await _storage.setString(_languageKey, languageCode);
-      if (success) {
-        _logger.info(
-          message: '[SettingsManager] تم تحديث اللغة',
-          data: {'language': languageCode},
-        );
-      }
-      return success;
-    } catch (e) {
-      _logger.error(
-        message: '[SettingsManager] خطأ في تحديث اللغة',
-        error: e,
-      );
-      return false;
-    }
-  }
-
-  // ==================== Display Settings ====================
-
-  /// الحصول على حجم الخط
-  double getFontSize() {
-    return _storage.getDouble(_fontSizeKey) ?? 1.0;
-  }
-
-  /// تحديث حجم الخط
-  Future<bool> setFontSize(double size) async {
-    try {
-      final success = await _storage.setDouble(_fontSizeKey, size);
-      if (success) {
-        _logger.info(
-          message: '[SettingsManager] تم تحديث حجم الخط',
-          data: {'fontSize': size},
-        );
-      }
-      return success;
-    } catch (e) {
-      _logger.error(
-        message: '[SettingsManager] خطأ في تحديث حجم الخط',
-        error: e,
-      );
-      return false;
-    }
   }
 
   // ==================== Notification Settings ====================
@@ -317,110 +257,6 @@ class SettingsServicesManager {
     }
   }
 
-  // ==================== Data Settings ====================
-
-  /// فحص حالة النسخ الاحتياطي التلقائي
-  bool isAutoBackupEnabled() {
-    return _storage.getBool(_autoBackupKey) ?? false;
-  }
-
-  /// تفعيل/تعطيل النسخ الاحتياطي التلقائي
-  Future<bool> setAutoBackupEnabled(bool enabled) async {
-    try {
-      final success = await _storage.setBool(_autoBackupKey, enabled);
-      if (success) {
-        _logger.info(
-          message: '[SettingsManager] تم تحديث النسخ الاحتياطي التلقائي',
-          data: {'enabled': enabled},
-        );
-      }
-      return success;
-    } catch (e) {
-      _logger.error(
-        message: '[SettingsManager] خطأ في تحديث النسخ الاحتياطي التلقائي',
-        error: e,
-      );
-      return false;
-    }
-  }
-
-  /// فحص حالة ضغط البيانات
-  bool isDataCompressionEnabled() {
-    return _storage.getBool(_dataCompressionKey) ?? true;
-  }
-
-  /// تفعيل/تعطيل ضغط البيانات
-  Future<bool> setDataCompressionEnabled(bool enabled) async {
-    try {
-      final success = await _storage.setBool(_dataCompressionKey, enabled);
-      if (success) {
-        _logger.info(
-          message: '[SettingsManager] تم تحديث ضغط البيانات',
-          data: {'enabled': enabled},
-        );
-      }
-      return success;
-    } catch (e) {
-      _logger.error(
-        message: '[SettingsManager] خطأ في تحديث ضغط البيانات',
-        error: e,
-      );
-      return false;
-    }
-  }
-
-  // ==================== Privacy Settings ====================
-
-  /// فحص حالة Analytics
-  bool isAnalyticsEnabled() {
-    return _storage.getBool(_analyticsEnabledKey) ?? true;
-  }
-
-  /// تفعيل/تعطيل Analytics
-  Future<bool> setAnalyticsEnabled(bool enabled) async {
-    try {
-      final success = await _storage.setBool(_analyticsEnabledKey, enabled);
-      if (success) {
-        _logger.info(
-          message: '[SettingsManager] تم تحديث Analytics',
-          data: {'enabled': enabled},
-        );
-      }
-      return success;
-    } catch (e) {
-      _logger.error(
-        message: '[SettingsManager] خطأ في تحديث Analytics',
-        error: e,
-      );
-      return false;
-    }
-  }
-
-  /// فحص حالة تقارير الأخطاء
-  bool isCrashReportingEnabled() {
-    return _storage.getBool(_crashReportingKey) ?? true;
-  }
-
-  /// تفعيل/تعطيل تقارير الأخطاء
-  Future<bool> setCrashReportingEnabled(bool enabled) async {
-    try {
-      final success = await _storage.setBool(_crashReportingKey, enabled);
-      if (success) {
-        _logger.info(
-          message: '[SettingsManager] تم تحديث تقارير الأخطاء',
-          data: {'enabled': enabled},
-        );
-      }
-      return success;
-    } catch (e) {
-      _logger.error(
-        message: '[SettingsManager] خطأ في تحديث تقارير الأخطاء',
-        error: e,
-      );
-      return false;
-    }
-  }
-
   // ==================== Permission Management ====================
 
   /// فحص جميع الأذونات
@@ -462,9 +298,9 @@ class SettingsServicesManager {
     }
   }
 
-  // ==================== Data Management ====================
+  // ==================== Basic Data Management ====================
 
-  /// الحصول على حجم البيانات
+  /// الحصول على حجم البيانات (للعرض فقط)
   Future<int> getDataSize() async {
     try {
       return await _storage.getStorageSize();
@@ -477,39 +313,14 @@ class SettingsServicesManager {
     }
   }
 
-  /// مسح جميع البيانات
-  Future<bool> clearAllData() async {
-    try {
-      final success = await _storage.clear();
-      if (success) {
-        _logger.info(message: '[SettingsManager] تم مسح جميع البيانات');
-        // إعادة تهيئة الإعدادات الافتراضية
-        _initializeSettings();
-      }
-      return success;
-    } catch (e) {
-      _logger.error(
-        message: '[SettingsManager] خطأ في مسح البيانات',
-        error: e,
-      );
-      return false;
-    }
-  }
-
   /// إعادة تعيين الإعدادات إلى القيم الافتراضية
   Future<bool> resetToDefaults() async {
     try {
-      // إعادة تعيين الإعدادات الأساسية
+      // إعادة تعيين الإعدادات الأساسية فقط
       await setThemeMode(ThemeMode.system);
-      await setLanguage('ar');
-      await setFontSize(1.0);
       await setNotificationsEnabled(true);
       await setVibrationEnabled(true);
       await setMinBatteryLevel(15);
-      await setAutoBackupEnabled(false);
-      await setDataCompressionEnabled(true);
-      await setAnalyticsEnabled(true);
-      await setCrashReportingEnabled(true);
 
       _logger.info(message: '[SettingsManager] تم إعادة تعيين الإعدادات');
       return true;
@@ -522,26 +333,20 @@ class SettingsServicesManager {
     }
   }
 
-  /// إنشاء نسخة احتياطية من الإعدادات
-  Future<Map<String, dynamic>?> exportSettings() async {
+  /// إنشاء نسخة احتياطية مبسطة من الإعدادات الأساسية
+  Future<Map<String, dynamic>?> exportBasicSettings() async {
     try {
       final settings = <String, dynamic>{
         'theme_mode': getThemeMode().toString(),
-        'language': getLanguage(),
-        'font_size': getFontSize(),
         'notifications_enabled': areNotificationsEnabled(),
         'vibration_enabled': isVibrationEnabled(),
         'quiet_time_start': _formatTimeOfDayForExport(getQuietTimeStart()),
         'quiet_time_end': _formatTimeOfDayForExport(getQuietTimeEnd()),
         'min_battery_level': getMinBatteryLevel(),
-        'auto_backup': isAutoBackupEnabled(),
-        'data_compression': isDataCompressionEnabled(),
-        'analytics_enabled': isAnalyticsEnabled(),
-        'crash_reporting': isCrashReportingEnabled(),
         'export_date': DateTime.now().toIso8601String(),
       };
 
-      _logger.info(message: '[SettingsManager] تم تصدير الإعدادات');
+      _logger.info(message: '[SettingsManager] تم تصدير الإعدادات الأساسية');
       return settings;
     } catch (e) {
       _logger.error(
@@ -552,21 +357,13 @@ class SettingsServicesManager {
     }
   }
 
-  /// استيراد الإعدادات من نسخة احتياطية
-  Future<bool> importSettings(Map<String, dynamic> settings) async {
+  /// استيراد الإعدادات الأساسية من نسخة احتياطية
+  Future<bool> importBasicSettings(Map<String, dynamic> settings) async {
     try {
       // استيراد الإعدادات مع التحقق من صحتها
       if (settings['theme_mode'] != null) {
         final themeMode = _parseThemeMode(settings['theme_mode']);
         if (themeMode != null) await setThemeMode(themeMode);
-      }
-
-      if (settings['language'] != null) {
-        await setLanguage(settings['language']);
-      }
-
-      if (settings['font_size'] != null) {
-        await setFontSize(settings['font_size'].toDouble());
       }
 
       if (settings['notifications_enabled'] != null) {
@@ -581,7 +378,7 @@ class SettingsServicesManager {
         await setMinBatteryLevel(settings['min_battery_level']);
       }
 
-      _logger.info(message: '[SettingsManager] تم استيراد الإعدادات');
+      _logger.info(message: '[SettingsManager] تم استيراد الإعدادات الأساسية');
       return true;
     } catch (e) {
       _logger.error(

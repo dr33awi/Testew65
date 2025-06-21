@@ -39,8 +39,13 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
             
             Spaces.large,
             
-            // إعدادات إضافية
-            _buildAdditionalSettings(context),
+            // معلومات مفيدة
+            _buildInfoSection(context),
+            
+            Spaces.large,
+            
+            // زر حفظ الإعدادات
+            _buildSaveButton(context),
           ],
         ),
       ),
@@ -182,6 +187,13 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
           
           Spaces.medium,
           
+          Text(
+            'اختر السمة المناسبة لك',
+            style: context.captionStyle,
+          ),
+          
+          Spaces.medium,
+          
           // السمة التلقائية
           _buildThemeOption(
             context: context,
@@ -286,73 +298,56 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
     );
   }
 
-  Widget _buildAdditionalSettings(BuildContext context) {
-    return Column(
-      children: [
-        // معلومات إضافية
-        IslamicCard.simple(
-          color: context.cardColor,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildInfoSection(BuildContext context) {
+    return IslamicCard.simple(
+      color: context.cardColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: context.primaryColor,
-                  ),
-                  Spaces.smallH,
-                  Text(
-                    'معلومات مفيدة',
-                    style: context.titleStyle.copyWith(
-                      color: context.primaryColor,
-                    ),
-                  ),
-                ],
+              Icon(
+                Icons.info_outline,
+                color: context.primaryColor,
               ),
-              
-              Spaces.medium,
-              
-              _buildInfoItem(
-                context: context,
-                icon: Icons.battery_saver_outlined,
-                title: 'توفير البطارية',
-                description: 'الوضع الداكن يساعد في توفير طاقة البطارية في الشاشات OLED',
-              ),
-              
-              Spaces.small,
-              
-              _buildInfoItem(
-                context: context,
-                icon: Icons.remove_red_eye_outlined,
-                title: 'راحة العين',
-                description: 'الوضع الداكن أكثر راحة للعينين في الإضاءة المنخفضة',
-              ),
-              
-              Spaces.small,
-              
-              _buildInfoItem(
-                context: context,
-                icon: Icons.sync_outlined,
-                title: 'التزامن التلقائي',
-                description: 'الوضع التلقائي يتغير حسب وقت اليوم أو إعدادات النظام',
+              Spaces.smallH,
+              Text(
+                'معلومات مفيدة',
+                style: context.titleStyle.copyWith(
+                  color: context.primaryColor,
+                ),
               ),
             ],
           ),
-        ),
-        
-        Spaces.medium,
-        
-        // زر حفظ الإعدادات
-        SizedBox(
-          width: double.infinity,
-          child: IslamicButton.primary(
-            text: 'حفظ الإعدادات',
-            icon: Icons.save_outlined,
-            onPressed: _saveSettings,
+          
+          Spaces.medium,
+          
+          _buildInfoItem(
+            context: context,
+            icon: Icons.battery_saver_outlined,
+            title: 'توفير البطارية',
+            description: 'الوضع الداكن يساعد في توفير طاقة البطارية في الشاشات OLED',
           ),
-        ),
-      ],
+          
+          Spaces.small,
+          
+          _buildInfoItem(
+            context: context,
+            icon: Icons.remove_red_eye_outlined,
+            title: 'راحة العين',
+            description: 'الوضع الداكن أكثر راحة للعينين في الإضاءة المنخفضة',
+          ),
+          
+          Spaces.small,
+          
+          _buildInfoItem(
+            context: context,
+            icon: Icons.sync_outlined,
+            title: 'التزامن التلقائي',
+            description: 'الوضع التلقائي يتغير حسب وقت اليوم أو إعدادات النظام',
+          ),
+        ],
+      ),
     );
   }
 
@@ -390,6 +385,17 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSaveButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: IslamicButton.primary(
+        text: 'حفظ الإعدادات',
+        icon: Icons.save_outlined,
+        onPressed: _saveSettings,
+      ),
     );
   }
 

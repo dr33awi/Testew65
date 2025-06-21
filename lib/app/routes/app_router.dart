@@ -20,7 +20,6 @@ import '../../features/settings/screens/theme_settings_screen.dart';
 import '../../features/settings/screens/notifications_settings_screen.dart';
 import '../../features/settings/screens/permissions_settings_screen.dart';
 import '../../features/settings/screens/about_settings_screen.dart';
-import '../../features/settings/screens/data_settings_screen.dart';
 
 class AppRouter {
   // Main Routes
@@ -175,9 +174,6 @@ class AppRouter {
       case privacySettings:
         return _slideRoute(_buildComingSoonScreen('إعدادات الخصوصية'), settings);
       
-      // البيانات والتخزين
-      case dataSettings:
-        return _slideRoute(const DataSettingsScreen(), settings);
         
       case backupSettings:
         return _slideRoute(_buildComingSoonScreen('إعدادات النسخ الاحتياطي'), settings);

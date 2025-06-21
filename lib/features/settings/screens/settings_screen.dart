@@ -2,9 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:athkar_app/app/themes/index.dart';
-import 'package:athkar_app/app/di/service_locator.dart';
-import 'package:athkar_app/core/infrastructure/services/storage/storage_service.dart';
-
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -48,19 +45,6 @@ class SettingsScreen extends StatelessWidget {
             icon: Icons.brightness_6_outlined,
             onTap: () => _navigateToThemeSettings(context),
             trailing: _getThemeModeText(),
-          ),
-          _SettingsItem(
-            title: 'حجم الخط',
-            subtitle: 'تكبير أو تصغير النصوص',
-            icon: Icons.format_size_outlined,
-            onTap: () => _navigateToDisplaySettings(context),
-          ),
-          _SettingsItem(
-            title: 'اللغة',
-            subtitle: 'العربية أو الإنجليزية',
-            icon: Icons.language_outlined,
-            onTap: () => _navigateToLanguageSettings(context),
-            trailing: 'العربية',
           ),
         ],
       ),
@@ -108,36 +92,6 @@ class SettingsScreen extends StatelessWidget {
             icon: Icons.admin_panel_settings_outlined,
             onTap: () => _navigateToPermissionsSettings(context),
           ),
-          _SettingsItem(
-            title: 'الخصوصية',
-            subtitle: 'إعدادات الخصوصية والأمان',
-            icon: Icons.privacy_tip_outlined,
-            onTap: () => _navigateToPrivacySettings(context),
-          ),
-        ],
-      ),
-      
-      Spaces.large,
-      
-      // التخزين والبيانات
-      _buildSettingsSection(
-        context: context,
-        title: 'التخزين والبيانات',
-        icon: Icons.storage_outlined,
-        items: [
-          _SettingsItem(
-            title: 'إدارة البيانات',
-            subtitle: 'النسخ الاحتياطي والاستعادة',
-            icon: Icons.backup_outlined,
-            onTap: () => _navigateToDataSettings(context),
-          ),
-          _SettingsItem(
-            title: 'مسح البيانات',
-            subtitle: 'إعادة تعيين إعدادات التطبيق',
-            icon: Icons.delete_outline,
-            onTap: () => _showClearDataDialog(context),
-            isDestructive: true,
-          ),
         ],
       ),
       
@@ -156,10 +110,10 @@ class SettingsScreen extends StatelessWidget {
             onTap: () => _navigateToAboutSettings(context),
           ),
           _SettingsItem(
-            title: 'مركز المساعدة',
-            subtitle: 'الأسئلة الشائعة والدعم',
-            icon: Icons.help_center_outlined,
-            onTap: () => _navigateToHelpSettings(context),
+            title: 'تواصل معنا',
+            subtitle: 'راسلنا أو تواصل مع فريق الدعم',
+            icon: Icons.contact_support_outlined,
+            onTap: () => _navigateToContactUs(context),
           ),
           _SettingsItem(
             title: 'تقييم التطبيق',
@@ -300,14 +254,6 @@ class SettingsScreen extends StatelessWidget {
     Navigator.pushNamed(context, '/settings/theme');
   }
 
-  void _navigateToDisplaySettings(BuildContext context) {
-    Navigator.pushNamed(context, '/settings/display');
-  }
-
-  void _navigateToLanguageSettings(BuildContext context) {
-    Navigator.pushNamed(context, '/settings/language');
-  }
-
   void _navigateToNotificationSettings(BuildContext context, String type) {
     Navigator.pushNamed(context, '/settings/notifications/$type');
   }
@@ -320,20 +266,15 @@ class SettingsScreen extends StatelessWidget {
     Navigator.pushNamed(context, '/settings/permissions');
   }
 
-  void _navigateToPrivacySettings(BuildContext context) {
-    Navigator.pushNamed(context, '/settings/privacy');
-  }
-
-  void _navigateToDataSettings(BuildContext context) {
-    Navigator.pushNamed(context, '/settings/data');
-  }
-
   void _navigateToAboutSettings(BuildContext context) {
     Navigator.pushNamed(context, '/settings/about');
   }
 
-  void _navigateToHelpSettings(BuildContext context) {
-    Navigator.pushNamed(context, '/settings/help');
+  void _navigateToContactUs(BuildContext context) {
+    // يمكن إضافة شاشة تواصل معنا أو فتح تطبيق البريد الإلكتروني
+    context.showInfoMessage('سيتم فتح نموذج التواصل معنا');
+    // أو يمكن التنقل إلى شاشة مخصصة:
+    // Navigator.pushNamed(context, '/settings/contact');
   }
 
   // Helper Methods
@@ -345,50 +286,6 @@ class SettingsScreen extends StatelessWidget {
         return 'داكن';
       case ThemeMode.system:
         return 'تلقائي';
-    }
-  }
-
-  void _showClearDataDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('مسح البيانات'),
-        content: const Text(
-          'هل أنت متأكد من رغبتك في مسح جميع بيانات التطبيق؟\n'
-          'هذا الإجراء لا يمكن التراجع عنه.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _clearAppData(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: context.errorColor,
-            ),
-            child: const Text('مسح'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _clearAppData(BuildContext context) async {
-    try {
-      final storage = getIt<StorageService>();
-      await storage.clear();
-      
-      if (context.mounted) {
-        context.showSuccessMessage('تم مسح البيانات بنجاح');
-      }
-    } catch (e) {
-      if (context.mounted) {
-        context.showErrorMessage('حدث خطأ أثناء مسح البيانات');
-      }
     }
   }
 
