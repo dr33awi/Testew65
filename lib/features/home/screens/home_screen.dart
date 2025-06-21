@@ -43,11 +43,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: _buildMainContent(context),
+      body: _buildMainContent(),
     );
   }
 
-  Widget _buildMainContent(BuildContext context) {
+  Widget _buildMainContent() {
     return CustomScrollView(
       controller: _scrollController,
       physics: const BouncingScrollPhysics(),
@@ -59,43 +59,43 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              ThemeConstants.space4.h,
+              const SizedBox(height: ThemeConstants.space4),
               
-              // رسالة الترحيب البسيطة
+              // رسالة الترحيب
               const WelcomeMessage(),
               
-              ThemeConstants.space4.h,
+              const SizedBox(height: ThemeConstants.space4),
               
               // بطاقة مواقيت الصلاة
               const PrayerTimesCard(),
               
-              ThemeConstants.space4.h,
+              const SizedBox(height: ThemeConstants.space4),
               
-              // بطاقة الاقتباسات البسيطة
+              // بطاقة الاقتباسات
               const DailyQuotesCard(),
               
-              ThemeConstants.space6.h,
+              const SizedBox(height: ThemeConstants.space6),
               
-              // عنوان الأقسام البسيط
-              _buildSimpleSectionHeader(context),
+              // عنوان الأقسام
+              _buildSectionHeader(),
               
-              ThemeConstants.space4.h,
+              const SizedBox(height: ThemeConstants.space4),
             ]),
           ),
         ),
         
-        // شبكة الفئات البسيطة
+        // شبكة الفئات
         const CategoryGrid(),
         
         // مساحة في الأسفل
-        SliverToBoxAdapter(
-          child: ThemeConstants.space12.h,
+        const SliverToBoxAdapter(
+          child: SizedBox(height: ThemeConstants.space12),
         ),
       ],
     );
   }
 
-  Widget _buildSimpleSectionHeader(BuildContext context) {
+  Widget _buildSectionHeader() {
     return Container(
       padding: const EdgeInsets.all(ThemeConstants.space4),
       decoration: BoxDecoration(
@@ -114,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           
-          ThemeConstants.space4.w,
+          const SizedBox(width: ThemeConstants.space4),
           
           // الأيقونة
           Container(
@@ -130,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           
-          ThemeConstants.space3.w,
+          const SizedBox(width: ThemeConstants.space3),
           
           // النص
           Expanded(

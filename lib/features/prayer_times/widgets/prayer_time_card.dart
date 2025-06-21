@@ -30,6 +30,10 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
   @override
   void initState() {
     super.initState();
+    _setupAnimations();
+  }
+
+  void _setupAnimations() {
     _animationController = AnimationController(
       duration: ThemeConstants.durationNormal,
       vsync: this,
@@ -57,93 +61,81 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
     final gradient = _getGradient(widget.prayer.type);
     final useGradient = widget.forceColored || isNext;
     
-    return AnimatedBuilder(
-      animation: _scaleAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Container(
-            margin: const EdgeInsets.only(bottom: ThemeConstants.space3),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-              boxShadow: [
-                BoxShadow(
-                  color: useGradient 
-                      ? gradient[0].withValues(alpha: 0.3)
-                      : Colors.black.withValues(alpha: 0.08),
-                  blurRadius: useGradient ? 25 : 15,
-                  offset: Offset(0, useGradient ? 12 : 8),
-                  spreadRadius: useGradient ? 2 : 0,
-                ),
-                if (useGradient) ...[
-                  BoxShadow(
-                    color: gradient[0].withValues(alpha: 0.1),
-                    blurRadius: 40,
-                    offset: const Offset(0, 20),
-                    spreadRadius: 5,
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: _buildCard(context, useGradient, gradient, isPassed),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCard(BuildContext context, bool useGradient, List<Color> gradient, bool isPassed) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: ThemeConstants.space3),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        boxShadow: _buildCardShadow(useGradient, gradient),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: _handleCardTap,
+            borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+            child: Stack(
+              children: [
+                // الخلفية المتدرجة أو العادية
+                _buildCardBackground(useGradient, gradient, isPassed),
+                
+                // المحتوى الرئيسي
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: useGradient 
+                          ? Colors.white.withValues(alpha: 0.2)
+                          : context.dividerColor.withValues(alpha: 0.1),
+                      width: useGradient ? 1.5 : 1,
+                    ),
+                    borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
                   ),
-                ],
+                  child: _buildCardContent(context, useGradient, gradient, isPassed),
+                ),
+                
+                // تأثير الضوء في الأعلى
+                if (useGradient) _buildLightEffect(),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => _showPrayerDetails(context),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                  child: Stack(
-                    children: [
-                      // الخلفية المتدرجة أو العادية
-                      _buildCardBackground(useGradient, gradient, isPassed),
-                      
-                      // المحتوى الرئيسي
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: useGradient 
-                                ? Colors.white.withValues(alpha: 0.2)
-                                : context.dividerColor.withValues(alpha: 0.1),
-                            width: useGradient ? 1.5 : 1,
-                          ),
-                          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                        ),
-                        child: _buildCardContent(context, useGradient, gradient, isPassed),
-                      ),
-                      
-                      // تأثير الضوء في الأعلى
-                      if (useGradient)
-                        Positioned(
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          child: Container(
-                            height: 60,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.white.withValues(alpha: 0.2),
-                                  Colors.white.withValues(alpha: 0.05),
-                                  Colors.transparent,
-                                ],
-                              ),
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(ThemeConstants.radius2xl),
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
           ),
-        );
-      },
+        ),
+      ),
     );
+  }
+
+  List<BoxShadow> _buildCardShadow(bool useGradient, List<Color> gradient) {
+    return [
+      BoxShadow(
+        color: useGradient 
+            ? gradient[0].withValues(alpha: 0.3)
+            : Colors.black.withValues(alpha: 0.08),
+        blurRadius: useGradient ? 25 : 15,
+        offset: Offset(0, useGradient ? 12 : 8),
+        spreadRadius: useGradient ? 2 : 0,
+      ),
+      if (useGradient) ...[
+        BoxShadow(
+          color: gradient[0].withValues(alpha: 0.1),
+          blurRadius: 40,
+          offset: const Offset(0, 20),
+          spreadRadius: 5,
+        ),
+      ],
+    ];
   }
 
   Widget _buildCardBackground(bool useGradient, List<Color> gradient, bool isPassed) {
@@ -186,6 +178,31 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
     }
   }
 
+  Widget _buildLightEffect() {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        height: 60,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.white.withValues(alpha: 0.2),
+              Colors.white.withValues(alpha: 0.05),
+              Colors.transparent,
+            ],
+          ),
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(ThemeConstants.radius2xl),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildCardContent(
     BuildContext context, 
     bool useGradient, 
@@ -194,32 +211,22 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
   ) {
     return Padding(
       padding: const EdgeInsets.all(ThemeConstants.space5),
-      child: Column(
+      child: Row(
         children: [
-          // الصف العلوي - الأيقونة والمعلومات والوقت
-          Row(
-            children: [
-              // أيقونة الحالة المحسنة
-              _buildEnhancedStatusIcon(context, useGradient, gradient, isPassed),
-              
-              ThemeConstants.space4.w,
-              
-              // معلومات الصلاة
-              Expanded(
-                child: _buildPrayerInfo(context, useGradient, isPassed),
-              ),
-              
-              ThemeConstants.space4.w,
-              
-              // الوقت المحسن
-              _buildEnhancedTimeSection(context, useGradient, gradient),
-            ],
+          // أيقونة الحالة المحسنة
+          _buildEnhancedStatusIcon(context, useGradient, gradient, isPassed),
+          
+          ThemeConstants.space4.w,
+          
+          // معلومات الصلاة
+          Expanded(
+            child: _buildPrayerInfo(context, useGradient, isPassed),
           ),
           
-          ThemeConstants.space4.h,
+          ThemeConstants.space4.w,
           
-          // الصف السفلي - العداد والإعدادات
-          _buildBottomRow(context, useGradient, gradient),
+          // الوقت المحسن
+          _buildEnhancedTimeSection(context, useGradient, gradient),
         ],
       ),
     );
@@ -231,49 +238,22 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
     List<Color> gradient, 
     bool isPassed
   ) {
-    IconData icon;
-    Color iconColor;
-    Color backgroundColor;
-    Color borderColor;
-    
-    if (widget.prayer.isNext) {
-      icon = Icons.schedule_rounded;
-      iconColor = Colors.white;
-      backgroundColor = Colors.white.withValues(alpha: 0.25);
-      borderColor = Colors.white.withValues(alpha: 0.4);
-    } else if (isPassed) {
-      icon = Icons.check_circle_rounded;
-      iconColor = useGradient ? Colors.white : ThemeConstants.success;
-      backgroundColor = useGradient 
-          ? Colors.white.withValues(alpha: 0.25)
-          : ThemeConstants.success.withValues(alpha: 0.15);
-      borderColor = useGradient 
-          ? Colors.white.withValues(alpha: 0.4)
-          : ThemeConstants.success.withValues(alpha: 0.3);
-    } else {
-      icon = _getPrayerIcon(widget.prayer.type);
-      iconColor = useGradient ? Colors.white : gradient[0];
-      backgroundColor = useGradient 
-          ? Colors.white.withValues(alpha: 0.25)
-          : gradient[0].withValues(alpha: 0.15);
-      borderColor = useGradient 
-          ? Colors.white.withValues(alpha: 0.4)
-          : gradient[0].withValues(alpha: 0.3);
-    }
+    final iconData = _getStatusIcon(isPassed);
+    final colors = _getIconColors(useGradient, gradient, isPassed);
     
     return Container(
       width: 70,
       height: 70,
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: colors['background'],
         borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
         border: Border.all(
-          color: borderColor,
+          color: colors['border']!,
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: iconColor.withValues(alpha: useGradient ? 0.3 : 0.15),
+            color: colors['icon']!.withValues(alpha: useGradient ? 0.3 : 0.15),
             blurRadius: 15,
             offset: const Offset(0, 8),
             spreadRadius: 1,
@@ -282,12 +262,52 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
       ),
       child: Center(
         child: Icon(
-          icon,
-          color: iconColor,
+          iconData,
+          color: colors['icon'],
           size: ThemeConstants.iconLg,
         ),
       ),
     );
+  }
+
+  IconData _getStatusIcon(bool isPassed) {
+    if (widget.prayer.isNext) {
+      return Icons.schedule_rounded;
+    } else if (isPassed) {
+      return Icons.check_circle_rounded;
+    } else {
+      return _getPrayerIcon(widget.prayer.type);
+    }
+  }
+
+  Map<String, Color> _getIconColors(bool useGradient, List<Color> gradient, bool isPassed) {
+    if (widget.prayer.isNext) {
+      return {
+        'icon': Colors.white,
+        'background': Colors.white.withValues(alpha: 0.25),
+        'border': Colors.white.withValues(alpha: 0.4),
+      };
+    } else if (isPassed) {
+      return {
+        'icon': useGradient ? Colors.white : ThemeConstants.success,
+        'background': useGradient 
+            ? Colors.white.withValues(alpha: 0.25)
+            : ThemeConstants.success.withValues(alpha: 0.15),
+        'border': useGradient 
+            ? Colors.white.withValues(alpha: 0.4)
+            : ThemeConstants.success.withValues(alpha: 0.3),
+      };
+    } else {
+      return {
+        'icon': useGradient ? Colors.white : gradient[0],
+        'background': useGradient 
+            ? Colors.white.withValues(alpha: 0.25)
+            : gradient[0].withValues(alpha: 0.15),
+        'border': useGradient 
+            ? Colors.white.withValues(alpha: 0.4)
+            : gradient[0].withValues(alpha: 0.3),
+      };
+    }
   }
 
   Widget _buildPrayerInfo(BuildContext context, bool useGradient, bool isPassed) {
@@ -407,25 +427,9 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
     );
   }
 
-  Widget _buildBottomRow(BuildContext context, bool useGradient, List<Color> gradient) {
-    // تم حذف هذه الدالة لأنها لم تعد مستخدمة
-    return const SizedBox.shrink();
-  }
-
-  Widget _buildStatusInfo(BuildContext context, bool useGradient) {
-    // تم حذف هذه الدالة لأنها لم تعد مستخدمة
-    return const SizedBox.shrink();
-  }
-
-  Widget _buildActionButton({
-    required BuildContext context,
-    required IconData icon,
-    required VoidCallback onTap,
-    required bool useGradient,
-    required String tooltip,
-  }) {
-    // تم إزالة هذه الدالة لأنها لم تعد مستخدمة
-    return const SizedBox.shrink();
+  void _handleCardTap() {
+    HapticFeedback.lightImpact();
+    // يمكن إضافة وظائف إضافية هنا مثل إظهار تفاصيل الصلاة
   }
 
   Color _getTextColor(BuildContext context, bool useGradient, bool isPassed) {
@@ -454,9 +458,5 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
     final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
     
     return '$displayHour:$minute $period';
-  }
-
-  void _showPrayerDetails(BuildContext context) {
-    // تم إزالة هذه الدالة لأنها لم تعد مستخدمة
   }
 }

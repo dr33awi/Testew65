@@ -12,9 +12,7 @@ class PrayerTime {
   final bool isPassed;
   final PrayerType type;
 
-  var timeRemaining;
-
-  PrayerTime({
+  const PrayerTime({
     required this.id,
     required this.nameAr,
     required this.nameEn,
@@ -97,17 +95,31 @@ class PrayerTime {
   /// إنشاء من JSON
   factory PrayerTime.fromJson(Map<String, dynamic> json) {
     return PrayerTime(
-      id: json['id'],
-      nameAr: json['nameAr'],
-      nameEn: json['nameEn'],
-      time: DateTime.parse(json['time']),
-      adhanTime: json['adhanTime'] != null ? DateTime.parse(json['adhanTime']) : null,
-      iqamaTime: json['iqamaTime'] != null ? DateTime.parse(json['iqamaTime']) : null,
-      isNext: json['isNext'] ?? false,
-      isPassed: json['isPassed'] ?? false,
-      type: PrayerType.values[json['type']],
+      id: json['id'] as String,
+      nameAr: json['nameAr'] as String,
+      nameEn: json['nameEn'] as String,
+      time: DateTime.parse(json['time'] as String),
+      adhanTime: json['adhanTime'] != null ? DateTime.parse(json['adhanTime'] as String) : null,
+      iqamaTime: json['iqamaTime'] != null ? DateTime.parse(json['iqamaTime'] as String) : null,
+      isNext: json['isNext'] as bool? ?? false,
+      isPassed: json['isPassed'] as bool? ?? false,
+      type: PrayerType.values[json['type'] as int],
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PrayerTime &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          time == other.time;
+
+  @override
+  int get hashCode => id.hashCode ^ time.hashCode;
+
+  @override
+  String toString() => 'PrayerTime(id: $id, nameAr: $nameAr, time: $time)';
 }
 
 /// أنواع الصلوات
@@ -197,15 +209,26 @@ class PrayerCalculationSettings {
   /// إنشاء من JSON
   factory PrayerCalculationSettings.fromJson(Map<String, dynamic> json) {
     return PrayerCalculationSettings(
-      method: CalculationMethod.values[json['method'] ?? 0],
-      asrJuristic: AsrJuristic.values[json['asrJuristic'] ?? 0],
-      fajrAngle: json['fajrAngle'] ?? 18,
-      ishaAngle: json['ishaAngle'] ?? 17,
-      maghribAngle: json['maghribAngle'] ?? 0,
-      summerTimeAdjustment: json['summerTimeAdjustment'] ?? false,
-      manualAdjustments: Map<String, int>.from(json['manualAdjustments'] ?? {}),
+      method: CalculationMethod.values[json['method'] as int? ?? 0],
+      asrJuristic: AsrJuristic.values[json['asrJuristic'] as int? ?? 0],
+      fajrAngle: json['fajrAngle'] as int? ?? 18,
+      ishaAngle: json['ishaAngle'] as int? ?? 17,
+      maghribAngle: json['maghribAngle'] as int? ?? 0,
+      summerTimeAdjustment: json['summerTimeAdjustment'] as bool? ?? false,
+      manualAdjustments: Map<String, int>.from(json['manualAdjustments'] as Map? ?? {}),
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PrayerCalculationSettings &&
+          runtimeType == other.runtimeType &&
+          method == other.method &&
+          asrJuristic == other.asrJuristic;
+
+  @override
+  int get hashCode => method.hashCode ^ asrJuristic.hashCode;
 }
 
 /// بيانات الموقع للصلاة
@@ -239,14 +262,28 @@ class PrayerLocation {
   /// إنشاء من JSON
   factory PrayerLocation.fromJson(Map<String, dynamic> json) {
     return PrayerLocation(
-      latitude: json['latitude'],
-      longitude: json['longitude'],
-      cityName: json['cityName'],
-      countryName: json['countryName'],
-      timezone: json['timezone'],
-      altitude: json['altitude'],
+      latitude: json['latitude'] as double,
+      longitude: json['longitude'] as double,
+      cityName: json['cityName'] as String?,
+      countryName: json['countryName'] as String?,
+      timezone: json['timezone'] as String,
+      altitude: json['altitude'] as double?,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PrayerLocation &&
+          runtimeType == other.runtimeType &&
+          latitude == other.latitude &&
+          longitude == other.longitude;
+
+  @override
+  int get hashCode => latitude.hashCode ^ longitude.hashCode;
+
+  @override
+  String toString() => 'PrayerLocation(cityName: $cityName, lat: $latitude, lng: $longitude)';
 }
 
 /// حالة مواقيت الصلاة اليومية
@@ -256,7 +293,7 @@ class DailyPrayerTimes {
   final PrayerLocation location;
   final PrayerCalculationSettings settings;
 
-  DailyPrayerTimes({
+  const DailyPrayerTimes({
     required this.date,
     required this.prayers,
     required this.location,
@@ -278,6 +315,20 @@ class DailyPrayerTimes {
     if (passedPrayers.isEmpty) return null;
     return passedPrayers.last;
   }
+
+  /// الصلوات الرئيسية فقط (الخمس صلوات)
+  List<PrayerTime> get mainPrayers => prayers.where((prayer) =>
+    prayer.type != PrayerType.sunrise &&
+    prayer.type != PrayerType.midnight &&
+    prayer.type != PrayerType.lastThird
+  ).toList();
+  
+  /// الصلوات الإضافية (شروق، منتصف الليل، الثلث الأخير)
+  List<PrayerTime> get additionalPrayers => prayers.where((prayer) =>
+    prayer.type == PrayerType.sunrise ||
+    prayer.type == PrayerType.midnight ||
+    prayer.type == PrayerType.lastThird
+  ).toList();
 
   /// تحديث حالات الصلوات
   DailyPrayerTimes updatePrayerStates() {
@@ -318,18 +369,25 @@ class DailyPrayerTimes {
   /// إنشاء من JSON
   factory DailyPrayerTimes.fromJson(Map<String, dynamic> json) {
     return DailyPrayerTimes(
-      date: DateTime.parse(json['date']),
+      date: DateTime.parse(json['date'] as String),
       prayers: (json['prayers'] as List)
-          .map((p) => PrayerTime.fromJson(p))
+          .map((p) => PrayerTime.fromJson(p as Map<String, dynamic>))
           .toList(),
-      location: PrayerLocation.fromJson(json['location']),
-      settings: PrayerCalculationSettings.fromJson(json['settings']),
+      location: PrayerLocation.fromJson(json['location'] as Map<String, dynamic>),
+      settings: PrayerCalculationSettings.fromJson(json['settings'] as Map<String, dynamic>),
     );
   }
 
-  get additionalPrayers => null;
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DailyPrayerTimes &&
+          runtimeType == other.runtimeType &&
+          date == other.date &&
+          location == other.location;
 
-  get mainPrayers => null;
+  @override
+  int get hashCode => date.hashCode ^ location.hashCode;
 }
 
 /// إعدادات تنبيهات الصلاة
@@ -394,16 +452,26 @@ class PrayerNotificationSettings {
   /// إنشاء من JSON
   factory PrayerNotificationSettings.fromJson(Map<String, dynamic> json) {
     return PrayerNotificationSettings(
-      enabled: json['enabled'] ?? true,
+      enabled: json['enabled'] as bool? ?? true,
       enabledPrayers: (json['enabledPrayers'] as Map<String, dynamic>?)?.map(
         (k, v) => MapEntry(PrayerType.values[int.parse(k)], v as bool),
       ) ?? const {},
       minutesBefore: (json['minutesBefore'] as Map<String, dynamic>?)?.map(
         (k, v) => MapEntry(PrayerType.values[int.parse(k)], v as int),
       ) ?? const {},
-      playAdhan: json['playAdhan'] ?? false,
-      adhanSound: json['adhanSound'] ?? 'default',
-      vibrate: json['vibrate'] ?? true,
+      playAdhan: json['playAdhan'] as bool? ?? false,
+      adhanSound: json['adhanSound'] as String? ?? 'default',
+      vibrate: json['vibrate'] as bool? ?? true,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PrayerNotificationSettings &&
+          runtimeType == other.runtimeType &&
+          enabled == other.enabled;
+
+  @override
+  int get hashCode => enabled.hashCode;
 }

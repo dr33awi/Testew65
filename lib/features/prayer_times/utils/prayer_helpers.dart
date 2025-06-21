@@ -5,44 +5,74 @@ import 'package:flutter/material.dart';
 import '../../../app/themes/theme_constants.dart';
 import '../models/prayer_time_model.dart';
 
-/// أدوات مساعدة لمواقيت الصلاة
+/// أدوات مساعدة لمواقيت الصلاة مع تحسينات الأداء
 class PrayerHelpers {
   PrayerHelpers._();
   
-  /// تنسيق وقت الصلاة
+  // Cache لتحسين الأداء
+  static final Map<String, String> _timeFormatCache = {};
+  static final Map<String, String> _remainingTimeCache = {};
+  
+  /// تنسيق وقت الصلاة مع تخزين مؤقت
   static String formatPrayerTime(DateTime time, {bool showPeriod = true, bool use24Hour = false}) {
+    final key = '${time.millisecondsSinceEpoch}_${showPeriod}_$use24Hour';
+    
+    if (_timeFormatCache.containsKey(key)) {
+      return _timeFormatCache[key]!;
+    }
+    
+    final String result;
     if (use24Hour) {
-      return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-    }
-    
-    final hour = time.hour;
-    final minute = time.minute.toString().padLeft(2, '0');
-    final period = hour >= 12 ? 'م' : 'ص';
-    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-    
-    if (showPeriod) {
-      return '$displayHour:$minute $period';
+      result = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
     } else {
-      return '$displayHour:$minute';
+      final hour = time.hour;
+      final minute = time.minute.toString().padLeft(2, '0');
+      final period = hour >= 12 ? 'م' : 'ص';
+      final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+      
+      result = showPeriod ? '$displayHour:$minute $period' : '$displayHour:$minute';
     }
+    
+    // تنظيف الكاش إذا أصبح كبيراً
+    if (_timeFormatCache.length > 100) {
+      _timeFormatCache.clear();
+    }
+    
+    _timeFormatCache[key] = result;
+    return result;
   }
   
-  /// تنسيق الوقت المتبقي
+  /// تنسيق الوقت المتبقي مع تخزين مؤقت
   static String formatRemainingTime(Duration duration) {
+    final key = duration.inSeconds.toString();
+    
+    if (_remainingTimeCache.containsKey(key)) {
+      return _remainingTimeCache[key]!;
+    }
+    
+    final String result;
     if (duration.isNegative || duration.inSeconds == 0) {
-      return 'حان الآن';
-    }
-    
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes % 60;
-    
-    if (hours > 0) {
-      return 'بعد $hours ساعة و$minutes دقيقة';
-    } else if (minutes > 0) {
-      return 'بعد $minutes دقيقة';
+      result = 'حان الآن';
     } else {
-      return 'بعد ${duration.inSeconds} ثانية';
+      final hours = duration.inHours;
+      final minutes = duration.inMinutes % 60;
+      
+      if (hours > 0) {
+        result = 'بعد $hours ساعة و$minutes دقيقة';
+      } else if (minutes > 0) {
+        result = 'بعد $minutes دقيقة';
+      } else {
+        result = 'بعد ${duration.inSeconds} ثانية';
+      }
     }
+    
+    // تنظيف الكاش إذا أصبح كبيراً
+    if (_remainingTimeCache.length > 50) {
+      _remainingTimeCache.clear();
+    }
+    
+    _remainingTimeCache[key] = result;
+    return result;
   }
   
   /// الحصول على لون الصلاة من الثوابت
@@ -225,5 +255,76 @@ class PrayerHelpers {
       case AsrJuristic.hanafi:
         return 'الحنفي';
     }
+  }
+  
+  /// دالة لتنظيف الكاش (يُنصح بتشغيلها دورياً)
+  static void clearCache() {
+    _timeFormatCache.clear();
+    _remainingTimeCache.clear();
+  }
+  
+  /// دالة للحصول على معلومات الصلاة كاملة
+  static Map<String, dynamic> getPrayerInfo(PrayerType type) {
+    return {
+      'nameAr': getPrayerNameAr(type),
+      'nameEn': getPrayerNameEn(type),
+      'color': getPrayerColor(type),
+      'icon': getPrayerIcon(type),
+      'gradient': getPrayerGradient(type),
+    };
+  }
+  
+  /// دالة لتحديد أولوية الصلاة (للترتيب)
+  static int getPrayerPriority(PrayerType type) {
+    switch (type) {
+      case PrayerType.fajr:
+        return 1;
+      case PrayerType.sunrise:
+        return 2;
+      case PrayerType.dhuhr:
+        return 3;
+      case PrayerType.asr:
+        return 4;
+      case PrayerType.maghrib:
+        return 5;
+      case PrayerType.isha:
+        return 6;
+      case PrayerType.midnight:
+        return 7;
+      case PrayerType.lastThird:
+        return 8;
+    }
+  }
+  
+  /// دالة لفلترة الصلوات الرئيسية
+  static List<PrayerTime> getMainPrayers(List<PrayerTime> prayers) {
+    return prayers.where((prayer) =>
+      prayer.type != PrayerType.sunrise &&
+      prayer.type != PrayerType.midnight &&
+      prayer.type != PrayerType.lastThird
+    ).toList();
+  }
+  
+  /// دالة للحصول على الصلاة التالية من قائمة
+  static PrayerTime? getNextPrayer(List<PrayerTime> prayers) {
+    final now = DateTime.now();
+    try {
+      return prayers.firstWhere((prayer) => prayer.time.isAfter(now));
+    } catch (_) {
+      return null;
+    }
+  }
+  
+  /// دالة لحساب المدة بين صلاتين
+  static Duration getDurationBetweenPrayers(PrayerTime first, PrayerTime second) {
+    return second.time.difference(first.time);
+  }
+  
+  /// دالة للتحقق من صحة البيانات
+  static bool isValidPrayerTime(PrayerTime prayer) {
+    return prayer.time.isAfter(DateTime(2000)) && 
+           prayer.time.isBefore(DateTime(2100)) &&
+           prayer.nameAr.isNotEmpty &&
+           prayer.nameEn.isNotEmpty;
   }
 }

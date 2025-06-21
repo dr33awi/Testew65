@@ -7,12 +7,22 @@ import '../../../app/themes/app_theme.dart';
 class WelcomeMessage extends StatelessWidget {
   const WelcomeMessage({super.key});
 
+  static const List<String> _arabicMonths = [
+    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
+  ];
+  
+  static const List<String> _arabicDays = [
+    'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final hour = DateTime.now().hour;
+    final now = DateTime.now();
+    final hour = now.hour;
     final greeting = _getGreeting(hour);
     final message = _getMessage(hour);
-    final gradient = _getGradientColors(hour);
+    final gradient = ColorHelper.getTimeBasedGradient(dateTime: now);
     
     return Container(
       decoration: BoxDecoration(
@@ -20,7 +30,7 @@ class WelcomeMessage extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: gradient.map((c) => c.withValues(alpha: 0.9)).toList(),
+          colors: gradient.colors.map((c) => c.withValues(alpha: 0.9)).toList(),
         ),
       ),
       child: ClipRRect(
@@ -39,7 +49,7 @@ class WelcomeMessage extends StatelessWidget {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(ThemeConstants.space6),
-                child: _buildContent(context, greeting, message),
+                child: _buildContent(context, greeting, message, now),
               ),
             ),
           ),
@@ -48,13 +58,12 @@ class WelcomeMessage extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context, String greeting, String message) {
-    final hour = DateTime.now().hour;
-    final icon = _getGreetingIcon(hour);
+  Widget _buildContent(BuildContext context, String greeting, String message, DateTime now) {
+    final icon = _getGreetingIcon(now.hour);
     
     return Row(
       children: [
-        // الأيقونة الثابتة
+        // الأيقونة
         Container(
           width: 80,
           height: 80,
@@ -69,7 +78,7 @@ class WelcomeMessage extends StatelessWidget {
           ),
         ),
         
-        ThemeConstants.space5.w,
+        const SizedBox(width: ThemeConstants.space5),
         
         // النصوص
         Expanded(
@@ -82,17 +91,17 @@ class WelcomeMessage extends StatelessWidget {
                 style: context.headlineMedium?.copyWith(
                   color: Colors.white,
                   fontWeight: ThemeConstants.bold,
-                  shadows: [
+                  shadows: const [
                     Shadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      offset: const Offset(0, 2),
+                      color: Colors.black26,
+                      offset: Offset(0, 2),
                       blurRadius: 4,
                     ),
                   ],
                 ),
               ),
               
-              ThemeConstants.space2.h,
+              const SizedBox(height: ThemeConstants.space2),
               
               // الرسالة
               Text(
@@ -104,10 +113,10 @@ class WelcomeMessage extends StatelessWidget {
                 ),
               ),
               
-              ThemeConstants.space4.h,
+              const SizedBox(height: ThemeConstants.space4),
               
               // معلومات الوقت والتاريخ
-              _buildTimeInfo(context),
+              _buildTimeInfo(context, now),
             ],
           ),
         ),
@@ -115,8 +124,7 @@ class WelcomeMessage extends StatelessWidget {
     );
   }
 
-  Widget _buildTimeInfo(BuildContext context) {
-    final now = DateTime.now();
+  Widget _buildTimeInfo(BuildContext context, DateTime now) {
     final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
     final dateStr = _getArabicDate(now);
     
@@ -143,14 +151,14 @@ class WelcomeMessage extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.access_time_rounded,
               color: Colors.white,
               size: ThemeConstants.iconSm,
             ),
           ),
           
-          ThemeConstants.space2.w,
+          const SizedBox(width: ThemeConstants.space2),
           
           // الوقت
           Text(
@@ -161,7 +169,7 @@ class WelcomeMessage extends StatelessWidget {
             ),
           ),
           
-          ThemeConstants.space3.w,
+          const SizedBox(width: ThemeConstants.space3),
           
           // التاريخ
           Text(
@@ -207,39 +215,25 @@ class WelcomeMessage extends StatelessWidget {
     }
   }
 
-  List<Color> _getGradientColors(int hour) {
-    final gradient = ColorHelper.getTimeBasedGradient();
-    return gradient.colors;
-  }
-
   String _getArabicDate(DateTime date) {
-    const arabicMonths = [
-      'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
-      'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
-    ];
-    
-    const arabicDays = [
-      'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'
-    ];
-    
-    final dayName = arabicDays[date.weekday % 7];
+    final dayName = _arabicDays[date.weekday % 7];
     final day = date.day;
-    final month = arabicMonths[date.month - 1];
+    final month = _arabicMonths[date.month - 1];
     
     return '$dayName، $day $month';
   }
 
   IconData _getGreetingIcon(int hour) {
     if (hour < 5) {
-      return Icons.nightlight_round; // ليلة مباركة
+      return Icons.nightlight_round;
     } else if (hour < 12) {
-      return Icons.wb_sunny; // صباح الخير
+      return Icons.wb_sunny;
     } else if (hour < 17) {
-      return Icons.light_mode; // نهارك سعيد
+      return Icons.light_mode;
     } else if (hour < 20) {
-      return Icons.wb_twilight; // مساء النور
+      return Icons.wb_twilight;
     } else {
-      return Icons.nights_stay; // أمسية مباركة
+      return Icons.nights_stay;
     }
   }
 }

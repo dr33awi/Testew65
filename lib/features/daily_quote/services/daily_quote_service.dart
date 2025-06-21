@@ -18,9 +18,7 @@ class DailyQuoteService {
   static const String _quotesJsonPath = 'assets/data/daily_quotes.json';
   
   // Cache للبيانات المحملة من JSON
-  List<Map<String, dynamic>>? _cachedVerses;
-  List<Map<String, dynamic>>? _cachedHadiths;
-  List<Map<String, dynamic>>? _cachedDuas;
+  Map<String, dynamic>? _cachedData;
   
   DailyQuoteService({
     required StorageService storage,
@@ -68,9 +66,51 @@ class DailyQuoteService {
     }
   }
 
+  /// توليد seed ثابت بناءً على التاريخ
+  int _generateDailySeed(DateTime date) {
+    // تكوين seed ثابت لكل يوم
+    // نستخدم السنة والشهر واليوم لضمان تغيير النص كل يوم
+    final year = date.year;
+    final month = date.month;
+    final day = date.day;
+    
+    // تكوين seed بناءً على التاريخ
+    return (year * 10000) + (month * 100) + day;
+  }
+
+  /// الحصول على اقتباس محدد بالتاريخ (للاختبار)
+  Future<DailyQuoteModel> getQuoteForDate(DateTime date) async {
+    await _loadJsonData();
+    
+    if (_cachedData == null) {
+      return _getDefaultQuote();
+    }
+    
+    final verses = (_cachedData!['verses'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final hadiths = (_cachedData!['hadiths'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    
+    if (verses.isEmpty || hadiths.isEmpty) {
+      return _getDefaultQuote();
+    }
+    
+    // توليد seed للتاريخ المحدد
+    final seed = _generateDailySeed(date);
+    final random = Random(seed);
+    
+    final selectedVerse = verses[random.nextInt(verses.length)];
+    final selectedHadith = hadiths[random.nextInt(hadiths.length)];
+    
+    return DailyQuoteModel(
+      verse: selectedVerse['text'] ?? '',
+      verseSource: selectedVerse['source'] ?? '',
+      hadith: selectedHadith['text'] ?? '',
+      hadithSource: selectedHadith['source'] ?? '',
+    );
+  }
+
   /// تحميل البيانات من ملف JSON
   Future<void> _loadJsonData() async {
-    if (_cachedVerses != null && _cachedHadiths != null && _cachedDuas != null) {
+    if (_cachedData != null) {
       return; // البيانات محملة مسبقاً
     }
     
@@ -79,19 +119,14 @@ class DailyQuoteService {
       
       // قراءة ملف JSON
       final String jsonString = await rootBundle.loadString(_quotesJsonPath);
-      final Map<String, dynamic> jsonData = json.decode(jsonString);
-      
-      // استخراج البيانات
-      _cachedVerses = List<Map<String, dynamic>>.from(jsonData['verses'] ?? []);
-      _cachedHadiths = List<Map<String, dynamic>>.from(jsonData['hadiths'] ?? []);
-      _cachedDuas = List<Map<String, dynamic>>.from(jsonData['duas'] ?? []);
+      _cachedData = json.decode(jsonString);
       
       _logger.info(
         message: '[DailyQuoteService] تم تحميل البيانات بنجاح',
         data: {
-          'verses_count': _cachedVerses?.length,
-          'hadiths_count': _cachedHadiths?.length,
-          'duas_count': _cachedDuas?.length,
+          'verses_count': (_cachedData?['verses'] as List?)?.length ?? 0,
+          'hadiths_count': (_cachedData?['hadiths'] as List?)?.length ?? 0,
+          'duas_count': (_cachedData?['duas'] as List?)?.length ?? 0,
         },
       );
       
@@ -110,82 +145,93 @@ class DailyQuoteService {
   void _loadFallbackData() {
     _logger.warning(message: '[DailyQuoteService] استخدام البيانات الاحتياطية');
     
-    _cachedVerses = [
-      {
-        'text': 'وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا وَيَرْزُقْهُ مِنْ حَيْثُ لَا يَحْتَسِبُ',
-        'source': 'سورة الطلاق - آية 2-3',
-        'translation': '',
-        'reference': 'القرآن الكريم'
-      },
-      {
-        'text': 'إِنَّ مَعَ الْعُسْرِ يُسْرًا',
-        'source': 'سورة الشرح - آية 6',
-        'translation': '',
-        'reference': 'القرآن الكريم'
-      },
-      {
-        'text': 'وَلَا تَيْأَسُوا مِن رَّوْحِ اللَّهِ ۖ إِنَّهُ لَا يَيْأَسُ مِن رَّوْحِ اللَّهِ إِلَّا الْقَوْمُ الْكَافِرُونَ',
-        'source': 'سورة يوسف - آية 87',
-        'translation': '',
-        'reference': 'القرآن الكريم'
-      },
-    ];
-    
-    _cachedHadiths = [
-      {
-        'text': 'مَنْ قَالَ سُبْحَانَ اللَّهِ وَبِحَمْدِهِ فِي يَوْمٍ مِائَةَ مَرَّةٍ، حُطَّتْ خَطَايَاهُ وَلَوْ كَانَتْ مِثْلَ زَبَدِ الْبَحْرِ',
-        'source': 'صحيح البخاري',
-        'narrator': 'أبو هريرة',
-        'reference': 'السنة النبوية'
-      },
-      {
-        'text': 'الْمُؤْمِنُ لِلْمُؤْمِنِ كَالْبُنْيَانِ يَشُدُّ بَعْضُهُ بَعْضًا',
-        'source': 'صحيح البخاري',
-        'narrator': 'أبو موسى الأشعري',
-        'reference': 'السنة النبوية'
-      },
-      {
-        'text': 'بَشِّرُوا وَلَا تُنَفِّرُوا، وَيَسِّرُوا وَلَا تُعَسِّرُوا',
-        'source': 'صحيح البخاري',
-        'narrator': 'أنس بن مالك',
-        'reference': 'السنة النبوية'
-      },
-    ];
-    
-    _cachedDuas = [
-      {
-        'text': 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
-        'source': 'سورة البقرة - آية 201',
-        'translation': 'ربنا آتنا في الدنيا حسنة وفي الآخرة حسنة وقنا عذاب النار',
-        'reference': 'القرآن الكريم'
-      },
-      {
-        'text': 'رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي',
-        'source': 'سورة طه - آية 25-26',
-        'translation': 'رب اشرح لي صدري ويسر لي أمري',
-        'reference': 'القرآن الكريم'
-      },
-      {
-        'text': 'اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ',
-        'source': 'رواه أبو داود',
-        'translation': 'اللهم أعني على ذكرك وشكرك وحسن عبادتك',
-        'reference': 'السنة النبوية'
-      },
-    ];
+    _cachedData = {
+      'verses': [
+        {
+          'text': 'وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا وَيَرْزُقْهُ مِنْ حَيْثُ لَا يَحْتَسِبُ',
+          'source': 'سورة الطلاق - آية 2-3',
+          'translation': '',
+          'reference': 'القرآن الكريم'
+        },
+        {
+          'text': 'إِنَّ مَعَ الْعُسْرِ يُسْرًا',
+          'source': 'سورة الشرح - آية 6',
+          'translation': '',
+          'reference': 'القرآن الكريم'
+        },
+        {
+          'text': 'وَلَا تَيْأَسُوا مِن رَّوْحِ اللَّهِ ۖ إِنَّهُ لَا يَيْأَسُ مِن رَّوْحِ اللَّهِ إِلَّا الْقَوْمُ الْكَافِرُونَ',
+          'source': 'سورة يوسف - آية 87',
+          'translation': '',
+          'reference': 'القرآن الكريم'
+        },
+      ],
+      'hadiths': [
+        {
+          'text': 'مَنْ قَالَ سُبْحَانَ اللَّهِ وَبِحَمْدِهِ فِي يَوْمٍ مِائَةَ مَرَّةٍ، حُطَّتْ خَطَايَاهُ وَلَوْ كَانَتْ مِثْلَ زَبَدِ الْبَحْرِ',
+          'source': 'صحيح البخاري',
+          'narrator': 'أبو هريرة',
+          'reference': 'السنة النبوية'
+        },
+        {
+          'text': 'الْمُؤْمِنُ لِلْمُؤْمِنِ كَالْبُنْيَانِ يَشُدُّ بَعْضُهُ بَعْضًا',
+          'source': 'صحيح البخاري',
+          'narrator': 'أبو موسى الأشعري',
+          'reference': 'السنة النبوية'
+        },
+        {
+          'text': 'بَشِّرُوا وَلَا تُنَفِّرُوا، وَيَسِّرُوا وَلَا تُعَسِّرُوا',
+          'source': 'صحيح البخاري',
+          'narrator': 'أنس بن مالك',
+          'reference': 'السنة النبوية'
+        },
+      ],
+      'duas': [
+        {
+          'text': 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
+          'source': 'سورة البقرة - آية 201',
+          'translation': 'ربنا آتنا في الدنيا حسنة وفي الآخرة حسنة وقنا عذاب النار',
+          'reference': 'القرآن الكريم'
+        },
+        {
+          'text': 'رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي',
+          'source': 'سورة طه - آية 25-26',
+          'translation': 'رب اشرح لي صدري ويسر لي أمري',
+          'reference': 'القرآن الكريم'
+        },
+        {
+          'text': 'اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ',
+          'source': 'رواه أبو داود',
+          'translation': 'اللهم أعني على ذكرك وشكرك وحسن عبادتك',
+          'reference': 'السنة النبوية'
+        },
+      ]
+    };
   }
 
-  /// إنشاء اقتباس يومي عشوائي من البيانات المحملة
+  /// إنشاء اقتباس يومي ثابت لنفس اليوم
   DailyQuoteModel _generateDailyQuote() {
     // التأكد من تحميل البيانات
-    if (_cachedVerses == null || _cachedHadiths == null || _cachedDuas == null) {
+    if (_cachedData == null) {
       _loadFallbackData();
     }
     
-    final random = Random();
+    // استخراج البيانات
+    final verses = (_cachedData!['verses'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final hadiths = (_cachedData!['hadiths'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     
-    // اختيار عشوائي
-    final selectedVerse = _cachedVerses![random.nextInt(_cachedVerses!.length)];
-    final selectedHadith = _cachedHadiths![random.nextInt(_cachedHadiths!.length)];
+    if (verses.isEmpty || hadiths.isEmpty) {
+      return _getDefaultQuote();
+    }
+    
+    // توليد seed ثابت بناءً على التاريخ الحالي
+    final today = DateTime.now();
+    final seed = _generateDailySeed(today);
+    final random = Random(seed);
+    
+    // اختيار ثابت لنفس اليوم
+    final selectedVerse = verses[random.nextInt(verses.length)];
+    final selectedHadith = hadiths[random.nextInt(hadiths.length)];
     
     return DailyQuoteModel(
       verse: selectedVerse['text'] ?? '',
@@ -193,6 +239,29 @@ class DailyQuoteService {
       hadith: selectedHadith['text'] ?? '',
       hadithSource: selectedHadith['source'] ?? '',
     );
+  }
+
+  /// الحصول على دعاء يومي ثابت
+  Map<String, dynamic> getRandomDua() {
+    if (_cachedData == null) {
+      _loadFallbackData();
+    }
+    
+    final duas = (_cachedData!['duas'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    
+    if (duas.isEmpty) {
+      return {
+        'text': 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
+        'source': 'سورة البقرة - آية 201',
+      };
+    }
+    
+    // توليد seed ثابت بناءً على التاريخ الحالي
+    final today = DateTime.now();
+    final seed = _generateDailySeed(today);
+    final random = Random(seed + 1); // +1 لاختلاف بسيط عن الآية والحديث
+    
+    return duas[random.nextInt(duas.length)];
   }
 
   /// الحصول على اقتباس افتراضي
@@ -254,13 +323,15 @@ class DailyQuoteService {
            date1.day == date2.day;
   }
 
-  /// تحديث الاقتباس يدويًا
+  /// تحديث الاقتباس يدويًا (يولد اقتباس جديد بـ seed عشوائي)
   Future<DailyQuoteModel> refreshQuote() async {
     try {
       // إعادة تحميل البيانات من JSON
+      _cachedData = null;
       await _loadJsonData();
       
-      final newQuote = _generateDailyQuote();
+      // توليد اقتباس جديد بـ seed عشوائي
+      final newQuote = _generateRandomQuote();
       await _saveQuote(newQuote);
       await _saveLastUpdateDate(DateTime.now());
       
@@ -275,67 +346,30 @@ class DailyQuoteService {
     }
   }
 
-  /// مسح الاقتباسات المحفوظة
-  Future<void> clearSavedQuotes() async {
-    await _storage.remove(_dailyQuoteKey);
-    await _storage.remove(_lastUpdateKey);
-    _logger.info(message: '[DailyQuoteService] تم مسح الاقتباسات المحفوظة');
-  }
-
-  /// إعادة تحميل البيانات من JSON
-  Future<void> reloadJsonData() async {
-    _cachedVerses = null;
-    _cachedHadiths = null;
-    _cachedDuas = null;
-    await _loadJsonData();
-  }
-
-  /// الحصول على إحصائيات البيانات المحملة
-  Map<String, int> getDataStats() {
-    return {
-      'verses': _cachedVerses?.length ?? 0,
-      'hadiths': _cachedHadiths?.length ?? 0,
-      'duas': _cachedDuas?.length ?? 0,
-    };
-  }
-
-  /// الحصول على اقتباس محدد بالفهرس (للاختبار)
-  Future<DailyQuoteModel> getQuoteByIndex({
-    required int verseIndex,
-    required int hadithIndex,
-  }) async {
-    await _loadJsonData();
+  /// توليد اقتباس عشوائي (للتحديث اليدوي)
+  DailyQuoteModel _generateRandomQuote() {
+    if (_cachedData == null) {
+      _loadFallbackData();
+    }
     
-    if (_cachedVerses == null || _cachedHadiths == null) {
+    final verses = (_cachedData!['verses'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final hadiths = (_cachedData!['hadiths'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    
+    if (verses.isEmpty || hadiths.isEmpty) {
       return _getDefaultQuote();
     }
     
-    final verse = _cachedVerses![verseIndex % _cachedVerses!.length];
-    final hadith = _cachedHadiths![hadithIndex % _cachedHadiths!.length];
+    // استخدام seed عشوائي للتحديث اليدوي
+    final random = Random();
+    
+    final selectedVerse = verses[random.nextInt(verses.length)];
+    final selectedHadith = hadiths[random.nextInt(hadiths.length)];
     
     return DailyQuoteModel(
-      verse: verse['text'] ?? '',
-      verseSource: verse['source'] ?? '',
-      hadith: hadith['text'] ?? '',
-      hadithSource: hadith['source'] ?? '',
+      verse: selectedVerse['text'] ?? '',
+      verseSource: selectedVerse['source'] ?? '',
+      hadith: selectedHadith['text'] ?? '',
+      hadithSource: selectedHadith['source'] ?? '',
     );
-  }
-
-  /// الحصول على قائمة كل الآيات (للعرض)
-  Future<List<Map<String, dynamic>>> getAllVerses() async {
-    await _loadJsonData();
-    return _cachedVerses ?? [];
-  }
-
-  /// الحصول على قائمة كل الأحاديث (للعرض)
-  Future<List<Map<String, dynamic>>> getAllHadiths() async {
-    await _loadJsonData();
-    return _cachedHadiths ?? [];
-  }
-
-  /// الحصول على قائمة كل الأدعية (للعرض)
-  Future<List<Map<String, dynamic>>> getAllDuas() async {
-    await _loadJsonData();
-    return _cachedDuas ?? [];
   }
 }
