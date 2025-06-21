@@ -1,4 +1,4 @@
-// lib/features/prayer_times/services/prayer_times_service.dart (محدث)
+// lib/features/prayer_times/services/prayer_times_service.dart (محدث مع إضافة الدوال المفقودة)
 
 import 'dart:async';
 import 'dart:io';
@@ -666,6 +666,66 @@ class PrayerTimesService {
         'longitude': location.longitude,
       },
     );
+  }
+
+  // ===== الدوال المفقودة التي يتم استدعاؤها من HomeScreen =====
+  
+  /// الحصول على مواقيت اليوم
+  Future<DailyPrayerTimes?> getTodayPrayerTimes() async {
+    try {
+      // إذا كانت المواقيت موجودة في الذاكرة
+      if (_currentTimes != null) {
+        return _currentTimes!.updatePrayerStates();
+      }
+      
+      // محاولة تحديث المواقيت
+      if (_currentLocation != null) {
+        return await updatePrayerTimes();
+      }
+      
+      // محاولة تحميل من الكاش
+      return await getCachedPrayerTimes(DateTime.now());
+    } catch (e) {
+      _logger.error(
+        message: '[PrayerTimesService] خطأ في الحصول على مواقيت اليوم',
+        error: e,
+      );
+      return null;
+    }
+  }
+
+  /// الحصول على معلومات الصلاة التالية
+  Future<Map<String, dynamic>?> getNextPrayerInfo() async {
+    try {
+      final todayTimes = await getTodayPrayerTimes();
+      if (todayTimes?.nextPrayer == null) return null;
+      
+      final nextPrayer = todayTimes!.nextPrayer!;
+      final timeRemaining = nextPrayer.remainingTime;
+      
+      return {
+        'name': nextPrayer.nameAr,
+        'time': _formatTime(nextPrayer.time),
+        'duration': timeRemaining,
+        'prayer': nextPrayer, // للاستخدام المباشر
+      };
+    } catch (e) {
+      _logger.error(
+        message: '[PrayerTimesService] خطأ في الحصول على معلومات الصلاة التالية',
+        error: e,
+      );
+      return null;
+    }
+  }
+
+  /// تنسيق الوقت
+  String _formatTime(DateTime time) {
+    final hour = time.hour;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = hour >= 12 ? 'مساءً' : 'صباحاً';
+    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+    
+    return '$displayHour:$minute $period';
   }
 
   // Getters
