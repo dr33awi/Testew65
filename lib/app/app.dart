@@ -2,55 +2,44 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-// ✅ استيراد النظام المبسط الجديد فقط
-import 'themes/index.dart';
+// استيراد الثيمات
+import 'themes/app_theme.dart';
 import '../core/constants/app_constants.dart';
 import 'routes/app_router.dart';
+import '../main.dart'; // لاستخدام NavigationService
 
 class AthkarApp extends StatelessWidget {
-  const AthkarApp({super.key});
+  final bool isDarkMode;
+  final String language;
+  
+  const AthkarApp({
+    super.key,
+    this.isDarkMode = false,
+    this.language = 'ar',
+  });
 
   @override
   Widget build(BuildContext context) {
-    // استخدام النظام المبسط مع ValueListenableBuilder
-    return ValueListenableBuilder<ThemeMode>(
-      valueListenable: AppTheme.themeModeNotifier,
-      builder: (context, themeMode, child) {
-        return MaterialApp(
-          title: AppConstants.appName,
-          
-          // ✅ استخدام الثيم المبسط الجديد
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: themeMode,
-          
-          // اللغة والترجمة
-          locale: const Locale('ar'),
-          supportedLocales: const [
-            Locale('ar'), // العربية
-            Locale('en'), // الإنجليزية
-          ],
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          
-          // التنقل
-          navigatorKey: AppRouter.navigatorKey,
-          initialRoute: AppRouter.initialRoute,
-          onGenerateRoute: AppRouter.onGenerateRoute,
-          
-          // إعدادات إضافية
-          debugShowCheckedModeBanner: false,
-          builder: (context, child) {
-            return Directionality(
-              textDirection: TextDirection.rtl,
-              child: child ?? const SizedBox.shrink(),
-            );
-          },
-        );
-      },
+    return MaterialApp(
+      title: AppConstants.appName,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      locale: Locale(language),
+      supportedLocales: const [
+        Locale('ar'), // العربية
+        Locale('en'), // الإنجليزية
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      // إضافة navigatorKey
+      navigatorKey: NavigationService.navigatorKey,
+      // استخدام AppRouter
+      initialRoute: AppRouter.initialRoute,
+      onGenerateRoute: AppRouter.onGenerateRoute,
     );
   }
 }

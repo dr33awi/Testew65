@@ -1,17 +1,12 @@
 // lib/features/home/screens/home_screen.dart
-import 'dart:async';
-import 'package:flutter/material.dart';
-import '../../../app/di/service_locator.dart';
-import '../../../app/themes/index.dart';
-import '../../../app/routes/app_router.dart';
-import '../../../core/infrastructure/services/logging/logger_service.dart';
-import '../../daily_quote/widgets/daily_quotes_card.dart';
-import '../../prayer_times/services/prayer_times_service.dart';
-import '../widgets/welcome_message.dart';
-import '../widgets/category_grid.dart';
-import '../widgets/home_prayer_times_card.dart';
 
-/// الشاشة الرئيسية للتطبيق
+import 'package:flutter/material.dart';
+import '../../../app/themes/app_theme.dart';
+import '../widgets/category_grid.dart';
+import 'package:athkar_app/features/daily_quote/widgets/daily_quotes_card.dart';
+import 'package:athkar_app/features/home/widgets/welcome_message.dart';
+import 'package:athkar_app/features/prayer_times/widgets/home_prayer_times_card.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -19,200 +14,147 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with TickerProviderStateMixin {
-  late final LoggerService _logger;
-  late final PrayerTimesService _prayerTimesService;
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-
-  // بيانات الشاشة
-  String? _nextPrayerName;
-  String? _nextPrayerTime;
-  Duration? _timeUntilNextPrayer;
+class _HomeScreenState extends State<HomeScreen> {
+  late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
-    _logger = getService<LoggerService>();
-    _prayerTimesService = getService<PrayerTimesService>();
-    _initializeAnimations();
-    _loadData();
-    _startPeriodicUpdates();
+    _scrollController = ScrollController();
   }
 
-  void _initializeAnimations() {
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-  }
-
-  Future<void> _loadData() async {
-    try {
-      _logger.info(message: '[HomeScreen] بدء تحميل بيانات الشاشة الرئيسية');
-      
-      // تحميل أوقات الصلاة
-      await _updatePrayerTimes();
-      
-      // بدء الأنيميشن
-      _animationController.forward();
-      
-      _logger.info(message: '[HomeScreen] تم تحميل البيانات بنجاح');
-    } catch (e) {
-      _logger.error(
-        message: '[HomeScreen] خطأ في تحميل البيانات',
-        error: e,
-      );
-    }
-  }
-
-  Future<void> _updatePrayerTimes() async {
-    try {
-      final todayTimes = await _prayerTimesService.getTodayPrayerTimes();
-      if (todayTimes != null) {
-        final nextPrayer = await _prayerTimesService.getNextPrayerInfo();
-        if (nextPrayer != null) {
-          setState(() {
-            _nextPrayerName = nextPrayer['name'];
-            _nextPrayerTime = nextPrayer['time'];
-            _timeUntilNextPrayer = nextPrayer['duration'];
-          });
-        }
-      }
-    } catch (e) {
-      _logger.error(
-        message: '[HomeScreen] خطأ في تحديث أوقات الصلاة',
-        error: e,
-      );
-    }
-  }
-
-  void _startPeriodicUpdates() {
-    // تحديث الوقت كل دقيقة
-    Timer.periodic(const Duration(minutes: 1), (timer) {
-      if (mounted) {
-        _updatePrayerTimes();
-      } else {
-        timer.cancel();
-      }
-    });
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
-      body: _buildBody(),
-      // إزالة الـ drawer
+      backgroundColor: context.backgroundColor,
+      appBar: CustomAppBar(
+        title: 'تطبيق الأذكار',
+        actions: [
+          AppBarAction(
+            icon: Icons.settings_outlined,
+            onPressed: () => Navigator.pushNamed(context, '/settings'),
+            tooltip: 'الإعدادات',
+          ),
+        ],
+      ),
+      body: _buildMainContent(context),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      elevation: 0,
-      backgroundColor: context.primaryColor,
-      foregroundColor: Colors.white,
-      automaticallyImplyLeading: false, // إزالة الثلاث خطوط
-      actions: [
-        IconButton(
-          icon: Icon(
-            context.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+  Widget _buildMainContent(BuildContext context) {
+    return CustomScrollView(
+      controller: _scrollController,
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        // المحتوى الرئيسي
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: ThemeConstants.space4,
           ),
-          onPressed: () {
-            // تبديل الوضع الليلي/النهاري
-            AppTheme.toggleTheme();
-          },
-          tooltip: context.isDarkMode ? 'الوضع النهاري' : 'الوضع الليلي',
+          sliver: SliverList(
+            delegate: SliverChildListDelegate([
+              ThemeConstants.space4.h,
+              
+              // رسالة الترحيب البسيطة
+              const WelcomeMessage(),
+              
+              ThemeConstants.space4.h,
+              
+              // بطاقة مواقيت الصلاة
+              const PrayerTimesCard(),
+              
+              ThemeConstants.space4.h,
+              
+              // بطاقة الاقتباسات البسيطة
+              const DailyQuotesCard(),
+              
+              ThemeConstants.space6.h,
+              
+              // عنوان الأقسام البسيط
+              _buildSimpleSectionHeader(context),
+              
+              ThemeConstants.space4.h,
+            ]),
+          ),
         ),
-        IconButton(
-          icon: const Icon(Icons.settings),
-          onPressed: () => AppRouter.push(AppRouter.appSettings),
-          tooltip: 'الإعدادات',
+        
+        // شبكة الفئات البسيطة
+        const CategoryGrid(),
+        
+        // مساحة في الأسفل
+        SliverToBoxAdapter(
+          child: ThemeConstants.space12.h,
         ),
       ],
     );
   }
 
-  Widget _buildBody() {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: RefreshIndicator(
-        onRefresh: _handleRefresh,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(ThemeConstants.spaceMd),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // رسالة الترحيب
-              const WelcomeMessage(
-                userName: 'المؤمن', // يمكن جعله ديناميكي من الإعدادات
-                isCompact: false,
-              ),
-              
-              Spaces.large,
-              
-              // بطاقة الاقتباس اليومي
-              DailyQuotesCard(
-                isCompact: false,
-                showControls: true,
-                showMetadata: true,
-                onTap: () {
-                  // يمكن إضافة التنقل لشاشة الاقتباسات المفصلة
-                  context.showMessage('شاشة الاقتباسات المفصلة - قريباً');
-                },
-              ),
-              
-              Spaces.large,
-              
-              // أوقات الصلاة
-              HomePrayerTimesCard(
-                nextPrayerName: _nextPrayerName,
-                nextPrayerTime: _nextPrayerTime,
-                timeUntilNextPrayer: _timeUntilNextPrayer,
-              ),
-              
-              Spaces.large,
-              
-              // الميزات السريعة
-              CategoryGrid(),
-              
-              // مساحة إضافية في الأسفل
-              Spaces.extraLarge,
-            ],
+  Widget _buildSimpleSectionHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(ThemeConstants.space4),
+      decoration: BoxDecoration(
+        color: context.cardColor,
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+      ),
+      child: Row(
+        children: [
+          // المؤشر الجانبي
+          Container(
+            width: 4,
+            height: 32,
+            decoration: BoxDecoration(
+              gradient: ThemeConstants.primaryGradient,
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
-        ),
+          
+          ThemeConstants.space4.w,
+          
+          // الأيقونة
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space2),
+            decoration: BoxDecoration(
+              color: context.primaryColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+            ),
+            child: Icon(
+              Icons.apps_rounded,
+              color: context.primaryColor,
+              size: ThemeConstants.iconMd,
+            ),
+          ),
+          
+          ThemeConstants.space3.w,
+          
+          // النص
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'الأقسام الرئيسية',
+                  style: context.titleLarge?.copyWith(
+                    fontWeight: ThemeConstants.bold,
+                    color: context.textPrimaryColor,
+                  ),
+                ),
+                Text(
+                  'اختر القسم المناسب لك',
+                  style: context.labelMedium?.copyWith(
+                    color: context.textSecondaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
-  }
-
-  // Helper methods
-  String _formatDuration(Duration duration) {
-    if (duration.inHours > 0) {
-      final hours = duration.inHours;
-      final minutes = duration.inMinutes.remainder(60);
-      return '$hours ساعة و $minutes دقيقة';
-    } else {
-      return '${duration.inMinutes} دقيقة';
-    }
-  }
-
-  Future<void> _handleRefresh() async {
-    await _loadData();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
   }
 }

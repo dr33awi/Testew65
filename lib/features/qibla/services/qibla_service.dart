@@ -10,7 +10,7 @@ import 'package:sensors_plus/sensors_plus.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
-import '../models/qibla_model.dart';
+import '../domain/models/qibla_model.dart';
 
 class QiblaService extends ChangeNotifier {
   final LoggerService _logger;

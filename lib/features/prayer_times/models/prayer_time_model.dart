@@ -12,8 +12,7 @@ class PrayerTime {
   final bool isPassed;
   final PrayerType type;
 
-  // إصلاح: إضافة type annotation للمتغير
-  Duration? timeRemaining;
+  var timeRemaining;
 
   PrayerTime({
     required this.id,
@@ -25,7 +24,6 @@ class PrayerTime {
     this.isNext = false,
     this.isPassed = false,
     required this.type,
-    this.timeRemaining,
   });
 
   /// الحصول على الوقت المتبقي
@@ -69,7 +67,6 @@ class PrayerTime {
     bool? isNext,
     bool? isPassed,
     PrayerType? type,
-    Duration? timeRemaining,
   }) {
     return PrayerTime(
       id: id ?? this.id,
@@ -81,7 +78,6 @@ class PrayerTime {
       isNext: isNext ?? this.isNext,
       isPassed: isPassed ?? this.isPassed,
       type: type ?? this.type,
-      timeRemaining: timeRemaining ?? this.timeRemaining,
     );
   }
 
@@ -96,7 +92,6 @@ class PrayerTime {
     'isNext': isNext,
     'isPassed': isPassed,
     'type': type.index,
-    'timeRemaining': timeRemaining?.inMilliseconds,
   };
 
   /// إنشاء من JSON
@@ -111,9 +106,6 @@ class PrayerTime {
       isNext: json['isNext'] ?? false,
       isPassed: json['isPassed'] ?? false,
       type: PrayerType.values[json['type']],
-      timeRemaining: json['timeRemaining'] != null 
-          ? Duration(milliseconds: json['timeRemaining'])
-          : null,
     );
   }
 }
@@ -287,20 +279,6 @@ class DailyPrayerTimes {
     return passedPrayers.last;
   }
 
-  /// الحصول على الصلوات الرئيسية (بدون الشروق)
-  List<PrayerTime> get mainPrayers {
-    return prayers.where((p) => p.type != PrayerType.sunrise).toList();
-  }
-
-  /// الحصول على الصلوات الإضافية
-  List<PrayerTime> get additionalPrayers {
-    return prayers.where((p) => 
-        p.type == PrayerType.sunrise || 
-        p.type == PrayerType.midnight || 
-        p.type == PrayerType.lastThird
-    ).toList();
-  }
-
   /// تحديث حالات الصلوات
   DailyPrayerTimes updatePrayerStates() {
     final now = DateTime.now();
@@ -348,6 +326,10 @@ class DailyPrayerTimes {
       settings: PrayerCalculationSettings.fromJson(json['settings']),
     );
   }
+
+  get additionalPrayers => null;
+
+  get mainPrayers => null;
 }
 
 /// إعدادات تنبيهات الصلاة

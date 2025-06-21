@@ -1,263 +1,173 @@
 // lib/features/home/widgets/welcome_message.dart
+import 'package:athkar_app/features/home/widgets/color_helper.dart';
 import 'package:flutter/material.dart';
-import '../../../app/themes/index.dart';
+import 'dart:ui';
+import '../../../app/themes/app_theme.dart';
 
-/// رسالة الترحيب الديناميكية في الصفحة الرئيسية
-class WelcomeMessage extends StatefulWidget {
-  /// اسم المستخدم (اختياري)
-  final String? userName;
-  
-  /// عرض مبسط بدون تفاصيل إضافية
-  final bool isCompact;
-  
-  /// إمكانية النقر على الرسالة
-  final VoidCallback? onTap;
-
-  const WelcomeMessage({
-    super.key,
-    this.userName,
-    this.isCompact = false,
-    this.onTap,
-  });
-
-  @override
-  State<WelcomeMessage> createState() => _WelcomeMessageState();
-}
-
-class _WelcomeMessageState extends State<WelcomeMessage>
-    with TickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeAnimations();
-    _startAnimations();
-  }
-
-  void _initializeAnimations() {
-    _animationController = AnimationController(
-      duration: ThemeConstants.durationSlow,
-      vsync: this,
-    );
-
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-    ));
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.2, 0.8, curve: Curves.easeOutCubic),
-    ));
-
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.4, 1.0, curve: Curves.elasticOut),
-    ));
-  }
-
-  void _startAnimations() {
-    Future.delayed(const Duration(milliseconds: 200), () {
-      if (mounted) {
-        _animationController.forward();
-      }
-    });
-  }
+class WelcomeMessage extends StatelessWidget {
+  const WelcomeMessage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: widget.isCompact ? _buildCompactMessage() : _buildFullMessage(),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCompactMessage() {
-    return IslamicCard(
-      onTap: widget.onTap,
-      padding: const EdgeInsets.all(ThemeConstants.spaceMd),
-      child: Row(
-        children: [
-          // أيقونة الوقت
-          Container(
-            padding: const EdgeInsets.all(ThemeConstants.spaceSm),
-            decoration: BoxDecoration(
-              color: context.primaryColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
-            ),
-            child: Icon(
-              _getCurrentTimeIcon(),
-              color: context.primaryColor,
-              size: ThemeConstants.iconMd,
-            ),
-          ),
-          
-          Spaces.mediumH,
-          
-          // رسالة الترحيب
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _getGreetingMessage(),
-                  style: context.titleStyle.copyWith(
-                    fontWeight: ThemeConstants.fontSemiBold,
-                  ),
+    final hour = DateTime.now().hour;
+    final greeting = _getGreeting(hour);
+    final message = _getMessage(hour);
+    final gradient = _getGradientColors(hour);
+    
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradient.map((c) => c.withValues(alpha: 0.9)).toList(),
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  width: 1,
                 ),
-                if (widget.userName != null) ...[
-                  Spaces.xs,
-                  Text(
-                    widget.userName!,
-                    style: context.bodyStyle.copyWith(
-                      color: context.primaryColor,
-                      fontWeight: ThemeConstants.fontMedium,
-                    ),
-                  ),
-                ],
-              ],
+                borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(ThemeConstants.space6),
+                child: _buildContent(context, greeting, message),
+              ),
             ),
           ),
-          
-          // أيقونة السهم إذا كانت قابلة للنقر
-          if (widget.onTap != null)
-            Icon(
-              Icons.arrow_forward_ios,
-              size: ThemeConstants.iconSm,
-              color: context.secondaryTextColor,
-            ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildFullMessage() {
-    return IslamicCard.gradient(
-      gradient: _getCurrentGradient(),
-      onTap: widget.onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // الرأس مع الوقت والتاريخ
-          Row(
+  Widget _buildContent(BuildContext context, String greeting, String message) {
+    final hour = DateTime.now().hour;
+    final icon = _getGreetingIcon(hour);
+    
+    return Row(
+      children: [
+        // الأيقونة الثابتة
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withValues(alpha: 0.2),
+          ),
+          child: Icon(
+            icon,
+            color: Colors.white,
+            size: ThemeConstants.icon2xl,
+          ),
+        ),
+        
+        ThemeConstants.space5.w,
+        
+        // النصوص
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(ThemeConstants.spaceMd),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-                ),
-                child: Icon(
-                  _getCurrentTimeIcon(),
+              // التحية
+              Text(
+                greeting,
+                style: context.headlineMedium?.copyWith(
                   color: Colors.white,
-                  size: ThemeConstants.iconLg,
-                ),
-              ),
-              
-              Spaces.mediumH,
-              
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _getCurrentTime(),
-                      style: AppTypography.caption.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontWeight: ThemeConstants.fontMedium,
-                      ),
-                    ),
-                    Spaces.xs,
-                    Text(
-                      _getCurrentDate(),
-                      style: AppTypography.caption.copyWith(
-                        color: Colors.white.withValues(alpha: 0.7),
-                      ),
+                  fontWeight: ThemeConstants.bold,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      offset: const Offset(0, 2),
+                      blurRadius: 4,
                     ),
                   ],
                 ),
               ),
+              
+              ThemeConstants.space2.h,
+              
+              // الرسالة
+              Text(
+                message,
+                style: context.bodyLarge?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.95),
+                  height: 1.5,
+                  fontWeight: ThemeConstants.medium,
+                ),
+              ),
+              
+              ThemeConstants.space4.h,
+              
+              // معلومات الوقت والتاريخ
+              _buildTimeInfo(context),
             ],
           ),
-          
-          Spaces.large,
-          
-          // رسالة الترحيب الرئيسية
-          Text(
-            _getGreetingMessage(),
-            style: AppTypography.heading.copyWith(
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimeInfo(BuildContext context) {
+    final now = DateTime.now();
+    final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+    final dateStr = _getArabicDate(now);
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: ThemeConstants.space4,
+        vertical: ThemeConstants.space2,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // أيقونة الوقت
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space1),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.access_time_rounded,
               color: Colors.white,
-              fontSize: widget.userName != null 
-                  ? ThemeConstants.fontSize3xl 
-                  : ThemeConstants.fontSize4xl,
+              size: ThemeConstants.iconSm,
             ),
           ),
           
-          if (widget.userName != null) ...[
-            Spaces.small,
-            Text(
-              widget.userName!,
-              style: AppTypography.title.copyWith(
-                color: Colors.white.withValues(alpha: 0.9),
-                fontWeight: ThemeConstants.fontBold,
-              ),
-            ),
-          ],
+          ThemeConstants.space2.w,
           
-          Spaces.medium,
-          
-          // رسالة إلهامية
-          Container(
-            padding: const EdgeInsets.all(ThemeConstants.spaceMd),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-              ),
+          // الوقت
+          Text(
+            timeStr,
+            style: context.titleMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: ThemeConstants.bold,
             ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.auto_awesome,
-                  color: Colors.white.withValues(alpha: 0.8),
-                  size: ThemeConstants.iconSm,
-                ),
-                Spaces.smallH,
-                Expanded(
-                  child: Text(
-                    _getInspirationalMessage(),
-                    style: AppTypography.body.copyWith(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ],
+          ),
+          
+          ThemeConstants.space3.w,
+          
+          // التاريخ
+          Text(
+            dateStr,
+            style: context.labelMedium?.copyWith(
+              color: Colors.white.withValues(alpha: 0.9),
             ),
           ),
         ],
@@ -265,116 +175,71 @@ class _WelcomeMessageState extends State<WelcomeMessage>
     );
   }
 
-  // Helper methods
-  IconData _getCurrentTimeIcon() {
-    final hour = DateTime.now().hour;
-    
-    if (hour >= 5 && hour < 12) {
-      return Icons.wb_sunny; // صباح
-    } else if (hour >= 12 && hour < 17) {
-      return Icons.wb_cloudy; // ظهيرة
-    } else if (hour >= 17 && hour < 20) {
-      return Icons.brightness_3; // مساء
-    } else {
-      return Icons.nights_stay; // ليل
-    }
-  }
-
-  LinearGradient _getCurrentGradient() {
-    final hour = DateTime.now().hour;
-    
-    if (hour >= 5 && hour < 12) {
-      // تدرج الصباح - أصفر برتقالي
-      return const LinearGradient(
-        colors: [Color(0xFFFFB74D), Color(0xFFFF8A65)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
-    } else if (hour >= 12 && hour < 17) {
-      // تدرج الظهيرة - أزرق سماوي
-      return const LinearGradient(
-        colors: [Color(0xFF42A5F5), Color(0xFF64B5F6)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
-    } else if (hour >= 17 && hour < 20) {
-      // تدرج المساء - برتقالي وردي
-      return const LinearGradient(
-        colors: [Color(0xFFFF7043), Color(0xFFE57373)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
-    } else {
-      // تدرج الليل - بنفسجي أزرق
-      return const LinearGradient(
-        colors: [Color(0xFF5C6BC0), Color(0xFF7986CB)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
-    }
-  }
-
-  String _getGreetingMessage() {
-    final hour = DateTime.now().hour;
-    
-    if (hour >= 5 && hour < 12) {
+  String _getGreeting(int hour) {
+    if (hour < 5) {
+      return 'ليلة مباركة';
+    } else if (hour < 12) {
       return 'صباح الخير';
-    } else if (hour >= 12 && hour < 17) {
-      return 'أهلاً وسهلاً';
-    } else if (hour >= 17 && hour < 20) {
-      return 'مساء الخير';
+    } else if (hour < 17) {
+      return 'نهارك سعيد';
+    } else if (hour < 20) {
+      return 'مساء النور';
     } else {
-      return 'مساء الخير';
+      return 'أمسية مباركة';
     }
   }
 
-  String _getInspirationalMessage() {
-    final hour = DateTime.now().hour;
-    
-    if (hour >= 5 && hour < 12) {
-      return 'ابدأ يومك بذكر الله والأذكار المباركة';
-    } else if (hour >= 12 && hour < 17) {
-      return 'استمر في ذكر الله واجعله نوراً في قلبك';
-    } else if (hour >= 17 && hour < 20) {
-      return 'اختتم يومك بالاستغفار والحمد لله';
+  String _getMessage(int hour) {
+    if (hour < 5) {
+      return 'وقت مبارك للقيام والدعاء والاستغفار';
+    } else if (hour < 8) {
+      return 'ابدأ يومك بأذكار الصباح وصلاة الفجر';
+    } else if (hour < 12) {
+      return 'وقت مناسب لقراءة القرآن والذكر';
+    } else if (hour < 15) {
+      return 'استمر في الذكر واغتنم هذا الوقت المبارك';
+    } else if (hour < 18) {
+      return 'حان وقت أذكار المساء والاستغفار';
+    } else if (hour < 21) {
+      return 'وقت الدعاء والتسبيح والحمد';
     } else {
-      return 'اقرأ أذكار النوم واستعد لليوم التالي';
+      return 'استعد للنوم بأذكار النوم والوتر';
     }
   }
 
-  String _getCurrentTime() {
-    final now = DateTime.now();
-    final hour = now.hour > 12 ? now.hour - 12 : (now.hour == 0 ? 12 : now.hour);
-    final minute = now.minute.toString().padLeft(2, '0');
-    final period = now.hour >= 12 ? 'مساءً' : 'صباحاً';
-    
-    return '$hour:$minute $period';
+  List<Color> _getGradientColors(int hour) {
+    final gradient = ColorHelper.getTimeBasedGradient();
+    return gradient.colors;
   }
 
-  String _getCurrentDate() {
-    final now = DateTime.now();
-    
+  String _getArabicDate(DateTime date) {
     const arabicMonths = [
       'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
       'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
     ];
     
-    const arabicWeekdays = [
-      'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 
-      'الجمعة', 'السبت', 'الأحد'
+    const arabicDays = [
+      'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'
     ];
     
-    final weekday = arabicWeekdays[now.weekday - 1];
-    final day = now.day;
-    final month = arabicMonths[now.month - 1];
-    final year = now.year;
+    final dayName = arabicDays[date.weekday % 7];
+    final day = date.day;
+    final month = arabicMonths[date.month - 1];
     
-    return '$weekday، $day $month $year';
+    return '$dayName، $day $month';
   }
 
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
+  IconData _getGreetingIcon(int hour) {
+    if (hour < 5) {
+      return Icons.nightlight_round; // ليلة مباركة
+    } else if (hour < 12) {
+      return Icons.wb_sunny; // صباح الخير
+    } else if (hour < 17) {
+      return Icons.light_mode; // نهارك سعيد
+    } else if (hour < 20) {
+      return Icons.wb_twilight; // مساء النور
+    } else {
+      return Icons.nights_stay; // أمسية مباركة
+    }
   }
 }

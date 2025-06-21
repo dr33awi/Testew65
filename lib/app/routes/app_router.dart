@@ -1,10 +1,8 @@
-// lib/app/routes/app_router.dart (محدث لشاشات الإعدادات)
-
+// lib/app/routes/app_router.dart
 import 'package:flutter/material.dart';
-import '../themes/index.dart';
-
-// الشاشات الأساسية
+import '../../app/themes/app_theme.dart';
 import '../../features/home/screens/home_screen.dart';
+
 import '../../features/prayer_times/screens/prayer_times_screen.dart';
 import '../../features/prayer_times/screens/prayer_settings_screen.dart';
 import '../../features/prayer_times/screens/prayer_notifications_settings_screen.dart';
@@ -13,13 +11,7 @@ import '../../features/athkar/screens/athkar_categories_screen.dart';
 import '../../features/athkar/screens/athkar_details_screen.dart';
 import '../../features/athkar/screens/notification_settings_screen.dart';
 import '../../features/tasbih/screens/tasbih_screen.dart';
-
-// شاشات الإعدادات الجديدة
 import '../../features/settings/screens/settings_screen.dart';
-import '../../features/settings/screens/theme_settings_screen.dart';
-import '../../features/settings/screens/notifications_settings_screen.dart';
-import '../../features/settings/screens/permissions_settings_screen.dart';
-import '../../features/settings/screens/about_settings_screen.dart';
 
 class AppRouter {
   // Main Routes
@@ -48,45 +40,20 @@ class AppRouter {
   static const String prayerNotificationsSettings = '/prayer-notifications-settings';
   static const String athkarNotificationsSettings = '/athkar-notifications-settings';
 
-  // ==================== Settings Routes الجديدة ====================
-  
-  // المظهر والعرض
-  static const String themeSettings = '/settings/theme';
-  static const String displaySettings = '/settings/display';
-  static const String languageSettings = '/settings/language';
-  
-  // الإشعارات والتنبيهات
-  static const String generalNotifications = '/settings/notifications';
-  static const String prayerNotifications = '/settings/notifications/prayer';
-  static const String athkarNotifications = '/settings/notifications/athkar';
-  static const String notificationHistory = '/settings/notifications/history';
-  
-  // الأذونات والصلاحيات
-  static const String permissionsSettings = '/settings/permissions';
-  static const String privacySettings = '/settings/privacy';
-  
-  // البيانات والتخزين
-  static const String dataSettings = '/settings/data';
-  static const String backupSettings = '/settings/backup';
-  
-  // الدعم والمعلومات
-  static const String aboutSettings = '/settings/about';
-  static const String helpSettings = '/settings/help';
-  static const String supportSettings = '/settings/support';
-
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     debugPrint('AppRouter: Generating route for ${settings.name}');
     
     switch (settings.name) {
-      // ==================== Main Screens ====================
+      // Main Screen
       case home:
         return _fadeRoute(const HomeScreen(), settings);
       
+      // Main Features
       case prayerTimes:
         return _slideRoute(const PrayerTimesScreen(), settings);
         
       case athkar:
-        return _slideRoute(const AthkarCategoriesScreen(), settings);
+        return _slideRoute(AthkarCategoriesScreen(), settings);
         
       case athkarDetails:
         final categoryId = settings.arguments as String?;
@@ -114,7 +81,7 @@ class AppRouter {
       case dua:
         return _slideRoute(_buildComingSoonScreen('الأدعية'), settings);
         
-      // ==================== Feature Routes ====================
+      // Feature Routes
       case favorites:
         return _slideRoute(_buildComingSoonScreen('المفضلة'), settings);
         
@@ -141,52 +108,6 @@ class AppRouter {
         
       case athkarNotificationsSettings:
         return _slideRoute(const AthkarNotificationSettingsScreen(), settings);
-
-      // ==================== Settings Routes الجديدة ====================
-      
-      // المظهر والعرض
-      case themeSettings:
-        return _slideRoute(const ThemeSettingsScreen(), settings);
-        
-      case displaySettings:
-        return _slideRoute(_buildComingSoonScreen('إعدادات العرض'), settings);
-        
-      case languageSettings:
-        return _slideRoute(_buildComingSoonScreen('إعدادات اللغة'), settings);
-      
-      // الإشعارات والتنبيهات
-      case generalNotifications:
-        return _slideRoute(const NotificationsSettingsScreen(), settings);
-        
-      case prayerNotifications:
-        return _slideRoute(_buildComingSoonScreen('إشعارات الصلاة'), settings);
-        
-      case athkarNotifications:
-        return _slideRoute(_buildComingSoonScreen('إشعارات الأذكار'), settings);
-        
-      case notificationHistory:
-        return _slideRoute(_buildComingSoonScreen('سجل الإشعارات'), settings);
-      
-      // الأذونات والصلاحيات
-      case permissionsSettings:
-        return _slideRoute(const PermissionsSettingsScreen(), settings);
-        
-      case privacySettings:
-        return _slideRoute(_buildComingSoonScreen('إعدادات الخصوصية'), settings);
-      
-        
-      case backupSettings:
-        return _slideRoute(_buildComingSoonScreen('إعدادات النسخ الاحتياطي'), settings);
-      
-      // الدعم والمعلومات
-      case aboutSettings:
-        return _slideRoute(const AboutSettingsScreen(), settings);
-        
-      case helpSettings:
-        return _slideRoute(_buildComingSoonScreen('مركز المساعدة'), settings);
-        
-      case supportSettings:
-        return _slideRoute(_buildComingSoonScreen('الدعم الفني'), settings);
         
       // Default
       default:
@@ -236,7 +157,7 @@ class AppRouter {
   // Screen Builders
   static Widget _buildComingSoonScreen(String title) {
     return Scaffold(
-      appBar: IslamicAppBar(title: title),
+      appBar: CustomAppBar.simple(title: title),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -254,40 +175,33 @@ class AppRouter {
                 color: ThemeConstants.primary,
               ),
             ),
-            
-            Spaces.extraLarge,
-            
+            ThemeConstants.space5.h,
             Text(
               'قريباً',
-              style: AppTypography.heading.copyWith(
+              style: AppTextStyles.h2.copyWith(
                 color: ThemeConstants.primary,
+                fontWeight: ThemeConstants.bold,
               ),
             ),
-            
-            Spaces.medium,
-            
+            ThemeConstants.space2.h,
             Text(
               title,
-              style: AppTypography.title.copyWith(
+              style: AppTextStyles.h4.copyWith(
                 color: ThemeConstants.lightTextSecondary,
               ),
             ),
-            
-            Spaces.small,
-            
+            ThemeConstants.space1.h,
             Text(
               'هذه الميزة قيد التطوير',
-              style: AppTypography.body.copyWith(
-                color: ThemeConstants.lightTextSecondary,
+              style: AppTextStyles.body1.copyWith(
+                color: ThemeConstants.lightTextHint,
               ),
             ),
-            
-            Spaces.extraLarge,
-            
-            IslamicButton.outlined(
+            ThemeConstants.space6.h,
+            AppButton.outline(
               text: 'العودة',
+              onPressed: () => Navigator.of(_navigatorKey.currentContext!).pop(),
               icon: Icons.arrow_back,
-              onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
             ),
           ],
         ),
@@ -314,70 +228,61 @@ class AppRouter {
                 color: ThemeConstants.error,
               ),
             ),
-            
-            Spaces.extraLarge,
-            
+            ThemeConstants.space5.h,
             Text(
               '404',
-              style: AppTypography.heading.copyWith(
+              style: AppTextStyles.h1.copyWith(
                 color: ThemeConstants.error,
+                fontWeight: ThemeConstants.bold,
               ),
             ),
-            
-            Spaces.medium,
-            
+            ThemeConstants.space2.h,
             const Text(
               'الصفحة غير موجودة',
-              style: AppTypography.title,
+              style: AppTextStyles.h4,
             ),
-            
-            Spaces.small,
-            
+            ThemeConstants.space1.h,
             Text(
               'لم نتمكن من العثور على الصفحة المطلوبة',
-              style: AppTypography.body.copyWith(
+              style: AppTextStyles.body1.copyWith(
                 color: ThemeConstants.lightTextSecondary,
               ),
             ),
-            
             if (routeName != null) ...[
-              Spaces.medium,
+              ThemeConstants.space2.h,
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+                  horizontal: ThemeConstants.space3,
+                  vertical: ThemeConstants.space1,
                 ),
                 decoration: BoxDecoration(
-                  color: ThemeConstants.lightTextSecondary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
+                  color: ThemeConstants.lightTextHint.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
                 ),
                 child: Text(
                   routeName,
-                  style: AppTypography.caption.copyWith(
-                    color: ThemeConstants.lightTextSecondary,
+                  style: AppTextStyles.caption.copyWith(
+                    color: ThemeConstants.lightTextHint,
+                    fontFamily: 'monospace',
                   ),
                 ),
               ),
             ],
-            
-            Spaces.extraLarge,
-            
+            ThemeConstants.space6.h,
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                IslamicButton.outlined(
+                AppButton.outline(
                   text: 'العودة',
+                  onPressed: () => Navigator.of(_navigatorKey.currentContext!).pop(),
                   icon: Icons.arrow_back,
-                  onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
                 ),
-                
-                Spaces.mediumH,
-                
-                IslamicButton.primary(
+                const SizedBox(width: ThemeConstants.space3),
+                AppButton.primary(
                   text: 'الرئيسية',
-                  icon: Icons.home,
-                  onPressed: () => Navigator.of(navigatorKey.currentContext!)
+                  onPressed: () => Navigator.of(_navigatorKey.currentContext!)
                       .pushNamedAndRemoveUntil(home, (route) => false),
+                  icon: Icons.home,
                 ),
               ],
             ),
@@ -389,7 +294,7 @@ class AppRouter {
 
   static Widget _buildErrorScreen(String message) {
     return Scaffold(
-      appBar: const IslamicAppBar(title: 'خطأ'),
+      appBar: CustomAppBar.simple(title: 'خطأ'),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -407,23 +312,19 @@ class AppRouter {
                 color: ThemeConstants.error,
               ),
             ),
-            
-            Spaces.large,
-            
+            ThemeConstants.space4.h,
             Text(
               message,
-              style: AppTypography.body.copyWith(
+              style: AppTextStyles.h5.copyWith(
                 color: ThemeConstants.error,
               ),
               textAlign: TextAlign.center,
             ),
-            
-            Spaces.extraLarge,
-            
-            IslamicButton.outlined(
+            ThemeConstants.space6.h,
+            AppButton.outline(
               text: 'العودة',
+              onPressed: () => Navigator.of(_navigatorKey.currentContext!).pop(),
               icon: Icons.arrow_back,
-              onPressed: () => Navigator.of(navigatorKey.currentContext!).pop(),
             ),
           ],
         ),
@@ -459,46 +360,27 @@ class AppRouter {
         return Icons.notifications_active;
       case 'إعدادات الصلاة':
         return Icons.mosque;
-      
-      // Settings Icons
-      case 'إعدادات العرض':
-        return Icons.display_settings;
-      case 'إعدادات اللغة':
-        return Icons.language;
-      case 'إشعارات الصلاة':
-        return Icons.mosque;
-      case 'إشعارات الأذكار':
-        return Icons.menu_book;
-      case 'سجل الإشعارات':
-        return Icons.history;
-      case 'إعدادات الخصوصية':
-        return Icons.privacy_tip;
-      case 'إعدادات النسخ الاحتياطي':
-        return Icons.backup;
-      case 'مركز المساعدة':
-        return Icons.help_center;
-      case 'الدعم الفني':
-        return Icons.support_agent;
-      
       default:
         return Icons.construction;
     }
   }
 
   // Navigator key for global navigation
-  static final GlobalKey<NavigatorState> navigatorKey = 
+  static final GlobalKey<NavigatorState> _navigatorKey = 
       GlobalKey<NavigatorState>();
+  
+  static GlobalKey<NavigatorState> get navigatorKey => _navigatorKey;
 
   // Navigation helper methods
   static Future<T?> push<T>(String routeName, {Object? arguments}) {
-    return navigatorKey.currentState!.pushNamed<T>(
+    return _navigatorKey.currentState!.pushNamed<T>(
       routeName,
       arguments: arguments,
     );
   }
 
   static Future<T?> pushReplacement<T, TO>(String routeName, {Object? arguments}) {
-    return navigatorKey.currentState!.pushReplacementNamed<T, TO>(
+    return _navigatorKey.currentState!.pushReplacementNamed<T, TO>(
       routeName,
       arguments: arguments,
     );
@@ -509,7 +391,7 @@ class AppRouter {
     bool Function(Route<dynamic>) predicate, {
     Object? arguments,
   }) {
-    return navigatorKey.currentState!.pushNamedAndRemoveUntil<T>(
+    return _navigatorKey.currentState!.pushNamedAndRemoveUntil<T>(
       routeName,
       predicate,
       arguments: arguments,
@@ -517,126 +399,14 @@ class AppRouter {
   }
 
   static void pop<T>([T? result]) {
-    return navigatorKey.currentState!.pop<T>(result);
+    return _navigatorKey.currentState!.pop<T>(result);
   }
 
   static bool canPop() {
-    return navigatorKey.currentState!.canPop();
+    return _navigatorKey.currentState!.canPop();
   }
 
   static void popUntil(bool Function(Route<dynamic>) predicate) {
-    return navigatorKey.currentState!.popUntil(predicate);
-  }
-
-  // ==================== Settings Navigation Helpers ====================
-
-  /// Navigate to specific settings screen
-  static Future<void> navigateToSettings({
-    required String settingsType,
-    Object? arguments,
-  }) async {
-    String route;
-    
-    switch (settingsType.toLowerCase()) {
-      case 'theme':
-        route = themeSettings;
-        break;
-      case 'display':
-        route = displaySettings;
-        break;
-      case 'language':
-        route = languageSettings;
-        break;
-      case 'notifications':
-        route = generalNotifications;
-        break;
-      case 'permissions':
-        route = permissionsSettings;
-        break;
-      case 'privacy':
-        route = privacySettings;
-        break;
-      case 'data':
-        route = dataSettings;
-        break;
-      case 'backup':
-        route = backupSettings;
-        break;
-      case 'about':
-        route = aboutSettings;
-        break;
-      case 'help':
-        route = helpSettings;
-        break;
-      case 'support':
-        route = supportSettings;
-        break;
-      default:
-        route = appSettings;
-    }
-
-    await push(route, arguments: arguments);
-  }
-
-  /// Navigate to notification settings by type
-  static Future<void> navigateToNotificationSettings(String type) async {
-    String route;
-    
-    switch (type.toLowerCase()) {
-      case 'prayer':
-        route = prayerNotifications;
-        break;
-      case 'athkar':
-        route = athkarNotifications;
-        break;
-      case 'history':
-        route = notificationHistory;
-        break;
-      default:
-        route = generalNotifications;
-    }
-
-    await push(route);
-  }
-
-  /// Quick navigation to main settings sections
-  static Future<void> openThemeSettings() => push(themeSettings);
-  static Future<void> openNotificationSettings() => push(generalNotifications);
-  static Future<void> openPermissionSettings() => push(permissionsSettings);
-  static Future<void> openDataSettings() => push(dataSettings);
-  static Future<void> openAboutSettings() => push(aboutSettings);
-
-  /// Navigation with result handling
-  static Future<T?> pushForResult<T>(
-    String routeName, {
-    Object? arguments,
-    Duration? timeout,
-  }) async {
-    final future = push<T>(routeName, arguments: arguments);
-    
-    if (timeout != null) {
-      return await future.timeout(timeout);
-    }
-    
-    return await future;
-  }
-
-  /// Safe navigation (checks if route exists)
-  static Future<bool> safePush(String routeName, {Object? arguments}) async {
-    try {
-      await push(routeName, arguments: arguments);
-      return true;
-    } catch (e) {
-      debugPrint('Navigation error: $e');
-      return false;
-    }
-  }
-
-  /// Reset to main settings screen
-  static Future<void> resetToMainSettings() async {
-    await pushAndRemoveUntil(
-      appSettings,
-      (route) => route.settings.name == home,
-    );
+    return _navigatorKey.currentState!.popUntil(predicate);
   }
 }

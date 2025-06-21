@@ -1,499 +1,490 @@
-// lib/features/athkar/utils/category_utils.dart
 import 'package:flutter/material.dart';
-import '../../../app/themes/index.dart';
-import '../models/athkar_model.dart';
+import '../../../app/themes/app_theme.dart';
 
-/// مساعدات لإدارة فئات الأذكار
+/// أدوات مساعدة لفئات الأذكار
 class CategoryUtils {
-  CategoryUtils._();
-
-  /// الحصول على أيقونة الفئة
+  /// الحصول على أيقونة مناسبة لكل فئة
   static IconData getCategoryIcon(String categoryId) {
-    switch (categoryId) {
+    switch (categoryId.toLowerCase()) {
+      // أذكار الأوقات
       case 'morning':
-      case 'أذكار_الصباح':
-        return Icons.wb_sunny;
+      case 'الصباح':
+      case 'صباح':
+        return Icons.wb_sunny_rounded; // شمس للصباح
       case 'evening':
-      case 'أذكار_المساء':
-        return Icons.nights_stay;
-      case 'after_prayer':
-      case 'أذكار_بعد_الصلاة':
-        return Icons.mosque;
+      case 'المساء':
+      case 'مساء':
+        return Icons.wb_twilight_rounded; // غروب للمساء
       case 'sleep':
-      case 'أذكار_النوم':
-        return Icons.bedtime;
+      case 'النوم':
+      case 'نوم':
+        return Icons.bedtime_rounded; // سرير للنوم
+      case 'wakeup':
       case 'wake_up':
-      case 'أذكار_الاستيقاظ':
-        return Icons.wb_twilight;
-      case 'eating':
-      case 'أذكار_الطعام':
-        return Icons.restaurant;
-      case 'travel':
-      case 'أذكار_السفر':
-        return Icons.flight;
-      case 'istighfar':
-      case 'الاستغفار':
-        return Icons.favorite;
-      case 'tasbih':
-      case 'التسبيح':
-        return Icons.touch_app;
-      case 'dua':
-      case 'الأدعية':
-        return Icons.pan_tool;
-      case 'quran':
-      case 'القرآن':
-        return Icons.book;
-      case 'hadith':
-      case 'الحديث':
-        return Icons.format_quote;
-      case 'friday':
-      case 'أذكار_الجمعة':
-        return Icons.calendar_month;
-      case 'ramadan':
-      case 'أذكار_رمضان':
-        return Icons.star_half;
-      case 'hajj':
-      case 'أذكار_الحج':
-        return Icons.home;
-      case 'protection':
-      case 'أذكار_الحماية':
-        return Icons.security;
-      case 'forgiveness':
-      case 'أذكار_المغفرة':
-        return Icons.healing;
-      case 'gratitude':
-      case 'أذكار_الشكر':
-        return Icons.volunteer_activism;
-      case 'guidance':
-      case 'أذكار_الهداية':
-        return Icons.explore;
-      case 'health':
-      case 'أذكار_الصحة':
-        return Icons.health_and_safety;
-      case 'knowledge':
-      case 'أذكار_العلم':
-        return Icons.school;
-      case 'work':
-      case 'أذكار_العمل':
-        return Icons.work;
-      case 'family':
-      case 'أذكار_الأسرة':
-        return Icons.family_restroom;
-      case 'weather':
-      case 'أذكار_الطقس':
-        return Icons.cloud;
-      case 'difficulties':
-      case 'أذكار_الصعوبات':
-        return Icons.support;
-      default:
-        return Icons.menu_book;
-    }
-  }
-
-  /// الحصول على لون الفئة
-  static Color getCategoryColor(String categoryId) {
-    switch (categoryId) {
-      case 'morning':
-      case 'أذكار_الصباح':
-        return const Color(0xFFFFB74D); // أصفر برتقالي للصباح
-      case 'evening':
-      case 'أذكار_المساء':
-        return const Color(0xFF7986CB); // بنفسجي للمساء
-      case 'after_prayer':
-      case 'أذكار_بعد_الصلاة':
-        return ThemeConstants.primary; // أخضر للصلاة
-      case 'sleep':
-      case 'أذكار_النوم':
-        return const Color(0xFF64B5F6); // أزرق هادئ للنوم
-      case 'wake_up':
-      case 'أذكار_الاستيقاظ':
-        return const Color(0xFFFFCC02); // أصفر للاستيقاظ
-      case 'eating':
-      case 'أذكار_الطعام':
-        return const Color(0xFF81C784); // أخضر فاتح للطعام
-      case 'travel':
-      case 'أذكار_السفر':
-        return const Color(0xFF4FC3F7); // أزرق سماوي للسفر
-      case 'istighfar':
-      case 'الاستغفار':
-        return const Color(0xFFE57373); // وردي للاستغفار
-      case 'tasbih':
-      case 'التسبيح':
-        return const Color(0xFFBA68C8); // بنفسجي للتسبيح
-      case 'dua':
-      case 'الأدعية':
-        return const Color(0xFF9CCC65); // أخضر للأدعية
-      case 'quran':
-      case 'القرآن':
-        return const Color(0xFF4DB6AC); // تركوازي للقرآن
-      case 'hadith':
-      case 'الحديث':
-        return const Color(0xFFFFB74D); // برتقالي للحديث
-      case 'friday':
-      case 'أذكار_الجمعة':
-        return const Color(0xFF7986CB); // بنفسجي للجمعة
-      case 'ramadan':
-      case 'أذكار_رمضان':
-        return const Color(0xFFFFD54F); // ذهبي لرمضان
-      case 'hajj':
-      case 'أذكار_الحج':
-        return const Color(0xFF8D6E63); // بني للحج
-      case 'protection':
-      case 'أذكار_الحماية':
-        return const Color(0xFF66BB6A); // أخضر للحماية
-      case 'forgiveness':
-      case 'أذكار_المغفرة':
-        return const Color(0xFFAB47BC); // بنفسجي للمغفرة
-      case 'gratitude':
-      case 'أذكار_الشكر':
-        return const Color(0xFFEF5350); // أحمر وردي للشكر
-      case 'guidance':
-      case 'أذكار_الهداية':
-        return const Color(0xFF42A5F5); // أزرق للهداية
-      case 'health':
-      case 'أذكار_الصحة':
-        return const Color(0xFF66BB6A); // أخضر للصحة
-      case 'knowledge':
-      case 'أذكار_العلم':
-        return const Color(0xFF5C6BC0); // أزرق للعلم
-      case 'work':
-      case 'أذكار_العمل':
-        return const Color(0xFF8BC34A); // أخضر للعمل
-      case 'family':
-      case 'أذكار_الأسرة':
-        return const Color(0xFFFF8A65); // برتقالي للأسرة
-      case 'weather':
-      case 'أذكار_الطقس':
-        return const Color(0xFF78909C); // رمادي للطقس
-      case 'difficulties':
-      case 'أذكار_الصعوبات':
-        return const Color(0xFFA1887F); // بني فاتح للصعوبات
-      default:
-        return ThemeConstants.primary;
-    }
-  }
-
-  /// الحصول على الوصف الافتراضي للفئة
-  static String getCategoryDescription(String categoryId) {
-    switch (categoryId) {
-      case 'morning':
-      case 'أذكار_الصباح':
-        return 'أذكار تقال في الصباح لبركة اليوم وحفظ الله';
-      case 'evening':
-      case 'أذكار_المساء':
-        return 'أذكار تقال في المساء للحماية والطمأنينة';
-      case 'after_prayer':
-      case 'أذكار_بعد_الصلاة':
-        return 'أذكار تقال بعد الانتهاء من الصلاة';
-      case 'sleep':
-      case 'أذكار_النوم':
-        return 'أذكار تقال قبل النوم للحماية والراحة';
-      case 'wake_up':
-      case 'أذكار_الاستيقاظ':
-        return 'أذكار تقال عند الاستيقاظ من النوم';
-      case 'eating':
-      case 'أذكار_الطعام':
-        return 'أذكار الطعام والشراب والدعاء قبل وبعد الأكل';
-      case 'travel':
-      case 'أذكار_السفر':
-        return 'أذكار وأدعية السفر والرحلات';
-      case 'istighfar':
-      case 'الاستغفار':
-        return 'أذكار الاستغفار وطلب المغفرة من الله';
-      case 'tasbih':
-      case 'التسبيح':
-        return 'تسبيح الله وتنزيهه عن كل نقص';
-      case 'dua':
-      case 'الأدعية':
-        return 'أدعية مختارة من القرآن والسنة';
-      case 'quran':
-      case 'القرآن':
-        return 'آيات قرآنية للتلاوة والتدبر';
-      case 'hadith':
-      case 'الحديث':
-        return 'أحاديث نبوية شريفة';
-      case 'friday':
-      case 'أذكار_الجمعة':
-        return 'أذكار وأدعية خاصة بيوم الجمعة';
-      case 'ramadan':
-      case 'أذكار_رمضان':
-        return 'أذكار وأدعية شهر رمضان المبارك';
-      case 'hajj':
-      case 'أذكار_الحج':
-        return 'أذكار وأدعية الحج والعمرة';
-      case 'protection':
-      case 'أذكار_الحماية':
-        return 'أذكار الحماية من الشر والمكروه';
-      case 'forgiveness':
-      case 'أذكار_المغفرة':
-        return 'أذكار طلب المغفرة والتوبة';
-      case 'gratitude':
-      case 'أذكار_الشكر':
-        return 'أذكار الشكر والحمد لله';
-      case 'guidance':
-      case 'أذكار_الهداية':
-        return 'أذكار طلب الهداية والرشاد';
-      case 'health':
-      case 'أذكار_الصحة':
-        return 'أذكار الصحة والعافية';
-      case 'knowledge':
-      case 'أذكار_العلم':
-        return 'أذكار طلب العلم والحكمة';
-      case 'work':
-      case 'أذكار_العمل':
-        return 'أذكار العمل والرزق';
-      case 'family':
-      case 'أذكار_الأسرة':
-        return 'أذكار وأدعية للأسرة والأهل';
-      case 'weather':
-      case 'أذكار_الطقس':
-        return 'أذكار المطر والرياح والطقس';
-      case 'difficulties':
-      case 'أذكار_الصعوبات':
-        return 'أذكار وأدعية في أوقات الصعوبات والضيق';
-      default:
-        return 'مجموعة مختارة من الأذكار والأدعية';
-    }
-  }
-
-  /// الحصول على الوقت الافتراضي للتذكير
-  static TimeOfDay? getDefaultNotifyTime(String categoryId) {
-    switch (categoryId) {
-      case 'morning':
-      case 'أذكار_الصباح':
-        return const TimeOfDay(hour: 7, minute: 0);
-      case 'evening':
-      case 'أذكار_المساء':
-        return const TimeOfDay(hour: 18, minute: 0);
-      case 'after_prayer':
-      case 'أذكار_بعد_الصلاة':
-        return null; // يعتمد على أوقات الصلاة
-      case 'sleep':
-      case 'أذكار_النوم':
-        return const TimeOfDay(hour: 22, minute: 0);
-      case 'wake_up':
-      case 'أذكار_الاستيقاظ':
-        return const TimeOfDay(hour: 6, minute: 0);
-      case 'eating':
-      case 'أذكار_الطعام':
-        return const TimeOfDay(hour: 12, minute: 0);
-      case 'friday':
-      case 'أذكار_الجمعة':
-        return const TimeOfDay(hour: 10, minute: 0);
-      case 'istighfar':
-      case 'الاستغفار':
-        return const TimeOfDay(hour: 15, minute: 0);
-      case 'tasbih':
-      case 'التسبيح':
-        return const TimeOfDay(hour: 20, minute: 0);
-      default:
-        return null;
-    }
-  }
-
-  /// تصنيف الفئات حسب النوع
-  static List<String> getCategoriesByType(CategoryType type) {
-    switch (type) {
-      case CategoryType.daily:
-        return [
-          'morning',
-          'evening',
-          'sleep',
-          'wake_up',
-          'eating',
-          'after_prayer',
-        ];
-      case CategoryType.special:
-        return [
-          'friday',
-          'ramadan',
-          'hajj',
-          'travel',
-        ];
-      case CategoryType.spiritual:
-        return [
-          'istighfar',
-          'tasbih',
-          'dua',
-          'quran',
-          'hadith',
-        ];
-      case CategoryType.protection:
-        return [
-          'protection',
-          'difficulties',
-          'health',
-        ];
-      case CategoryType.gratitude:
-        return [
-          'gratitude',
-          'forgiveness',
-          'guidance',
-        ];
-      case CategoryType.life:
-        return [
-          'work',
-          'family',
-          'knowledge',
-          'weather',
-        ];
-    }
-  }
-
-  /// الحصول على نوع الفئة
-  static CategoryType getCategoryType(String categoryId) {
-    for (final type in CategoryType.values) {
-      if (getCategoriesByType(type).contains(categoryId)) {
-        return type;
-      }
-    }
-    return CategoryType.daily;
-  }
-
-  /// الحصول على اسم نوع الفئة
-  static String getCategoryTypeName(CategoryType type) {
-    switch (type) {
-      case CategoryType.daily:
-        return 'الأذكار اليومية';
-      case CategoryType.special:
-        return 'المناسبات الخاصة';
-      case CategoryType.spiritual:
-        return 'الأذكار الروحانية';
-      case CategoryType.protection:
-        return 'الحماية والعافية';
-      case CategoryType.gratitude:
-        return 'الشكر والتوبة';
-      case CategoryType.life:
-        return 'أذكار الحياة';
-    }
-  }
-
-  /// ترتيب الفئات حسب الأولوية
-  static List<AthkarCategory> sortCategoriesByPriority(List<AthkarCategory> categories) {
-    final priorityOrder = <String>[
-      'morning',
-      'أذكار_الصباح',
-      'evening', 
-      'أذكار_المساء',
-      'after_prayer',
-      'أذكار_بعد_الصلاة',
-      'sleep',
-      'أذكار_النوم',
-      'wake_up',
-      'أذكار_الاستيقاظ',
-      'friday',
-      'أذكار_الجمعة',
-      'istighfar',
-      'الاستغفار',
-      'tasbih',
-      'التسبيح',
-      'protection',
-      'أذكار_الحماية',
-    ];
-
-    categories.sort((a, b) {
-      final aIndex = priorityOrder.indexOf(a.id);
-      final bIndex = priorityOrder.indexOf(b.id);
+      case 'الاستيقاظ':
+      case 'استيقاظ':
+      case 'wake':
+        return Icons.alarm_rounded; // منبه للاستيقاظ
       
-      // إذا كانت الفئة في قائمة الأولوية
-      if (aIndex != -1 && bIndex != -1) {
-        return aIndex.compareTo(bIndex);
-      } else if (aIndex != -1) {
-        return -1; // a أولى
-      } else if (bIndex != -1) {
-        return 1; // b أولى
-      } else {
-        // ترتيب أبجدي للفئات الأخرى
-        return a.title.compareTo(b.title);
-      }
-    });
-
-    return categories;
-  }
-
-  /// فلترة الفئات حسب النوع
-  static List<AthkarCategory> filterCategoriesByType(
-    List<AthkarCategory> categories,
-    CategoryType type,
-  ) {
-    final typeCategories = getCategoriesByType(type);
-    return categories.where((cat) => typeCategories.contains(cat.id)).toList();
-  }
-
-  /// البحث في الفئات
-  static List<AthkarCategory> searchCategories(
-    List<AthkarCategory> categories,
-    String query,
-  ) {
-    if (query.isEmpty) return categories;
-
-    final normalizedQuery = query.toLowerCase().trim();
-    
-    return categories.where((category) {
-      return category.title.toLowerCase().contains(normalizedQuery) ||
-             (category.description?.toLowerCase().contains(normalizedQuery) ?? false) ||
-             getCategoryDescription(category.id).toLowerCase().contains(normalizedQuery);
-    }).toList();
-  }
-
-  /// إحصائيات الفئة
-  static CategoryStats calculateCategoryStats(
-    AthkarCategory category,
-    Map<int, int> progress,
-  ) {
-    int totalCount = 0;
-    int completedCount = 0;
-    int itemsCompleted = 0;
-
-    for (final item in category.athkar) {
-      totalCount += item.count;
-      final itemProgress = progress[item.id] ?? 0;
-      completedCount += itemProgress.clamp(0, item.count);
+      // أذكار العبادة والأماكن
+      case 'prayer':
+      case 'الصلاة':
+      case 'صلاة':
+      case 'prayers':
+        return Icons.mosque; // مسجد للصلاة
+      case 'eating':
+      case 'food':
+      case 'الطعام':
+      case 'طعام':
+      case 'الأكل':
+      case 'أكل':
+        return Icons.restaurant_rounded; // مطعم للطعام
+      case 'home':
+      case 'house':
+      case 'المنزل':
+      case 'منزل':
+      case 'البيت':
+      case 'بيت':
+        return Icons.home_rounded; // منزل للبيت
+      case 'travel':
+      case 'السفر':
+      case 'سفر':
+        return Icons.flight_rounded; // طائرة للسفر
       
-      if (itemProgress >= item.count) {
-        itemsCompleted++;
-      }
+      // باقي الفئات
+      case 'general':
+      case 'عامة':
+      case 'عام':
+        return Icons.auto_awesome_rounded; // نجمة للعام
+      case 'quran':
+      case 'القرآن':
+      case 'قرآن':
+        return Icons.menu_book_rounded; // كتاب للقرآن
+      case 'tasbih':
+      case 'التسبيح':
+      case 'تسبيح':
+        return Icons.radio_button_checked; // دائرة للتسبيح
+      case 'dua':
+      case 'الدعاء':
+      case 'دعاء':
+        return Icons.pan_tool_rounded; // يد للدعاء
+      case 'istighfar':
+      case 'الاستغفار':
+      case 'استغفار':
+        return Icons.favorite_rounded; // قلب للاستغفار
+      case 'friday':
+      case 'الجمعة':
+      case 'جمعة':
+        return Icons.event_rounded; // تقويم للجمعة
+      case 'hajj':
+      case 'الحج':
+      case 'حج':
+        return Icons.location_on_rounded; // موقع للحج
+      case 'ramadan':
+      case 'رمضان':
+        return Icons.nights_stay_rounded; // هلال لرمضان
+      case 'eid':
+      case 'العيد':
+      case 'عيد':
+        return Icons.celebration_rounded; // احتفال للعيد
+      case 'illness':
+      case 'المرض':
+      case 'مرض':
+        return Icons.healing_rounded; // شفاء للمرض
+      case 'rain':
+      case 'المطر':
+      case 'مطر':
+        return Icons.water_drop_rounded; // قطرة للمطر
+      case 'wind':
+      case 'الرياح':
+      case 'رياح':
+        return Icons.air_rounded; // هواء للرياح
+      case 'work':
+      case 'العمل':
+      case 'عمل':
+        return Icons.work_rounded; // عمل للمهنة
+      case 'study':
+      case 'الدراسة':
+      case 'دراسة':
+        return Icons.school_rounded; // مدرسة للدراسة
+      case 'anxiety':
+      case 'القلق':
+      case 'قلق':
+        return Icons.psychology_rounded; // عقل للقلق
+      case 'gratitude':
+      case 'الشكر':
+      case 'شكر':
+        return Icons.thumb_up_rounded; // إعجاب للشكر
+      case 'protection':
+      case 'الحماية':
+      case 'حماية':
+        return Icons.shield_rounded; // درع للحماية
+      case 'guidance':
+      case 'الهداية':
+      case 'هداية':
+        return Icons.lightbulb_rounded; // مصباح للهداية
+      case 'forgiveness':
+      case 'المغفرة':
+      case 'مغفرة':
+        return Icons.clean_hands_rounded; // أيدي نظيفة للمغفرة
+      case 'success':
+      case 'النجاح':
+      case 'نجاح':
+        return Icons.emoji_events_rounded; // كأس للنجاح
+      case 'patience':
+      case 'الصبر':
+      case 'صبر':
+        return Icons.hourglass_bottom_rounded; // ساعة رملية للصبر
+      case 'knowledge':
+      case 'العلم':
+      case 'علم':
+        return Icons.psychology_alt_rounded; // عقل للعلم
+      default:
+        return Icons.auto_awesome_rounded; // افتراضي
     }
+  }
 
-    final percentage = totalCount > 0 ? (completedCount / totalCount * 100).round() : 0;
-    final isCompleted = completedCount >= totalCount;
+  /// الحصول على لون من الثيم بناءً على نوع الفئة
+  static Color getCategoryThemeColor(String categoryId) {
+    switch (categoryId.toLowerCase()) {
+      // أذكار الأوقات
+      case 'morning':
+      case 'الصباح':
+      case 'صباح':
+        return const Color(0xFFDAA520); // ذهبي فاتح كالشروق
+      case 'evening':
+      case 'المساء':
+      case 'مساء':
+        return const Color(0xFF8B6F47); // بني دافئ كالغروب
+      case 'sleep':
+      case 'النوم':
+      case 'نوم':
+        return const Color(0xFF2D352D); // داكن أنيق للليل
+      case 'wakeup':
+      case 'wake_up':
+      case 'الاستيقاظ':
+      case 'استيقاظ':
+      case 'wake':
+        return const Color(0xFF7A8B6F); // أخضر زيتي فاتح للنهار
+      
+      // أذكار العبادة
+      case 'prayer':
+      case 'الصلاة':
+      case 'صلاة':
+      case 'prayers':
+        return const Color(0xFF445A3B); // أخضر زيتي داكن مقدس
+      case 'eating':
+      case 'food':
+      case 'الطعام':
+      case 'طعام':
+      case 'الأكل':
+      case 'أكل':
+        return const Color(0xFF6B8E5A); // أخضر طبيعي للطعام
+      case 'home':
+      case 'house':
+      case 'المنزل':
+      case 'منزل':
+      case 'البيت':
+      case 'بيت':
+        return const Color(0xFF8B7355); // بني دافئ للمنزل
+      case 'travel':
+      case 'السفر':
+      case 'سفر':
+        return const Color(0xFF5F7C8A); // أزرق رمادي للسفر
+      
+      // باقي الفئات
+      case 'general':
+      case 'عامة':
+      case 'عام':
+        return const Color(0xFF8B7355); // بني متوسط متوازن
+      case 'quran':
+      case 'القرآن':
+      case 'قرآن':
+        return const Color(0xFF704214); // بني داكن كالمصحف
+      case 'tasbih':
+      case 'التسبيح':
+      case 'تسبيح':
+        return const Color(0xFF4A6741); // أخضر داكن روحاني
+      case 'dua':
+      case 'الدعاء':
+      case 'دعاء':
+        return const Color(0xFF6B4C7C); // بنفسجي داكن للدعاء
+      case 'istighfar':
+      case 'الاستغفار':
+      case 'استغفار':
+        return const Color(0xFF8B4A6B); // وردي داكن للتوبة
+      case 'friday':
+      case 'الجمعة':
+      case 'جمعة':
+        return const Color(0xFF4F6B43); // أخضر مبارك للجمعة
+      case 'hajj':
+      case 'الحج':
+      case 'حج':
+        return const Color(0xFF5A5A5A); // رمادي داكن للكعبة
+      case 'ramadan':
+      case 'رمضان':
+        return const Color(0xFF4A3C6B); // بنفسجي داكن لرمضان
+      case 'eid':
+      case 'العيد':
+      case 'عيد':
+        return const Color(0xFFB8860B); // ذهبي احتفالي للعيد
+      case 'illness':
+      case 'المرض':
+      case 'مرض':
+        return const Color(0xFF5D7A52); // أخضر هادئ للشفاء
+      case 'rain':
+      case 'المطر':
+      case 'مطر':
+        return const Color(0xFF4A6B7C); // أزرق رمادي للمطر
+      case 'wind':
+      case 'الرياح':
+      case 'رياح':
+        return const Color(0xFF6B7A7A); // رمادي فضي للرياح
+      case 'work':
+      case 'العمل':
+      case 'عمل':
+        return const Color(0xFF7A6B3F); // بني ذهبي للعمل
+      case 'study':
+      case 'الدراسة':
+      case 'دراسة':
+        return const Color(0xFF3F4A7A); // أزرق داكن للدراسة
+      case 'anxiety':
+      case 'القلق':
+      case 'قلق':
+        return const Color(0xFF4A7A6B); // تركوازي داكن مهدئ
+      case 'gratitude':
+      case 'الشكر':
+      case 'شكر':
+        return const Color(0xFF8B7A2D); // أصفر داكن للشكر
+      case 'protection':
+      case 'الحماية':
+      case 'حماية':
+        return const Color(0xFF5A6B4A); // أخضر داكن للحماية
+      case 'guidance':
+      case 'الهداية':
+      case 'هداية':
+        return const Color(0xFF5A4A6B); // بنفسجي داكن للهداية
+      case 'forgiveness':
+      case 'المغفرة':
+      case 'مغفرة':
+        return const Color(0xFF7A4A5A); // وردي داكن للمغفرة
+      case 'success':
+      case 'النجاح':
+      case 'نجاح':
+        return const Color(0xFF4A6B47); // أخضر داكن للنجاح
+      case 'patience':
+      case 'الصبر':
+      case 'صبر':
+        return const Color(0xFF5A6B6B); // رمادي أزرق للصبر
+      case 'knowledge':
+      case 'العلم':
+      case 'علم':
+        return const Color(0xFF3F5A7A); // أزرق داكن للعلم
+      default:
+        return const Color(0xFF5D7052); // اللون الأساسي الافتراضي
+    }
+  }
 
-    return CategoryStats(
-      totalItems: category.athkar.length,
-      completedItems: itemsCompleted,
-      totalCount: totalCount,
-      completedCount: completedCount,
-      percentage: percentage,
-      isCompleted: isCompleted,
+  /// الحصول على تدرج لوني مناسب لكل فئة
+  static LinearGradient getCategoryGradient(String categoryId) {
+    final baseColor = getCategoryThemeColor(categoryId);
+    return LinearGradient(
+      colors: [
+        baseColor.withOpacity(0.8),
+        baseColor,
+        baseColor.darken(0.1),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
     );
   }
-}
 
-/// أنواع فئات الأذكار
-enum CategoryType {
-  daily,      // يومية
-  special,    // مناسبات خاصة
-  spiritual,  // روحانية
-  protection, // حماية
-  gratitude,  // شكر وتوبة
-  life,       // حياة
-}
+  /// الحصول على وصف مناسب لكل فئة
+  static String getCategoryDescription(String categoryId) {
+    switch (categoryId.toLowerCase()) {
+      case 'morning':
+      case 'الصباح':
+        return 'ابدأ يومك بالأذكار المباركة';
+      case 'evening':
+      case 'المساء':
+        return 'اختتم نهارك بالذكر والدعاء';
+      case 'sleep':
+      case 'النوم':
+        return 'نم آمناً في حفظ الله';
+      case 'wakeup':
+      case 'الاستيقاظ':
+        return 'احمد الله على نعمة الحياة';
+      case 'prayer':
+      case 'الصلاة':
+        return 'أذكار قبل وبعد الصلاة';
+      case 'eating':
+      case 'الطعام':
+        return 'بارك في طعامك وشرابك';
+      case 'travel':
+      case 'السفر':
+        return 'استعن بالله في سفرك';
+      case 'general':
+      case 'عامة':
+        return 'أذكار متنوعة لكل وقت';
+      case 'quran':
+      case 'القرآن':
+        return 'آيات كريمة للحفظ والأمان';
+      case 'tasbih':
+      case 'التسبيح':
+        return 'سبح الله في كل وقت';
+      case 'dua':
+      case 'الدعاء':
+        return 'ادع الله بخير الدعاء';
+      case 'istighfar':
+      case 'الاستغفار':
+        return 'استغفر الله من كل ذنب';
+      case 'friday':
+      case 'الجمعة':
+        return 'بركات يوم الجمعة المبارك';
+      case 'hajj':
+      case 'الحج':
+        return 'أذكار الحج والعمرة';
+      case 'ramadan':
+      case 'رمضان':
+        return 'أذكار الشهر الكريم';
+      case 'eid':
+      case 'العيد':
+        return 'فرحة العيد بالذكر';
+      case 'illness':
+      case 'المرض':
+        return 'الدعاء للشفاء والعافية';
+      case 'rain':
+      case 'المطر':
+        return 'استبشر بالمطر والرحمة';
+      case 'wind':
+      case 'الرياح':
+        return 'استعذ من شر الرياح';
+      case 'work':
+      case 'العمل':
+        return 'بارك الله في عملك';
+      case 'study':
+      case 'الدراسة':
+        return 'ادع الله بالتوفيق في العلم';
+      case 'anxiety':
+      case 'القلق':
+        return 'اطمئن بذكر الله';
+      case 'gratitude':
+      case 'الشكر':
+        return 'احمد الله على نعمه';
+      case 'protection':
+      case 'الحماية':
+        return 'احتم بحفظ الله ورعايته';
+      case 'guidance':
+      case 'الهداية':
+        return 'اطلب الهداية من الله';
+      case 'forgiveness':
+      case 'المغفرة':
+        return 'اطلب المغفرة والرحمة';
+      case 'success':
+      case 'النجاح':
+        return 'ادع الله بالتوفيق والنجاح';
+      case 'patience':
+      case 'الصبر':
+        return 'اصبر واحتسب الأجر';
+      case 'knowledge':
+      case 'العلم':
+        return 'اطلب من الله العلم النافع';
+      default:
+        return 'أذكار وأدعية من السنة النبوية';
+    }
+  }
 
-/// إحصائيات الفئة
-class CategoryStats {
-  final int totalItems;
-  final int completedItems;
-  final int totalCount;
-  final int completedCount;
-  final int percentage;
-  final bool isCompleted;
+  /// التحقق من أن الفئة من الفئات الأساسية
+  static bool isEssentialCategory(String categoryId) {
+    const essentialCategories = {
+      'morning',
+      'الصباح',
+      'evening', 
+      'المساء',
+      'sleep',
+      'النوم',
+      'prayer',
+      'الصلاة',
+    };
+    return essentialCategories.contains(categoryId.toLowerCase());
+  }
 
-  const CategoryStats({
-    required this.totalItems,
-    required this.completedItems,
-    required this.totalCount,
-    required this.completedCount,
-    required this.percentage,
-    required this.isCompleted,
-  });
+  /// تحديد ما إذا كان يجب عرض الوقت للفئة
+  static bool shouldShowTime(String categoryId) {
+    // إخفاء الوقت لفئات الصباح والمساء والنوم
+    const hiddenTimeCategories = {
+      'morning',
+      'الصباح',
+      'evening', 
+      'المساء',
+      'sleep',
+      'النوم',
+    };
+    return !hiddenTimeCategories.contains(categoryId.toLowerCase());
+  }
+
+  /// الحصول على أولوية العرض للفئة (أقل رقم = أولوية أعلى)
+  static int getCategoryPriority(String categoryId) {
+    switch (categoryId.toLowerCase()) {
+      case 'morning':
+      case 'الصباح':
+        return 1;
+      case 'evening':
+      case 'المساء':
+        return 2;
+      case 'prayer':
+      case 'الصلاة':
+        return 3;
+      case 'sleep':
+      case 'النوم':
+        return 4;
+      case 'wakeup':
+      case 'الاستيقاظ':
+        return 5;
+      case 'eating':
+      case 'الطعام':
+        return 6;
+      case 'quran':
+      case 'القرآن':
+        return 7;
+      case 'tasbih':
+      case 'التسبيح':
+        return 8;
+      case 'dua':
+      case 'الدعاء':
+        return 9;
+      case 'istighfar':
+      case 'الاستغفار':
+        return 10;
+      case 'friday':
+      case 'الجمعة':
+        return 11;
+      case 'travel':
+      case 'السفر':
+        return 12;
+      case 'ramadan':
+      case 'رمضان':
+        return 13;
+      case 'hajj':
+      case 'الحج':
+        return 14;
+      case 'eid':
+      case 'العيد':
+        return 15;
+      case 'illness':
+      case 'المرض':
+        return 16;
+      case 'rain':
+      case 'المطر':
+        return 17;
+      case 'wind':
+      case 'الرياح':
+        return 18;
+      case 'general':
+      case 'عامة':
+        return 19;
+      default:
+        return 99;
+    }
+  }
 }

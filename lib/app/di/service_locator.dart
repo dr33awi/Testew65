@@ -1,6 +1,4 @@
-// lib/app/di/service_locator.dart (مصحح)
-
-import 'dart:async';
+// lib/app/di/service_locator.dart
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,6 +26,9 @@ import 'package:athkar_app/core/infrastructure/services/permissions/permission_s
 import 'package:athkar_app/core/infrastructure/services/device/battery/battery_service.dart';
 import 'package:athkar_app/core/infrastructure/services/device/battery/battery_service_impl.dart';
 
+// إدارة الثيم
+import 'package:athkar_app/app/themes/core/theme_notifier.dart';
+
 // معالج الأخطاء
 import '../../core/error/error_handler.dart';
 
@@ -36,7 +37,6 @@ import '../../features/prayer_times/services/prayer_times_service.dart';
 import 'package:athkar_app/features/qibla/services/qibla_service.dart';
 import 'package:athkar_app/features/athkar/services/athkar_service.dart';
 import '../../features/daily_quote/services/daily_quote_service.dart';
-import '../../features/tasbih/services/tasbih_service.dart';
 
 // خدمات الإعدادات الموحدة
 import '../../features/settings/services/settings_services_manager.dart';
@@ -75,22 +75,25 @@ class ServiceLocator {
       // 2. خدمات التخزين
       await _registerStorageServices();
 
-      // 3. خدمات السجلات
+      // 3. إدارة الثيم
+      _registerThemeServices();
+
+      // 4. خدمات السجلات
       _registerLoggingServices();
 
-      // 4. خدمات الأذونات
+      // 5. خدمات الأذونات
       _registerPermissionServices();
 
-      // 5. خدمات الإشعارات
+      // 6. خدمات الإشعارات
       await _registerNotificationServices();
 
-      // 6. خدمات الجهاز
+      // 7. خدمات الجهاز
       _registerDeviceServices();
 
-      // 7. معالج الأخطاء
+      // 8. معالج الأخطاء
       _registerErrorHandler();
 
-      // 8. خدمات الميزات
+      // 9. خدمات الميزات
       _registerFeatureServices();
 
       _isInitialized = true;
@@ -136,6 +139,17 @@ class ServiceLocator {
           getIt<SharedPreferences>(),
           logger: getIt.isRegistered<LoggerService>() ? getIt<LoggerService>() : null,
         ),
+      );
+    }
+  }
+
+  /// تسجيل إدارة الثيم
+  void _registerThemeServices() {
+    debugPrint('ServiceLocator: تسجيل خدمات الثيم...');
+    
+    if (!getIt.isRegistered<ThemeNotifier>()) {
+      getIt.registerLazySingleton<ThemeNotifier>(
+        () => ThemeNotifier(getIt<StorageService>()),
       );
     }
   }
@@ -251,16 +265,6 @@ class ServiceLocator {
         ),
       );
     }
-
-    // خدمة التسبيح
-    if (!getIt.isRegistered<TasbihService>()) {
-      getIt.registerLazySingleton<TasbihService>(
-        () => TasbihService(
-          storage: getIt<StorageService>(),
-          logger: getIt<LoggerService>(),
-        ),
-      );
-    }
     
     // تسجيل خدمة القبلة
     _registerQiblaServices();
@@ -284,20 +288,21 @@ class ServiceLocator {
     }
   }
 
-  /// تسجيل خدمات الإعدادات الموحدة - مصحح
+  /// تسجيل خدمات الإعدادات الموحدة
   void _registerSettingsServices() {
     debugPrint('ServiceLocator: تسجيل خدمات الإعدادات الموحدة...');
     
     if (!getIt.isRegistered<SettingsServicesManager>()) {
-      // إنشاء SettingsServicesManager بالمعاملات الصحيحة
+      // استخدام registerSingleton بدلاً من registerLazySingleton 
+      // لضمان عدم إنشاء instances متعددة
       final settingsManager = SettingsServicesManager(
         storage: getIt<StorageService>(),
         permissionService: getIt<PermissionService>(),
         logger: getIt<LoggerService>(),
+        themeNotifier: getIt<ThemeNotifier>(),
         notificationManager: NotificationManager.instance,
         batteryService: getIt<BatteryService>(),
-        // إضافة المعامل المفقود prayerTimesService
-        prayerTimesService: getIt<PrayerTimesService>(),
+        prayerService: getIt<PrayerTimesService>(),
       );
       
       getIt.registerSingleton<SettingsServicesManager>(settingsManager);
@@ -310,9 +315,9 @@ class ServiceLocator {
     return getIt.isRegistered<StorageService>() &&
            getIt.isRegistered<PermissionService>() &&
            getIt.isRegistered<LoggerService>() &&
+           getIt.isRegistered<ThemeNotifier>() &&
            getIt.isRegistered<BatteryService>() &&
            getIt.isRegistered<PrayerTimesService>() &&
-           getIt.isRegistered<TasbihService>() &&
            getIt.isRegistered<SettingsServicesManager>();
   }
 
@@ -322,10 +327,6 @@ class ServiceLocator {
       // التنظيف إذا كانت الخدمة تحتاج ذلك
       if (T == PrayerTimesService && getIt.isRegistered<PrayerTimesService>()) {
         getIt<PrayerTimesService>().dispose();
-      }
-      
-      if (T == TasbihService && getIt.isRegistered<TasbihService>()) {
-        getIt<TasbihService>().dispose();
       }
       
       if (T == SettingsServicesManager && getIt.isRegistered<SettingsServicesManager>()) {
@@ -365,14 +366,14 @@ class ServiceLocator {
         await getIt<SettingsServicesManager>().dispose();
       }
 
+      // تنظيف إدارة الثيم
+      if (getIt.isRegistered<ThemeNotifier>()) {
+        getIt<ThemeNotifier>().dispose();
+      }
+
       // تنظيف خدمات الميزات
       if (getIt.isRegistered<PrayerTimesService>()) {
         getIt<PrayerTimesService>().dispose();
-      }
-
-      // تنظيف خدمة التسبيح
-      if (getIt.isRegistered<TasbihService>()) {
-        getIt<TasbihService>().dispose();
       }
 
       // تنظيف خدمة البطارية
@@ -466,9 +467,9 @@ extension ServiceLocatorExtensions on BuildContext {
   
   /// الحصول على خدمة الاقتباسات اليومية
   DailyQuoteService get dailyQuoteService => getIt<DailyQuoteService>();
-
-  /// الحصول على خدمة التسبيح
-  TasbihService get tasbihService => getIt<TasbihService>();
+  
+  /// الحصول على إدارة الثيم
+  ThemeNotifier get themeNotifier => getIt<ThemeNotifier>();
   
   /// الحصول على مدير الخدمات الموحد للإعدادات
   SettingsServicesManager get settingsManager => getIt<SettingsServicesManager>();

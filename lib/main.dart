@@ -1,4 +1,4 @@
-// lib/main.dart (محدث للنظام المبسط)
+// lib/main.dart (محدث)
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,11 +6,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'app/di/service_locator.dart';
-import 'core/infrastructure/services/notifications/notification_service.dart';
+import 'package:athkar_app/app/themes/core/theme_notifier.dart';import 'core/infrastructure/services/notifications/notification_service.dart';
 import 'core/infrastructure/services/storage/storage_service.dart';
 import 'core/constants/app_constants.dart';
-
-// استيراد النظام المبسط
+// استيراد الثيمات
 import 'app/themes/app_theme.dart';
 import 'app/routes/app_router.dart';
 
@@ -28,6 +27,9 @@ Future<void> main() async {
   ]);
   
   try {
+    // إعداد NavigationService
+    _setupNavigationService();
+    
     // تسجيل Observer لمراقبة دورة حياة التطبيق
     WidgetsBinding.instance.addObserver(AppLifecycleObserver());
     
@@ -38,7 +40,7 @@ Future<void> main() async {
     final storageService = getIt<StorageService>();
     final language = storageService.getString('language') ?? AppConstants.defaultLanguage;
     
-    // إنشاء التطبيق مع النظام المبسط
+    // إنشاء التطبيق مع ThemeNotifier
     runApp(MyApp(language: language));
     
     // طلب أذونات الإشعارات عند بدء التطبيق
@@ -59,7 +61,7 @@ Future<void> main() async {
   }
 }
 
-// التطبيق الجديد مع النظام المبسط
+// التطبيق الجديد مع إدارة الثيم
 class MyApp extends StatelessWidget {
   final String language;
   
@@ -68,16 +70,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<ThemeMode>(
-      valueListenable: AppTheme.themeModeNotifier, // النظام المبسط
+      valueListenable: getIt<ThemeNotifier>(),
       builder: (context, themeMode, child) {
         return MaterialApp(
           title: AppConstants.appName,
-          
-          // استخدام النظام المبسط
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeMode,
-          
           locale: Locale(language),
           supportedLocales: const [
             Locale('ar'), // العربية
@@ -88,23 +87,11 @@ class MyApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          
+          // إضافة navigatorKey
+          navigatorKey: NavigationService.navigatorKey,
           // استخدام AppRouter
-          navigatorKey: AppRouter.navigatorKey,
           initialRoute: AppRouter.initialRoute,
           onGenerateRoute: AppRouter.onGenerateRoute,
-          
-          debugShowCheckedModeBanner: false,
-          
-          // إعداد الاتجاه
-          builder: (context, child) {
-            return Directionality(
-              textDirection: language == 'ar' 
-                  ? TextDirection.rtl 
-                  : TextDirection.ltr,
-              child: child ?? const SizedBox.shrink(),
-            );
-          },
         );
       },
     );
@@ -124,6 +111,11 @@ Future<void> _initAllServices() async {
   }
 }
 
+/// إعداد خدمة التنقل
+void _setupNavigationService() {
+  NavigationService.navigatorKey = GlobalKey<NavigatorState>();
+}
+
 /// طلب أذونات الإشعارات
 Future<void> _requestNotificationPermissions() async {
   try {
@@ -138,6 +130,11 @@ Future<void> _requestNotificationPermissions() async {
   } catch (e) {
     debugPrint('خطأ في طلب أذونات الإشعارات: $e');
   }
+}
+
+// خدمة التنقل
+class NavigationService {
+  static GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 }
 
 /// مراقب دورة حياة التطبيق
