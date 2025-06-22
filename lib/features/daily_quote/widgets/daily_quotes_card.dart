@@ -52,16 +52,19 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
           type: 'verse',
           content: dailyQuote.verse,
           source: dailyQuote.verseSource,
+          theme: dailyQuote.verseTheme,
         ),
         QuoteData(
           type: 'hadith',
           content: dailyQuote.hadith,
           source: dailyQuote.hadithSource,
+          theme: dailyQuote.hadithTheme,
         ),
         QuoteData(
           type: 'dua',
           content: randomDua['text'] ?? 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
           source: randomDua['source'] ?? 'سورة البقرة - آية 201',
+          theme: randomDua['theme'],
         ),
       ];
 
@@ -83,16 +86,19 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
           type: 'verse',
           content: 'وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا وَيَرْزُقْهُ مِنْ حَيْثُ لَا يَحْتَسِبُ',
           source: 'سورة الطلاق - آية 2-3',
+          theme: 'التقوى والرزق',
         ),
         const QuoteData(
           type: 'hadith',
           content: 'مَنْ قَالَ سُبْحَانَ اللَّهِ وَبِحَمْدِهِ فِي يَوْمٍ مِائَةَ مَرَّةٍ، حُطَّتْ خَطَايَاهُ وَلَوْ كَانَتْ مِثْلَ زَبَدِ الْبَحْرِ',
           source: 'صحيح البخاري',
+          theme: 'التسبيح ومغفرة الذنوب',
         ),
         const QuoteData(
           type: 'dua',
           content: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
           source: 'سورة البقرة - آية 201',
+          theme: 'دعاء شامل',
         ),
       ];
     }
@@ -485,11 +491,13 @@ class QuoteData {
   final String type;
   final String content;
   final String source;
+  final String? theme;
 
   const QuoteData({
     required this.type,
     required this.content,
     required this.source,
+    this.theme,
   });
 }
 
@@ -541,6 +549,34 @@ class _QuoteDetailsModal extends StatelessWidget {
                   ),
                   
                   const SizedBox(height: ThemeConstants.space4),
+                  
+                  // عرض الموضوع إذا كان متوفراً
+                  if (quote.theme != null) ...[
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: ThemeConstants.space3,
+                          vertical: ThemeConstants.space1,
+                        ),
+                        decoration: BoxDecoration(
+                          color: context.primaryColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                          border: Border.all(
+                            color: context.primaryColor.withValues(alpha: 0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          quote.theme!,
+                          style: context.labelSmall?.copyWith(
+                            color: context.primaryColor,
+                            fontWeight: ThemeConstants.medium,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: ThemeConstants.space4),
+                  ],
                   
                   // النص الكامل
                   Container(

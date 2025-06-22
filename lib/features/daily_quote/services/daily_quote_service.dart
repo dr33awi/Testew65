@@ -16,9 +16,12 @@ class DailyQuoteService {
   static const String _dailyQuoteKey = 'daily_quote';
   static const String _lastUpdateKey = 'daily_quote_last_update';
   static const String _quotesJsonPath = 'assets/data/daily_quotes.json';
+  static const String _dailyDuaKey = 'daily_dua';
+  static const String _favoriteQuotesKey = 'favorite_quotes';
   
   // Cache للبيانات المحملة من JSON
   Map<String, dynamic>? _cachedData;
+  bool _isDataLoaded = false;
   
   DailyQuoteService({
     required StorageService storage,
@@ -26,9 +29,30 @@ class DailyQuoteService {
   }) : _storage = storage,
        _logger = logger;
 
+  /// تحميل البيانات بشكل مسبق
+  Future<void> initializeData() async {
+    if (_isDataLoaded) return;
+    
+    try {
+      await _loadJsonData();
+      _isDataLoaded = true;
+      _logger.info(message: '[DailyQuoteService] تم تهيئة البيانات بنجاح');
+    } catch (e) {
+      _logger.error(
+        message: '[DailyQuoteService] خطأ في تهيئة البيانات',
+        error: e,
+      );
+      _loadFallbackData();
+      _isDataLoaded = true;
+    }
+  }
+
   /// الحصول على الاقتباس اليومي
   Future<DailyQuoteModel> getDailyQuote() async {
     try {
+      // تأكد من تحميل البيانات
+      await initializeData();
+      
       // التحقق من وجود اقتباس محفوظ لليوم
       final today = DateTime.now();
       final lastUpdate = _getLastUpdateDate();
@@ -41,9 +65,6 @@ class DailyQuoteService {
           return savedQuote;
         }
       }
-      
-      // تحميل البيانات من JSON إذا لم تكن محملة
-      await _loadJsonData();
       
       // إنشاء اقتباس جديد لليوم
       final newQuote = _generateDailyQuote();
@@ -80,7 +101,7 @@ class DailyQuoteService {
 
   /// الحصول على اقتباس محدد بالتاريخ (للاختبار)
   Future<DailyQuoteModel> getQuoteForDate(DateTime date) async {
-    await _loadJsonData();
+    await initializeData();
     
     if (_cachedData == null) {
       return _getDefaultQuote();
@@ -103,8 +124,10 @@ class DailyQuoteService {
     return DailyQuoteModel(
       verse: selectedVerse['text'] ?? '',
       verseSource: selectedVerse['source'] ?? '',
+      verseTheme: selectedVerse['theme'],
       hadith: selectedHadith['text'] ?? '',
       hadithSource: selectedHadith['source'] ?? '',
+      hadithTheme: selectedHadith['theme'],
     );
   }
 
@@ -119,7 +142,14 @@ class DailyQuoteService {
       
       // قراءة ملف JSON
       final String jsonString = await rootBundle.loadString(_quotesJsonPath);
-      _cachedData = json.decode(jsonString);
+      final decodedData = json.decode(jsonString);
+      
+      // التحقق من صحة البيانات
+      if (!_validateJsonData(decodedData)) {
+        throw Exception('البيانات المحملة غير صالحة');
+      }
+      
+      _cachedData = decodedData;
       
       _logger.info(
         message: '[DailyQuoteService] تم تحميل البيانات بنجاح',
@@ -137,7 +167,35 @@ class DailyQuoteService {
       );
       
       // استخدام بيانات افتراضية في حالة الخطأ
-      _loadFallbackData();
+      throw e; // إعادة رمي الخطأ للتعامل معه في المستوى الأعلى
+    }
+  }
+
+  /// التحقق من صحة البيانات المحملة
+  bool _validateJsonData(Map<String, dynamic> data) {
+    try {
+      final verses = data['verses'] as List?;
+      final hadiths = data['hadiths'] as List?;
+      final duas = data['duas'] as List?;
+      
+      if (verses == null || verses.isEmpty) return false;
+      if (hadiths == null || hadiths.isEmpty) return false;
+      if (duas == null || duas.isEmpty) return false;
+      
+      // التحقق من صحة العناصر الأساسية
+      final firstVerse = verses.first as Map<String, dynamic>?;
+      final firstHadith = hadiths.first as Map<String, dynamic>?;
+      final firstDua = duas.first as Map<String, dynamic>?;
+      
+      return firstVerse?['text'] != null &&
+             firstVerse?['source'] != null &&
+             firstHadith?['text'] != null &&
+             firstHadith?['source'] != null &&
+             firstDua?['text'] != null &&
+             firstDua?['source'] != null;
+             
+    } catch (e) {
+      return false;
     }
   }
 
@@ -150,19 +208,31 @@ class DailyQuoteService {
         {
           'text': 'وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا وَيَرْزُقْهُ مِنْ حَيْثُ لَا يَحْتَسِبُ',
           'source': 'سورة الطلاق - آية 2-3',
-          'translation': '',
+          'translation': 'And whoever fears Allah - He will make for him a way out and provide for him from where he does not expect',
           'reference': 'القرآن الكريم'
         },
         {
           'text': 'إِنَّ مَعَ الْعُسْرِ يُسْرًا',
           'source': 'سورة الشرح - آية 6',
-          'translation': '',
+          'translation': 'Indeed, with hardship comes ease',
           'reference': 'القرآن الكريم'
         },
         {
           'text': 'وَلَا تَيْأَسُوا مِن رَّوْحِ اللَّهِ ۖ إِنَّهُ لَا يَيْأَسُ مِن رَّوْحِ اللَّهِ إِلَّا الْقَوْمُ الْكَافِرُونَ',
           'source': 'سورة يوسف - آية 87',
-          'translation': '',
+          'translation': 'And do not despair of relief from Allah. Indeed, no one despairs of relief from Allah except the disbelieving people',
+          'reference': 'القرآن الكريم'
+        },
+        {
+          'text': 'وَلَئِن شَكَرْتُمْ لَأَزِيدَنَّكُمْ',
+          'source': 'سورة إبراهيم - آية 7',
+          'translation': 'If you are grateful, I will certainly give you more',
+          'reference': 'القرآن الكريم'
+        },
+        {
+          'text': 'أَلَا بِذِكْرِ اللَّهِ تَطْمَئِنُّ الْقُلُوبُ',
+          'source': 'سورة الرعد - آية 28',
+          'translation': 'Unquestionably, by the remembrance of Allah hearts are assured',
           'reference': 'القرآن الكريم'
         },
       ],
@@ -185,25 +255,49 @@ class DailyQuoteService {
           'narrator': 'أنس بن مالك',
           'reference': 'السنة النبوية'
         },
+        {
+          'text': 'مَن كَانَ فِي حَاجَةِ أَخِيهِ كَانَ اللَّهُ فِي حَاجَتِهِ',
+          'source': 'صحيح البخاري',
+          'narrator': 'عبد الله بن عمر',
+          'reference': 'السنة النبوية'
+        },
+        {
+          'text': 'لَا يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ',
+          'source': 'صحيح البخاري',
+          'narrator': 'أنس بن مالك',
+          'reference': 'السنة النبوية'
+        },
       ],
       'duas': [
         {
           'text': 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
           'source': 'سورة البقرة - آية 201',
-          'translation': 'ربنا آتنا في الدنيا حسنة وفي الآخرة حسنة وقنا عذاب النار',
+          'translation': 'Our Lord, give us in this world [that which is] good and in the Hereafter [that which is] good and protect us from the punishment of the Fire',
           'reference': 'القرآن الكريم'
         },
         {
           'text': 'رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي',
           'source': 'سورة طه - آية 25-26',
-          'translation': 'رب اشرح لي صدري ويسر لي أمري',
+          'translation': 'My Lord, expand for me my breast and ease for me my task',
           'reference': 'القرآن الكريم'
         },
         {
           'text': 'اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ',
           'source': 'رواه أبو داود',
-          'translation': 'اللهم أعني على ذكرك وشكرك وحسن عبادتك',
+          'translation': 'O Allah, help me to remember You, to thank You, and to worship You in the best manner',
           'reference': 'السنة النبوية'
+        },
+        {
+          'text': 'رَبَّنَا لَا تُؤَاخِذْنَا إِن نَّسِينَا أَوْ أَخْطَأْنَا',
+          'source': 'سورة البقرة - آية 286',
+          'translation': 'Our Lord, do not impose blame upon us if we have forgotten or erred',
+          'reference': 'القرآن الكريم'
+        },
+        {
+          'text': 'رَبِّ زِدْنِي عِلْمًا',
+          'source': 'سورة طه - آية 114',
+          'translation': 'My Lord, increase me in knowledge',
+          'reference': 'القرآن الكريم'
         },
       ]
     };
@@ -236,8 +330,10 @@ class DailyQuoteService {
     return DailyQuoteModel(
       verse: selectedVerse['text'] ?? '',
       verseSource: selectedVerse['source'] ?? '',
+      verseTheme: selectedVerse['theme'],
       hadith: selectedHadith['text'] ?? '',
       hadithSource: selectedHadith['source'] ?? '',
+      hadithTheme: selectedHadith['theme'],
     );
   }
 
@@ -253,6 +349,8 @@ class DailyQuoteService {
       return {
         'text': 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
         'source': 'سورة البقرة - آية 201',
+        'translation': 'Our Lord, give us in this world [that which is] good and in the Hereafter [that which is] good and protect us from the punishment of the Fire',
+        'reference': 'القرآن الكريم'
       };
     }
     
@@ -264,54 +362,72 @@ class DailyQuoteService {
     return duas[random.nextInt(duas.length)];
   }
 
+
+
   /// الحصول على اقتباس افتراضي
   DailyQuoteModel _getDefaultQuote() {
     return const DailyQuoteModel(
       verse: 'إِنَّ مَعَ الْعُسْرِ يُسْرًا',
       verseSource: 'سورة الشرح - آية 6',
+      verseTheme: 'الأمل والفرج',
       hadith: 'بَشِّرُوا وَلَا تُنَفِّرُوا، وَيَسِّرُوا وَلَا تُعَسِّرُوا',
       hadithSource: 'صحيح البخاري',
+      hadithTheme: 'التبشير والتيسير',
     );
   }
 
   /// حفظ الاقتباس
   Future<void> _saveQuote(DailyQuoteModel quote) async {
-    await _storage.setMap(_dailyQuoteKey, quote.toJson());
+    try {
+      await _storage.setMap(_dailyQuoteKey, quote.toJson());
+    } catch (e) {
+      _logger.error(
+        message: '[DailyQuoteService] خطأ في حفظ الاقتباس',
+        error: e,
+      );
+    }
   }
 
   /// الحصول على الاقتباس المحفوظ
   DailyQuoteModel? _getSavedQuote() {
-    final data = _storage.getMap(_dailyQuoteKey);
-    if (data != null) {
-      try {
+    try {
+      final data = _storage.getMap(_dailyQuoteKey);
+      if (data != null) {
         return DailyQuoteModel.fromJson(data);
-      } catch (e) {
-        _logger.error(
-          message: '[DailyQuoteService] خطأ في قراءة الاقتباس المحفوظ',
-          error: e,
-        );
       }
+    } catch (e) {
+      _logger.error(
+        message: '[DailyQuoteService] خطأ في قراءة الاقتباس المحفوظ',
+        error: e,
+      );
     }
     return null;
   }
 
   /// حفظ تاريخ آخر تحديث
   Future<void> _saveLastUpdateDate(DateTime date) async {
-    await _storage.setString(_lastUpdateKey, date.toIso8601String());
+    try {
+      await _storage.setString(_lastUpdateKey, date.toIso8601String());
+    } catch (e) {
+      _logger.error(
+        message: '[DailyQuoteService] خطأ في حفظ تاريخ التحديث',
+        error: e,
+      );
+    }
   }
 
   /// الحصول على تاريخ آخر تحديث
   DateTime? _getLastUpdateDate() {
-    final dateString = _storage.getString(_lastUpdateKey);
-    if (dateString != null) {
-      try {
+    try {
+      final dateString = _storage.getString(_lastUpdateKey);
+      if (dateString != null) {
         return DateTime.parse(dateString);
-      } catch (e) {
-        _logger.error(
-          message: '[DailyQuoteService] خطأ في قراءة تاريخ آخر تحديث',
-          error: e,
-        );
       }
+    } catch (e) {
+      _logger.error(
+        message: '[DailyQuoteService] خطأ في قراءة تاريخ آخر تحديث',
+        error: e,
+      );
     }
     return null;
   }
@@ -328,7 +444,8 @@ class DailyQuoteService {
     try {
       // إعادة تحميل البيانات من JSON
       _cachedData = null;
-      await _loadJsonData();
+      _isDataLoaded = false;
+      await initializeData();
       
       // توليد اقتباس جديد بـ seed عشوائي
       final newQuote = _generateRandomQuote();
@@ -368,8 +485,25 @@ class DailyQuoteService {
     return DailyQuoteModel(
       verse: selectedVerse['text'] ?? '',
       verseSource: selectedVerse['source'] ?? '',
+      verseTheme: selectedVerse['theme'],
       hadith: selectedHadith['text'] ?? '',
       hadithSource: selectedHadith['source'] ?? '',
+      hadithTheme: selectedHadith['theme'],
     );
   }
+
+
+
+  /// إعادة تعيين الكاش
+  void clearCache() {
+    _cachedData = null;
+    _isDataLoaded = false;
+    _logger.info(message: '[DailyQuoteService] تم مسح الكاش');
+  }
+
+  /// التحقق من حالة التحميل
+  bool get isDataLoaded => _isDataLoaded;
+  
+  /// التحقق من وجود البيانات
+  bool get hasData => _cachedData != null;
 }
