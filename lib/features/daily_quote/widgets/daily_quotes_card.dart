@@ -1,5 +1,4 @@
 // lib/features/daily_quote/widgets/daily_quotes_card.dart
-import 'package:athkar_app/features/home/widgets/color_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
