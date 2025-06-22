@@ -1,4 +1,4 @@
-// lib/features/settings/screens/settings_screen.dart (نسخة مُصلحة كاملة)
+// lib/features/settings/screens/settings_screen.dart (مُنظف)
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,72 +25,31 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> 
-    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin {
   
-  // مدير الخدمات الموحد
   SettingsServicesManager? _servicesManager;
   LoggerService? _logger;
   
-  // Animation
-  late final AnimationController _animationController;
-  late final Animation<double> _fadeAnimation;
-  late final Animation<Offset> _slideAnimation;
-  
-  // State
   AppSettings _settings = const AppSettings();
   ServiceStatus _serviceStatus = ServiceStatus.initial();
   bool _loading = true;
   bool _isRefreshing = false;
   String? _errorMessage;
   
-  // Subscriptions
   Stream<AppSettings>? _settingsStream;
   Stream<ServiceStatus>? _serviceStatusStream;
   
-  // للحفاظ على الحالة عند تغيير الصفحات
   @override
   bool get wantKeepAlive => true;
   
   @override
   void initState() {
     super.initState();
-    _initializeAnimations();
     _initializeServices();
-  }
-  
-  @override
-  void dispose() {
-    _animationController.dispose();
-    // لا نحذف _servicesManager هنا لأنه singleton
-    super.dispose();
-  }
-  
-  void _initializeAnimations() {
-    _animationController = AnimationController(
-      vsync: this,
-      duration: ThemeConstants.durationNormal,
-    );
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: ThemeConstants.curveDefault,
-    ));
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: ThemeConstants.curveDefault,
-    ));
   }
   
   void _initializeServices() {
     try {
-      // محاولة الحصول على الخدمات
       _logger = getServiceSafe<LoggerService>();
       _servicesManager = getServiceSafe<SettingsServicesManager>();
       
@@ -117,17 +76,15 @@ class _SettingsScreenState extends State<SettingsScreen>
     if (_servicesManager == null) return;
     
     try {
-      // الحصول على Streams من المدير مع معالجة null
       _settingsStream = _servicesManager!.settingsStream;
       _serviceStatusStream = _servicesManager!.serviceStatusStream;
       
-      // الاستماع لتغييرات الإعدادات مع معالجة الأخطاء
       _settingsStream?.listen(
         (settings) {
           if (mounted) {
             setState(() {
               _settings = settings;
-              _errorMessage = null; // مسح الخطأ عند نجاح التحديث
+              _errorMessage = null;
             });
           }
         },
@@ -145,13 +102,12 @@ class _SettingsScreenState extends State<SettingsScreen>
         cancelOnError: false,
       );
       
-      // الاستماع لتغييرات حالة الخدمات مع معالجة الأخطاء
       _serviceStatusStream?.listen(
         (status) {
           if (mounted) {
             setState(() {
               _serviceStatus = status;
-              _errorMessage = null; // مسح الخطأ عند نجاح التحديث
+              _errorMessage = null;
             });
           }
         },
@@ -185,8 +141,6 @@ class _SettingsScreenState extends State<SettingsScreen>
       _errorMessage = error;
       _loading = false;
     });
-    
-    // محاولة استخدام قيم افتراضية
     _useDefaultValues();
   }
   
@@ -209,8 +163,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     });
     
     try {
-      await Future.delayed(const Duration(milliseconds: 300)); // تأثير تحميل
-      
       final result = await _servicesManager!.loadSettings();
       
       if (result.isSuccess && result.settings != null && result.serviceStatus != null) {
@@ -220,8 +172,6 @@ class _SettingsScreenState extends State<SettingsScreen>
           _loading = false;
           _errorMessage = null;
         });
-        
-        _animationController.forward();
         
         _logger?.info(
           message: '[Settings] تم تحميل الإعدادات بنجاح',
@@ -241,10 +191,8 @@ class _SettingsScreenState extends State<SettingsScreen>
         error: e,
       );
       
-      // استخدام قيم افتراضية
       _useDefaultValues();
       
-      // إظهار snackbar للخطأ
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           _showErrorMessage('فشل تحميل الإعدادات. تم استخدام القيم الافتراضية.');
@@ -264,7 +212,6 @@ class _SettingsScreenState extends State<SettingsScreen>
         await _servicesManager!.refreshAllServices();
         _showSuccessMessage('تم تحديث الإعدادات');
       } else {
-        // إعادة تهيئة الخدمات
         _initializeServices();
         _showSuccessMessage('تم إعادة تهيئة الخدمات');
       }
@@ -281,7 +228,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
   }
   
-  // ==================== معالجات الإعدادات (مع معالجة أخطاء محسنة) ====================
+  // ==================== معالجات الإعدادات ====================
   
   Future<void> _toggleTheme(bool value) async {
     HapticFeedback.mediumImpact();
@@ -322,7 +269,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       await _servicesManager!.saveSettings(newSettings);
       
       if (value) {
-        HapticFeedback.mediumImpact(); // تجربة الاهتزاز
+        HapticFeedback.mediumImpact();
       }
     } catch (e) {
       _logger?.error(message: '[Settings] فشل تحديث الاهتزاز', error: e);
@@ -357,10 +304,8 @@ class _SettingsScreenState extends State<SettingsScreen>
     
     try {
       if (_settings.notificationsEnabled) {
-        // فتح إعدادات الإشعارات
         Navigator.pushNamed(context, AppRouter.notificationSettings);
       } else {
-        // طلب الإذن باستخدام مدير الخدمات
         final result = await _servicesManager!.requestPermission(
           AppPermissionType.notification,
         );
@@ -462,38 +407,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
   }
   
-  Future<void> _clearCache() async {
-    HapticFeedback.mediumImpact();
-    
-    if (_servicesManager == null) {
-      _showErrorMessage('مدير الإعدادات غير متوفر');
-      return;
-    }
-    
-    try {
-      final shouldClear = await _showConfirmationDialog(
-        title: 'مسح البيانات المؤقتة',
-        content: 'سيتم مسح جميع البيانات المؤقتة والذاكرة المؤقتة. هذا قد يحسن أداء التطبيق.',
-        confirmText: 'مسح',
-        cancelText: 'إلغاء',
-        icon: Icons.cleaning_services,
-        destructive: true,
-      );
-      
-      if (shouldClear) {
-        final result = await _servicesManager!.clearApplicationCache();
-        
-        if (result.isSuccess) {
-          _showSuccessMessage('تم مسح البيانات المؤقتة بنجاح');
-        } else {
-          _showErrorMessage('فشل مسح البيانات المؤقتة: ${result.error ?? "خطأ غير معروف"}');
-        }
-      }
-    } catch (e) {
-      _logger?.error(message: '[Settings] فشل مسح الكاش', error: e);
-      _showErrorMessage('فشل مسح البيانات المؤقتة: ${e.toString()}');
-    }
-  }
+
   
   Future<void> _requestAllPermissions() async {
     HapticFeedback.mediumImpact();
@@ -519,7 +433,6 @@ class _SettingsScreenState extends State<SettingsScreen>
         AppPermissionType.batteryOptimization,
       ];
       
-      // عرض dialog للتقدم
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -528,13 +441,11 @@ class _SettingsScreenState extends State<SettingsScreen>
       
       final result = await _servicesManager!.requestMultiplePermissions(
         permissions,
-        onProgress: (progress) {
-          // يمكن تحديث UI للتقدم هنا
-        },
+        onProgress: (progress) {},
       );
       
       if (mounted) {
-        Navigator.pop(context); // إغلاق dialog التقدم
+        Navigator.pop(context);
       }
       
       if (result.isSuccess) {
@@ -552,7 +463,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       }
     } catch (e) {
       if (mounted) {
-        Navigator.pop(context); // إغلاق dialog التقدم
+        Navigator.pop(context);
       }
       _logger?.error(message: '[Settings] فشل طلب الأذونات', error: e);
       _showErrorMessage('حدث خطأ أثناء طلب الأذونات: ${e.toString()}');
@@ -563,7 +474,7 @@ class _SettingsScreenState extends State<SettingsScreen>
   
   Future<void> _shareApp() async {
     try {
-      const appUrl = 'https://play.google.com/store/apps/details?id=com.athkar.app'; // يجب تغييرها للرابط الحقيقي
+      const appUrl = 'https://play.google.com/store/apps/details?id=com.athkar.app';
       const shareText = '''
 🕌 ${AppConstants.appName} - ${AppConstants.appVersion}
 
@@ -585,7 +496,7 @@ $appUrl
   
   Future<void> _rateApp() async {
     try {
-      const appUrl = 'https://play.google.com/store/apps/details?id=com.athkar.app'; // يجب تغييرها
+      const appUrl = 'https://play.google.com/store/apps/details?id=com.athkar.app';
       if (await canLaunchUrl(Uri.parse(appUrl))) {
         await launchUrl(Uri.parse(appUrl));
         _logger?.logEvent('app_rated');
@@ -610,7 +521,6 @@ $appUrl
         await launchUrl(emailUrl);
         _logger?.logEvent('support_contacted');
       } else {
-        // نسخ الإيميل للحافظة كبديل
         await Clipboard.setData(const ClipboardData(text: AppConstants.supportEmail));
         _showSuccessMessage('تم نسخ البريد الإلكتروني للدعم');
       }
@@ -618,14 +528,6 @@ $appUrl
       _logger?.error(message: '[Settings] فشل فتح الدعم', error: e);
       _showErrorMessage('فشل في فتح البريد الإلكتروني');
     }
-  }
-  
-  String _getPermissionsSummary() {
-    final permissions = _serviceStatus.permissions;
-    final granted = permissions.values
-        .where((status) => status == AppPermissionStatus.granted)
-        .length;
-    return 'ممنوحة: $granted من ${permissions.length}';
   }
   
   void _showAboutDialog() {
@@ -693,32 +595,11 @@ $appUrl
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
-        duration: const Duration(seconds: 6), // مدة أطول للأخطاء
+        duration: const Duration(seconds: 6),
         action: SnackBarAction(
           label: 'إعادة المحاولة',
           textColor: Colors.white,
           onPressed: _refreshSettings,
-        ),
-      ),
-    );
-  }
-  
-  void _showWarningMessage(String message, {SnackBarAction? action}) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.warning, color: Colors.white, size: 20),
-            ThemeConstants.space2.w,
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: ThemeConstants.warning,
-        behavior: SnackBarBehavior.floating,
-        action: action,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
       ),
     );
@@ -901,9 +782,8 @@ $appUrl
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // للـ AutomaticKeepAliveClientMixin
+    super.build(context);
     
-    // إذا كان هناك خطأ في الخدمات، عرض شاشة خطأ
     if (_errorMessage != null && _servicesManager == null) {
       return Scaffold(
         backgroundColor: context.backgroundColor,
@@ -924,7 +804,6 @@ $appUrl
       );
     }
     
-    // إذا كان لا يزال يحمل
     if (_loading) {
       return Scaffold(
         backgroundColor: context.backgroundColor,
@@ -948,18 +827,7 @@ $appUrl
       body: RefreshIndicator(
         onRefresh: _refreshSettings,
         color: context.primaryColor,
-        child: AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return FadeTransition(
-              opacity: _fadeAnimation,
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: _buildContent(),
-              ),
-            );
-          },
-        ),
+        child: _buildContent(),
       ),
     );
   }
@@ -1001,7 +869,6 @@ $appUrl
                   onPressed: () {
                     setState(() => _errorMessage = null);
                     _useDefaultValues();
-                    _animationController.forward();
                   },
                   icon: const Icon(Icons.settings),
                   label: const Text('استخدام الافتراضية'),
@@ -1044,10 +911,8 @@ $appUrl
         children: [
           ThemeConstants.space4.h,
           
-          // عرض رسالة خطأ إذا كانت موجودة
           if (_errorMessage != null) _buildErrorBanner(),
           
-          // عرض حالة الخدمات الموحدة إذا كانت متوفرة
           if (_servicesManager != null)
             ServiceStatusOverview(
               status: _serviceStatus,
@@ -1055,7 +920,6 @@ $appUrl
               onRefresh: _refreshSettings,
             ),
           
-          // إعدادات سريعة للأذونات
           SettingsSection(
             title: 'الأذونات والصلاحيات',
             icon: Icons.security_outlined,
@@ -1132,7 +996,6 @@ $appUrl
             ],
           ),
           
-          // إعدادات الإشعارات والتنبيهات
           SettingsSection(
             title: 'الإشعارات والتنبيهات',
             icon: Icons.notifications_outlined,
@@ -1179,7 +1042,6 @@ $appUrl
             ],
           ),
           
-          // إعدادات المظهر
           SettingsSection(
             title: 'المظهر والعرض',
             icon: Icons.palette_outlined,
@@ -1199,29 +1061,8 @@ $appUrl
             ],
           ),
           
-          // إعدادات النظام
-          SettingsSection(
-            title: 'إعدادات النظام',
-            icon: Icons.settings_outlined,
-            children: [
-              SettingsTile(
-                icon: Icons.cleaning_services_outlined,
-                title: 'مسح البيانات المؤقتة',
-                subtitle: 'تحسين أداء التطبيق ومساحة التخزين',
-                onTap: _clearCache,
-                enabled: _servicesManager != null,
-              ),
-              SettingsTile(
-                icon: Icons.info_outlined,
-                title: 'معلومات النظام',
-                subtitle: 'عرض معلومات الجهاز والأداء',
-                onTap: () => _showSystemInfoDialog(),
-                enabled: _servicesManager != null,
-              ),
-            ],
-          ),
+
           
-          // حول التطبيق والدعم
           SettingsSection(
             title: 'الدعم والمعلومات',
             icon: Icons.help_outline,
@@ -1300,29 +1141,7 @@ $appUrl
     );
   }
   
-  void _showSystemInfoDialog() async {
-    if (_servicesManager == null) {
-      _showErrorMessage('مدير الإعدادات غير متوفر');
-      return;
-    }
-    
-    try {
-      final statistics = await _servicesManager!.getStatistics();
-      
-      if (!mounted) return;
-      
-      showDialog(
-        context: context,
-        builder: (context) => _SystemInfoDialog(
-          statistics: statistics,
-          serviceStatus: _serviceStatus,
-        ),
-      );
-    } catch (e) {
-      _logger?.error(message: '[Settings] فشل الحصول على معلومات النظام', error: e);
-      _showErrorMessage('فشل في الحصول على معلومات النظام: ${e.toString()}');
-    }
-  }
+
 }
 
 // ==================== Dialogs مساعدة ====================
@@ -1347,7 +1166,6 @@ class _AboutDialog extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Header
             Container(
               padding: const EdgeInsets.all(ThemeConstants.space6),
               decoration: BoxDecoration(
@@ -1390,7 +1208,6 @@ class _AboutDialog extends StatelessWidget {
               ),
             ),
             
-            // Content
             Padding(
               padding: const EdgeInsets.all(ThemeConstants.space6),
               child: Column(
@@ -1453,7 +1270,6 @@ class _AboutDialog extends StatelessWidget {
               ),
             ),
             
-            // Actions
             Padding(
               padding: const EdgeInsets.all(ThemeConstants.space4),
               child: Row(
@@ -1503,129 +1319,8 @@ class _PermissionProgressDialog extends StatelessWidget {
   }
 }
 
-class _SystemInfoDialog extends StatelessWidget {
-  final SettingsStatistics statistics;
-  final ServiceStatus serviceStatus;
 
-  const _SystemInfoDialog({
-    required this.statistics,
-    required this.serviceStatus,
-  });
 
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Row(
-        children: [
-          Icon(Icons.info, color: context.primaryColor),
-          ThemeConstants.space2.w,
-          const Text('معلومات النظام'),
-        ],
-      ),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSection('حالة الخدمات', [
-              _InfoRow(
-                icon: Icons.check_circle,
-                label: 'الخدمات الصحية',
-                value: statistics.serviceStatusHealthy ? 'نعم' : 'لا',
-              ),
-              _InfoRow(
-                icon: Icons.battery_std,
-                label: 'البطارية',
-                value: '${serviceStatus.batteryState.level}%',
-              ),
-              _InfoRow(
-                icon: Icons.power_settings_new,
-                label: 'وضع توفير الطاقة',
-                value: serviceStatus.batteryState.isPowerSaveMode ? 'مفعل' : 'معطل',
-              ),
-            ]),
-            
-            ThemeConstants.space4.h,
-            
-            _buildSection('إحصائيات الأذونات', [
-              _InfoRow(
-                icon: Icons.request_page,
-                label: 'إجمالي الطلبات',
-                value: '${statistics.permissionStats.totalRequests}',
-              ),
-              _InfoRow(
-                icon: Icons.check,
-                label: 'الممنوحة',
-                value: '${statistics.permissionStats.grantedCount}',
-              ),
-              _InfoRow(
-                icon: Icons.close,
-                label: 'المرفوضة',
-                value: '${statistics.permissionStats.deniedCount}',
-              ),
-              _InfoRow(
-                icon: Icons.percent,
-                label: 'معدل القبول',
-                value: '${statistics.permissionStats.acceptanceRate.toStringAsFixed(1)}%',
-              ),
-            ]),
-            
-            if (statistics.lastSyncTime != null) ...[
-              ThemeConstants.space4.h,
-              _buildSection('آخر تحديث', [
-                _InfoRow(
-                  icon: Icons.schedule,
-                  label: 'التوقيت',
-                  value: _formatDateTime(statistics.lastSyncTime!),
-                ),
-              ]),
-            ],
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('إغلاق'),
-        ),
-      ],
-    );
-  }
-  
-  Widget _buildSection(String title, List<Widget> children) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontWeight: ThemeConstants.bold,
-            fontSize: 16,
-          ),
-        ),
-        ThemeConstants.space2.h,
-        ...children,
-      ],
-    );
-  }
-  
-  String _formatDateTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
-    
-    if (difference.inMinutes < 1) {
-      return 'الآن';
-    } else if (difference.inHours < 1) {
-      return 'منذ ${difference.inMinutes} دقيقة';
-    } else if (difference.inDays < 1) {
-      return 'منذ ${difference.inHours} ساعة';
-    } else {
-      return 'منذ ${difference.inDays} يوم';
-    }
-  }
-}
-
-// Widget لمعلومة في الـ Dialog
 class _InfoRow extends StatelessWidget {
   final IconData icon;
   final String label;

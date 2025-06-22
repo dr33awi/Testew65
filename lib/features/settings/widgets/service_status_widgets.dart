@@ -1,4 +1,4 @@
-// lib/features/settings/widgets/service_status_widgets.dart
+// lib/features/settings/widgets/service_status_widgets.dart (مُنظف)
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,7 +7,6 @@ import '../../../core/infrastructure/services/permissions/permission_service.dar
 import '../../../core/infrastructure/services/device/battery/battery_service.dart';
 import '../services/settings_services_manager.dart';
 
-/// ويدجت عرض حالة الخدمات الشاملة
 class ServiceStatusOverview extends StatefulWidget {
   final ServiceStatus status;
   final SettingsServicesManager servicesManager;
@@ -24,66 +23,10 @@ class ServiceStatusOverview extends StatefulWidget {
   State<ServiceStatusOverview> createState() => _ServiceStatusOverviewState();
 }
 
-class _ServiceStatusOverviewState extends State<ServiceStatusOverview>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeAnimations();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  void _initializeAnimations() {
-    _animationController = AnimationController(
-      duration: ThemeConstants.durationNormal,
-      vsync: this,
-    );
-
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: ThemeConstants.curveDefault,
-    ));
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: ThemeConstants.curveDefault,
-    ));
-
-    _animationController.forward();
-  }
+class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: _buildContent(context),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildContent(BuildContext context) {
     final healthyServices = _getHealthyServicesCount();
     final totalServices = _getTotalServicesCount();
     final healthPercentage = (healthyServices / totalServices * 100).round();
@@ -274,13 +217,6 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview>
             subtitle: 'إدارة أنواع الإشعارات والتوقيتات',
             onTap: () => Navigator.pushNamed(context, '/notification-settings'),
           ),
-          ServiceOption(
-            icon: Icons.block,
-            title: 'تعطيل الإشعارات',
-            subtitle: 'إيقاف جميع الإشعارات مؤقتاً',
-            onTap: () => _disableNotifications(context),
-            isDestructive: true,
-          ),
         ],
       );
     } else {
@@ -409,10 +345,6 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview>
   }
 
   // =============== العمليات ===============
-
-  Future<void> _disableNotifications(BuildContext context) async {
-    // Implementation for disabling notifications
-  }
 
   Future<void> _updateLocation(BuildContext context) async {
     final result = await widget.servicesManager.updatePrayerLocation();

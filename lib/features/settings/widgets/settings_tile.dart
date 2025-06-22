@@ -1,10 +1,10 @@
-// lib/features/settings/widgets/settings_tile.dart (محسن ومطور)
+// lib/features/settings/widgets/settings_tile.dart (مُنظف)
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
 
-/// عنصر محسن في قسم الإعدادات مع تفاعل متقدم
-class SettingsTile extends StatefulWidget {
+class SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
@@ -42,152 +42,69 @@ class SettingsTile extends StatefulWidget {
     this.crossAxisAlignment = CrossAxisAlignment.center,
   });
 
-  @override
-  State<SettingsTile> createState() => _SettingsTileState();
-}
-
-class _SettingsTileState extends State<SettingsTile>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
-  
-  bool _isPressed = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeAnimation();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  void _initializeAnimation() {
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 150),
-      vsync: this,
-    );
-
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.98,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-
-    _opacityAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.8,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-  }
-
-  void _handleTapDown(TapDownDetails details) {
-    if (!widget.enabled) return;
-    
-    setState(() => _isPressed = true);
-    _animationController.forward();
-    HapticFeedback.lightImpact();
-  }
-
-  void _handleTapUp(TapUpDetails details) {
-    _handleTapEnd();
-  }
-
-  void _handleTapCancel() {
-    _handleTapEnd();
-  }
-
-  void _handleTapEnd() {
-    if (!mounted) return;
-    
-    setState(() => _isPressed = false);
-    _animationController.reverse();
-  }
-
   void _handleTap() {
-    if (!widget.enabled || widget.onTap == null) return;
-    
+    if (!enabled || onTap == null) return;
     HapticFeedback.mediumImpact();
-    widget.onTap!();
+    onTap!();
   }
 
   void _handleLongPress() {
-    if (!widget.enabled || widget.onLongPress == null) return;
-    
+    if (!enabled || onLongPress == null) return;
     HapticFeedback.heavyImpact();
-    widget.onLongPress!();
+    onLongPress!();
   }
 
   @override
   Widget build(BuildContext context) {
-    final effectiveIconColor = widget.iconColor ?? context.primaryColor;
-    final effectiveBackgroundColor = widget.backgroundColor ?? Colors.transparent;
-    final effectivePadding = widget.padding ?? const EdgeInsets.symmetric(
+    final effectiveIconColor = iconColor ?? context.primaryColor;
+    final effectiveBackgroundColor = backgroundColor ?? Colors.transparent;
+    final effectivePadding = padding ?? const EdgeInsets.symmetric(
       horizontal: ThemeConstants.space4,
       vertical: ThemeConstants.space4,
     );
-    final effectiveBorderRadius = widget.borderRadius ?? 
+    final effectiveBorderRadius = borderRadius ?? 
         BorderRadius.circular(ThemeConstants.radiusXl);
 
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
+    return Container(
+      decoration: BoxDecoration(
+        color: effectiveBackgroundColor,
+        borderRadius: effectiveBorderRadius,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _handleTap,
+          onLongPress: _handleLongPress,
+          borderRadius: effectiveBorderRadius,
+          splashColor: showRipple 
+              ? effectiveIconColor.withValues(alpha: 0.1)
+              : Colors.transparent,
+          highlightColor: showRipple
+              ? effectiveIconColor.withValues(alpha: 0.05)
+              : Colors.transparent,
           child: Opacity(
-            opacity: widget.enabled ? _opacityAnimation.value : 0.6,
-            child: Container(
-              decoration: BoxDecoration(
-                color: effectiveBackgroundColor,
-                borderRadius: effectiveBorderRadius,
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: _handleTap,
-                  onLongPress: _handleLongPress,
-                  onTapDown: _handleTapDown,
-                  onTapUp: _handleTapUp,
-                  onTapCancel: _handleTapCancel,
-                  borderRadius: effectiveBorderRadius,
-                  splashColor: widget.showRipple 
-                      ? effectiveIconColor.withValues(alpha: 0.1)
-                      : Colors.transparent,
-                  highlightColor: widget.showRipple
-                      ? effectiveIconColor.withValues(alpha: 0.05)
-                      : Colors.transparent,
-                  child: Padding(
-                    padding: effectivePadding,
-                    child: Row(
-                      crossAxisAlignment: widget.crossAxisAlignment,
-                      children: [
-                        _buildIcon(context, effectiveIconColor),
-                        ThemeConstants.space4.w,
-                        Expanded(child: _buildContent(context)),
-                        if (widget.trailing != null) ...[
-                          ThemeConstants.space3.w,
-                          _buildTrailing(context),
-                        ] else if (widget.onTap != null && widget.enabled) ...[
-                          ThemeConstants.space3.w,
-                          _buildDefaultTrailing(context),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
+            opacity: enabled ? 1.0 : 0.6,
+            child: Padding(
+              padding: effectivePadding,
+              child: Row(
+                crossAxisAlignment: crossAxisAlignment,
+                children: [
+                  _buildIcon(context, effectiveIconColor),
+                  ThemeConstants.space4.w,
+                  Expanded(child: _buildContent(context)),
+                  if (trailing != null) ...[
+                    ThemeConstants.space3.w,
+                    _buildTrailing(context),
+                  ] else if (onTap != null && enabled) ...[
+                    ThemeConstants.space3.w,
+                    _buildDefaultTrailing(context),
+                  ],
+                ],
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -195,39 +112,29 @@ class _SettingsTileState extends State<SettingsTile>
     return Stack(
       alignment: Alignment.center,
       children: [
-        // خلفية الأيقونة مع تأثير
-        AnimatedContainer(
-          duration: ThemeConstants.durationFast,
-          width: widget.iconSize != null ? widget.iconSize! + 16 : 48,
-          height: widget.iconSize != null ? widget.iconSize! + 16 : 48,
+        Container(
+          width: iconSize != null ? iconSize! + 16 : 48,
+          height: iconSize != null ? iconSize! + 16 : 48,
           decoration: BoxDecoration(
-            color: widget.enabled 
-                ? iconColor.withValues(alpha: _isPressed ? 0.2 : 0.1)
+            color: enabled 
+                ? iconColor.withValues(alpha: 0.1)
                 : context.textSecondaryColor.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-            boxShadow: _isPressed && widget.enabled ? [
-              BoxShadow(
-                color: iconColor.withValues(alpha: 0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ] : null,
           ),
           child: Icon(
-            widget.icon,
-            color: widget.enabled 
+            icon,
+            color: enabled 
                 ? iconColor
                 : context.textSecondaryColor.withValues(alpha: 0.5),
-            size: widget.iconSize ?? ThemeConstants.iconMd,
+            size: iconSize ?? ThemeConstants.iconMd,
           ),
         ),
         
-        // Badge إذا كان موجود
-        if (widget.badge != null)
+        if (badge != null)
           Positioned(
             top: 0,
             right: 0,
-            child: widget.badge!,
+            child: badge!,
           ),
       ],
     );
@@ -238,39 +145,31 @@ class _SettingsTileState extends State<SettingsTile>
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // العنوان
-        AnimatedDefaultTextStyle(
-          duration: ThemeConstants.durationFast,
+        Text(
+          title,
           style: context.titleMedium?.copyWith(
-            color: widget.enabled 
+            color: enabled 
                 ? context.textPrimaryColor
                 : context.textSecondaryColor.withValues(alpha: 0.7),
             fontWeight: ThemeConstants.medium,
             height: 1.2,
-          ) ?? const TextStyle(),
-          child: Text(
-            widget.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         
-        // العنوان الفرعي
-        if (widget.subtitle != null) ...[
+        if (subtitle != null) ...[
           ThemeConstants.space1.h,
-          AnimatedDefaultTextStyle(
-            duration: ThemeConstants.durationFast,
+          Text(
+            subtitle!,
             style: context.bodySmall?.copyWith(
-              color: widget.enabled 
+              color: enabled 
                   ? context.textSecondaryColor
                   : context.textSecondaryColor.withValues(alpha: 0.5),
               height: 1.3,
-            ) ?? const TextStyle(),
-            child: Text(
-              widget.subtitle!,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ],
@@ -278,23 +177,18 @@ class _SettingsTileState extends State<SettingsTile>
   }
 
   Widget _buildTrailing(BuildContext context) {
-    return AnimatedOpacity(
-      duration: ThemeConstants.durationFast,
-      opacity: widget.enabled ? 1.0 : 0.5,
-      child: widget.trailing!,
+    return Opacity(
+      opacity: enabled ? 1.0 : 0.5,
+      child: trailing!,
     );
   }
 
   Widget _buildDefaultTrailing(BuildContext context) {
-    return AnimatedRotation(
-      duration: ThemeConstants.durationFast,
-      turns: _isPressed ? 0.05 : 0.0,
-      child: Icon(
-        Icons.arrow_forward_ios_rounded,
-        size: ThemeConstants.iconSm,
-        color: context.textSecondaryColor.withValues(
-          alpha: widget.enabled ? 0.6 : 0.3,
-        ),
+    return Icon(
+      Icons.arrow_forward_ios_rounded,
+      size: ThemeConstants.iconSm,
+      color: context.textSecondaryColor.withValues(
+        alpha: enabled ? 0.6 : 0.3,
       ),
     );
   }
@@ -371,31 +265,26 @@ class SettingsBadge extends StatelessWidget {
     );
   }
 
-  /// Badge جديد
   factory SettingsBadge.isNew([String? text]) => SettingsBadge(
         text: text ?? 'جديد',
         isNew: true,
       );
 
-  /// Badge تحذير
   factory SettingsBadge.warning([String? text]) => SettingsBadge(
         text: text ?? '!',
         isWarning: true,
       );
 
-  /// Badge خطأ
   factory SettingsBadge.error([String? text]) => SettingsBadge(
         text: text ?? '!',
         isError: true,
       );
 
-  /// Badge عداد
   factory SettingsBadge.count(int count, {Color? color}) => SettingsBadge(
         text: count > 99 ? '99+' : count.toString(),
         color: color,
       );
 
-  /// Badge نقطة فقط
   factory SettingsBadge.dot({Color? color}) => SettingsBadge(
         color: color,
         size: 8,

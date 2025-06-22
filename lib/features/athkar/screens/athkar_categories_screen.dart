@@ -21,12 +21,10 @@ class AthkarCategoriesScreen extends StatefulWidget {
   State<AthkarCategoriesScreen> createState() => _AthkarCategoriesScreenState();
 }
 
-class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
-    with SingleTickerProviderStateMixin {
+class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
   late final AthkarService _service;
   late final PermissionService _permissionService;
   late final StorageService _storage;
-  late final AnimationController _animationController;
   
   late Future<List<AthkarCategory>> _futureCategories;
   final Map<String, int> _progress = {};
@@ -38,10 +36,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     _service = getIt<AthkarService>();
     _storage = getIt<StorageService>();
     _permissionService = getIt<PermissionService>();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: ThemeConstants.durationNormal,
-    );
     
     _initialize();
   }
@@ -52,17 +46,10 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     _loadProgress();
   }
 
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
   Future<void> _initialize() async {
     _futureCategories = _service.loadCategories();
     _checkNotificationPermission();
     _loadProgress();
-    _animationController.forward();
   }
 
   Future<void> _checkNotificationPermission() async {
@@ -134,7 +121,9 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                       child: _buildWelcomeCard(context),
                     ),
                     
-                    ThemeConstants.space4.sliverBox,
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: 16),
+                    ),
                     
                     // قائمة الفئات
                     FutureBuilder<List<AthkarCategory>>(
@@ -174,44 +163,35 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                         }
                         
                         return SliverPadding(
-                          padding: const EdgeInsets.all(ThemeConstants.space4),
-                          sliver: AnimationLimiter(
-                            child: SliverGrid(
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                mainAxisSpacing: ThemeConstants.space4,
-                                crossAxisSpacing: ThemeConstants.space4,
-                                childAspectRatio: 0.8,
-                              ),
-                              delegate: SliverChildBuilderDelegate(
-                                (context, index) {
-                                  final category = categories[index];
-                                  final progress = _progress[category.id] ?? 0;
-                                  
-                                  return AnimationConfiguration.staggeredGrid(
-                                    position: index,
-                                    duration: ThemeConstants.durationNormal,
-                                    columnCount: 2,
-                                    child: ScaleAnimation(
-                                      child: FadeInAnimation(
-                                        child: AthkarCategoryCard(
-                                          category: category,
-                                          progress: progress,
-                                          onTap: () => _openCategoryDetails(category),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                                childCount: categories.length,
-                              ),
+                          padding: const EdgeInsets.all(16),
+                          sliver: SliverGrid(
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 16,
+                              crossAxisSpacing: 16,
+                              childAspectRatio: 0.8,
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final category = categories[index];
+                                final progress = _progress[category.id] ?? 0;
+                                
+                                return AthkarCategoryCard(
+                                  category: category,
+                                  progress: progress,
+                                  onTap: () => _openCategoryDetails(category),
+                                );
+                              },
+                              childCount: categories.length,
                             ),
                           ),
                         );
                       },
                     ),
                     
-                    ThemeConstants.space8.sliverBox,
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: 32),
+                    ),
                   ],
                 ),
               ),
@@ -224,24 +204,26 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
 
   Widget _buildAppBar(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           // أيقونة التطبيق
           Container(
-            padding: const EdgeInsets.all(ThemeConstants.space3),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              gradient: ThemeConstants.primaryGradient,
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+              ),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
               Icons.auto_awesome,
               color: Colors.white,
-              size: ThemeConstants.iconLg,
+              size: 24,
             ),
           ),
           
-          ThemeConstants.space3.w,
+          const SizedBox(width: 12),
           
           // العنوان
           Expanded(
@@ -251,7 +233,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                 Text(
                   'أذكار المسلم',
                   style: context.titleLarge?.copyWith(
-                    fontWeight: ThemeConstants.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
@@ -271,7 +253,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
               Container(
                 decoration: BoxDecoration(
                   color: context.cardColor,
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: context.dividerColor.withValues(alpha: 0.2),
                   ),
@@ -288,13 +270,13 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                 ),
               ),
               
-              ThemeConstants.space2.w,
+              const SizedBox(width: 8),
               
               // زر إعدادات الإشعارات
               Container(
                 decoration: BoxDecoration(
                   color: context.cardColor,
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: context.dividerColor.withValues(alpha: 0.2),
                   ),
@@ -324,30 +306,30 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
 
   Widget _buildWelcomeCard(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        borderRadius: BorderRadius.circular(20),
         gradient: LinearGradient(
           colors: [
-            ThemeConstants.accent.withValues(alpha: 0.9),
-            ThemeConstants.accent.darken(0.1).withValues(alpha: 0.9),
+            const Color(0xFF10B981).withValues(alpha: 0.9),
+            const Color(0xFF059669).withValues(alpha: 0.9),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        borderRadius: BorderRadius.circular(20),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            padding: const EdgeInsets.all(ThemeConstants.space5),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.2),
                 width: 1,
               ),
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
               children: [
@@ -365,7 +347,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                   ),
                 ),
                 
-                ThemeConstants.space4.w,
+                const SizedBox(width: 16),
                 
                 Expanded(
                   child: Column(
@@ -375,21 +357,21 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                         'اختر فئة الأذكار',
                         style: context.headlineMedium?.copyWith(
                           color: Colors.white,
-                          fontWeight: ThemeConstants.bold,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       
-                      ThemeConstants.space1.h,
+                      const SizedBox(height: 8),
                       
                       Text(
                         'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
                         style: context.bodyMedium?.copyWith(
                           color: Colors.white.withValues(alpha: 0.9),
-                          fontFamily: ThemeConstants.fontFamilyArabic,
+                          fontFamily: 'Amiri',
                         ),
                       ),
                       
-                      ThemeConstants.space1.h,
+                      const SizedBox(height: 8),
                       
                       Text(
                         'اقرأ الأذكار اليومية وحافظ على ذكر الله',
@@ -417,5 +399,155 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     ).then((_) {
       _loadProgress();
     });
+  }
+}
+
+// إضافة Widgets مفقودة (يجب إضافتها في ملف منفصل)
+class AppLoading {
+  static Widget page({String? message}) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+            ),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: const CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            strokeWidth: 3,
+          ),
+        ),
+        if (message != null) ...[
+          const SizedBox(height: 20),
+          Text(
+            message,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class AppEmptyState {
+  static Widget error({
+    required String message,
+    VoidCallback? onRetry,
+  }) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.error_outline,
+            size: 64,
+            color: Color(0xFFEF4444),
+          ),
+        ),
+        const SizedBox(height: 16),
+        const Text(
+          'خطأ في التحميل',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          message,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.grey[600],
+          ),
+        ),
+        if (onRetry != null) ...[
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh),
+            label: const Text('المحاولة مرة أخرى'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6366F1),
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  static Widget noData({
+    required String message,
+    String? description,
+    String? actionText,
+    VoidCallback? onAction,
+  }) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+            ),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.location_on,
+            size: 64,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          message,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        if (description != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            description,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+        if (onAction != null && actionText != null) ...[
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: onAction,
+            icon: const Icon(Icons.my_location),
+            label: Text(actionText),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6366F1),
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ],
+    );
   }
 }

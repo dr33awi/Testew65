@@ -20,17 +20,12 @@ class PrayerTimesScreen extends StatefulWidget {
   State<PrayerTimesScreen> createState() => _PrayerTimesScreenState();
 }
 
-class _PrayerTimesScreenState extends State<PrayerTimesScreen>
-    with TickerProviderStateMixin {
+class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   late final LoggerService _logger;
   late final PrayerTimesService _prayerService;
   
   // Controllers
   final _scrollController = ScrollController();
-  late AnimationController _headerAnimationController;
-  late AnimationController _cardsAnimationController;
-  late Animation<double> _headerAnimation;
-  late Animation<double> _cardsAnimation;
   
   // State
   DailyPrayerTimes? _dailyTimes;
@@ -46,31 +41,8 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
   @override
   void initState() {
     super.initState();
-    _setupAnimations();
     _initializeServices();
     _loadPrayerTimes();
-  }
-
-  void _setupAnimations() {
-    _headerAnimationController = AnimationController(
-      duration: ThemeConstants.durationSlow,
-      vsync: this,
-    );
-    
-    _cardsAnimationController = AnimationController(
-      duration: ThemeConstants.durationExtraSlow,
-      vsync: this,
-    );
-    
-    _headerAnimation = CurvedAnimation(
-      parent: _headerAnimationController,
-      curve: ThemeConstants.curveSmooth,
-    );
-    
-    _cardsAnimation = CurvedAnimation(
-      parent: _cardsAnimationController,
-      curve: ThemeConstants.curveSmooth,
-    );
   }
 
   void _initializeServices() {
@@ -84,14 +56,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
           _dailyTimes = times;
           _isLoading = false;
           _errorMessage = null;
-        });
-        
-        // بدء الحركة
-        _headerAnimationController.forward();
-        Future.delayed(const Duration(milliseconds: 200), () {
-          if (mounted) {
-            _cardsAnimationController.forward();
-          }
         });
       }
     });
@@ -120,8 +84,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
           _nextPrayer = cachedTimes.nextPrayer;
           _isLoading = false;
         });
-        _headerAnimationController.forward();
-        _cardsAnimationController.forward();
       }
       
       // التحقق من وجود موقع محفوظ
@@ -185,11 +147,13 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
         });
         
         // عرض رسالة خطأ للمستخدم
-        context.showErrorSnackBar(
-          'لم نتمكن من تحديد موقعك. يرجى التحقق من إعدادات الموقع.',
-          action: SnackBarAction(
-            label: 'حاول مجدداً',
-            onPressed: _requestLocation,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('لم نتمكن من تحديد موقعك. يرجى التحقق من إعدادات الموقع.'),
+            action: SnackBarAction(
+              label: 'حاول مجدداً',
+              onPressed: _requestLocation,
+            ),
           ),
         );
       }
@@ -199,8 +163,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
   @override
   void dispose() {
     _scrollController.dispose();
-    _headerAnimationController.dispose();
-    _cardsAnimationController.dispose();
     _timesSubscription?.cancel();
     _nextPrayerSubscription?.cancel();
     super.dispose();
@@ -213,7 +175,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
       body: SafeArea(
         child: Column(
           children: [
-            // شريط التنقل العلوي (نمط الأذكار)
+            // شريط التنقل العلوي
             _buildAppBar(context),
             
             // المحتوى
@@ -224,13 +186,15 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                   controller: _scrollController,
                   physics: const BouncingScrollPhysics(),
                   slivers: [
-                    // رسالة الترحيب (نمط الأذكار)
+                    // رسالة الترحيب
                     if (_dailyTimes != null) ...[
                       SliverToBoxAdapter(
                         child: _buildWelcomeCard(context),
                       ),
                       
-                      ThemeConstants.space4.sliverBox,
+                      const SliverToBoxAdapter(
+                        child: SizedBox(height: 16),
+                      ),
                     ],
                     
                     // المحتوى الرئيسي
@@ -254,24 +218,26 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
 
   Widget _buildAppBar(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
           // أيقونة التطبيق
           Container(
-            padding: const EdgeInsets.all(ThemeConstants.space3),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              gradient: ThemeConstants.primaryGradient,
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+              ),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
               Icons.mosque,
               color: Colors.white,
-              size: ThemeConstants.iconLg,
+              size: 24,
             ),
           ),
           
-          ThemeConstants.space3.w,
+          const SizedBox(width: 12),
           
           // العنوان
           Expanded(
@@ -281,7 +247,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                 Text(
                   'مواقيت الصلاة',
                   style: context.titleLarge?.copyWith(
-                    fontWeight: ThemeConstants.bold,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
@@ -301,7 +267,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
               Container(
                 decoration: BoxDecoration(
                   color: context.cardColor,
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: context.dividerColor.withValues(alpha: 0.2),
                   ),
@@ -325,13 +291,13 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                 ),
               ),
               
-              ThemeConstants.space2.w,
+              const SizedBox(width: 8),
               
               // زر إعدادات الإشعارات
               Container(
                 decoration: BoxDecoration(
                   color: context.cardColor,
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: context.dividerColor.withValues(alpha: 0.2),
                   ),
@@ -346,13 +312,13 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                 ),
               ),
               
-              ThemeConstants.space2.w,
+              const SizedBox(width: 8),
               
               // زر الإعدادات
               Container(
                 decoration: BoxDecoration(
                   color: context.cardColor,
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: context.dividerColor.withValues(alpha: 0.2),
                   ),
@@ -376,34 +342,34 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
   Widget _buildWelcomeCard(BuildContext context) {
     final nextPrayer = _nextPrayer ?? _dailyTimes?.nextPrayer;
     final prayerColor = nextPrayer != null 
-        ? ThemeConstants.getPrayerColor(nextPrayer.type.name)
-        : ThemeConstants.primary;
+        ? _getPrayerColor(nextPrayer.type.name)
+        : const Color(0xFF6366F1);
     
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        borderRadius: BorderRadius.circular(20),
         gradient: LinearGradient(
           colors: [
             prayerColor.withValues(alpha: 0.9),
-            prayerColor.darken(0.1).withValues(alpha: 0.9),
+            prayerColor.withValues(alpha: 0.8),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        borderRadius: BorderRadius.circular(20),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            padding: const EdgeInsets.all(ThemeConstants.space5),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.2),
                 width: 1,
               ),
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
               children: [
@@ -416,14 +382,14 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                   ),
                   child: Icon(
                     nextPrayer != null 
-                        ? ThemeConstants.getPrayerIcon(nextPrayer.type.name)
+                        ? _getPrayerIcon(nextPrayer.type.name)
                         : Icons.schedule_rounded,
                     color: Colors.white,
                     size: 40,
                   ),
                 ),
                 
-                ThemeConstants.space4.w,
+                const SizedBox(width: 16),
                 
                 Expanded(
                   child: Column(
@@ -435,22 +401,22 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                             : 'مواقيت الصلاة',
                         style: context.headlineMedium?.copyWith(
                           color: Colors.white,
-                          fontWeight: ThemeConstants.bold,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       
-                      ThemeConstants.space1.h,
+                      const SizedBox(height: 8),
                       
                       if (nextPrayer != null) ...[
                         Text(
                           'الوقت: ${_formatTime(nextPrayer.time)}',
                           style: context.bodyLarge?.copyWith(
                             color: Colors.white.withValues(alpha: 0.9),
-                            fontWeight: ThemeConstants.semiBold,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                         
-                        ThemeConstants.space1.h,
+                        const SizedBox(height: 8),
                         
                         StreamBuilder(
                           stream: Stream.periodic(const Duration(seconds: 1)),
@@ -471,13 +437,13 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                           ),
                         ),
                         
-                        ThemeConstants.space1.h,
+                        const SizedBox(height: 8),
                         
                         Text(
                           'وَأَقِمِ الصَّلَاةَ لِذِكْرِي',
                           style: context.bodySmall?.copyWith(
                             color: Colors.white.withValues(alpha: 0.8),
-                            fontFamily: ThemeConstants.fontFamilyArabic,
+                            fontFamily: 'Amiri',
                           ),
                         ),
                       ],
@@ -497,42 +463,20 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
       // العد التنازلي للصلاة التالية
       if (_nextPrayer != null)
         SliverToBoxAdapter(
-          child: AnimatedBuilder(
-            animation: _headerAnimation,
-            builder: (context, child) {
-              return FadeTransition(
-                opacity: _headerAnimation,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0, 0.5),
-                    end: Offset.zero,
-                  ).animate(_headerAnimation),
-                  child: NextPrayerCountdown(
-                    nextPrayer: _nextPrayer!,
-                    currentPrayer: _dailyTimes!.currentPrayer,
-                  ),
-                ),
-              );
-            },
+          child: NextPrayerCountdown(
+            nextPrayer: _nextPrayer!,
+            currentPrayer: _dailyTimes!.currentPrayer,
           ),
         ),
       
       // عنوان قائمة الصلوات
       SliverToBoxAdapter(
-        child: AnimatedBuilder(
-          animation: _cardsAnimation,
-          builder: (context, child) {
-            return FadeTransition(
-              opacity: _cardsAnimation,
-              child: _buildPrayerListHeader(),
-            );
-          },
-        ),
+        child: _buildPrayerListHeader(),
       ),
       
-      // قائمة الصلوات المحسنة
+      // قائمة الصلوات
       SliverPadding(
-        padding: const EdgeInsets.all(ThemeConstants.space4),
+        padding: const EdgeInsets.all(16),
         sliver: SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) {
@@ -544,42 +488,11 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
               
               final prayer = prayers[index];
               
-              return AnimatedBuilder(
-                animation: _cardsAnimation,
-                builder: (context, child) {
-                  return FadeTransition(
-                    opacity: Tween<double>(
-                      begin: 0.0,
-                      end: 1.0,
-                    ).animate(CurvedAnimation(
-                      parent: _cardsAnimation,
-                      curve: Interval(
-                        (index * 0.1).clamp(0.0, 1.0),
-                        ((index * 0.1) + 0.3).clamp(0.0, 1.0),
-                        curve: ThemeConstants.curveSmooth,
-                      ),
-                    )),
-                    child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, 0.5),
-                        end: Offset.zero,
-                      ).animate(CurvedAnimation(
-                        parent: _cardsAnimation,
-                        curve: Interval(
-                          (index * 0.1).clamp(0.0, 1.0),
-                          ((index * 0.1) + 0.3).clamp(0.0, 1.0),
-                          curve: ThemeConstants.curveSmooth,
-                        ),
-                      )),
-                      child: PrayerTimeCard(
-                        prayer: prayer,
-                        forceColored: true,
-                        onNotificationToggle: (enabled) {
-                          _togglePrayerNotification(prayer, enabled);
-                        },
-                      ),
-                    ),
-                  );
+              return PrayerTimeCard(
+                prayer: prayer,
+                forceColored: true,
+                onNotificationToggle: (enabled) {
+                  _togglePrayerNotification(prayer, enabled);
                 },
               );
             },
@@ -591,41 +504,43 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
       ),
       
       // مساحة في الأسفل
-      ThemeConstants.space8.sliverBox,
+      const SliverToBoxAdapter(
+        child: SizedBox(height: 32),
+      ),
     ];
   }
 
   Widget _buildPrayerListHeader() {
     return Container(
-      margin: const EdgeInsets.all(ThemeConstants.space4),
-      padding: const EdgeInsets.all(ThemeConstants.space4),
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            ThemeConstants.primary.withValues(alpha: 0.05),
-            ThemeConstants.primary.withValues(alpha: 0.1),
+            const Color(0xFF6366F1).withValues(alpha: 0.05),
+            const Color(0xFF6366F1).withValues(alpha: 0.1),
           ],
         ),
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: ThemeConstants.primary.withValues(alpha: 0.1),
+          color: const Color(0xFF6366F1).withValues(alpha: 0.1),
         ),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(ThemeConstants.space2),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: ThemeConstants.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
               Icons.schedule_rounded,
-              color: ThemeConstants.primary,
-              size: ThemeConstants.iconMd,
+              color: Color(0xFF6366F1),
+              size: 24,
             ),
           ),
-          ThemeConstants.space3.w,
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -633,7 +548,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                 Text(
                   'جدول الصلوات اليوم',
                   style: context.titleMedium?.copyWith(
-                    fontWeight: ThemeConstants.semiBold,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
@@ -691,10 +606,15 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
       settings.copyWith(enabledPrayers: updatedPrayers),
     );
     
-    context.showSuccessSnackBar(
-      enabled 
-          ? 'تم تفعيل تنبيه ${prayer.nameAr}'
-          : 'تم إيقاف تنبيه ${prayer.nameAr}',
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          enabled 
+              ? 'تم تفعيل تنبيه ${prayer.nameAr}'
+              : 'تم إيقاف تنبيه ${prayer.nameAr}',
+        ),
+        backgroundColor: Colors.green,
+      ),
     );
   }
 
@@ -706,27 +626,58 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
     
     return '$displayHour:$minute $period';
   }
+
+  Color _getPrayerColor(String prayerType) {
+    switch (prayerType.toLowerCase()) {
+      case 'fajr':
+        return const Color(0xFF3B82F6); // أزرق
+      case 'dhuhr':
+        return const Color(0xFFF59E0B); // أصفر
+      case 'asr':
+        return const Color(0xFFEF4444); // أحمر
+      case 'maghrib':
+        return const Color(0xFF8B5CF6); // بنفسجي
+      case 'isha':
+        return const Color(0xFF1F2937); // رمادي داكن
+      default:
+        return const Color(0xFF6366F1); // أزرق افتراضي
+    }
+  }
+
+  IconData _getPrayerIcon(String prayerType) {
+    switch (prayerType.toLowerCase()) {
+      case 'fajr':
+        return Icons.wb_twilight;
+      case 'dhuhr':
+        return Icons.wb_sunny;
+      case 'asr':
+        return Icons.wb_cloudy;
+      case 'maghrib':
+        return Icons.wb_twilight;
+      case 'isha':
+        return Icons.nightlight_round;
+      default:
+        return Icons.schedule_rounded;
+    }
+  }
 }
 
-// إضافة Extensions مساعدة
-extension SliverBoxExtension on double {
-  Widget get sliverBox => SliverToBoxAdapter(child: SizedBox(height: this));
-}
-
-// إضافة Widgets مفقودة (يجب إضافتها في ملف منفصل)
+// إضافة Widgets مفقودة
 class AppLoading {
   static Widget page({String? message}) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          padding: const EdgeInsets.all(ThemeConstants.space6),
+          padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            gradient: ThemeConstants.primaryGradient,
+            gradient: const LinearGradient(
+              colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+            ),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: ThemeConstants.primary.withValues(alpha: 0.3),
+                color: const Color(0xFF6366F1).withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -738,7 +689,7 @@ class AppLoading {
           ),
         ),
         if (message != null) ...[
-          const SizedBox(height: ThemeConstants.space5),
+          const SizedBox(height: 20),
           Text(
             message,
             style: const TextStyle(
@@ -760,26 +711,26 @@ class AppEmptyState {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          padding: const EdgeInsets.all(ThemeConstants.space4),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: ThemeConstants.error.withValues(alpha: 0.1),
+            color: const Color(0xFFEF4444).withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: const Icon(
             Icons.error_outline,
             size: 64,
-            color: ThemeConstants.error,
+            color: Color(0xFFEF4444),
           ),
         ),
-        const SizedBox(height: ThemeConstants.space4),
-        Text(
+        const SizedBox(height: 16),
+        const Text(
           'خطأ في التحميل',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: ThemeConstants.space2),
+        const SizedBox(height: 8),
         Text(
           message,
           textAlign: TextAlign.center,
@@ -788,13 +739,13 @@ class AppEmptyState {
           ),
         ),
         if (onRetry != null) ...[
-          const SizedBox(height: ThemeConstants.space4),
+          const SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: onRetry,
             icon: const Icon(Icons.refresh),
             label: const Text('المحاولة مرة أخرى'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: ThemeConstants.primary,
+              backgroundColor: const Color(0xFF6366F1),
               foregroundColor: Colors.white,
             ),
           ),
@@ -813,9 +764,11 @@ class AppEmptyState {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          padding: const EdgeInsets.all(ThemeConstants.space4),
+          padding: const EdgeInsets.all(16),
           decoration: const BoxDecoration(
-            gradient: ThemeConstants.primaryGradient,
+            gradient: LinearGradient(
+              colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+            ),
             shape: BoxShape.circle,
           ),
           child: const Icon(
@@ -824,7 +777,7 @@ class AppEmptyState {
             color: Colors.white,
           ),
         ),
-        const SizedBox(height: ThemeConstants.space4),
+        const SizedBox(height: 16),
         Text(
           message,
           style: const TextStyle(
@@ -833,7 +786,7 @@ class AppEmptyState {
           ),
         ),
         if (description != null) ...[
-          const SizedBox(height: ThemeConstants.space2),
+          const SizedBox(height: 8),
           Text(
             description,
             textAlign: TextAlign.center,
@@ -843,13 +796,13 @@ class AppEmptyState {
           ),
         ],
         if (onAction != null && actionText != null) ...[
-          const SizedBox(height: ThemeConstants.space4),
+          const SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: onAction,
             icon: const Icon(Icons.my_location),
             label: Text(actionText),
             style: ElevatedButton.styleFrom(
-              backgroundColor: ThemeConstants.primary,
+              backgroundColor: const Color(0xFF6366F1),
               foregroundColor: Colors.white,
             ),
           ),

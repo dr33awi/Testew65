@@ -1,9 +1,9 @@
-// lib/features/settings/widgets/settings_section.dart (محسن ومطور)
+// lib/features/settings/widgets/settings_section.dart (مُنظف)
+
 import 'package:flutter/material.dart';
 import '../../../app/themes/app_theme.dart';
 
-/// قسم محسن في شاشة الإعدادات مع تأثيرات بصرية متقدمة
-class SettingsSection extends StatefulWidget {
+class SettingsSection extends StatelessWidget {
   final String title;
   final String? subtitle;
   final IconData? icon;
@@ -14,8 +14,6 @@ class SettingsSection extends StatefulWidget {
   final Color? titleColor;
   final Color? iconColor;
   final bool showHeader;
-  final bool isCollapsible;
-  final bool initiallyExpanded;
   final Widget? headerTrailing;
   final VoidCallback? onHeaderTap;
   final double? elevation;
@@ -35,8 +33,6 @@ class SettingsSection extends StatefulWidget {
     this.titleColor,
     this.iconColor,
     this.showHeader = true,
-    this.isCollapsible = false,
-    this.initiallyExpanded = true,
     this.headerTrailing,
     this.onHeaderTap,
     this.elevation,
@@ -46,85 +42,13 @@ class SettingsSection extends StatefulWidget {
   });
 
   @override
-  State<SettingsSection> createState() => _SettingsSectionState();
-}
-
-class _SettingsSectionState extends State<SettingsSection>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _expandAnimation;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _rotationAnimation;
-
-  bool _isExpanded = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _isExpanded = widget.initiallyExpanded;
-    _initializeAnimations();
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  void _initializeAnimations() {
-    _animationController = AnimationController(
-      duration: ThemeConstants.durationNormal,
-      vsync: this,
-    );
-
-    _expandAnimation = CurvedAnimation(
-      parent: _animationController,
-      curve: ThemeConstants.curveDefault,
-    );
-
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-    ));
-
-    _rotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 0.5,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-
-    if (_isExpanded) {
-      _animationController.value = 1.0;
-    }
-  }
-
-  void _toggleExpansion() {
-    setState(() {
-      _isExpanded = !_isExpanded;
-    });
-
-    if (_isExpanded) {
-      _animationController.forward();
-    } else {
-      _animationController.reverse();
-    }
-
-    widget.onHeaderTap?.call();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final effectiveMargin = widget.margin ?? const EdgeInsets.symmetric(
+    final effectiveMargin = margin ?? const EdgeInsets.symmetric(
       horizontal: ThemeConstants.space4,
       vertical: ThemeConstants.space3,
     );
 
-    final effectiveBorderRadius = widget.borderRadius ?? 
+    final effectiveBorderRadius = borderRadius ?? 
         BorderRadius.circular(ThemeConstants.radiusXl);
 
     return Container(
@@ -134,7 +58,7 @@ class _SettingsSectionState extends State<SettingsSection>
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: widget.elevation ?? 12,
+            blurRadius: elevation ?? 12,
             offset: const Offset(0, 4),
             spreadRadius: -2,
           ),
@@ -144,14 +68,14 @@ class _SettingsSectionState extends State<SettingsSection>
         borderRadius: effectiveBorderRadius,
         child: Container(
           decoration: BoxDecoration(
-            color: widget.backgroundColor ?? context.cardColor,
-            gradient: widget.gradient,
+            color: backgroundColor ?? context.cardColor,
+            gradient: gradient,
             borderRadius: effectiveBorderRadius,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (widget.showHeader) _buildHeader(context),
+              if (showHeader) _buildHeader(context),
               _buildContent(context),
             ],
           ),
@@ -161,23 +85,22 @@ class _SettingsSectionState extends State<SettingsSection>
   }
 
   Widget _buildHeader(BuildContext context) {
-    final effectiveTitleColor = widget.titleColor ?? context.primaryColor;
-    final effectiveIconColor = widget.iconColor ?? context.primaryColor;
+    final effectiveTitleColor = titleColor ?? context.primaryColor;
+    final effectiveIconColor = iconColor ?? context.primaryColor;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: widget.isCollapsible ? _toggleExpansion : widget.onHeaderTap,
+        onTap: onHeaderTap,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(ThemeConstants.radiusXl),
           topRight: Radius.circular(ThemeConstants.radiusXl),
         ),
         child: Container(
-          padding: widget.padding ?? const EdgeInsets.all(ThemeConstants.space4),
+          padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
           child: Row(
             children: [
-              // أيقونة القسم
-              if (widget.icon != null) ...[
+              if (icon != null) ...[
                 Container(
                   padding: const EdgeInsets.all(ThemeConstants.space2),
                   decoration: BoxDecoration(
@@ -185,7 +108,7 @@ class _SettingsSectionState extends State<SettingsSection>
                     borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                   ),
                   child: Icon(
-                    widget.icon,
+                    icon,
                     size: ThemeConstants.iconSm,
                     color: effectiveIconColor,
                   ),
@@ -193,23 +116,22 @@ class _SettingsSectionState extends State<SettingsSection>
                 ThemeConstants.space3.w,
               ],
               
-              // محتوى العنوان
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.title,
+                      title,
                       style: context.titleMedium?.copyWith(
                         color: effectiveTitleColor,
                         fontWeight: ThemeConstants.bold,
                         height: 1.2,
                       ),
                     ),
-                    if (widget.subtitle != null) ...[
+                    if (subtitle != null) ...[
                       ThemeConstants.space1.h,
                       Text(
-                        widget.subtitle!,
+                        subtitle!,
                         style: context.bodySmall?.copyWith(
                           color: context.textSecondaryColor,
                           height: 1.3,
@@ -220,28 +142,9 @@ class _SettingsSectionState extends State<SettingsSection>
                 ),
               ),
               
-              // العنصر الإضافي في الهيدر
-              if (widget.headerTrailing != null) ...[
+              if (headerTrailing != null) ...[
                 ThemeConstants.space3.w,
-                widget.headerTrailing!,
-              ],
-              
-              // سهم الطي (إذا كان قابل للطي)
-              if (widget.isCollapsible) ...[
-                ThemeConstants.space2.w,
-                AnimatedBuilder(
-                  animation: _rotationAnimation,
-                  builder: (context, child) {
-                    return Transform.rotate(
-                      angle: _rotationAnimation.value * 3.14159,
-                      child: Icon(
-                        Icons.keyboard_arrow_down,
-                        color: effectiveIconColor,
-                        size: ThemeConstants.iconMd,
-                      ),
-                    );
-                  },
-                ),
+                headerTrailing!,
               ],
             ],
           ),
@@ -251,28 +154,13 @@ class _SettingsSectionState extends State<SettingsSection>
   }
 
   Widget _buildContent(BuildContext context) {
-    if (widget.isCollapsible) {
-      return SizeTransition(
-        sizeFactor: _expandAnimation,
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: _buildContentBody(context),
-        ),
-      );
-    }
-
-    return _buildContentBody(context);
-  }
-
-  Widget _buildContentBody(BuildContext context) {
-    if (widget.children.isEmpty) {
+    if (children.isEmpty) {
       return const SizedBox();
     }
 
     return Column(
       children: [
-        // خط فاصل بين الهيدر والمحتوى
-        if (widget.showHeader && widget.showDividers)
+        if (showHeader && showDividers)
           Divider(
             height: 1,
             thickness: 1,
@@ -281,18 +169,16 @@ class _SettingsSectionState extends State<SettingsSection>
             endIndent: 0,
           ),
         
-        // محتوى القسم
         ...List.generate(
-          widget.children.length,
+          children.length,
           (index) {
-            final child = widget.children[index];
-            final isLast = index == widget.children.length - 1;
+            final child = children[index];
+            final isLast = index == children.length - 1;
             
             return Column(
               children: [
                 child,
-                // خط فاصل بين العناصر
-                if (!isLast && widget.showDividers)
+                if (!isLast && showDividers)
                   Divider(
                     height: 1,
                     thickness: 1,
@@ -369,40 +255,6 @@ class GradientSettingsSection extends StatelessWidget {
       titleColor: Colors.white,
       iconColor: Colors.white,
       showDividers: false,
-    );
-  }
-}
-
-/// قسم قابل للطي
-class CollapsibleSettingsSection extends StatelessWidget {
-  final String title;
-  final String? subtitle;
-  final List<Widget> children;
-  final IconData? icon;
-  final bool initiallyExpanded;
-  final EdgeInsetsGeometry? margin;
-
-  const CollapsibleSettingsSection({
-    super.key,
-    required this.title,
-    required this.children,
-    this.subtitle,
-    this.icon,
-    this.initiallyExpanded = true,
-    this.margin,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SettingsSection(
-      title: title,
-      subtitle: subtitle,
-      icon: icon,
-      children: children,
-      margin: margin,
-      isCollapsible: true,
-      initiallyExpanded: initiallyExpanded,
-      showDividers: true,
     );
   }
 }
