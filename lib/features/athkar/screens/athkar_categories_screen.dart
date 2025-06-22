@@ -122,7 +122,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                     ),
                     
                     const SliverToBoxAdapter(
-                      child: SizedBox(height: 16),
+                      child: SizedBox(height: ThemeConstants.space4),
                     ),
                     
                     // قائمة الفئات
@@ -163,12 +163,12 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                         }
                         
                         return SliverPadding(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(ThemeConstants.space4),
                           sliver: SliverGrid(
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
-                              mainAxisSpacing: 16,
-                              crossAxisSpacing: 16,
+                              mainAxisSpacing: ThemeConstants.space4,
+                              crossAxisSpacing: ThemeConstants.space4,
                               childAspectRatio: 0.8,
                             ),
                             delegate: SliverChildBuilderDelegate(
@@ -190,7 +190,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                     ),
                     
                     const SliverToBoxAdapter(
-                      child: SizedBox(height: 32),
+                      child: SizedBox(height: ThemeConstants.space8),
                     ),
                   ],
                 ),
@@ -204,26 +204,25 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
 
   Widget _buildAppBar(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(ThemeConstants.space4),
       child: Row(
         children: [
-          // أيقونة التطبيق
+          // أيقونة التطبيق - استخدام ألوان الثيم
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(ThemeConstants.space3),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
-              ),
-              borderRadius: BorderRadius.circular(12),
+              gradient: ThemeConstants.primaryGradient,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              boxShadow: ThemeConstants.shadowSm,
             ),
-            child: const Icon(
-              Icons.auto_awesome,
+            child: Icon(
+              ThemeConstants.iconAthkar,
               color: Colors.white,
-              size: 24,
+              size: ThemeConstants.iconMd,
             ),
           ),
           
-          const SizedBox(width: 12),
+          const SizedBox(width: ThemeConstants.space3),
           
           // العنوان
           Expanded(
@@ -233,7 +232,8 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                 Text(
                   'أذكار المسلم',
                   style: context.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: ThemeConstants.bold,
+                    color: context.textPrimaryColor,
                   ),
                 ),
                 Text(
@@ -253,48 +253,72 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
               Container(
                 decoration: BoxDecoration(
                   color: context.cardColor,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                   border: Border.all(
-                    color: context.dividerColor.withValues(alpha: 0.2),
+                    color: context.dividerColor.withValues(alpha: ThemeConstants.opacity30),
                   ),
+                  boxShadow: ThemeConstants.shadowSm,
                 ),
                 child: IconButton(
                   onPressed: () {
+                    HapticFeedback.lightImpact();
                     Navigator.pushNamed(context, AppRouter.favorites);
                   },
                   icon: Icon(
-                    Icons.favorite_outline,
-                    color: context.textSecondaryColor,
+                    ThemeConstants.iconFavoriteOutline,
+                    color: context.primaryColor,
                   ),
                   tooltip: 'المفضلة',
                 ),
               ),
               
-              const SizedBox(width: 8),
+              const SizedBox(width: ThemeConstants.space2),
               
               // زر إعدادات الإشعارات
               Container(
                 decoration: BoxDecoration(
                   color: context.cardColor,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                   border: Border.all(
-                    color: context.dividerColor.withValues(alpha: 0.2),
+                    color: context.dividerColor.withValues(alpha: ThemeConstants.opacity30),
                   ),
+                  boxShadow: ThemeConstants.shadowSm,
                 ),
-                child: IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AthkarNotificationSettingsScreen(),
+                child: Stack(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AthkarNotificationSettingsScreen(),
+                          ),
+                        );
+                      },
+                      icon: Icon(
+                        ThemeConstants.iconNotifications,
+                        color: _notificationsEnabled 
+                            ? context.primaryColor 
+                            : context.textSecondaryColor,
                       ),
-                    );
-                  },
-                  icon: Icon(
-                    Icons.notifications_outlined,
-                    color: context.textSecondaryColor,
-                  ),
-                  tooltip: 'إعدادات الإشعارات',
+                      tooltip: 'إعدادات الإشعارات',
+                    ),
+                    // نقطة التنبيه للإشعارات المفعلة
+                    if (_notificationsEnabled)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: ThemeConstants.success,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],
@@ -306,48 +330,53 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
 
   Widget _buildWelcomeCard(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF10B981).withValues(alpha: 0.9),
-            const Color(0xFF059669).withValues(alpha: 0.9),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        gradient: ThemeConstants.primaryGradient,
+        boxShadow: [
+          BoxShadow(
+            color: ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity30),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(ThemeConstants.space5),
             decoration: BoxDecoration(
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-                width: 1,
+                color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
+                width: ThemeConstants.borderThin,
               ),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
             ),
             child: Row(
               children: [
+                // أيقونة الأذكار مع خلفية دائرية
                 Container(
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
                     shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: ThemeConstants.opacity30),
+                      width: ThemeConstants.borderThin,
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.auto_awesome,
+                  child: Icon(
+                    ThemeConstants.iconAthkar,
                     color: Colors.white,
-                    size: 40,
+                    size: ThemeConstants.icon2xl,
                   ),
                 ),
                 
-                const SizedBox(width: 16),
+                const SizedBox(width: ThemeConstants.space4),
                 
                 Expanded(
                   child: Column(
@@ -357,26 +386,42 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                         'اختر فئة الأذكار',
                         style: context.headlineMedium?.copyWith(
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: ThemeConstants.bold,
                         ),
                       ),
                       
-                      const SizedBox(height: 8),
+                      const SizedBox(height: ThemeConstants.space2),
                       
                       Text(
                         'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
                         style: context.bodyMedium?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontFamily: 'Amiri',
+                          color: Colors.white.withValues(alpha: ThemeConstants.opacity90),
+                          fontFamily: ThemeConstants.fontFamilyQuran,
+                          height: 1.8,
                         ),
                       ),
                       
-                      const SizedBox(height: 8),
+                      const SizedBox(height: ThemeConstants.space2),
                       
-                      Text(
-                        'اقرأ الأذكار اليومية وحافظ على ذكر الله',
-                        style: context.bodySmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: ThemeConstants.space3,
+                          vertical: ThemeConstants.space1,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
+                          borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: ThemeConstants.opacity30),
+                            width: ThemeConstants.borderThin,
+                          ),
+                        ),
+                        child: Text(
+                          'اقرأ الأذكار اليومية وحافظ على ذكر الله',
+                          style: context.bodySmall?.copyWith(
+                            color: Colors.white.withValues(alpha: ThemeConstants.opacity90),
+                            fontWeight: ThemeConstants.medium,
+                          ),
                         ),
                       ),
                     ],
@@ -402,22 +447,20 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
   }
 }
 
-// إضافة Widgets مفقودة (يجب إضافتها في ملف منفصل)
+// Widgets مساعدة محدثة بألوان الثيم
 class AppLoading {
   static Widget page({String? message}) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(ThemeConstants.space6),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
-            ),
+            gradient: ThemeConstants.primaryGradient,
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                color: ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity30),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -429,11 +472,12 @@ class AppLoading {
           ),
         ),
         if (message != null) ...[
-          const SizedBox(height: 20),
+          const SizedBox(height: ThemeConstants.space5),
           Text(
             message,
             style: const TextStyle(
-              fontWeight: FontWeight.w600,
+              fontWeight: ThemeConstants.semiBold,
+              color: ThemeConstants.lightTextPrimary,
             ),
           ),
         ],
@@ -451,42 +495,50 @@ class AppEmptyState {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(ThemeConstants.space4),
           decoration: BoxDecoration(
-            color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+            color: ThemeConstants.error.withValues(alpha: ThemeConstants.opacity10),
             shape: BoxShape.circle,
+            border: Border.all(
+              color: ThemeConstants.error.withValues(alpha: ThemeConstants.opacity30),
+              width: ThemeConstants.borderThin,
+            ),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.error_outline,
-            size: 64,
-            color: Color(0xFFEF4444),
+            size: ThemeConstants.icon3xl,
+            color: ThemeConstants.error,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: ThemeConstants.space4),
         const Text(
           'خطأ في التحميل',
           style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontSize: ThemeConstants.textSizeXl,
+            fontWeight: ThemeConstants.bold,
+            color: ThemeConstants.lightTextPrimary,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: ThemeConstants.space2),
         Text(
           message,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Colors.grey[600],
+          style: const TextStyle(
+            color: ThemeConstants.lightTextSecondary,
           ),
         ),
         if (onRetry != null) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: ThemeConstants.space4),
           ElevatedButton.icon(
             onPressed: onRetry,
             icon: const Icon(Icons.refresh),
             label: const Text('المحاولة مرة أخرى'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6366F1),
+              backgroundColor: ThemeConstants.primary,
               foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              ),
             ),
           ),
         ],
@@ -504,46 +556,49 @@ class AppEmptyState {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          padding: const EdgeInsets.all(16),
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
-            ),
+          padding: const EdgeInsets.all(ThemeConstants.space4),
+          decoration: BoxDecoration(
+            gradient: ThemeConstants.primaryGradient,
             shape: BoxShape.circle,
+            boxShadow: ThemeConstants.shadowMd,
           ),
-          child: const Icon(
-            Icons.location_on,
-            size: 64,
+          child: Icon(
+            ThemeConstants.iconAthkar,
+            size: ThemeConstants.icon3xl,
             color: Colors.white,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: ThemeConstants.space4),
         Text(
           message,
           style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontSize: ThemeConstants.textSizeXl,
+            fontWeight: ThemeConstants.bold,
+            color: ThemeConstants.lightTextPrimary,
           ),
         ),
         if (description != null) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: ThemeConstants.space2),
           Text(
             description,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.grey[600],
+            style: const TextStyle(
+              color: ThemeConstants.lightTextSecondary,
             ),
           ),
         ],
         if (onAction != null && actionText != null) ...[
-          const SizedBox(height: 16),
+          const SizedBox(height: ThemeConstants.space4),
           ElevatedButton.icon(
             onPressed: onAction,
-            icon: const Icon(Icons.my_location),
+            icon: Icon(ThemeConstants.iconAthkar),
             label: Text(actionText),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6366F1),
+              backgroundColor: ThemeConstants.primary,
               foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              ),
             ),
           ),
         ],
