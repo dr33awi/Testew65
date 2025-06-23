@@ -108,14 +108,11 @@ class _CategoryCard extends StatelessWidget {
     
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            gradient.colors[0].withValues(alpha: 0.85),
-            gradient.colors[1].withValues(alpha: 0.75),
-          ],
+          colors: gradient.colors.map((c) => c.withValues(alpha: 0.9)).toList(),
         ),
         boxShadow: [
           BoxShadow(
@@ -126,38 +123,29 @@ class _CategoryCard extends StatelessWidget {
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        child: Stack(
-          children: [
-            // طبقة شفافة
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.1),
-                    ],
-                  ),
+        borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  width: 1,
                 ),
+                borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
               ),
-            ),
-            
-            // المحتوى الرئيسي
-            Material(
-              color: Colors.transparent,
               child: InkWell(
                 onTap: onTap,
-                borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+                borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
                 child: Padding(
                   padding: const EdgeInsets.all(ThemeConstants.space4),
                   child: _buildContent(context),
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -193,10 +181,10 @@ class _CategoryCard extends StatelessWidget {
               fontWeight: ThemeConstants.bold,
               fontSize: 16,
               shadows: [
-                Shadow(
-                  color: Colors.black.withValues(alpha: 0.4),
-                  offset: const Offset(0, 2),
-                  blurRadius: 6,
+                const Shadow(
+                  color: Colors.black26,
+                  offset: Offset(0, 2),
+                  blurRadius: 4,
                 ),
               ],
             ),
@@ -209,10 +197,6 @@ class _CategoryCard extends StatelessWidget {
     );
   }
 }
-
-
-
-
 
 /// نموذج بيانات الفئة
 class CategoryItem {
