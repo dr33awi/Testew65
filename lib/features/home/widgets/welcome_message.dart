@@ -26,15 +26,29 @@ class WelcomeMessage extends StatelessWidget {
     
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: gradient.colors.map((c) => c.withValues(alpha: 0.9)).toList(),
+          colors: gradient.colors,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: gradient.colors.first.withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+            spreadRadius: 0,
+          ),
+        ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Material(
@@ -45,10 +59,10 @@ class WelcomeMessage extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.2),
                   width: 1,
                 ),
-                borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+                borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(ThemeConstants.space6),
+                padding: const EdgeInsets.all(ThemeConstants.space5),
                 child: _buildContent(context, greeting, message, now),
               ),
             ),
@@ -65,20 +79,24 @@ class WelcomeMessage extends StatelessWidget {
       children: [
         // الأيقونة
         Container(
-          width: 80,
-          height: 80,
+          width: 70,
+          height: 70,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.white.withValues(alpha: 0.2),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.3),
+              width: 1,
+            ),
           ),
           child: Icon(
             icon,
             color: Colors.white,
-            size: ThemeConstants.icon2xl,
+            size: ThemeConstants.iconLg,
           ),
         ),
         
-        const SizedBox(width: ThemeConstants.space5),
+        const SizedBox(width: ThemeConstants.space4),
         
         // النصوص
         Expanded(
@@ -88,7 +106,7 @@ class WelcomeMessage extends StatelessWidget {
               // التحية
               Text(
                 greeting,
-                style: context.headlineMedium?.copyWith(
+                style: context.titleLarge?.copyWith(
                   color: Colors.white,
                   fontWeight: ThemeConstants.bold,
                   shadows: const [
@@ -106,14 +124,13 @@ class WelcomeMessage extends StatelessWidget {
               // الرسالة
               Text(
                 message,
-                style: context.bodyLarge?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.95),
-                  height: 1.5,
-                  fontWeight: ThemeConstants.medium,
+                style: context.labelMedium?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  height: 1.4,
                 ),
               ),
               
-              const SizedBox(height: ThemeConstants.space4),
+              const SizedBox(height: ThemeConstants.space3),
               
               // معلومات الوقت والتاريخ
               _buildTimeInfo(context, now),
@@ -130,12 +147,12 @@ class WelcomeMessage extends StatelessWidget {
     
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: ThemeConstants.space4,
-        vertical: ThemeConstants.space2,
+        horizontal: ThemeConstants.space3,
+        vertical: ThemeConstants.space1,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.3),
           width: 1,
@@ -145,17 +162,10 @@ class WelcomeMessage extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // أيقونة الوقت
-          Container(
-            padding: const EdgeInsets.all(ThemeConstants.space1),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.access_time_rounded,
-              color: Colors.white,
-              size: ThemeConstants.iconSm,
-            ),
+          Icon(
+            Icons.access_time_rounded,
+            color: Colors.white.withValues(alpha: 0.8),
+            size: ThemeConstants.iconSm,
           ),
           
           const SizedBox(width: ThemeConstants.space2),
@@ -163,19 +173,31 @@ class WelcomeMessage extends StatelessWidget {
           // الوقت
           Text(
             timeStr,
-            style: context.titleMedium?.copyWith(
+            style: context.labelMedium?.copyWith(
               color: Colors.white,
               fontWeight: ThemeConstants.bold,
             ),
           ),
           
-          const SizedBox(width: ThemeConstants.space3),
+          const SizedBox(width: ThemeConstants.space2),
+          
+          // نقطة فاصلة
+          Container(
+            width: 2,
+            height: 2,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.6),
+              shape: BoxShape.circle,
+            ),
+          ),
+          
+          const SizedBox(width: ThemeConstants.space2),
           
           // التاريخ
           Text(
             dateStr,
-            style: context.labelMedium?.copyWith(
-              color: Colors.white.withValues(alpha: 0.9),
+            style: context.labelSmall?.copyWith(
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
         ],

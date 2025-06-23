@@ -117,11 +117,6 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
 
     return Column(
       children: [
-        // عنوان القسم
-        _buildSectionHeader(),
-        
-        const SizedBox(height: ThemeConstants.space4),
-        
         // بطاقة الاقتباسات
         SizedBox(
           height: 280,
@@ -150,96 +145,55 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
 
   Widget _buildLoadingState() {
     return Container(
-      height: 300,
+      height: 280,
       decoration: BoxDecoration(
-        color: context.cardColor,
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-        boxShadow: ThemeConstants.shadowSm,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(ThemeConstants.space4),
-            decoration: BoxDecoration(
-              gradient: ThemeConstants.primaryGradient,
-              shape: BoxShape.circle,
-            ),
-            child: const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              strokeWidth: 3,
-            ),
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            context.primaryColor.withValues(alpha: 0.1),
+            context.primaryColor.withValues(alpha: 0.05),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: context.primaryColor.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+            spreadRadius: 0,
           ),
-          const SizedBox(height: ThemeConstants.space3),
-          Text(
-            'جاري تحميل الاقتباسات...',
-            style: context.bodyMedium?.copyWith(
-              color: context.textSecondaryColor,
-            ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+            spreadRadius: 0,
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSectionHeader() {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.cardColor,
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-        boxShadow: ThemeConstants.shadowSm,
-      ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(
-                color: context.dividerColor.withValues(alpha: ThemeConstants.opacity20),
-                width: ThemeConstants.borderThin,
+                color: context.primaryColor.withValues(alpha: 0.1),
+                width: 1,
               ),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
             ),
-            padding: const EdgeInsets.all(ThemeConstants.space4),
-            child: Row(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // الأيقونة - استخدام ألوان الثيم
-                Container(
-                  padding: const EdgeInsets.all(ThemeConstants.space2),
-                  decoration: BoxDecoration(
-                    gradient: ThemeConstants.primaryGradient,
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                    boxShadow: ThemeConstants.shadowSm,
-                  ),
-                  child: Icon(
-                    Icons.auto_stories_rounded,
-                    color: Colors.white,
-                    size: ThemeConstants.iconLg,
-                  ),
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(context.primaryColor),
                 ),
-                
-                const SizedBox(width: ThemeConstants.space4),
-                
-                // النصوص
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'الاقتباس اليومي',
-                        style: context.titleLarge?.copyWith(
-                          fontWeight: ThemeConstants.bold,
-                          color: context.textPrimaryColor,
-                        ),
-                      ),
-                      Text(
-                        'آية وحديث وأدعية مختارة',
-                        style: context.labelMedium?.copyWith(
-                          color: context.textSecondaryColor,
-                        ),
-                      ),
-                    ],
+                const SizedBox(height: ThemeConstants.space3),
+                Text(
+                  'جاري تحميل الاقتباسات...',
+                  style: context.bodyMedium?.copyWith(
+                    color: context.textSecondaryColor,
                   ),
                 ),
               ],
@@ -256,15 +210,15 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
       children: List.generate(quotes.length, (index) {
         final isActive = index == _currentPage;
         return AnimatedContainer(
-          duration: ThemeConstants.durationNormal,
-          margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space1),
-          width: isActive ? 32 : 8,
-          height: 8,
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.symmetric(horizontal: 3),
+          width: isActive ? 20 : 6,
+          height: 6,
           decoration: BoxDecoration(
             color: isActive 
                 ? context.primaryColor 
-                : context.primaryColor.withValues(alpha: ThemeConstants.opacity30),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusXs),
+                : context.primaryColor.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(3),
           ),
         );
       }),
@@ -279,41 +233,48 @@ class _QuoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gradient = _getQuoteGradient(quote.type);
+    final gradient = _getQuoteGradient(quote.type, context);
     
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space1),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: gradient.map((c) => c.withValues(alpha: ThemeConstants.opacity90)).toList(),
+          colors: gradient,
         ),
         boxShadow: [
           BoxShadow(
-            color: gradient[0].withValues(alpha: ThemeConstants.opacity30),
+            color: gradient.first.withValues(alpha: 0.3),
             blurRadius: 20,
-            offset: const Offset(0, 8),
+            offset: const Offset(0, 10),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+            spreadRadius: 0,
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
               onTap: () => _showQuoteDetails(context),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
               child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
-                    width: ThemeConstants.borderThin,
+                    color: Colors.white.withValues(alpha: 0.2),
+                    width: 1,
                   ),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
                 ),
                 padding: const EdgeInsets.all(ThemeConstants.space5),
                 child: _buildContent(context),
@@ -325,16 +286,28 @@ class _QuoteCard extends StatelessWidget {
     );
   }
 
-  List<Color> _getQuoteGradient(String type) {
+  List<Color> _getQuoteGradient(String type, BuildContext context) {
     switch (type) {
       case 'verse':
-        return [ThemeConstants.primary, ThemeConstants.primaryLight];
+        return [
+          ThemeConstants.success.withValues(alpha: 0.9),
+          ThemeConstants.successLight.withValues(alpha: 0.7),
+        ];
       case 'hadith':
-        return [ThemeConstants.success, ThemeConstants.successLight];
+        return [
+          ThemeConstants.accent.withValues(alpha: 0.9),
+          ThemeConstants.accentLight.withValues(alpha: 0.7),
+        ];
       case 'dua':
-        return [ThemeConstants.accent, ThemeConstants.accentLight];
+        return [
+          ThemeConstants.tertiary.withValues(alpha: 0.9),
+          ThemeConstants.tertiaryLight.withValues(alpha: 0.7),
+        ];
       default:
-        return [ThemeConstants.primary, ThemeConstants.primaryLight];
+        return [
+          ThemeConstants.primary.withValues(alpha: 0.9),
+          ThemeConstants.primaryLight.withValues(alpha: 0.7),
+        ];
     }
   }
 
@@ -345,23 +318,23 @@ class _QuoteCard extends StatelessWidget {
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(ThemeConstants.space2),
+              padding: const EdgeInsets.all(ThemeConstants.space3),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: ThemeConstants.opacity30),
-                  width: ThemeConstants.borderThin,
+                  color: Colors.white.withValues(alpha: 0.3),
+                  width: 1,
                 ),
               ),
               child: Icon(
                 _getQuoteIcon(),
                 color: Colors.white,
-                size: ThemeConstants.iconMd,
+                size: ThemeConstants.iconLg,
               ),
             ),
             
-            const SizedBox(width: ThemeConstants.space3),
+            const SizedBox(width: ThemeConstants.space4),
             
             Expanded(
               child: Column(
@@ -369,7 +342,7 @@ class _QuoteCard extends StatelessWidget {
                 children: [
                   Text(
                     _getQuoteTitle(),
-                    style: context.titleMedium?.copyWith(
+                    style: context.titleLarge?.copyWith(
                       color: Colors.white,
                       fontWeight: ThemeConstants.bold,
                     ),
@@ -377,7 +350,7 @@ class _QuoteCard extends StatelessWidget {
                   Text(
                     _getQuoteSubtitle(),
                     style: context.labelMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: ThemeConstants.opacity80),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
@@ -386,88 +359,69 @@ class _QuoteCard extends StatelessWidget {
           ],
         ),
         
-        const Spacer(),
+        const SizedBox(height: ThemeConstants.space4),
         
         // النص الرئيسي
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(ThemeConstants.space4),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: ThemeConstants.opacity30),
-              width: ThemeConstants.borderThin,
+        Expanded(
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(ThemeConstants.space4),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.3),
+                width: 1,
+              ),
             ),
-          ),
-          child: Column(
-            children: [
-              // علامة اقتباس افتتاحية
-              const Align(
-                alignment: Alignment.topRight,
-                child: Text(
-                  '"',
-                  style: TextStyle(
-                    fontSize: ThemeConstants.textSize2xl,
-                    color: Colors.white60,
-                    height: 0.8,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // النص
+                Text(
+                  quote.content,
+                  textAlign: TextAlign.center,
+                  style: context.bodyLarge?.copyWith(
+                    color: Colors.white,
+                    fontSize: 15,
+                    height: 1.8,
+                    fontWeight: ThemeConstants.medium,
                   ),
                 ),
-              ),
-              
-              const SizedBox(height: ThemeConstants.space2),
-              
-              // النص
-              Text(
-                quote.content,
-                textAlign: TextAlign.center,
-                style: context.bodyLarge?.copyWith(
-                  color: Colors.white,
-                  fontSize: ThemeConstants.textSizeLg,
-                  height: 1.8,
-                  fontWeight: ThemeConstants.medium,
-                  fontFamily: quote.type == 'verse' 
-                      ? ThemeConstants.fontFamilyQuran 
-                      : ThemeConstants.fontFamilyArabic,
-                ),
-              ),
-              
-              const SizedBox(height: ThemeConstants.space2),
-              
-              // علامة اقتباس ختامية
-              const Align(
-                alignment: Alignment.bottomLeft,
-                child: Text(
-                  '"',
-                  style: TextStyle(
-                    fontSize: ThemeConstants.textSize2xl,
-                    color: Colors.white60,
-                    height: 0.8,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         
-        const Spacer(),
+        const SizedBox(height: ThemeConstants.space3),
         
         // المصدر
         Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: ThemeConstants.space4,
-            vertical: ThemeConstants.space2,
+            horizontal: ThemeConstants.space3,
+            vertical: ThemeConstants.space1,
           ),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: ThemeConstants.opacity20),
+            color: Colors.black.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
           ),
-          child: Text(
-            quote.source,
-            style: context.labelMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: ThemeConstants.semiBold,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.book_rounded,
+                color: Colors.white.withValues(alpha: 0.8),
+                size: ThemeConstants.iconSm,
+              ),
+              const SizedBox(width: ThemeConstants.space1),
+              Text(
+                quote.source,
+                style: context.labelMedium?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontWeight: ThemeConstants.medium,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -554,168 +508,205 @@ class _QuoteDetailsModal extends StatelessWidget {
         maxHeight: MediaQuery.of(context).size.height * 0.85,
       ),
       decoration: BoxDecoration(
-        color: context.cardColor,
         borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(ThemeConstants.radiusXl),
+          top: Radius.circular(ThemeConstants.radius2xl),
         ),
-        boxShadow: ThemeConstants.shadowXl,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // مقبض السحب
-          Container(
-            margin: const EdgeInsets.only(top: ThemeConstants.space2),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: context.dividerColor,
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusXs),
-            ),
-          ),
-          
-          // المحتوى
-          Flexible(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(ThemeConstants.space5),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // العنوان
-                  Text(
-                    _getQuoteTitle(),
-                    style: context.headlineSmall?.copyWith(
-                      fontWeight: ThemeConstants.semiBold,
-                      color: context.textPrimaryColor,
-                    ),
-                  ),
-                  
-                  const SizedBox(height: ThemeConstants.space4),
-                  
-                  // عرض الموضوع إذا كان متوفراً
-                  if (quote.theme != null) ...[
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: ThemeConstants.space3,
-                          vertical: ThemeConstants.space1,
-                        ),
-                        decoration: BoxDecoration(
-                          color: context.primaryColor.withValues(alpha: ThemeConstants.opacity10),
-                          borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                          border: Border.all(
-                            color: context.primaryColor.withValues(alpha: ThemeConstants.opacity30),
-                            width: ThemeConstants.borderThin,
-                          ),
-                        ),
-                        child: Text(
-                          quote.theme!,
-                          style: context.labelSmall?.copyWith(
-                            color: context.primaryColor,
-                            fontWeight: ThemeConstants.medium,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: ThemeConstants.space4),
-                  ],
-                  
-                  // النص الكامل
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(ThemeConstants.space5),
-                    decoration: BoxDecoration(
-                      color: context.surfaceColor,
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                      border: Border.all(
-                        color: context.dividerColor.withValues(alpha: ThemeConstants.opacity50),
-                        width: ThemeConstants.borderThin,
-                      ),
-                      boxShadow: ThemeConstants.shadowSm,
-                    ),
-                    child: Text(
-                      quote.content,
-                      style: context.bodyLarge?.copyWith(
-                        height: 2.0,
-                        fontSize: ThemeConstants.textSizeXl,
-                        fontFamily: quote.type == 'verse' 
-                            ? ThemeConstants.fontFamilyQuran 
-                            : ThemeConstants.fontFamilyArabic,
-                        color: context.textPrimaryColor,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  
-                  const SizedBox(height: ThemeConstants.space4),
-                  
-                  // المصدر
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: ThemeConstants.space4,
-                        vertical: ThemeConstants.space2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: context.primaryColor.withValues(alpha: ThemeConstants.opacity10),
-                        borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                      ),
-                      child: Text(
-                        quote.source,
-                        style: context.titleSmall?.copyWith(
-                          color: context.primaryColor,
-                          fontWeight: ThemeConstants.semiBold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: ThemeConstants.space6),
-                  
-                  // أزرار الإجراءات
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => _copyQuote(context),
-                          icon: const Icon(Icons.copy_rounded),
-                          label: const Text('نسخ النص'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: context.primaryColor,
-                            side: BorderSide(
-                              color: context.primaryColor,
-                              width: ThemeConstants.borderMedium,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                            ),
-                          ),
-                        ),
-                      ),
-                      
-                      const SizedBox(width: ThemeConstants.space3),
-                      
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _shareQuote(context),
-                          icon: const Icon(Icons.share_rounded),
-                          label: const Text('مشاركة'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: context.primaryColor,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            context.cardColor,
+            context.cardColor.withValues(alpha: 0.95),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 30,
+            offset: const Offset(0, -10),
+            spreadRadius: 0,
           ),
         ],
+      ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(ThemeConstants.radius2xl),
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: context.primaryColor.withValues(alpha: 0.1),
+                width: 1,
+              ),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(ThemeConstants.radius2xl),
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // مقبض السحب
+                Container(
+                  margin: const EdgeInsets.only(top: ThemeConstants.space3),
+                  width: 50,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: context.dividerColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                
+                // المحتوى
+                Flexible(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(ThemeConstants.space5),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // العنوان
+                        Text(
+                          _getQuoteTitle(),
+                          style: context.headlineSmall?.copyWith(
+                            fontWeight: ThemeConstants.bold,
+                            color: context.textPrimaryColor,
+                          ),
+                        ),
+                        
+                        const SizedBox(height: ThemeConstants.space4),
+                        
+                        // عرض الموضوع إذا كان متوفراً
+                        if (quote.theme != null) ...[
+                          Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: ThemeConstants.space4,
+                                vertical: ThemeConstants.space2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: context.primaryColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                                border: Border.all(
+                                  color: context.primaryColor.withValues(alpha: 0.2),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                quote.theme!,
+                                style: context.labelMedium?.copyWith(
+                                  color: context.primaryColor,
+                                  fontWeight: ThemeConstants.medium,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: ThemeConstants.space5),
+                        ],
+                        
+                        // النص الكامل
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(ThemeConstants.space5),
+                          decoration: BoxDecoration(
+                            color: context.surfaceColor,
+                            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                            border: Border.all(
+                              color: context.dividerColor.withValues(alpha: 0.3),
+                              width: 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                                spreadRadius: 0,
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            quote.content,
+                            style: context.bodyLarge?.copyWith(
+                              height: 2.0,
+                              fontSize: 18,
+                              color: context.textPrimaryColor,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        
+                        const SizedBox(height: ThemeConstants.space4),
+                        
+                        // المصدر
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: ThemeConstants.space4,
+                              vertical: ThemeConstants.space2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: context.primaryColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                            ),
+                            child: Text(
+                              quote.source,
+                              style: context.titleSmall?.copyWith(
+                                color: context.primaryColor,
+                                fontWeight: ThemeConstants.semiBold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        
+                        const SizedBox(height: ThemeConstants.space6),
+                        
+                        // أزرار الإجراءات
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () => _copyQuote(context),
+                                icon: const Icon(Icons.copy_rounded),
+                                label: const Text('نسخ النص'),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: context.primaryColor,
+                                  side: BorderSide(
+                                    color: context.primaryColor,
+                                    width: 1,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            
+                            const SizedBox(width: ThemeConstants.space3),
+                            
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                onPressed: () => _shareQuote(context),
+                                icon: const Icon(Icons.share_rounded),
+                                label: const Text('مشاركة'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: context.primaryColor,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -742,9 +733,9 @@ class _QuoteDetailsModal extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('تم نسخ النص بنجاح'),
-          backgroundColor: ThemeConstants.success,
+          backgroundColor: Colors.green,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
           ),
         ),
       );
@@ -766,9 +757,9 @@ class _QuoteDetailsModal extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('فشل في مشاركة النص'),
-            backgroundColor: ThemeConstants.error,
+            backgroundColor: Colors.red,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
             ),
           ),
         );
