@@ -16,19 +16,20 @@ class ThemeConstants {
   static const Color accentLight = Color(0xFFDAA520); // ذهبي فاتح
   static const Color accentDark = Color(0xFF996515); // ذهبي داكن
   
-  // ===== اللون الثالث =====
-  static const Color tertiary = Color(0xFF8B6F47); // بني دافئ
+  // ===== اللون الثالث - البني المحدث =====
+  static const Color tertiary = Color(0xFF8B6F47); // بني دافئ - اللون الأساسي
   static const Color tertiaryLight = Color(0xFFA68B5B); // بني فاتح
   static const Color tertiaryDark = Color(0xFF6B5637); // بني داكن
+  static const Color tertiarySoft = Color(0xFFB8A082); // بني ناعم - إضافة جديدة
 
   // ===== الألوان الدلالية =====
   static const Color success = Color(0xFF5D7052); // نفس اللون الأساسي للتناسق
-  static const Color successLight = Color(0xFF7A8B6F); // أخضر زيتي فاتح للنجاح - إضافة مطلوبة
+  static const Color successLight = Color(0xFF7A8B6F); // أخضر زيتي فاتح للنجاح
   static const Color error = Color(0xFFB85450); // أحمر مخملي ناعم
   static const Color warning = Color(0xFFD4A574); // برتقالي دافئ
-  static const Color warningLight = Color(0xFFE8C899); // برتقالي فاتح للتحذير - إضافة مطلوبة
+  static const Color warningLight = Color(0xFFE8C899); // برتقالي فاتح للتحذير
   static const Color info = Color(0xFF6B8E9F); // أزرق رمادي
-  static const Color infoLight = Color(0xFF8FA9B8); // أزرق رمادي فاتح للمعلومات - إضافة مطلوبة
+  static const Color infoLight = Color(0xFF8FA9B8); // أزرق رمادي فاتح للمعلومات
 
   // ===== ألوان الوضع الفاتح =====
   static const Color lightBackground = Color(0xFFFAFAF8); // خلفية دافئة
@@ -134,7 +135,7 @@ class ThemeConstants {
   static const double height3xl = 72.0;
 
   // ===== مكونات خاصة =====
-  static const double appBarHeight = 64.0; // زيادة لإضافة شعار
+  static const double appBarHeight = 64.0;
   static const double bottomNavHeight = 64.0;
   static const double buttonHeight = 52.0;
   static const double inputHeight = 56.0;
@@ -192,6 +193,7 @@ class ThemeConstants {
     end: Alignment.bottomRight,
   );
 
+  // تحديث التدرج البني ليكون أكثر تناسقاً
   static const LinearGradient tertiaryGradient = LinearGradient(
     colors: [tertiaryLight, tertiary],
     begin: Alignment.topLeft,
@@ -217,35 +219,43 @@ class ThemeConstants {
     end: Alignment.bottomCenter,
   );
 
-  // تدرجات الصلاة بألوان متناسقة مع الهوية البصرية
+  // ===== التدرجات المحدثة للصلوات =====
   static const LinearGradient fajrGradient = LinearGradient(
-    colors: [Color(0xFF445A3B), Color(0xFF5D7052)], // أخضر زيتي داكن
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
+    colors: [Color(0xFF5D7052), Color(0xFF445A3B)], // أخضر زيتي
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 
   static const LinearGradient dhuhrGradient = LinearGradient(
     colors: [Color(0xFFDAA520), Color(0xFFB8860B)], // ذهبي
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 
   static const LinearGradient asrGradient = LinearGradient(
     colors: [Color(0xFF8FA584), Color(0xFF7A8B6F)], // أخضر زيتي فاتح
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 
+  // التدرج البني المحدث والموحد
   static const LinearGradient maghribGradient = LinearGradient(
-    colors: [Color(0xFFA68B5B), Color(0xFF8B6F47)], // بني دافئ
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
+    colors: [Color(0xFFA68B5B), Color(0xFF8B6F47)], // بني دافئ متدرج
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 
   static const LinearGradient ishaGradient = LinearGradient(
-    colors: [Color(0xFF2D352D), Color(0xFF1A1F1A)], // داكن أنيق
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
+    colors: [Color(0xFF3A453A), Color(0xFF2D352D)], // داكن أنيق
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  // تدرج إضافي للشروق
+  static const LinearGradient sunriseGradient = LinearGradient(
+    colors: [Color(0xFFE8C899), Color(0xFFDAA520)], // ذهبي فاتح
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 
   // ===== الظلال الجاهزة المحسنة =====
@@ -291,19 +301,16 @@ class ThemeConstants {
   ];
 
   // ===== الأيقونات =====
-  // أيقونات الصلاة
   static const IconData iconPrayer = Icons.mosque;
   static const IconData iconPrayerTime = Icons.access_time;
   static const IconData iconQibla = Icons.explore;
   static const IconData iconAdhan = Icons.volume_up;
 
-  // أيقونات الأذكار
   static const IconData iconAthkar = Icons.menu_book;
   static const IconData iconMorningAthkar = Icons.wb_sunny;
   static const IconData iconEveningAthkar = Icons.nights_stay;
   static const IconData iconSleepAthkar = Icons.bedtime;
 
-  // أيقونات عامة
   static const IconData iconFavorite = Icons.favorite;
   static const IconData iconFavoriteOutline = Icons.favorite_border;
   static const IconData iconShare = Icons.share;
@@ -369,7 +376,7 @@ class ThemeConstants {
         : lightDivider;
   }
 
-  /// الحصول على تدرج حسب وقت الصلاة
+  /// الحصول على تدرج حسب وقت الصلاة - محدث
   static LinearGradient prayerGradient(String prayerName) {
     switch (prayerName.toLowerCase()) {
       case 'fajr':
@@ -383,21 +390,24 @@ class ThemeConstants {
         return asrGradient;
       case 'maghrib':
       case 'المغرب':
-        return maghribGradient;
+        return maghribGradient; // التدرج البني الموحد
       case 'isha':
       case 'العشاء':
         return ishaGradient;
+      case 'sunrise':
+      case 'الشروق':
+        return sunriseGradient;
       default:
         return primaryGradient;
     }
   }
 
-  /// الحصول على لون حسب اسم الصلاة
+  /// الحصول على لون حسب اسم الصلاة - محدث
   static Color getPrayerColor(String name) {
     switch (name.toLowerCase()) {
       case 'fajr':
       case 'الفجر':
-        return const Color(0xFF445A3B); // أخضر زيتي داكن
+        return const Color(0xFF5D7052); // أخضر زيتي
       case 'dhuhr':
       case 'الظهر':
         return const Color(0xFFB8860B); // ذهبي
@@ -406,10 +416,10 @@ class ThemeConstants {
         return const Color(0xFF7A8B6F); // أخضر زيتي فاتح
       case 'maghrib':
       case 'المغرب':
-        return const Color(0xFF8B6F47); // بني دافئ
+        return tertiary; // البني الموحد
       case 'isha':
       case 'العشاء':
-        return const Color(0xFF2D352D); // داكن أنيق
+        return const Color(0xFF3A453A); // داكن أنيق
       case 'sunrise':
       case 'الشروق':
         return const Color(0xFFDAA520); // ذهبي فاتح
@@ -473,7 +483,7 @@ class ThemeConstants {
     final hour = DateTime.now().hour;
     
     if (hour < 5) {
-      return LinearGradient(
+      return const LinearGradient(
         colors: [darkCard, darkBackground],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -481,7 +491,7 @@ class ThemeConstants {
     } else if (hour < 8) {
       return fajrGradient;
     } else if (hour < 12) {
-      return LinearGradient(
+      return const LinearGradient(
         colors: [primaryLight, primarySoft],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -491,7 +501,7 @@ class ThemeConstants {
     } else if (hour < 17) {
       return asrGradient;
     } else if (hour < 20) {
-      return maghribGradient;
+      return maghribGradient; // التدرج البني الموحد
     } else {
       return ishaGradient;
     }

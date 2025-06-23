@@ -268,6 +268,11 @@ class _QuoteCard extends StatelessWidget {
             child: InkWell(
               onTap: () => _showQuoteDetails(context),
               borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+              // تخصيص لون الضغط ليكون نفس لون الكارد
+              splashColor: gradient.first.withValues(alpha: 0.3),
+              highlightColor: gradient.first.withValues(alpha: 0.2),
+              hoverColor: gradient.first.withValues(alpha: 0.1),
+              focusColor: gradient.first.withValues(alpha: 0.2),
               child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(
@@ -503,6 +508,8 @@ class _QuoteDetailsModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final gradient = _getQuoteGradient(quote.type, context);
+    
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.85,
@@ -515,13 +522,13 @@ class _QuoteDetailsModal extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            context.cardColor,
-            context.cardColor.withValues(alpha: 0.95),
+            gradient.first.withValues(alpha: 0.95),
+            gradient.last.withValues(alpha: 0.9),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: gradient.first.withValues(alpha: 0.4),
             blurRadius: 30,
             offset: const Offset(0, -10),
             spreadRadius: 0,
@@ -537,7 +544,7 @@ class _QuoteDetailsModal extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(
-                color: context.primaryColor.withValues(alpha: 0.1),
+                color: Colors.white.withValues(alpha: 0.3),
                 width: 1,
               ),
               borderRadius: const BorderRadius.vertical(
@@ -553,7 +560,7 @@ class _QuoteDetailsModal extends StatelessWidget {
                   width: 50,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: context.dividerColor,
+                    color: Colors.white.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -570,7 +577,7 @@ class _QuoteDetailsModal extends StatelessWidget {
                           _getQuoteTitle(),
                           style: context.headlineSmall?.copyWith(
                             fontWeight: ThemeConstants.bold,
-                            color: context.textPrimaryColor,
+                            color: Colors.white,
                           ),
                         ),
                         
@@ -585,17 +592,17 @@ class _QuoteDetailsModal extends StatelessWidget {
                                 vertical: ThemeConstants.space2,
                               ),
                               decoration: BoxDecoration(
-                                color: context.primaryColor.withValues(alpha: 0.1),
+                                color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
                                 border: Border.all(
-                                  color: context.primaryColor.withValues(alpha: 0.2),
+                                  color: Colors.white.withValues(alpha: 0.4),
                                   width: 1,
                                 ),
                               ),
                               child: Text(
                                 quote.theme!,
                                 style: context.labelMedium?.copyWith(
-                                  color: context.primaryColor,
+                                  color: Colors.white,
                                   fontWeight: ThemeConstants.medium,
                                 ),
                               ),
@@ -609,15 +616,15 @@ class _QuoteDetailsModal extends StatelessWidget {
                           width: double.infinity,
                           padding: const EdgeInsets.all(ThemeConstants.space5),
                           decoration: BoxDecoration(
-                            color: context.surfaceColor,
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
                             border: Border.all(
-                              color: context.dividerColor.withValues(alpha: 0.3),
+                              color: Colors.white.withValues(alpha: 0.3),
                               width: 1,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                                 spreadRadius: 0,
@@ -629,7 +636,7 @@ class _QuoteDetailsModal extends StatelessWidget {
                             style: context.bodyLarge?.copyWith(
                               height: 2.0,
                               fontSize: 18,
-                              color: context.textPrimaryColor,
+                              color: Colors.white,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -645,13 +652,13 @@ class _QuoteDetailsModal extends StatelessWidget {
                               vertical: ThemeConstants.space2,
                             ),
                             decoration: BoxDecoration(
-                              color: context.primaryColor.withValues(alpha: 0.1),
+                              color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
                             ),
                             child: Text(
                               quote.source,
                               style: context.titleSmall?.copyWith(
-                                color: context.primaryColor,
+                                color: Colors.white,
                                 fontWeight: ThemeConstants.semiBold,
                               ),
                             ),
@@ -669,9 +676,9 @@ class _QuoteDetailsModal extends StatelessWidget {
                                 icon: const Icon(Icons.copy_rounded),
                                 label: const Text('نسخ النص'),
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: context.primaryColor,
+                                  foregroundColor: Colors.white,
                                   side: BorderSide(
-                                    color: context.primaryColor,
+                                    color: Colors.white,
                                     width: 1,
                                   ),
                                   shape: RoundedRectangleBorder(
@@ -689,8 +696,8 @@ class _QuoteDetailsModal extends StatelessWidget {
                                 icon: const Icon(Icons.share_rounded),
                                 label: const Text('مشاركة'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: context.primaryColor,
-                                  foregroundColor: Colors.white,
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: gradient.first,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
                                   ),
@@ -709,6 +716,31 @@ class _QuoteDetailsModal extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  List<Color> _getQuoteGradient(String type, BuildContext context) {
+    switch (type) {
+      case 'verse':
+        return [
+          ThemeConstants.success.withValues(alpha: 0.9),
+          ThemeConstants.successLight.withValues(alpha: 0.7),
+        ];
+      case 'hadith':
+        return [
+          ThemeConstants.accent.withValues(alpha: 0.9),
+          ThemeConstants.accentLight.withValues(alpha: 0.7),
+        ];
+      case 'dua':
+        return [
+          ThemeConstants.tertiary.withValues(alpha: 0.9),
+          ThemeConstants.tertiaryLight.withValues(alpha: 0.7),
+        ];
+      default:
+        return [
+          ThemeConstants.primary.withValues(alpha: 0.9),
+          ThemeConstants.primaryLight.withValues(alpha: 0.7),
+        ];
+    }
   }
 
   String _getQuoteTitle() {
