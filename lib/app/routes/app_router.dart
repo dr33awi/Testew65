@@ -8,7 +8,7 @@ import '../../features/prayer_times/screens/prayer_settings_screen.dart';
 import '../../features/prayer_times/screens/prayer_notifications_settings_screen.dart';
 import '../../features/qibla/screens/qibla_screen.dart';
 import '../../features/athkar/screens/athkar_categories_screen.dart';
-import '../../features/athkar/screens/athkar_details_screen.dart';
+import '../../features/athkar/screens/athkar_details_screen.dart' hide CustomAppBar;
 import '../../features/athkar/screens/notification_settings_screen.dart';
 import '../../features/tasbih/screens/tasbih_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';

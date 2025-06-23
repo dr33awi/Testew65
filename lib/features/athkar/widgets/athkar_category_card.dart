@@ -60,7 +60,6 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
     final isCompleted = widget.progress >= 100;
     final categoryColor = CategoryUtils.getCategoryThemeColor(widget.category.id);
     final categoryIcon = CategoryUtils.getCategoryIcon(widget.category.id);
-    final description = CategoryUtils.getCategoryDescription(widget.category.id);
     
     return AnimatedPress(
       onTap: () {
@@ -103,7 +102,6 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
                     child: _buildCardContent(
                       context,
                       categoryIcon,
-                      description,
                       isCompleted,
                     ),
                   ),
@@ -138,7 +136,6 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
   Widget _buildCardContent(
     BuildContext context,
     IconData categoryIcon,
-    String description,
     bool isCompleted,
   ) {
     return Column(
@@ -146,8 +143,8 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
       children: [
         // الأيقونة
         Container(
-          width: 60,
-          height: 60,
+          width: 64,
+          height: 64,
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.25),
             borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
@@ -159,7 +156,7 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
           child: Icon(
             categoryIcon,
             color: Colors.white,
-            size: ThemeConstants.iconLg,
+            size: ThemeConstants.icon2xl,
           ),
         ),
         
@@ -175,98 +172,85 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
               style: context.titleLarge?.copyWith(
                 color: Colors.white,
                 fontWeight: ThemeConstants.bold,
-                fontSize: 18,
+                fontSize: 20,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             
-            ThemeConstants.space1.h,
+            ThemeConstants.space4.h,
             
-            // الوصف
-            Text(
-              description,
-              style: context.bodySmall?.copyWith(
-                color: Colors.white.withValues(alpha: 0.85),
-                fontSize: 12,
-                height: 1.4,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            
-            ThemeConstants.space3.h,
-            
-            // المعلومات السفلية
+            // المعلومات السفلية (بدون أيقونة السهم)
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // عدد الأذكار
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: ThemeConstants.space3,
-                    vertical: ThemeConstants.space2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.format_list_numbered_rounded,
-                        color: Colors.white.withValues(alpha: 0.9),
-                        size: ThemeConstants.iconXs,
-                      ),
-                      ThemeConstants.space1.w,
-                      Text(
-                        '${widget.category.athkar.length} ذكر',
-                        style: context.labelSmall?.copyWith(
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: ThemeConstants.space3,
+                      vertical: ThemeConstants.space2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.format_list_numbered_rounded,
                           color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: 11,
-                          fontWeight: ThemeConstants.medium,
+                          size: ThemeConstants.iconSm,
                         ),
-                      ),
-                    ],
+                        ThemeConstants.space1.w,
+                        Text(
+                          '${widget.category.athkar.length} ذكر',
+                          style: context.labelMedium?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 12,
+                            fontWeight: ThemeConstants.medium,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 
-                // أيقونة الحالة
+                ThemeConstants.space3.w,
+                
+                // حالة الإكمال فقط
                 if (isCompleted)
                   Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.3),
-                        width: 2,
-                      ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: ThemeConstants.space3,
+                      vertical: ThemeConstants.space2,
                     ),
-                    child: const Icon(
-                      Icons.check_rounded,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  )
-                else
-                  Container(
-                    width: 36,
-                    height: 36,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white.withValues(alpha: 0.4),
                         width: 1,
                       ),
                     ),
-                    child: Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: Colors.white.withValues(alpha: 0.8),
-                      size: 16,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.check_circle_rounded,
+                          color: Colors.white,
+                          size: ThemeConstants.iconSm,
+                        ),
+                        ThemeConstants.space1.w,
+                        Text(
+                          'مكتمل',
+                          style: context.labelMedium?.copyWith(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: ThemeConstants.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
               ],

@@ -186,6 +186,17 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                   controller: _scrollController,
                   physics: const BouncingScrollPhysics(),
                   slivers: [
+                    // رسالة الترحيب
+                    if (_dailyTimes != null) ...[
+                      SliverToBoxAdapter(
+                        child: _buildWelcomeCard(context),
+                      ),
+                      
+                      const SliverToBoxAdapter(
+                        child: SizedBox(height: ThemeConstants.space4),
+                      ),
+                    ],
+                    
                     // المحتوى الرئيسي
                     if (_isLoading && _dailyTimes == null)
                       _buildLoadingState()
@@ -336,6 +347,163 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildWelcomeCard(BuildContext context) {
+    final nextPrayer = _nextPrayer ?? _dailyTimes?.nextPrayer;
+    final prayerGradient = nextPrayer != null 
+        ? ThemeConstants.prayerGradient(nextPrayer.type.name)
+        : ThemeConstants.primaryGradient;
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        gradient: prayerGradient,
+        boxShadow: [
+          BoxShadow(
+            color: (nextPrayer != null 
+                ? ThemeConstants.getPrayerColor(nextPrayer.type.name)
+                : ThemeConstants.primary).withValues(alpha: ThemeConstants.opacity30),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.all(ThemeConstants.space5),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
+                width: ThemeConstants.borderThin,
+              ),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+            ),
+            child: Row(
+              children: [
+                // أيقونة الصلاة مع خلفية دائرية
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: ThemeConstants.opacity30),
+                      width: ThemeConstants.borderThin,
+                    ),
+                  ),
+                  child: Icon(
+                    nextPrayer != null 
+                        ? ThemeConstants.getPrayerIcon(nextPrayer.type.name)
+                        : ThemeConstants.iconPrayerTime,
+                    color: Colors.white,
+                    size: ThemeConstants.icon2xl,
+                  ),
+                ),
+                
+                const SizedBox(width: ThemeConstants.space4),
+                
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        nextPrayer != null 
+                            ? 'الصلاة القادمة: ${nextPrayer.nameAr}'
+                            : 'مواقيت الصلاة',
+                        style: context.headlineMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: ThemeConstants.bold,
+                        ),
+                      ),
+                      
+                      const SizedBox(height: ThemeConstants.space2),
+                      
+                      if (nextPrayer != null) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: ThemeConstants.space3,
+                            vertical: ThemeConstants.space1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
+                            borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: ThemeConstants.opacity30),
+                              width: ThemeConstants.borderThin,
+                            ),
+                          ),
+                          child: Text(
+                            'الوقت: ${_formatTime(nextPrayer.time)}',
+                            style: context.bodyLarge?.copyWith(
+                              color: Colors.white,
+                              fontWeight: ThemeConstants.semiBold,
+                            ),
+                          ),
+                        ),
+                        
+                        const SizedBox(height: ThemeConstants.space2),
+                        
+                        StreamBuilder(
+                          stream: Stream.periodic(const Duration(seconds: 1)),
+                          builder: (context, snapshot) {
+                            return Text(
+                              nextPrayer.remainingTimeText,
+                              style: context.bodyMedium?.copyWith(
+                                color: Colors.white.withValues(alpha: ThemeConstants.opacity90),
+                                fontWeight: ThemeConstants.medium,
+                              ),
+                            );
+                          },
+                        ),
+                      ] else ...[
+                        Text(
+                          'وَأَقِمِ الصَّلَاةَ لِذِكْرِي',
+                          style: context.bodyMedium?.copyWith(
+                            color: Colors.white.withValues(alpha: ThemeConstants.opacity90),
+                            fontFamily: ThemeConstants.fontFamilyQuran,
+                            height: 1.8,
+                          ),
+                        ),
+                        
+                        const SizedBox(height: ThemeConstants.space2),
+                        
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: ThemeConstants.space3,
+                            vertical: ThemeConstants.space1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: ThemeConstants.opacity20),
+                            borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: ThemeConstants.opacity30),
+                              width: ThemeConstants.borderThin,
+                            ),
+                          ),
+                          child: Text(
+                            'حافظ على الصلاة في أوقاتها',
+                            style: context.bodySmall?.copyWith(
+                              color: Colors.white.withValues(alpha: ThemeConstants.opacity90),
+                              fontWeight: ThemeConstants.medium,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

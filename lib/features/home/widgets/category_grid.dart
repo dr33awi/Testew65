@@ -112,100 +112,107 @@ class _CategoryCard extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: gradient.colors,
+          colors: [
+            gradient.colors[0].withValues(alpha: 0.85),
+            gradient.colors[1].withValues(alpha: 0.75),
+          ],
         ),
         boxShadow: [
           BoxShadow(
-            color: gradient.colors.first.withValues(alpha: 0.3),
+            color: gradient.colors[0].withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
-            spreadRadius: 0,
-          ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-            spreadRadius: 0,
           ),
         ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        child: Stack(
+          children: [
+            // طبقة شفافة
+            Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.1),
+                    ],
                   ),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
                 ),
+              ),
+            ),
+            
+            // المحتوى الرئيسي
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
                 child: Padding(
                   padding: const EdgeInsets.all(ThemeConstants.space4),
                   child: _buildContent(context),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildContent(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // الأيقونة مع دائرة
-        Container(
-          width: 65,
-          height: 65,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withValues(alpha: 0.2),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
-              width: 1,
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // الأيقونة مع دائرة
+          Container(
+            width: 70,
+            height: 70,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.2),
+            ),
+            child: Icon(
+              category.icon,
+              color: Colors.white,
+              size: 42,
             ),
           ),
-          child: Icon(
-            category.icon,
-            color: Colors.white,
-            size: ThemeConstants.iconLg,
+          
+          const SizedBox(height: ThemeConstants.space3),
+          
+          // النص الرئيسي
+          Text(
+            category.title,
+            style: context.titleMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: ThemeConstants.bold,
+              fontSize: 16,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  offset: const Offset(0, 2),
+                  blurRadius: 6,
+                ),
+              ],
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-        ),
-        
-        const SizedBox(height: ThemeConstants.space3),
-        
-        // النص الرئيسي
-        Text(
-          category.title,
-          style: context.titleMedium?.copyWith(
-            color: Colors.white,
-            fontWeight: ThemeConstants.bold,
-            fontSize: 15,
-            shadows: [
-              Shadow(
-                color: Colors.black.withValues(alpha: 0.3),
-                offset: const Offset(0, 1),
-                blurRadius: 3,
-              ),
-            ],
-          ),
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
+
+
+
+
 
 /// نموذج بيانات الفئة
 class CategoryItem {
