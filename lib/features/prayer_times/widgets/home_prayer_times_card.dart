@@ -1,4 +1,4 @@
-// lib/features/prayer_times/widgets/home_prayer_times_card.dart
+// lib/features/prayer_times/widgets/home_prayer_times_card.dart (محدث بالنظام الموحد)
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
@@ -168,16 +168,13 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
           _isLoadingLocation = false;
         });
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('فشل في تحديث الموقع. تحقق من إعدادات الموقع.'),
-            // ✅ استخدام context بدلاً من ThemeConstants
-            backgroundColor: context.errorColor,
-            action: SnackBarAction(
-              label: 'إعادة المحاولة',
-              textColor: Colors.white,
-              onPressed: _updatePrayerTimes,
-            ),
+        AppSnackBar.showError(
+          context: context,
+          message: 'فشل في تحديث الموقع. تحقق من إعدادات الموقع.',
+          action: SnackBarAction(
+            label: 'إعادة المحاولة',
+            textColor: Colors.white,
+            onPressed: _updatePrayerTimes,
           ),
         );
       }
@@ -212,167 +209,57 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       return _buildEmptyState();
     }
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        // ✅ استخدام context بدلاً من _getPrayerGradient
-        gradient: context.prayerGradient(nextPrayer.nameAr),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: _navigateToPrayerTimes,
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-              child: Container(
-                padding: const EdgeInsets.all(ThemeConstants.space4),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1,
-                  ),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                ),
-                child: Column(
-                  children: [
-                    _buildMainContent(context, nextPrayer),
-                    
-                    ThemeConstants.space3.h,
-                    
-                    _buildPrayerTimeline(context),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
+    // استخدام AppCard من النظام الموحد
+    return AppCard(
+      type: CardType.normal,
+      style: CardStyle.gradient,
+      primaryColor: context.getPrayerColor(nextPrayer.nameAr),
+      gradientColors: [
+        context.getPrayerColor(nextPrayer.nameAr),
+        context.getPrayerColor(nextPrayer.nameAr).darken(0.2),
+      ],
+      onTap: _navigateToPrayerTimes,
+      child: Column(
+        children: [
+          _buildMainContent(context, nextPrayer),
+          
+          ThemeConstants.space3.h,
+          
+          _buildPrayerTimeline(context),
+        ],
       ),
     );
   }
 
   Widget _buildLoadingState() {
-    return Container(
-      height: 180,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        color: context.cardColor,
-      ),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(context.primaryColor),
-            ),
-            ThemeConstants.space2.h,
-            Text(
-              'جاري تحميل مواقيت الصلاة...',
-              style: context.bodySmall?.copyWith(
-                color: context.textSecondaryColor,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return AppCard(
+      type: CardType.normal,
+      style: CardStyle.normal,
+      child: AppLoading.page(message: 'جاري تحميل مواقيت الصلاة...'),
     );
   }
 
   Widget _buildErrorState() {
-    return Container(
-      height: 180,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        color: context.cardColor,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _updatePrayerTimes,
-          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-          child: Padding(
-            padding: const EdgeInsets.all(ThemeConstants.space4),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 36,
-                  color: context.errorColor,
-                ),
-                ThemeConstants.space2.h,
-                Text(
-                  _errorMessage ?? 'خطأ في تحميل المواقيت',
-                  style: context.bodySmall?.copyWith(
-                    color: context.textSecondaryColor,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                ThemeConstants.space1.h,
-                Text(
-                  'اضغط للمحاولة مرة أخرى',
-                  style: context.labelSmall?.copyWith(
-                    color: context.primaryColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return AppCard.info(
+      title: _errorMessage ?? 'خطأ في تحميل المواقيت',
+      subtitle: 'اضغط للمحاولة مرة أخرى',
+      icon: Icons.error_outline,
+      iconColor: context.errorColor,
+      onTap: _updatePrayerTimes,
     );
   }
 
   Widget _buildEmptyState() {
-    return Container(
-      height: 180,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        color: context.cardColor,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _updatePrayerTimes,
-          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-          child: Padding(
-            padding: const EdgeInsets.all(ThemeConstants.space4),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _isLoadingLocation
-                    ? CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(context.primaryColor),
-                      )
-                    : Icon(
-                        Icons.location_on,
-                        size: 36,
-                        color: context.textSecondaryColor,
-                      ),
-                ThemeConstants.space2.h,
-                Text(
-                  _isLoadingLocation 
-                      ? 'جاري تحديد الموقع...'
-                      : 'لم يتم تحديد الموقع',
-                  style: context.titleSmall?.semiBold,
-                ),
-                ThemeConstants.space1.h,
-                Text(
-                  _isLoadingLocation
-                      ? 'الرجاء الانتظار'
-                      : 'اضغط لتحديد موقعك وعرض مواقيت الصلاة',
-                  style: context.labelSmall?.copyWith(
-                    color: context.textSecondaryColor,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return AppCard.info(
+      title: _isLoadingLocation 
+          ? 'جاري تحديد الموقع...'
+          : 'لم يتم تحديد الموقع',
+      subtitle: _isLoadingLocation
+          ? 'الرجاء الانتظار'
+          : 'اضغط لتحديد موقعك وعرض مواقيت الصلاة',
+      icon: _isLoadingLocation ? Icons.hourglass_empty : Icons.location_on,
+      iconColor: context.primaryColor,
+      onTap: _updatePrayerTimes,
     );
   }
 
@@ -383,7 +270,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
           padding: const EdgeInsets.all(ThemeConstants.space2),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
           ),
           child: const Icon(
             Icons.mosque,
@@ -574,7 +461,6 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
           child: Center(
             child: Icon(
               isPassed && !isActive ? Icons.check : context.getPrayerIcon(prayer.nameAr),
-              // ✅ استخدام context بدلاً من _getPrayerColor
               color: isPassed || isActive ? context.getPrayerColor(prayer.nameAr) : Colors.white,
               size: isActive ? 12 : 10,
             ),
@@ -607,11 +493,9 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     HapticFeedback.lightImpact();
     Navigator.pushNamed(context, '/prayer-times').catchError((error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('هذه الميزة قيد التطوير'),
-            backgroundColor: context.infoColor,
-          ),
+        AppSnackBar.showInfo(
+          context: context,
+          message: 'هذه الميزة قيد التطوير',
         );
       }
       return null;

@@ -1,7 +1,6 @@
-// lib/features/prayer_times/widgets/next_prayer_countdown.dart
+// lib/features/prayer_times/widgets/next_prayer_countdown.dart (محدث بالنظام الموحد)
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 import '../models/prayer_time_model.dart';
 
@@ -23,51 +22,20 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ استخدام context بدلاً من دالة منفصلة
-    final prayerColor = context.getPrayerColor(widget.nextPrayer.type.name);
-    
-    return Container(
-      margin: const EdgeInsets.all(ThemeConstants.space4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            prayerColor.withValues(alpha: 0.9),
-            prayerColor.darken(0.2).withValues(alpha: 0.9),
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: prayerColor.withValues(alpha: 0.3),
-            blurRadius: 25,
-            offset: const Offset(0, 15),
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            padding: const EdgeInsets.all(ThemeConstants.space5),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-            ),
-            child: _buildContent(context, prayerColor),
-          ),
-        ),
-      ),
+    // استخدام AppCard من النظام الموحد مع تدرج الصلاة
+    return AppCard(
+      type: CardType.normal,
+      style: CardStyle.gradient,
+      primaryColor: context.getPrayerColor(widget.nextPrayer.type.name),
+      gradientColors: [
+        context.getPrayerColor(widget.nextPrayer.type.name),
+        context.getPrayerColor(widget.nextPrayer.type.name).darken(0.2),
+      ],
+      child: _buildContent(context),
     );
   }
 
-  Widget _buildContent(BuildContext context, Color prayerColor) {
+  Widget _buildContent(BuildContext context) {
     return Column(
       children: [
         // رأس العد التنازلي
@@ -76,7 +44,7 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
         ThemeConstants.space4.h,
         
         // معلومات الصلاة والوقت
-        _buildPrayerInfo(context, prayerColor),
+        _buildPrayerInfo(context),
         
         ThemeConstants.space4.h,
         
@@ -132,7 +100,7 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
     );
   }
 
-  Widget _buildPrayerInfo(BuildContext context, Color prayerColor) {
+  Widget _buildPrayerInfo(BuildContext context) {
     return Row(
       children: [
         // معلومات الصلاة
@@ -140,7 +108,7 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // اسم الصلاة - بدون حركة
+              // اسم الصلاة
               Text(
                 widget.nextPrayer.nameAr,
                 style: context.headlineLarge?.copyWith(
@@ -197,7 +165,6 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
             ),
           ),
           child: Icon(
-            // ✅ استخدام context بدلاً من دالة منفصلة
             context.getPrayerIcon(widget.nextPrayer.type.name),
             color: Colors.white,
             size: 40,

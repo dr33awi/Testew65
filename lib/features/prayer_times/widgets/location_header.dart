@@ -1,7 +1,6 @@
-// lib/features/prayer_times/widgets/location_header.dart
+// lib/features/prayer_times/widgets/location_header.dart (محدث ومبسط)
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 import '../models/prayer_time_model.dart';
 
@@ -23,57 +22,27 @@ class _LocationHeaderState extends State<LocationHeader> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(ThemeConstants.space4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        gradient: LinearGradient(
-          colors: [
-            // ✅ استخدام context بدلاً من ThemeConstants مباشر
-            context.primaryColor.withValues(alpha: 0.9),
-            context.primaryColor.darken(0.1).withValues(alpha: 0.9),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                widget.onTap();
-              },
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-              child: Container(
-                padding: const EdgeInsets.all(ThemeConstants.space5),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1,
-                  ),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                ),
-                child: _buildContent(context),
-              ),
-            ),
-          ),
-        ),
-      ),
+    // استخدام AppCard من النظام الموحد مع تصميم مبسط
+    return AppCard(
+      type: CardType.info,
+      style: CardStyle.gradient,
+      primaryColor: context.primaryColor,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        widget.onTap();
+      },
+      padding: const EdgeInsets.all(ThemeConstants.space4), // تقليل الحشو
+      child: _buildContent(context),
     );
   }
 
   Widget _buildContent(BuildContext context) {
     return Row(
       children: [
-        // أيقونة الموقع الثابتة
+        // أيقونة الموقع مصغرة
         Container(
-          width: 70,
-          height: 70,
+          width: 50, // مصغرة من 70
+          height: 50, // مصغرة من 70
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
             shape: BoxShape.circle,
@@ -85,16 +54,17 @@ class _LocationHeaderState extends State<LocationHeader> {
           child: const Icon(
             Icons.location_on,
             color: Colors.white,
-            size: 32,
+            size: 24, // مصغرة من 32
           ),
         ),
         
-        ThemeConstants.space4.w,
+        ThemeConstants.space3.w,
         
-        // معلومات الموقع
+        // معلومات الموقع مبسطة
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min, // تقليل الارتفاع
             children: [
               // العنوان
               Text(
@@ -107,13 +77,13 @@ class _LocationHeaderState extends State<LocationHeader> {
               
               ThemeConstants.space1.h,
               
-              // اسم المدينة والدولة
+              // اسم المدينة والدولة في سطر واحد
               Row(
                 children: [
                   Expanded(
                     child: Text(
                       widget.location.cityName ?? 'غير محدد',
-                      style: context.titleLarge?.copyWith(
+                      style: context.titleMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: ThemeConstants.bold,
                       ),
@@ -122,6 +92,7 @@ class _LocationHeaderState extends State<LocationHeader> {
                     ),
                   ),
                   if (widget.location.countryName != null) ...[
+                    ThemeConstants.space2.w,
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: ThemeConstants.space2,
@@ -142,98 +113,34 @@ class _LocationHeaderState extends State<LocationHeader> {
                   ],
                 ],
               ),
-              
-              ThemeConstants.space2.h,
-              
-              // الإحداثيات
-              Container(
-                padding: const EdgeInsets.all(ThemeConstants.space3),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    // خط العرض
-                    Expanded(
-                      child: _buildCoordinateItem(
-                        'خط العرض',
-                        '${widget.location.latitude.toStringAsFixed(4)}°',
-                        Icons.horizontal_rule,
-                      ),
-                    ),
-                    
-                    Container(
-                      width: 1,
-                      height: 30,
-                      color: Colors.white.withValues(alpha: 0.3),
-                      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space2),
-                    ),
-                    
-                    // خط الطول
-                    Expanded(
-                      child: _buildCoordinateItem(
-                        'خط الطول',
-                        '${widget.location.longitude.toStringAsFixed(4)}°',
-                        Icons.more_vert,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),
         
         ThemeConstants.space3.w,
         
-        // زر التحديث - بدون حركة
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-            shape: BoxShape.circle,
-          ),
-          child: IconButton(
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              widget.onTap();
-            },
-            icon: const Icon(
+        // زر التحديث مصغر
+        AnimatedPress(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            widget.onTap();
+          },
+          child: Container(
+            width: 40, // مصغر من أكبر
+            height: 40, // مصغر من أكبر
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: const Icon(
               Icons.refresh,
               color: Colors.white,
-              size: 24,
+              size: 20, // مصغر من 24
             ),
-            tooltip: 'تحديث الموقع',
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCoordinateItem(String label, String value, IconData icon) {
-    return Column(
-      children: [
-        Icon(
-          icon,
-          color: Colors.white.withValues(alpha: 0.7),
-          size: ThemeConstants.iconSm,
-        ),
-        ThemeConstants.space1.h,
-        Text(
-          label,
-          style: context.labelSmall?.copyWith(
-            color: Colors.white.withValues(alpha: 0.7),
-            fontSize: 10,
-          ),
-        ),
-        Text(
-          value,
-          style: context.labelMedium?.copyWith(
-            color: Colors.white,
-            fontWeight: ThemeConstants.semiBold,
           ),
         ),
       ],
