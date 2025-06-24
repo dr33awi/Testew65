@@ -1,7 +1,6 @@
-// lib/features/athkar/screens/athkar_categories_screen.dart - مُحدث بالـ widgets الموحدة
+// lib/features/athkar/screens/athkar_categories_screen.dart - بدون عدد التكرار والأذكار
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../app/routes/app_router.dart';
@@ -94,11 +93,21 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
     }
   }
 
+  void _openCategoryDetails(AthkarCategory category) {
+    HapticFeedback.lightImpact();
+    Navigator.pushNamed(
+      context,
+      AppRouter.athkarDetails,
+      arguments: category.id,
+    ).then((_) {
+      _loadProgress();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      // ✅ استخدام CustomAppBar الموحد بدلاً من custom AppBar
       appBar: CustomAppBar.simple(
         title: 'أذكار المسلم',
         actions: [
@@ -123,7 +132,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
       ),
       body: Column(
         children: [
-          // رسالة الترحيب كبطاقة موحدة
+          // رسالة الترحيب
           _buildWelcomeCard(context),
           
           // المحتوى
@@ -181,34 +190,22 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                             crossAxisCount: 2,
                             mainAxisSpacing: ThemeConstants.space4,
                             crossAxisSpacing: ThemeConstants.space4,
-                            childAspectRatio: 0.8,
+                            childAspectRatio: 0.85, // تحسين النسبة للمحتوى الأكبر
                           ),
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {
                               final category = categories[index];
                               final progress = _progress[category.id] ?? 0;
                               
-                              // ✅ استخدام AppCard الموحد بدلاً من AthkarCategoryCard
-                              return AppCard.athkar(
-                                content: category.title,
-                                currentCount: progress,
-                                totalCount: 100,
+                              // ✅ استخدام AppCard مخصص مع تصميم أكبر وأوضح
+                              return AppCard(
+                                type: CardType.normal,
+                                style: CardStyle.gradient,
                                 primaryColor: CategoryHelper.getCategoryColor(context, category.id),
                                 onTap: () => _openCategoryDetails(category),
-                                actions: [
-                                  CardAction(
-                                    icon: Icons.format_list_numbered_rounded,
-                                    label: '${category.athkar.length} ذكر',
-                                    onPressed: () {},
-                                  ),
-                                  if (progress >= 100)
-                                    CardAction(
-                                      icon: Icons.check_circle_rounded,
-                                      label: 'مكتمل',
-                                      onPressed: () {},
-                                      isPrimary: true,
-                                    ),
-                                ],
+                                margin: EdgeInsets.zero,
+                                borderRadius: ThemeConstants.radius3xl,
+                                child: _buildCategoryContent(context, category, progress),
                               );
                             },
                             childCount: categories.length,
@@ -230,8 +227,106 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
     );
   }
 
+  Widget _buildCategoryContent(BuildContext context, AthkarCategory category, int progress) {
+    final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
+    final isCompleted = progress >= 100;
+    
+    return Padding(
+      padding: const EdgeInsets.all(ThemeConstants.space5),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // أيقونة كبيرة وواضحة
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.25),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.4),
+                width: 3,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(
+              categoryIcon,
+              color: Colors.white,
+              size: 48,
+            ),
+          ),
+          
+          const SizedBox(height: ThemeConstants.space4),
+          
+          // عنوان كبير وواضح
+          Text(
+            category.title,
+            style: context.titleLarge?.copyWith(
+              color: Colors.white,
+              fontWeight: ThemeConstants.bold,
+              fontSize: 20,
+              height: 1.3,
+              shadows: const [
+                Shadow(
+                  color: Colors.black26,
+                  offset: Offset(0, 2),
+                  blurRadius: 4,
+                ),
+              ],
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          
+          // مؤشر الإكمال إذا كانت مكتملة
+          if (isCompleted) ...[
+            const SizedBox(height: ThemeConstants.space3),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: ThemeConstants.space3,
+                vertical: ThemeConstants.space1,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.25),
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: Colors.white,
+                    size: ThemeConstants.iconSm,
+                  ),
+                  const SizedBox(width: ThemeConstants.space1),
+                  Text(
+                    'مكتمل',
+                    style: context.labelMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: ThemeConstants.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildWelcomeCard(BuildContext context) {
-    // ✅ استخدام AppCard الموحد للترحيب
     return Padding(
       padding: const EdgeInsets.all(ThemeConstants.space4),
       child: AppCard(
@@ -250,16 +345,5 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
         borderRadius: ThemeConstants.radiusXl,
       ),
     );
-  }
-
-  void _openCategoryDetails(AthkarCategory category) {
-    HapticFeedback.lightImpact();
-    Navigator.pushNamed(
-      context,
-      AppRouter.athkarDetails,
-      arguments: category.id,
-    ).then((_) {
-      _loadProgress();
-    });
   }
 }

@@ -1,4 +1,4 @@
-// lib/features/daily_quote/widgets/daily_quotes_card.dart - مُحدث بالـ widgets الموحدة
+// lib/features/daily_quote/widgets/daily_quotes_card.dart - محسن ومراجع
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -73,6 +73,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
         });
       }
       
+      // بيانات احتياطية في حالة الخطأ
       quotes = [
         const QuoteData(
           type: 'verse',
@@ -122,7 +123,6 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
             },
             itemCount: quotes.length,
             itemBuilder: (context, index) {
-              // ✅ استخدام AppCard الموحد بدلاً من _QuoteCard
               return _buildQuoteCard(quotes[index]);
             },
           ),
@@ -136,35 +136,185 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
   }
 
   Widget _buildLoadingState() {
-    // ✅ استخدام AppCard للتحميل
+    // ✅ استخدام AppCard للتحميل مع تصميم محسن
     return SizedBox(
       height: 280,
       child: AppCard(
         style: CardStyle.glassmorphism,
         primaryColor: context.primaryColor,
-        child: AppLoading.circular(
-          size: LoadingSize.large,
-          color: context.primaryColor,
-        ),
         margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space1),
         borderRadius: ThemeConstants.radius2xl,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AppLoading.circular(
+              size: LoadingSize.large,
+              color: context.primaryColor,
+            ),
+            const SizedBox(height: ThemeConstants.space4),
+            Text(
+              'جاري تحميل الاقتباسات...',
+              style: context.bodyMedium?.copyWith(
+                color: context.textSecondaryColor,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildQuoteCard(QuoteData quote) {
-    // ✅ استخدام AppCard.quote الموحد
-    return AppCard.quote(
-      quote: quote.content,
-      author: quote.source,
-      category: quote.theme ?? QuoteHelper.getQuoteSubtitle(quote.type),
-      primaryColor: QuoteHelper.getQuotePrimaryColor(context, quote.type),
-      gradientColors: QuoteHelper.getQuoteColors(context, quote.type),
-    ).inkWell(
-      onTap: () => _showQuoteDetails(quote),
-      borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-    ).padded(
-      const EdgeInsets.symmetric(horizontal: ThemeConstants.space1),
+    // ✅ استخدام AppCard مخصص للتحكم في توسيط النص
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space1),
+      child: AppCard(
+        type: CardType.quote,
+        style: CardStyle.gradient,
+        primaryColor: QuoteHelper.getQuotePrimaryColor(context, quote.type),
+        gradientColors: QuoteHelper.getQuoteColors(context, quote.type),
+        onTap: () => _showQuoteDetails(quote),
+        borderRadius: ThemeConstants.radius2xl,
+        margin: EdgeInsets.zero,
+        child: _buildQuoteContent(quote),
+      ),
+    );
+  }
+
+  Widget _buildQuoteContent(QuoteData quote) {
+    // تحديد إذا كان النص قصير (أقل من 80 حرف للتأكد من عدم overflow)
+    final isShortText = quote.content.length < 80;
+    
+    return Padding(
+      padding: const EdgeInsets.all(ThemeConstants.space4),
+      child: Column(
+        mainAxisAlignment: isShortText 
+            ? MainAxisAlignment.center    // توسيط للنص القصير
+            : MainAxisAlignment.start,    // بداية للنص الطويل
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // الموضوع/الفئة في الأعلى للنص الطويل فقط
+          if (quote.theme != null && !isShortText) ...[
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: ThemeConstants.space3,
+                  vertical: ThemeConstants.space1,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  quote.theme!,
+                  style: context.labelMedium?.textColor(Colors.white).semiBold,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+            ),
+            const SizedBox(height: ThemeConstants.space3),
+          ],
+          
+          // المحتوى الرئيسي مع حماية من overflow
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(isShortText ? ThemeConstants.space3 : ThemeConstants.space4),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  width: 1,
+                ),
+              ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // النص الرئيسي مع حماية من overflow (بدون علامات اقتباس)
+                      Flexible(
+                        child: Text(
+                          quote.content,
+                          textAlign: TextAlign.center,
+                          style: context.bodyLarge?.copyWith(
+                            color: Colors.white,
+                            fontSize: isShortText ? 18 : 16,  // تقليل الحجم قليلاً
+                            height: isShortText ? 1.5 : 1.7,  // تقليل التباعد
+                            fontWeight: isShortText 
+                                ? ThemeConstants.medium 
+                                : ThemeConstants.regular,
+                            shadows: const [
+                              Shadow(
+                                color: Colors.black26,
+                                offset: Offset(0, 1),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                          overflow: TextOverflow.visible, // السماح بالتقطع الطبيعي
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+          
+          // المصدر في الأسفل مع حماية من overflow
+          const SizedBox(height: ThemeConstants.space3),
+          Center(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 280), // تحديد عرض أقصى
+              padding: const EdgeInsets.symmetric(
+                horizontal: ThemeConstants.space3,
+                vertical: ThemeConstants.space1,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+              ),
+              child: Text(
+                quote.source,
+                style: context.labelMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: ThemeConstants.semiBold,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          
+          // الموضوع للنص القصير في الأسفل مع حماية من overflow
+          if (quote.theme != null && isShortText) ...[
+            const SizedBox(height: ThemeConstants.space2),
+            Center(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 200),
+                child: Text(
+                  quote.theme!,
+                  style: context.labelSmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontWeight: ThemeConstants.medium,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -173,16 +323,19 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(quotes.length, (index) {
         final isActive = index == _currentPage;
+        final color = isActive 
+            ? QuoteHelper.getQuotePrimaryColor(context, quotes[_currentPage].type)
+            : context.textSecondaryColor.withValues(alpha: 0.3);
+            
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
           margin: const EdgeInsets.symmetric(horizontal: 3),
-          width: isActive ? 20 : 6,
-          height: 6,
+          width: isActive ? 24 : 8,
+          height: 8,
           decoration: BoxDecoration(
-            color: isActive 
-                ? context.primaryColor 
-                : context.primaryColor.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(3),
+            color: color,
+            borderRadius: BorderRadius.circular(4),
           ),
         );
       }),
@@ -264,13 +417,32 @@ class _QuoteDetailsModal extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // العنوان
-                    Text(
-                      QuoteHelper.getQuoteDetailTitle(quote.type),
-                      style: context.headlineSmall?.copyWith(
-                        fontWeight: ThemeConstants.bold,
-                        color: Colors.white,
-                      ),
+                    // العنوان مع الأيقونة
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(ThemeConstants.space2),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                          ),
+                          child: Icon(
+                            QuoteHelper.getQuoteIcon(quote.type),
+                            color: Colors.white,
+                            size: ThemeConstants.iconMd,
+                          ),
+                        ),
+                        const SizedBox(width: ThemeConstants.space3),
+                        Expanded(
+                          child: Text(
+                            QuoteHelper.getQuoteDetailTitle(quote.type),
+                            style: context.headlineSmall?.copyWith(
+                              fontWeight: ThemeConstants.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     
                     const SizedBox(height: ThemeConstants.space4),
@@ -359,7 +531,7 @@ class _QuoteDetailsModal extends StatelessWidget {
                     
                     const SizedBox(height: ThemeConstants.space6),
                     
-                    // ✅ استخدام AppButton الموحد بدلاً من الأزرار المخصصة
+                    // ✅ استخدام AppButton الموحد
                     Row(
                       children: [
                         Expanded(

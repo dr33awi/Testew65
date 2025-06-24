@@ -1,4 +1,4 @@
-// lib/features/home/widgets/category_grid.dart - محدث بالنظام الموحد
+// lib/features/home/widgets/category_grid.dart - محدث بالنظام الموحد (بدون description)
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
@@ -15,37 +15,31 @@ class _CategoryGridState extends State<CategoryGrid> {
     CategoryItem(
       id: 'prayer_times',
       title: 'مواقيت الصلاة',
-      description: 'أوقات الصلاة والأذان',
       routeName: '/prayer-times',
     ),
     CategoryItem(
       id: 'athkar',
       title: 'الأذكار اليومية',
-      description: 'أذكار الصباح والمساء',
       routeName: '/athkar',
     ),
     CategoryItem(
       id: 'quran',
       title: 'القرآن الكريم',
-      description: 'تلاوة وتدبر القرآن',
       routeName: '/quran',
     ),
     CategoryItem(
       id: 'qibla',
       title: 'اتجاه القبلة',
-      description: 'تحديد اتجاه الكعبة',
       routeName: '/qibla',
     ),
     CategoryItem(
       id: 'tasbih',
       title: 'المسبحة الرقمية',
-      description: 'عداد التسبيح والذكر',
       routeName: '/tasbih',
     ),
     CategoryItem(
       id: 'dua',
       title: 'الأدعية المأثورة',
-      description: 'أدعية من الكتاب والسنة',
       routeName: '/dua',
     ),
   ];
@@ -72,7 +66,7 @@ class _CategoryGridState extends State<CategoryGrid> {
           crossAxisCount: 2,
           mainAxisSpacing: ThemeConstants.space4,
           crossAxisSpacing: ThemeConstants.space4,
-          childAspectRatio: 0.9, // تحسين النسبة للمحتوى الجديد
+          childAspectRatio: 0.9,
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {
@@ -80,8 +74,7 @@ class _CategoryGridState extends State<CategoryGrid> {
             
             final category = _categories[index];
             
-            // ✅ استخدام AppCard.info الموحد بدلاً من المحتوى المخصص
-            return _buildCategoryCard(context, category);
+            return _buildCompactCategoryCard(context, category);
           },
           childCount: _categories.length,
         ),
@@ -89,29 +82,69 @@ class _CategoryGridState extends State<CategoryGrid> {
     );
   }
 
-  Widget _buildCategoryCard(BuildContext context, CategoryItem category) {
-    // ✅ استخدام CategoryHelper للألوان والأيقونات الموحدة
+  Widget _buildCompactCategoryCard(BuildContext context, CategoryItem category) {
     final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
     final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
     
-    // ✅ استخدام AppCard.info بدلاً من التصميم المعقد
-    return AppCard.info(
-      title: category.title,
-      subtitle: category.description,
-      icon: categoryIcon,
-      iconColor: categoryColor,
+    return AppCard(
+      type: CardType.normal,
+      style: CardStyle.gradient,
+      primaryColor: categoryColor,
       onTap: () => _onCategoryTap(category),
-      trailing: Container(
-        padding: const EdgeInsets.all(ThemeConstants.space1),
-        decoration: BoxDecoration(
-          color: categoryColor.withValues(alpha: 0.1),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          Icons.arrow_forward_ios_rounded,
-          size: ThemeConstants.iconSm,
-          color: categoryColor,
-        ),
+      margin: EdgeInsets.zero,
+      borderRadius: ThemeConstants.radius2xl,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // الأيقونة الكبيرة - نفس حجم athkar_categories_screen
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.25),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.4),
+                width: 3,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(
+              categoryIcon,
+              color: Colors.white,
+              size: 48,
+            ),
+          ),
+          
+          const SizedBox(height: ThemeConstants.space4),
+          
+          // النص الكبير - نفس حجم athkar_categories_screen
+          Text(
+            category.title,
+            style: context.titleLarge?.copyWith(
+              color: Colors.white,
+              fontWeight: ThemeConstants.bold,
+              fontSize: 20,
+              height: 1.3,
+              shadows: const [
+                Shadow(
+                  color: Colors.black26,
+                  offset: Offset(0, 2),
+                  blurRadius: 4,
+                ),
+              ],
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     ).animatedPress(
       onTap: () => _onCategoryTap(category),
@@ -128,37 +161,31 @@ class CompactCategoryGrid extends StatelessWidget {
     CategoryItem(
       id: 'prayer_times',
       title: 'مواقيت الصلاة',
-      description: 'أوقات الصلاة والأذان',
       routeName: '/prayer-times',
     ),
     CategoryItem(
       id: 'athkar',
       title: 'الأذكار اليومية',
-      description: 'أذكار الصباح والمساء',
       routeName: '/athkar',
     ),
     CategoryItem(
       id: 'quran',
       title: 'القرآن الكريم',
-      description: 'تلاوة وتدبر القرآن',
       routeName: '/quran',
     ),
     CategoryItem(
       id: 'qibla',
       title: 'اتجاه القبلة',
-      description: 'تحديد اتجاه الكعبة',
       routeName: '/qibla',
     ),
     CategoryItem(
       id: 'tasbih',
       title: 'المسبحة الرقمية',
-      description: 'عداد التسبيح والذكر',
       routeName: '/tasbih',
     ),
     CategoryItem(
       id: 'dua',
       title: 'الأدعية المأثورة',
-      description: 'أدعية من الكتاب والسنة',
       routeName: '/dua',
     ),
   ];
@@ -192,7 +219,6 @@ class CompactCategoryGrid extends StatelessWidget {
         final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
         final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
         
-        // ✅ استخدام AppCard مع تصميم مضغوط جميل
         return AppCard(
           type: CardType.normal,
           style: CardStyle.gradient,
@@ -215,21 +241,21 @@ class CompactCategoryGrid extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // الأيقونة الجميلة
+          // الأيقونة الكبيرة - محدثة لتطابق athkar_categories_screen
           Container(
-            width: 64,
-            height: 64,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.25),
               shape: BoxShape.circle,
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.4),
-                width: 2,
+                width: 3,
               ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 8,
+                  blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
               ],
@@ -237,41 +263,27 @@ class CompactCategoryGrid extends StatelessWidget {
             child: Icon(
               icon,
               color: Colors.white,
-              size: ThemeConstants.iconLg,
+              size: 48,
             ),
           ),
           
-          ThemeConstants.space3.h,
+          const SizedBox(height: ThemeConstants.space4),
           
-          // العنوان
+          // العنوان الكبير - محدث لتطابق athkar_categories_screen
           Text(
             category.title,
-            style: context.titleMedium?.copyWith(
+            style: context.titleLarge?.copyWith(
               color: Colors.white,
               fontWeight: ThemeConstants.bold,
-              fontSize: 16,
+              fontSize: 20,
+              height: 1.3,
               shadows: const [
                 Shadow(
                   color: Colors.black26,
-                  offset: Offset(0, 1),
-                  blurRadius: 2,
+                  offset: Offset(0, 2),
+                  blurRadius: 4,
                 ),
               ],
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          
-          ThemeConstants.space1.h,
-          
-          // الوصف
-          Text(
-            category.description,
-            style: context.bodySmall?.copyWith(
-              color: Colors.white.withValues(alpha: 0.8),
-              fontSize: 12,
-              height: 1.3,
             ),
             textAlign: TextAlign.center,
             maxLines: 2,
@@ -337,34 +349,16 @@ class HorizontalCategoryList extends StatelessWidget {
                   
                   ThemeConstants.space3.w,
                   
-                  // النص
+                  // النص فقط
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          category.title,
-                          style: context.titleSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: ThemeConstants.bold,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (category.description.isNotEmpty) ...[
-                          ThemeConstants.space1.h,
-                          Text(
-                            category.description,
-                            style: context.bodySmall?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.8),
-                              fontSize: 11,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ],
+                    child: Text(
+                      category.title,
+                      style: context.titleSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: ThemeConstants.bold,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -379,17 +373,15 @@ class HorizontalCategoryList extends StatelessWidget {
   }
 }
 
-/// نموذج بيانات الفئة - محدث بالوصف
+/// نموذج بيانات الفئة - مبسط بدون description
 class CategoryItem {
   final String id;
   final String title;
-  final String description;
   final String? routeName;
 
   const CategoryItem({
     required this.id,
     required this.title,
-    required this.description,
     this.routeName,
   });
 }
