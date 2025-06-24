@@ -1,4 +1,4 @@
-// lib/app/themes/widgets/core/app_loading.dart
+// lib/app/themes/widgets/core/app_loading.dart - مُصحح
 import 'package:flutter/material.dart';
 import '../../theme_constants.dart';
 import '../../text_styles.dart';
@@ -295,8 +295,8 @@ class _DotsLoadingIndicatorState extends State<DotsLoadingIndicator>
               width: dotSize,
               height: dotSize,
               decoration: BoxDecoration(
-                color: widget.color.withValues(
-                  alpha: 0.3 + _animations[index].value * 0.7
+                color: widget.color.withAlpha(
+                  (76 + _animations[index].value * 179).round() // 0.3 + value * 0.7
                 ),
                 shape: BoxShape.circle,
               ),
@@ -356,7 +356,7 @@ class _FadeLoadingIndicatorState extends State<FadeLoadingIndicator>
           width: widget.size,
           height: widget.size,
           decoration: BoxDecoration(
-            color: widget.color.withValues(alpha: _animation.value),
+            color: widget.color.withAlpha((_animation.value * 255).round()),
             shape: BoxShape.circle,
           ),
         );
@@ -420,7 +420,7 @@ class _PulseLoadingIndicatorState extends State<PulseLoadingIndicator>
             width: widget.size,
             height: widget.size,
             decoration: BoxDecoration(
-              color: widget.color.withValues(alpha: _opacityAnimation.value),
+              color: widget.color.withAlpha((_opacityAnimation.value * 255).round()),
               shape: BoxShape.circle,
             ),
           ),

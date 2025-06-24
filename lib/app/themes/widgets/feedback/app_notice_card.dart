@@ -1,4 +1,4 @@
-// lib/app/themes/widgets/feedback/app_notice_card.dart
+// lib/app/themes/widgets/feedback/app_notice_card.dart - مُصحح
 import 'package:flutter/material.dart';
 import '../../theme_constants.dart';
 import '../../core/theme_extensions.dart';
@@ -82,7 +82,7 @@ class AppNoticeCard extends StatelessWidget {
                           icon: Icon(
                             Icons.close,
                             size: ThemeConstants.iconSm,
-                            color: colors.textColor.withValues(alpha: 0.7),
+                            color: colors.textColor.withOpacitySafe(0.7),
                           ),
                           onPressed: onClose,
                           padding: EdgeInsets.zero,
@@ -99,7 +99,7 @@ class AppNoticeCard extends StatelessWidget {
                     Text(
                       message!,
                       style: context.bodyMedium?.copyWith(
-                        color: colors.textColor.withValues(alpha: 0.8),
+                        color: colors.textColor.withOpacitySafe(0.8),
                       ),
                     ),
                   ],
@@ -134,29 +134,29 @@ class AppNoticeCard extends StatelessWidget {
     switch (type) {
       case NoticeType.info:
         return _NoticeColors(
-          backgroundColor: ThemeConstants.info.withValues(alpha: 0.1),
-          borderColor: ThemeConstants.info.withValues(alpha: 0.3),
+          backgroundColor: ThemeConstants.info.withOpacitySafe(0.1),
+          borderColor: ThemeConstants.info.withOpacitySafe(0.3),
           iconColor: ThemeConstants.info,
           textColor: ThemeConstants.info.darken(0.2),
         );
       case NoticeType.warning:
         return _NoticeColors(
-          backgroundColor: ThemeConstants.warning.withValues(alpha: 0.1),
-          borderColor: ThemeConstants.warning.withValues(alpha: 0.3),
+          backgroundColor: ThemeConstants.warning.withOpacitySafe(0.1),
+          borderColor: ThemeConstants.warning.withOpacitySafe(0.3),
           iconColor: ThemeConstants.warning,
           textColor: ThemeConstants.warning.darken(0.2),
         );
       case NoticeType.error:
         return _NoticeColors(
-          backgroundColor: ThemeConstants.error.withValues(alpha: 0.1),
-          borderColor: ThemeConstants.error.withValues(alpha: 0.3),
+          backgroundColor: ThemeConstants.error.withOpacitySafe(0.1),
+          borderColor: ThemeConstants.error.withOpacitySafe(0.3),
           iconColor: ThemeConstants.error,
           textColor: ThemeConstants.error.darken(0.1),
         );
       case NoticeType.success:
         return _NoticeColors(
-          backgroundColor: ThemeConstants.success.withValues(alpha: 0.1),
-          borderColor: ThemeConstants.success.withValues(alpha: 0.3),
+          backgroundColor: ThemeConstants.success.withOpacitySafe(0.1),
+          borderColor: ThemeConstants.success.withOpacitySafe(0.3),
           iconColor: ThemeConstants.success,
           textColor: ThemeConstants.success.darken(0.2),
         );

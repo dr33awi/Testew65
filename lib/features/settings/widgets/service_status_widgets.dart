@@ -1,4 +1,4 @@
-// lib/features/settings/widgets/service_status_widgets.dart (مُنظف)
+// lib/features/settings/widgets/service_status_widgets.dart - مُصحح
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -38,7 +38,7 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
         borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
         boxShadow: [
           BoxShadow(
-            color: _getHealthColor(healthPercentage).withValues(alpha: 0.3),
+            color: _getHealthColor(healthPercentage).withOpacitySafe(0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -73,7 +73,7 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
+            color: Colors.white.withOpacitySafe(0.2),
             borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
           ),
           child: Icon(
@@ -97,7 +97,7 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
               Text(
                 _getHealthDescription(healthPercentage),
                 style: context.bodySmall?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: Colors.white.withOpacitySafe(0.9),
                 ),
               ),
             ],
@@ -109,7 +109,7 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
             vertical: 6,
           ),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
+            color: Colors.white.withOpacitySafe(0.2),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
@@ -163,21 +163,21 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
     return Container(
       padding: const EdgeInsets.all(ThemeConstants.space3),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: Colors.white.withOpacitySafe(0.1),
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
       ),
       child: Row(
         children: [
           Icon(
             batteryState.isCharging ? Icons.battery_charging_full : Icons.battery_std,
-            color: Colors.white.withValues(alpha: 0.8),
+            color: Colors.white.withOpacitySafe(0.8),
             size: 20,
           ),
           ThemeConstants.space2.w,
           Text(
             'البطارية: ${batteryState.level}%',
             style: context.bodySmall?.copyWith(
-              color: Colors.white.withValues(alpha: 0.9),
+              color: Colors.white.withOpacitySafe(0.9),
             ),
           ),
           if (batteryState.isPowerSaveMode) ...[
@@ -315,9 +315,9 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
   int _getTotalServicesCount() => 3;
 
   Color _getHealthColor(int percentage) {
-    if (percentage >= 80) return ThemeConstants.success;
-    if (percentage >= 50) return ThemeConstants.warning;
-    return ThemeConstants.error;
+    if (percentage >= 80) return context.successColor;
+    if (percentage >= 50) return context.warningColor;
+    return context.errorColor;
   }
 
   Gradient _getHealthGradient(int percentage) {
@@ -327,7 +327,7 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
       end: Alignment.bottomRight,
       colors: [
         color,
-        color.withValues(alpha: 0.8),
+        color.withOpacitySafe(0.8),
       ],
     );
   }
@@ -406,7 +406,7 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.battery_saver, color: ThemeConstants.warning),
+            Icon(Icons.battery_saver, color: context.warningColor),
             ThemeConstants.space2.w,
             const Text('تحسين البطارية'),
           ],
@@ -509,7 +509,7 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: ThemeConstants.success,
+        backgroundColor: context.successColor,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
@@ -528,7 +528,7 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: ThemeConstants.error,
+        backgroundColor: context.errorColor,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
@@ -562,16 +562,16 @@ class _ServiceIndicator extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: isActive ? 0.2 : 0.1),
+              color: Colors.white.withOpacitySafe(isActive ? 0.2 : 0.1),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
               border: isActive ? null : Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
+                color: Colors.white.withOpacitySafe(0.3),
                 width: 1,
               ),
             ),
             child: Icon(
               icon,
-              color: Colors.white.withValues(alpha: isActive ? 1.0 : 0.6),
+              color: Colors.white.withOpacitySafe(isActive ? 1.0 : 0.6),
               size: 20,
             ),
           ),
@@ -579,7 +579,7 @@ class _ServiceIndicator extends StatelessWidget {
           Text(
             label,
             style: context.labelSmall?.copyWith(
-              color: Colors.white.withValues(alpha: isActive ? 1.0 : 0.7),
+              color: Colors.white.withOpacitySafe(isActive ? 1.0 : 0.7),
               fontSize: 11,
               fontWeight: isActive ? ThemeConstants.semiBold : ThemeConstants.regular,
             ),
@@ -646,20 +646,20 @@ class _ServiceOptionTile extends StatelessWidget {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: (option.isDestructive ? ThemeConstants.error : context.primaryColor)
-              .withValues(alpha: 0.1),
+          color: (option.isDestructive ? context.errorColor : context.primaryColor)
+              .withOpacitySafe(0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
           option.icon,
-          color: option.isDestructive ? ThemeConstants.error : context.primaryColor,
+          color: option.isDestructive ? context.errorColor : context.primaryColor,
           size: 20,
         ),
       ),
       title: Text(
         option.title,
         style: context.titleSmall?.copyWith(
-          color: option.isDestructive ? ThemeConstants.error : null,
+          color: option.isDestructive ? context.errorColor : null,
         ),
       ),
       subtitle: option.subtitle != null ? Text(option.subtitle!) : null,

@@ -1,4 +1,4 @@
-// lib/app/themes/core/theme_extensions.dart
+// lib/app/themes/core/theme_extensions.dart - مُصحح
 import 'package:athkar_app/app/themes/text_styles.dart';
 import 'package:flutter/material.dart';
 import '../theme_constants.dart';
@@ -225,12 +225,12 @@ extension ThemeExtension on BuildContext {
   double get safeBottom => screenPadding.bottom;
 }
 
-/// Extensions للألوان - موحدة مع إصلاح withValues
+/// Extensions للألوان - موحدة مع إصلاح withAlpha
 extension ColorExtensions on Color {
-  /// إنشاء لون بشفافية - مع إصلاح الخطأ
+  /// إنشاء لون بشفافية - مُصحح
   Color withOpacitySafe(double opacity) {
     final safeOpacity = opacity.clamp(0.0, 1.0);
-    return withValues(alpha: safeOpacity);
+    return withAlpha((safeOpacity * 255).round());
   }
 
   /// تفتيح اللون
@@ -420,7 +420,7 @@ extension WidgetExtensions on Widget {
     child: this,
   );
 
-  /// إضافة تأثير تلاشي - مع إصلاح قيمة opacity
+  /// إضافة تأثير تلاشي - مُصحح
   Widget opacity(double opacity) {
     final safeOpacity = opacity.clamp(0.0, 1.0);
     return Opacity(

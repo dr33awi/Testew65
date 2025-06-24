@@ -1,4 +1,4 @@
-// lib/features/settings/screens/settings_screen.dart (مُنظف)
+// lib/features/settings/screens/settings_screen.dart - مُصحح
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -407,8 +407,6 @@ class _SettingsScreenState extends State<SettingsScreen>
     }
   }
   
-
-  
   Future<void> _requestAllPermissions() async {
     HapticFeedback.mediumImpact();
     
@@ -557,7 +555,7 @@ $appUrl
     }
   }
   
-  // ==================== Helper Methods ====================
+  // ==================== Helper Methods - استخدام ألوان من Context ====================
   
   void _showSuccessMessage(String message) {
     if (!mounted) return;
@@ -570,7 +568,7 @@ $appUrl
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: ThemeConstants.success,
+        backgroundColor: context.successColor, // استخدام context بدلاً من ThemeConstants
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
@@ -590,7 +588,7 @@ $appUrl
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: ThemeConstants.error,
+        backgroundColor: context.errorColor, // استخدام context بدلاً من ThemeConstants
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
@@ -616,7 +614,7 @@ $appUrl
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: context.primaryColor,
+        backgroundColor: context.primaryColor, // استخدام context
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
@@ -647,13 +645,13 @@ $appUrl
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: (destructive ? ThemeConstants.error : context.primaryColor)
-                      .withValues(alpha: 0.1),
+                  color: (destructive ? context.errorColor : context.primaryColor)
+                      .withOpacitySafe(0.1), // استخدام Extension المُصحح
                   borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                 ),
                 child: Icon(
                   icon,
-                  color: destructive ? ThemeConstants.error : context.primaryColor,
+                  color: destructive ? context.errorColor : context.primaryColor,
                   size: 24,
                 ),
               ),
@@ -674,7 +672,7 @@ $appUrl
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: destructive ? ThemeConstants.error : null,
+              backgroundColor: destructive ? context.errorColor : null,
             ),
             child: Text(confirmText),
           ),
@@ -720,7 +718,7 @@ $appUrl
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.battery_saver, color: ThemeConstants.warning),
+            Icon(Icons.battery_saver, color: context.warningColor),
             ThemeConstants.space2.w,
             const Text('تحسين البطارية'),
           ],
@@ -842,13 +840,13 @@ $appUrl
             Icon(
               Icons.error_outline,
               size: 64,
-              color: ThemeConstants.error,
+              color: context.errorColor, // استخدام context
             ),
             ThemeConstants.space4.h,
             Text(
               'فشل تحميل الإعدادات',
               style: context.headlineSmall?.copyWith(
-                color: ThemeConstants.error,
+                color: context.errorColor,
                 fontWeight: ThemeConstants.bold,
               ),
               textAlign: TextAlign.center,
@@ -933,10 +931,10 @@ $appUrl
                 onTap: _handleNotificationPermission,
                 trailing: _settings.notificationsEnabled
                     ? Icon(Icons.settings, color: context.primaryColor)
-                    : Icon(Icons.add_circle, color: ThemeConstants.warning),
+                    : Icon(Icons.add_circle, color: context.warningColor),
                 iconColor: _settings.notificationsEnabled 
-                    ? ThemeConstants.success 
-                    : ThemeConstants.warning,
+                    ? context.successColor 
+                    : context.warningColor,
                 badge: !_settings.notificationsEnabled 
                     ? SettingsBadge.warning()
                     : null,
@@ -957,11 +955,11 @@ $appUrl
                       )
                     : _serviceStatus.locationAvailable
                         ? Icon(Icons.refresh, color: context.primaryColor)
-                        : Icon(Icons.add_location, color: ThemeConstants.warning),
+                        : Icon(Icons.add_location, color: context.warningColor),
                 enabled: !_isRefreshing && _servicesManager != null,
                 iconColor: _serviceStatus.locationAvailable
-                    ? ThemeConstants.success
-                    : ThemeConstants.warning,
+                    ? context.successColor
+                    : context.warningColor,
                 badge: !_serviceStatus.locationAvailable 
                     ? SettingsBadge.warning()
                     : null,
@@ -974,11 +972,11 @@ $appUrl
                     : 'يُنصح بتحسين إعدادات البطارية',
                 onTap: _handleBatteryOptimization,
                 iconColor: _settings.batteryOptimizationDisabled 
-                    ? ThemeConstants.success 
-                    : ThemeConstants.warning,
+                    ? context.successColor 
+                    : context.warningColor,
                 trailing: _settings.batteryOptimizationDisabled
-                    ? Icon(Icons.check_circle, color: ThemeConstants.success)
-                    : Icon(Icons.warning, color: ThemeConstants.warning),
+                    ? Icon(Icons.check_circle, color: context.successColor)
+                    : Icon(Icons.warning, color: context.warningColor),
                 badge: !_settings.batteryOptimizationDisabled 
                     ? SettingsBadge.warning()
                     : null,
@@ -1061,8 +1059,6 @@ $appUrl
             ],
           ),
           
-
-          
           SettingsSection(
             title: 'الدعم والمعلومات',
             icon: Icons.help_outline,
@@ -1103,15 +1099,15 @@ $appUrl
       margin: const EdgeInsets.all(ThemeConstants.space4),
       padding: const EdgeInsets.all(ThemeConstants.space4),
       decoration: BoxDecoration(
-        color: ThemeConstants.error.withValues(alpha: 0.1),
+        color: context.errorColor.withOpacitySafe(0.1), // استخدام Extension المُصحح
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-        border: Border.all(color: ThemeConstants.error.withValues(alpha: 0.3)),
+        border: Border.all(color: context.errorColor.withOpacitySafe(0.3)),
       ),
       child: Row(
         children: [
           Icon(
             Icons.warning,
-            color: ThemeConstants.error,
+            color: context.errorColor,
             size: 20,
           ),
           ThemeConstants.space2.w,
@@ -1119,7 +1115,7 @@ $appUrl
             child: Text(
               _errorMessage!,
               style: context.bodySmall?.copyWith(
-                color: ThemeConstants.error,
+                color: context.errorColor,
               ),
             ),
           ),
@@ -1127,7 +1123,7 @@ $appUrl
             onPressed: () => setState(() => _errorMessage = null),
             icon: Icon(
               Icons.close,
-              color: ThemeConstants.error,
+              color: context.errorColor,
               size: 20,
             ),
             constraints: const BoxConstraints(
@@ -1140,8 +1136,6 @@ $appUrl
       ),
     );
   }
-  
-
 }
 
 // ==================== Dialogs مساعدة ====================
@@ -1169,7 +1163,7 @@ class _AboutDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(ThemeConstants.space6),
               decoration: BoxDecoration(
-                gradient: ThemeConstants.primaryGradient,
+                gradient: context.primaryGradient, // استخدام context
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(ThemeConstants.radiusXl),
                   topRight: Radius.circular(ThemeConstants.radiusXl),
@@ -1181,7 +1175,7 @@ class _AboutDialog extends StatelessWidget {
                     width: 64,
                     height: 64,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withOpacitySafe(0.2),
                       borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                     ),
                     child: const Icon(
@@ -1201,7 +1195,7 @@ class _AboutDialog extends StatelessWidget {
                   Text(
                     'حصن المسلم',
                     style: context.bodyMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.9),
+                      color: Colors.white.withOpacitySafe(0.9),
                     ),
                   ),
                 ],
@@ -1234,14 +1228,14 @@ class _AboutDialog extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(ThemeConstants.space4),
                     decoration: BoxDecoration(
-                      color: context.primaryColor.withValues(alpha: 0.1),
+                      color: context.primaryColor.withOpacitySafe(0.1),
                       borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                     ),
                     child: Row(
                       children: [
                         Icon(
                           Icons.favorite,
-                          color: ThemeConstants.error,
+                          color: context.errorColor,
                           size: ThemeConstants.iconSm,
                         ),
                         ThemeConstants.space2.w,
@@ -1318,8 +1312,6 @@ class _PermissionProgressDialog extends StatelessWidget {
     );
   }
 }
-
-
 
 class _InfoRow extends StatelessWidget {
   final IconData icon;
