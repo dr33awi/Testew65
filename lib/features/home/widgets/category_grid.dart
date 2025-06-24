@@ -1,8 +1,8 @@
-// lib/features/home/widgets/category_grid.dart - مُصحح
+// lib/features/home/widgets/category_grid.dart - محدث لاستخدام AppCard
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:ui';
-import '../../../app/themes/app_theme.dart'; // ✅ الاستيراد الموحد الوحيد
+import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/widgets/cards/app_card.dart';
 
 class CategoryGrid extends StatefulWidget {
   const CategoryGrid({super.key});
@@ -57,7 +57,6 @@ class _CategoryGridState extends State<CategoryGrid> {
     if (category.routeName != null) {
       Navigator.pushNamed(context, category.routeName!).catchError((error) {
         if (mounted) {
-          // ✅ استخدام AppSnackBar من app_theme
           context.showWarningSnackBar('هذه الميزة قيد التطوير');
         }
         return null;
@@ -80,9 +79,26 @@ class _CategoryGridState extends State<CategoryGrid> {
           (context, index) {
             if (index >= _categories.length) return null;
             
-            return _CategoryCard(
-              category: _categories[index],
-              onTap: () => _onCategoryTap(_categories[index]),
+            final category = _categories[index];
+            final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
+            final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
+            
+            // إنشاء تدرج مباشر من اللون الأساسي
+            final gradientColors = [
+              categoryColor,
+              categoryColor.darken(0.3),
+            ];
+            
+            return AppCard(
+              type: CardType.normal,
+              style: CardStyle.gradient,
+              title: category.title,
+              icon: categoryIcon,
+              primaryColor: categoryColor,
+              gradientColors: gradientColors,
+              onTap: () => _onCategoryTap(category),
+              margin: EdgeInsets.zero,
+              child: _buildCategoryContent(context, category, categoryIcon),
             );
           },
           childCount: _categories.length,
@@ -90,70 +106,8 @@ class _CategoryGridState extends State<CategoryGrid> {
       ),
     );
   }
-}
 
-class _CategoryCard extends StatelessWidget {
-  final CategoryItem category;
-  final VoidCallback onTap;
-
-  const _CategoryCard({
-    required this.category,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // ✅ استخدام CategoryHelper من app_theme
-    final gradient = CategoryHelper.getCategoryGradientWithOpacity(
-      context, 
-      category.id,
-      opacity: 0.9,
-    );
-    final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
-    final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
-    
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-        gradient: gradient,
-        boxShadow: [
-          BoxShadow(
-            color: categoryColor.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-                borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-              ),
-              child: InkWell(
-                onTap: onTap,
-                borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-                child: Padding(
-                  padding: const EdgeInsets.all(ThemeConstants.space4),
-                  child: _buildContent(context, categoryIcon),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildContent(BuildContext context, IconData categoryIcon) {
+  Widget _buildCategoryContent(BuildContext context, CategoryItem category, IconData categoryIcon) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -165,6 +119,10 @@ class _CategoryCard extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.white.withValues(alpha: 0.2),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.3),
+                width: 2,
+              ),
             ),
             child: Icon(
               categoryIcon,
@@ -182,8 +140,8 @@ class _CategoryCard extends StatelessWidget {
               color: Colors.white,
               fontWeight: ThemeConstants.bold,
               fontSize: 16,
-              shadows: [
-                const Shadow(
+              shadows: const [
+                Shadow(
                   color: Colors.black26,
                   offset: Offset(0, 2),
                   blurRadius: 4,

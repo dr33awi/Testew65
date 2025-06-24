@@ -1,8 +1,8 @@
-// lib/features/athkar/screens/notification_settings_screen.dart - مُصحح
+// lib/features/athkar/screens/notification_settings_screen.dart - مُحدث بالـ widgets الموحدة
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/di/service_locator.dart';
-import '../../../app/themes/app_theme.dart'; // ✅ الاستيراد الموحد الوحيد
+import '../../../app/themes/app_theme.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
 import '../services/athkar_service.dart';
 import '../models/athkar_model.dart';
@@ -40,7 +40,6 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     _loadData();
   }
 
-  /// تحميل البيانات مع معالجة محسنة للأخطاء
   Future<void> _loadData() async {
     try {
       setState(() {
@@ -50,23 +49,18 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       
       _logger.info(message: '[NotificationSettings] بدء تحميل البيانات');
       
-      // التحقق من إذن الإشعارات
       _hasPermission = await _permissionService.checkNotificationPermission();
       _logger.debug(message: '[NotificationSettings] حالة الإذن: $_hasPermission');
       
-      // تحميل جميع الفئات
       final allCategories = await _service.loadCategories();
       _logger.info(message: '[NotificationSettings] تم تحميل ${allCategories.length} فئة');
       
-      // تحميل الإعدادات المحفوظة
       final enabledIds = _service.getEnabledReminderCategories();
       final savedCustomTimes = _loadSavedCustomTimes();
       
-      // التحقق من أول تشغيل
       final isFirstLaunch = enabledIds.isEmpty && savedCustomTimes.isEmpty;
       _logger.debug(message: '[NotificationSettings] أول تشغيل: $isFirstLaunch');
       
-      // تهيئة البيانات
       _enabled.clear();
       _customTimes.clear();
       _originalTimes.clear();
@@ -74,27 +68,21 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       final autoEnabledIds = <String>[];
       
       for (final category in allCategories) {
-        // حفظ الوقت الأصلي
         _originalTimes[category.id] = category.notifyTime ?? 
-            CategoryHelper.getDefaultReminderTime(category.id); // ✅ من app_theme
+            CategoryHelper.getDefaultReminderTime(category.id);
         
-        // تحديد حالة التفعيل
         bool shouldEnable = enabledIds.contains(category.id);
         
-        // ✅ استخدام CategoryHelper من app_theme
         if (isFirstLaunch && CategoryHelper.shouldAutoEnable(category.id)) {
           shouldEnable = true;
           autoEnabledIds.add(category.id);
         }
         
         _enabled[category.id] = shouldEnable;
-        
-        // تحديد الوقت (مخصص أو افتراضي)
         _customTimes[category.id] = savedCustomTimes[category.id] ?? 
             _originalTimes[category.id]!;
       }
       
-      // في أول تشغيل، حفظ الإعدادات الافتراضية
       if (isFirstLaunch && autoEnabledIds.isNotEmpty) {
         await _saveInitialSettings(autoEnabledIds);
       }
@@ -116,7 +104,6 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     }
   }
 
-  /// الحصول على NotificationManager مع التحقق من التهيئة
   Future<NotificationManager?> _getNotificationManager() async {
     try {
       return NotificationManager.instance;
@@ -126,18 +113,13 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     }
   }
 
-  /// حفظ الإعدادات الأولية
   Future<void> _saveInitialSettings(List<String> autoEnabledIds) async {
     try {
       _logger.info(message: '[NotificationSettings] حفظ الإعدادات الأولية');
       
-      // حفظ الفئات المفعلة
       await _service.setEnabledReminderCategories(autoEnabledIds);
-      
-      // حفظ الأوقات المخصصة  
       await _saveCustomTimes();
       
-      // جدولة الإشعارات إذا كانت الأذونات متاحة
       if (_hasPermission) {
         final notificationManager = await _getNotificationManager();
         if (notificationManager != null) {
@@ -163,7 +145,6 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     }
   }
 
-  /// تحميل الأوقات المخصصة المحفوظة
   Map<String, TimeOfDay> _loadSavedCustomTimes() {
     try {
       final savedTimes = _service.getCustomTimes();
@@ -174,7 +155,6 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     }
   }
 
-  /// حفظ الأوقات المخصصة
   Future<void> _saveCustomTimes() async {
     try {
       await _service.setCustomTimes(_customTimes);
@@ -184,7 +164,6 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     }
   }
 
-  /// طلب إذن الإشعارات
   Future<void> _requestPermission() async {
     try {
       _logger.info(message: '[NotificationSettings] طلب إذن الإشعارات');
@@ -194,7 +173,6 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       
       _logger.info(message: '[NotificationSettings] نتيجة طلب الإذن: $granted');
       
-      // إذا تم منح الإذن، جدولة الإشعارات المفعلة
       if (granted) {
         await _scheduleEnabledNotifications();
       }
@@ -204,7 +182,6 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     }
   }
 
-  /// جدولة الإشعارات المفعلة
   Future<void> _scheduleEnabledNotifications() async {
     try {
       final notificationManager = await _getNotificationManager();
@@ -231,7 +208,6 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     }
   }
 
-  /// تفعيل/إلغاء فئة
   Future<void> _toggleCategory(String categoryId, bool value) async {
     setState(() {
       _enabled[categoryId] = value;
@@ -242,7 +218,6 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     await _saveChanges();
   }
 
-  /// تحديث وقت الفئة
   Future<void> _updateTime(String categoryId, TimeOfDay time) async {
     setState(() {
       _customTimes[categoryId] = time;
@@ -253,7 +228,6 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     await _saveChanges();
   }
 
-  /// حفظ التغييرات مع جدولة الإشعارات
   Future<void> _saveChanges() async {
     if (_saving) return;
     
@@ -262,25 +236,19 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     try {
       _logger.info(message: '[NotificationSettings] بدء حفظ التغييرات');
       
-      // 1. حفظ الفئات المفعلة
       final enabledIds = _enabled.entries
           .where((e) => e.value)
           .map((e) => e.key)
           .toList();
       
       await _service.setEnabledReminderCategories(enabledIds);
-      
-      // 2. حفظ الأوقات المخصصة
       await _saveCustomTimes();
       
-      // 3. إدارة الإشعارات
       if (_hasPermission) {
         final notificationManager = await _getNotificationManager();
         if (notificationManager != null) {
-          // إلغاء جميع الإشعارات السابقة
           await notificationManager.cancelAllAthkarReminders();
           
-          // جدولة إشعارات جديدة للفئات المفعلة
           final categories = _categories ?? [];
           for (final category in categories) {
             if (_enabled[category.id] ?? false) {
@@ -308,7 +276,6 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     }
   }
 
-  /// اختيار وقت جديد للفئة
   Future<void> _selectTime(String categoryId, TimeOfDay currentTime) async {
     final selectedTime = await showTimePicker(
       context: context,
@@ -337,33 +304,21 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     if (selectedTime != null) {
       await _updateTime(categoryId, selectedTime);
       
-      // تفعيل الفئة تلقائياً عند تغيير الوقت
       if (!(_enabled[categoryId] ?? false)) {
         await _toggleCategory(categoryId, true);
       }
     }
   }
 
-  /// تفعيل جميع التذكيرات
   Future<void> _enableAllReminders() async {
     HapticFeedback.mediumImpact();
     
-    final shouldEnable = await showDialog<bool>(
+    final shouldEnable = await AppInfoDialog.showConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('تفعيل جميع التذكيرات'),
-        content: const Text('هل تريد تفعيل تذكيرات جميع فئات الأذكار بالأوقات الحالية؟'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('إلغاء'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('تفعيل الكل'),
-          ),
-        ],
-      ),
+      title: 'تفعيل جميع التذكيرات',
+      content: 'هل تريد تفعيل تذكيرات جميع فئات الأذكار بالأوقات الحالية؟',
+      confirmText: 'تفعيل الكل',
+      cancelText: 'إلغاء',
     );
     
     if (shouldEnable == true) {
@@ -376,26 +331,15 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     }
   }
 
-  /// إيقاف جميع التذكيرات
   Future<void> _disableAllReminders() async {
     HapticFeedback.mediumImpact();
     
-    final shouldDisable = await showDialog<bool>(
+    final shouldDisable = await AppInfoDialog.showConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('إيقاف جميع التذكيرات'),
-        content: const Text('هل تريد إيقاف جميع تذكيرات الأذكار؟'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('إلغاء'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('إيقاف الكل'),
-          ),
-        ],
-      ),
+      title: 'إيقاف جميع التذكيرات',
+      content: 'هل تريد إيقاف جميع تذكيرات الأذكار؟',
+      confirmText: 'إيقاف الكل',
+      cancelText: 'إلغاء',
     );
     
     if (shouldDisable == true) {
@@ -412,11 +356,11 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      appBar: AppBar(
-        title: const Text('إشعارات الأذكار'),
-        centerTitle: true,
+      // ✅ استخدام CustomAppBar الموحد
+      appBar: CustomAppBar.simple(
+        title: 'إشعارات الأذكار',
         actions: [
-          if (_hasPermission && (_categories?.isNotEmpty ?? false)) ...[
+          if (_hasPermission && (_categories?.isNotEmpty ?? false))
             PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert),
               onSelected: (value) {
@@ -452,7 +396,6 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
                 ),
               ],
             ),
-          ],
           if (_saving)
             const Padding(
               padding: EdgeInsets.all(16.0),
@@ -470,44 +413,15 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
 
   Widget _buildBody() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
+      return AppLoading.page(
+        message: 'جاري تحميل الإعدادات...',
       );
     }
 
     if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: context.errorColor,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'خطأ في التحميل',
-              style: context.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _errorMessage!,
-              textAlign: TextAlign.center,
-              style: context.bodyMedium?.copyWith(
-                color: context.textSecondaryColor,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _loadData,
-              icon: const Icon(Icons.refresh),
-              label: const Text('المحاولة مرة أخرى'),
-            ),
-          ],
-        ),
+      return AppEmptyState.error(
+        message: _errorMessage!,
+        onRetry: _loadData,
       );
     }
 
@@ -521,17 +435,17 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // حالة الإذن
-            _buildPermissionSection(),
+            // ✅ استخدام AppNoticeCard للإشعارات
+            _buildPermissionNotice(),
             
             const SizedBox(height: 24),
             
-            // قائمة الفئات
             if (_hasPermission) ...[
               if (categories.isEmpty)
-                _buildNoCategoriesMessage()
+                AppEmptyState.noData(
+                  message: 'لم يتم العثور على أي فئات للأذكار',
+                )
               else ...[
-                // إحصائيات سريعة
                 _buildQuickStats(categories),
                 
                 const SizedBox(height: 16),
@@ -555,498 +469,135 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
                 const SizedBox(height: 16),
                 
                 ...categories.map((category) => 
-                  _buildCategoryTile(category)
+                  _buildCategoryCard(category)
                 ),
               ],
             ] else
-              _buildPermissionRequiredMessage(),
+              AppNoticeCard.warning(
+                title: 'الإشعارات مطلوبة',
+                message: 'يجب تفعيل الإشعارات أولاً لتتمكن من إعداد تذكيرات الأذكار لجميع الفئات',
+                action: AppButton.primary(
+                  text: 'تفعيل الإشعارات الآن',
+                  onPressed: _requestPermission,
+                  icon: Icons.notifications_active,
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPermissionSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: context.cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: context.dividerColor,
+  Widget _buildPermissionNotice() {
+    if (_hasPermission) {
+      return AppNoticeCard.success(
+        title: 'الإشعارات مفعلة',
+        message: 'يمكنك الآن تخصيص تذكيرات الأذكار',
+      );
+    } else {
+      return AppNoticeCard.warning(
+        title: 'الإشعارات معطلة',
+        message: 'قم بتفعيل الإشعارات لتلقي التذكيرات',
+        action: AppButton.primary(
+          text: 'تفعيل الإشعارات',
+          onPressed: _requestPermission,
+          icon: Icons.notifications,
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                _hasPermission ? Icons.notifications_active : Icons.notifications_off,
-                color: _hasPermission ? Colors.green : Colors.orange,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _hasPermission ? 'الإشعارات مفعلة' : 'الإشعارات معطلة',
-                      style: context.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: _hasPermission ? Colors.green : Colors.orange,
-                      ),
-                    ),
-                    Text(
-                      _hasPermission 
-                          ? 'يمكنك الآن تخصيص تذكيرات الأذكار'
-                          : 'قم بتفعيل الإشعارات لتلقي التذكيرات',
-                      style: context.bodySmall?.copyWith(
-                        color: context.textSecondaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          if (!_hasPermission) ...[
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _requestPermission,
-                icon: const Icon(Icons.notifications),
-                label: const Text('تفعيل الإشعارات'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: context.primaryColor,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
+      );
+    }
   }
 
   Widget _buildQuickStats(List<AthkarCategory> categories) {
     final enabledCount = _enabled.values.where((e) => e).length;
     final disabledCount = categories.length - enabledCount;
     
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: context.cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.dividerColor),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _StatItem(
-              icon: Icons.notifications_active,
-              count: enabledCount,
-              label: 'مفعلة',
-              color: Colors.green,
-            ),
+    // ✅ استخدام AppCard للإحصائيات
+    return Row(
+      children: [
+        Expanded(
+          child: AppCard.stat(
+            title: 'مفعلة',
+            value: '$enabledCount',
+            icon: Icons.notifications_active,
+            color: Colors.green,
           ),
-          
-          Container(
-            width: 1,
-            height: 40,
-            color: context.dividerColor,
+        ),
+        
+        ThemeConstants.space3.w,
+        
+        Expanded(
+          child: AppCard.stat(
+            title: 'معطلة',
+            value: '$disabledCount',
+            icon: Icons.notifications_off,
+            color: context.textSecondaryColor,
           ),
-          
-          Expanded(
-            child: _StatItem(
-              icon: Icons.notifications_off,
-              count: disabledCount,
-              label: 'معطلة',
-              color: context.textSecondaryColor,
-            ),
+        ),
+        
+        ThemeConstants.space3.w,
+        
+        Expanded(
+          child: AppCard.stat(
+            title: 'الكل',
+            value: '${categories.length}',
+            icon: Icons.format_list_numbered,
+            color: context.primaryColor,
           ),
-          
-          Container(
-            width: 1,
-            height: 40,
-            color: context.dividerColor,
-          ),
-          
-          Expanded(
-            child: _StatItem(
-              icon: Icons.format_list_numbered,
-              count: categories.length,
-              label: 'الكل',
-              color: context.primaryColor,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildNoCategoriesMessage() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: context.cardColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.menu_book_outlined,
-            size: 48,
-            color: context.textSecondaryColor.withOpacity(0.5),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'لا توجد فئات أذكار',
-            style: context.titleMedium?.copyWith(
-              color: context.textSecondaryColor,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'لم يتم العثور على أي فئات للأذكار',
-            style: context.bodyMedium?.copyWith(
-              color: context.textSecondaryColor.withOpacity(0.7),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPermissionRequiredMessage() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: context.cardColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          const Icon(
-            Icons.notifications_off_outlined,
-            size: 48,
-            color: Colors.orange,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'الإشعارات مطلوبة',
-            style: context.titleMedium?.copyWith(
-              color: Colors.orange,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'يجب تفعيل الإشعارات أولاً لتتمكن من إعداد تذكيرات الأذكار لجميع الفئات',
-            style: context.bodyMedium?.copyWith(
-              color: context.textSecondaryColor,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: _requestPermission,
-            icon: const Icon(Icons.notifications_active),
-            label: const Text('تفعيل الإشعارات الآن'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: context.primaryColor,
-              foregroundColor: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryTile(AthkarCategory category) {
+  Widget _buildCategoryCard(AthkarCategory category) {
     final isEnabled = _enabled[category.id] ?? false;
     final currentTime = _customTimes[category.id] ?? 
-        CategoryHelper.getDefaultReminderTime(category.id); // ✅ من app_theme
+        CategoryHelper.getDefaultReminderTime(category.id);
     final originalTime = _originalTimes[category.id];
     final hasCustomTime = originalTime != null && currentTime != originalTime;
     
-    // ✅ استخدام CategoryHelper من app_theme
     final isAutoEnabled = CategoryHelper.shouldAutoEnable(category.id);
     final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
     final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
     final categoryDescription = CategoryHelper.getCategoryDescription(category.id);
 
+    // ✅ استخدام AppCard للفئات
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: context.cardColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: context.dividerColor),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                // أيقونة الفئة
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: categoryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    categoryIcon,
-                    color: categoryColor,
-                    size: 20,
-                  ),
-                ),
-                
-                const SizedBox(width: 12),
-                
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              category.title,
-                              style: context.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                          if (isAutoEnabled)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                'أساسي',
-                                style: context.labelSmall?.copyWith(
-                                  color: Colors.green,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            )
-                          else if (hasCustomTime)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.blue.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                'مخصص',
-                                style: context.labelSmall?.copyWith(
-                                  color: Colors.blue,
-                                  fontSize: 10,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      if (categoryDescription.isNotEmpty)
-                        Text(
-                          categoryDescription,
-                          style: context.bodySmall?.copyWith(
-                            color: context.textSecondaryColor,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      
-                      // عدد الأذكار
-                      Row(
-                        children: [
-                          Text(
-                            '${category.athkar.length} ذكر',
-                            style: context.labelSmall?.copyWith(
-                              color: context.textSecondaryColor.withOpacity(0.7),
-                            ),
-                          ),
-                          if (isAutoEnabled) ...[
-                            Text(
-                              ' • ',
-                              style: context.labelSmall?.copyWith(
-                                color: context.textSecondaryColor.withOpacity(0.7),
-                              ),
-                            ),
-                            Text(
-                              'مفعل تلقائياً',
-                              style: context.labelSmall?.copyWith(
-                                color: Colors.green,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                
-                Switch(
-                  value: isEnabled,
-                  onChanged: _hasPermission 
-                      ? (value) => _toggleCategory(category.id, value)
-                      : null,
-                  activeColor: isAutoEnabled ? Colors.green : context.primaryColor,
-                ),
-              ],
+      child: Column(
+        children: [
+          // البطاقة الرئيسية
+          AppCard.info(
+            title: category.title,
+            subtitle: categoryDescription,
+            icon: categoryIcon,
+            iconColor: categoryColor,
+            trailing: Switch(
+              value: isEnabled,
+              onChanged: _hasPermission 
+                  ? (value) => _toggleCategory(category.id, value)
+                  : null,
+              activeColor: isAutoEnabled ? Colors.green : context.primaryColor,
             ),
-            
-            if (isEnabled) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: (isAutoEnabled ? Colors.green : context.primaryColor)
-                      .withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: (isAutoEnabled ? Colors.green : context.primaryColor)
-                        .withOpacity(0.2),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.access_time,
-                      size: 16,
-                      color: isAutoEnabled ? Colors.green : context.primaryColor,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'وقت التذكير: ${currentTime.format(context)}',
-                            style: context.bodyMedium?.copyWith(
-                              color: isAutoEnabled ? Colors.green : context.primaryColor,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          if (hasCustomTime)
-                            Text(
-                              'تم تخصيص الوقت',
-                              style: context.labelSmall?.copyWith(
-                                color: (isAutoEnabled ? Colors.green : context.primaryColor)
-                                    .withOpacity(0.7),
-                              ),
-                            )
-                          else if (originalTime == null)
-                            Text(
-                              'وقت افتراضي - يمكنك تغييره',
-                              style: context.labelSmall?.copyWith(
-                                color: (isAutoEnabled ? Colors.green : context.primaryColor)
-                                    .withOpacity(0.7),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => _selectTime(category.id, currentTime),
-                      style: TextButton.styleFrom(
-                        minimumSize: const Size(0, 32),
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                      ),
-                      child: const Text('تغيير'),
-                    ),
-                  ],
-                ),
+            onTap: isEnabled ? () => _selectTime(category.id, currentTime) : null,
+          ),
+          
+          // معلومات الوقت إذا كانت الفئة مفعلة
+          if (isEnabled) ...[
+            ThemeConstants.space3.h,
+            AppNoticeCard.info(
+              title: 'وقت التذكير: ${currentTime.format(context)}',
+              message: hasCustomTime 
+                  ? 'تم تخصيص الوقت'
+                  : 'وقت افتراضي - يمكنك تغييره',
+              action: AppButton.text(
+                text: 'تغيير الوقت',
+                onPressed: () => _selectTime(category.id, currentTime),
               ),
-            ] else if (originalTime == null) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(
-                    Icons.access_time_outlined,
-                    size: 12,
-                    color: context.textSecondaryColor.withOpacity(0.7),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'الوقت الافتراضي: ${currentTime.format(context)}',
-                    style: context.labelSmall?.copyWith(
-                      color: context.textSecondaryColor.withOpacity(0.7),
-                    ),
-                  ),
-                  if (isAutoEnabled) ...[
-                    Text(
-                      ' (أساسي)',
-                      style: context.labelSmall?.copyWith(
-                        color: Colors.green.withOpacity(0.7),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ],
+              margin: EdgeInsets.zero,
+            ),
           ],
-        ),
+        ],
       ),
-    );
-  }
-}
-
-class _StatItem extends StatelessWidget {
-  final IconData icon;
-  final int count;
-  final String label;
-  final Color color;
-
-  const _StatItem({
-    required this.icon,
-    required this.count,
-    required this.label,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(
-          icon,
-          color: color,
-          size: 16,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '$count',
-          style: context.titleMedium?.copyWith(
-            color: color,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: context.labelSmall?.copyWith(
-            color: context.textSecondaryColor,
-          ),
-        ),
-      ],
     );
   }
 }
