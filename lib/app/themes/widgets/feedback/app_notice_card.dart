@@ -1,4 +1,4 @@
-// lib/app/themes/widgets/feedback/app_notice_card.dart - مُصحح
+// lib/app/themes/widgets/feedback/app_notice_card.dart - منظف ومحسن
 import 'package:flutter/material.dart';
 import '../../theme_constants.dart';
 import '../../core/theme_extensions.dart';
@@ -11,7 +11,7 @@ enum NoticeType {
   success,
 }
 
-/// بطاقة تنبيه موحدة
+/// بطاقة تنبيه موحدة ومحسنة
 class AppNoticeCard extends StatelessWidget {
   final NoticeType type;
   final String title;
@@ -21,6 +21,9 @@ class AppNoticeCard extends StatelessWidget {
   final bool showIcon;
   final IconData? customIcon;
   final EdgeInsetsGeometry? margin;
+  final EdgeInsetsGeometry? padding;
+  final double? borderRadius;
+  final bool isDismissible;
 
   const AppNoticeCard({
     super.key,
@@ -32,86 +35,146 @@ class AppNoticeCard extends StatelessWidget {
     this.showIcon = true,
     this.customIcon,
     this.margin,
+    this.padding,
+    this.borderRadius,
+    this.isDismissible = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final colors = _getColors();
+    final colors = _getColors(context);
+    final effectiveBorderRadius = borderRadius ?? ThemeConstants.radiusLg;
+    final effectivePadding = padding ?? const EdgeInsets.all(ThemeConstants.space4);
     
-    return Container(
+    Widget child = Container(
       margin: margin ?? EdgeInsets.zero,
       decoration: BoxDecoration(
         color: colors.backgroundColor,
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        borderRadius: BorderRadius.circular(effectiveBorderRadius),
         border: Border.all(
           color: colors.borderColor,
           width: ThemeConstants.borderLight,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: colors.shadowColor,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(ThemeConstants.space4),
+        padding: effectivePadding,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (showIcon) ...[
-              Icon(
-                customIcon ?? _getIcon(),
-                color: colors.iconColor,
-                size: ThemeConstants.iconMd,
-              ),
+              _buildIcon(colors),
               ThemeConstants.space3.w,
             ],
             
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: context.titleMedium?.copyWith(
-                            color: colors.textColor,
-                            fontWeight: ThemeConstants.semiBold,
-                          ),
-                        ),
-                      ),
-                      if (onClose != null)
-                        IconButton(
-                          icon: Icon(
-                            Icons.close,
-                            size: ThemeConstants.iconSm,
-                            color: colors.textColor.withOpacitySafe(0.7),
-                          ),
-                          onPressed: onClose,
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(
-                            minWidth: 24,
-                            minHeight: 24,
-                          ),
-                        ),
-                    ],
-                  ),
-                  
-                  if (message != null) ...[
-                    ThemeConstants.space1.h,
-                    Text(
-                      message!,
-                      style: context.bodyMedium?.copyWith(
-                        color: colors.textColor.withOpacitySafe(0.8),
-                      ),
-                    ),
-                  ],
-                  
-                  if (action != null) ...[
-                    ThemeConstants.space3.h,
-                    action!,
-                  ],
-                ],
-              ),
+              child: _buildContent(context, colors),
             ),
           ],
+        ),
+      ),
+    );
+
+    // إضافة إمكانية السحب للإزالة
+    if (isDismissible && onClose != null) {
+      child = Dismissible(
+        key: UniqueKey(),
+        direction: DismissDirection.endToStart,
+        onDismissed: (_) => onClose!(),
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: ThemeConstants.space4),
+          decoration: BoxDecoration(
+            color: colors.iconColor.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(effectiveBorderRadius),
+          ),
+          child: Icon(
+            Icons.close,
+            color: colors.iconColor,
+          ),
+        ),
+        child: child,
+      );
+    }
+
+    return child;
+  }
+
+  Widget _buildIcon(_NoticeColors colors) {
+    return Container(
+      padding: const EdgeInsets.all(ThemeConstants.space2),
+      decoration: BoxDecoration(
+        color: colors.iconColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+      ),
+      child: Icon(
+        customIcon ?? _getIcon(),
+        color: colors.iconColor,
+        size: ThemeConstants.iconMd,
+      ),
+    );
+  }
+
+  Widget _buildContent(BuildContext context, _NoticeColors colors) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: context.titleMedium?.copyWith(
+                  color: colors.textColor,
+                  fontWeight: ThemeConstants.semiBold,
+                ),
+              ),
+            ),
+            if (onClose != null && !isDismissible)
+              _buildCloseButton(colors),
+          ],
+        ),
+        
+        if (message != null) ...[
+          ThemeConstants.space1.h,
+          Text(
+            message!,
+            style: context.bodyMedium?.copyWith(
+              color: colors.textColor.withValues(alpha: 0.8),
+              height: 1.5,
+            ),
+          ),
+        ],
+        
+        if (action != null) ...[
+          ThemeConstants.space3.h,
+          action!,
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCloseButton(_NoticeColors colors) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
+      child: InkWell(
+        onTap: onClose,
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
+        child: Padding(
+          padding: const EdgeInsets.all(ThemeConstants.space1),
+          child: Icon(
+            Icons.close,
+            size: ThemeConstants.iconSm,
+            color: colors.textColor.withValues(alpha: 0.7),
+          ),
         ),
       ),
     );
@@ -130,50 +193,143 @@ class AppNoticeCard extends StatelessWidget {
     }
   }
 
-  _NoticeColors _getColors() {
+  _NoticeColors _getColors(BuildContext context) {
     switch (type) {
       case NoticeType.info:
         return _NoticeColors(
-          backgroundColor: ThemeConstants.info.withOpacitySafe(0.1),
-          borderColor: ThemeConstants.info.withOpacitySafe(0.3),
+          backgroundColor: ThemeConstants.info.withValues(alpha: 0.1),
+          borderColor: ThemeConstants.info.withValues(alpha: 0.3),
           iconColor: ThemeConstants.info,
-          textColor: ThemeConstants.info.darken(0.2),
+          textColor: context.isDarkMode 
+              ? ThemeConstants.info.lighten(0.2)
+              : ThemeConstants.info.darken(0.2),
+          shadowColor: ThemeConstants.info.withValues(alpha: 0.1),
         );
       case NoticeType.warning:
         return _NoticeColors(
-          backgroundColor: ThemeConstants.warning.withOpacitySafe(0.1),
-          borderColor: ThemeConstants.warning.withOpacitySafe(0.3),
+          backgroundColor: ThemeConstants.warning.withValues(alpha: 0.1),
+          borderColor: ThemeConstants.warning.withValues(alpha: 0.3),
           iconColor: ThemeConstants.warning,
-          textColor: ThemeConstants.warning.darken(0.2),
+          textColor: context.isDarkMode 
+              ? ThemeConstants.warning.lighten(0.1)
+              : ThemeConstants.warning.darken(0.2),
+          shadowColor: ThemeConstants.warning.withValues(alpha: 0.1),
         );
       case NoticeType.error:
         return _NoticeColors(
-          backgroundColor: ThemeConstants.error.withOpacitySafe(0.1),
-          borderColor: ThemeConstants.error.withOpacitySafe(0.3),
+          backgroundColor: ThemeConstants.error.withValues(alpha: 0.1),
+          borderColor: ThemeConstants.error.withValues(alpha: 0.3),
           iconColor: ThemeConstants.error,
-          textColor: ThemeConstants.error.darken(0.1),
+          textColor: context.isDarkMode 
+              ? ThemeConstants.error.lighten(0.1)
+              : ThemeConstants.error.darken(0.1),
+          shadowColor: ThemeConstants.error.withValues(alpha: 0.1),
         );
       case NoticeType.success:
         return _NoticeColors(
-          backgroundColor: ThemeConstants.success.withOpacitySafe(0.1),
-          borderColor: ThemeConstants.success.withOpacitySafe(0.3),
+          backgroundColor: ThemeConstants.success.withValues(alpha: 0.1),
+          borderColor: ThemeConstants.success.withValues(alpha: 0.3),
           iconColor: ThemeConstants.success,
-          textColor: ThemeConstants.success.darken(0.2),
+          textColor: context.isDarkMode 
+              ? ThemeConstants.success.lighten(0.1)
+              : ThemeConstants.success.darken(0.2),
+          shadowColor: ThemeConstants.success.withValues(alpha: 0.1),
         );
     }
   }
+
+  // Factory constructors للاستخدام السهل
+  factory AppNoticeCard.info({
+    required String title,
+    String? message,
+    Widget? action,
+    VoidCallback? onClose,
+    EdgeInsetsGeometry? margin,
+    bool isDismissible = false,
+  }) {
+    return AppNoticeCard(
+      type: NoticeType.info,
+      title: title,
+      message: message,
+      action: action,
+      onClose: onClose,
+      margin: margin,
+      isDismissible: isDismissible,
+    );
+  }
+
+  factory AppNoticeCard.warning({
+    required String title,
+    String? message,
+    Widget? action,
+    VoidCallback? onClose,
+    EdgeInsetsGeometry? margin,
+    bool isDismissible = false,
+  }) {
+    return AppNoticeCard(
+      type: NoticeType.warning,
+      title: title,
+      message: message,
+      action: action,
+      onClose: onClose,
+      margin: margin,
+      isDismissible: isDismissible,
+    );
+  }
+
+  factory AppNoticeCard.error({
+    required String title,
+    String? message,
+    Widget? action,
+    VoidCallback? onClose,
+    EdgeInsetsGeometry? margin,
+    bool isDismissible = false,
+  }) {
+    return AppNoticeCard(
+      type: NoticeType.error,
+      title: title,
+      message: message,
+      action: action,
+      onClose: onClose,
+      margin: margin,
+      isDismissible: isDismissible,
+    );
+  }
+
+  factory AppNoticeCard.success({
+    required String title,
+    String? message,
+    Widget? action,
+    VoidCallback? onClose,
+    EdgeInsetsGeometry? margin,
+    bool isDismissible = false,
+  }) {
+    return AppNoticeCard(
+      type: NoticeType.success,
+      title: title,
+      message: message,
+      action: action,
+      onClose: onClose,
+      margin: margin,
+      isDismissible: isDismissible,
+    );
+  }
 }
 
+/// ألوان بطاقة التنبيه
 class _NoticeColors {
   final Color backgroundColor;
   final Color borderColor;
   final Color iconColor;
   final Color textColor;
+  final Color shadowColor;
 
   _NoticeColors({
     required this.backgroundColor,
     required this.borderColor,
     required this.iconColor,
     required this.textColor,
+    required this.shadowColor,
   });
 }
+

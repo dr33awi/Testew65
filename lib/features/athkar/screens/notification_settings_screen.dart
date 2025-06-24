@@ -1,4 +1,5 @@
-// lib/features/athkar/screens/notification_settings_screen.dart (مُصلح نهائياً)
+// lib/features/athkar/screens/notification_settings_screen.dart - منظف ومحسن
+import 'package:athkar_app/app/themes/widgets/utils/category_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/di/service_locator.dart';
@@ -25,52 +26,11 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
   
   final Map<String, bool> _enabled = {};
   final Map<String, TimeOfDay> _customTimes = {};
-  final Map<String, TimeOfDay> _originalTimes = {}; // للتتبع الأوقات الأصلية
+  final Map<String, TimeOfDay> _originalTimes = {};
   bool _saving = false;
   bool _hasPermission = false;
   bool _isLoading = true;
   String? _errorMessage;
-
-  // أوقات افتراضية محدثة وموحدة
-  static const Map<String, TimeOfDay> _defaultTimes = {
-    'morning': TimeOfDay(hour: 6, minute: 0),      // أذكار الصباح
-    'الصباح': TimeOfDay(hour: 6, minute: 0),
-    'أذكار الصباح': TimeOfDay(hour: 6, minute: 0),
-    
-    'evening': TimeOfDay(hour: 18, minute: 0),     // أذكار المساء  
-    'المساء': TimeOfDay(hour: 18, minute: 0),
-    'أذكار المساء': TimeOfDay(hour: 18, minute: 0),
-    
-    'sleep': TimeOfDay(hour: 22, minute: 0),       // أذكار النوم
-    'النوم': TimeOfDay(hour: 22, minute: 0), 
-    'أذكار النوم': TimeOfDay(hour: 22, minute: 0),
-    
-    'wakeup': TimeOfDay(hour: 5, minute: 30),      // أذكار الاستيقاظ
-    'الاستيقاظ': TimeOfDay(hour: 5, minute: 30),
-    
-    'prayer': TimeOfDay(hour: 12, minute: 0),      // أذكار الصلاة
-    'الصلاة': TimeOfDay(hour: 12, minute: 0),
-    'بعد الصلاة': TimeOfDay(hour: 12, minute: 0),
-    'أذكار بعد الصلاة': TimeOfDay(hour: 12, minute: 0),
-    
-    'eating': TimeOfDay(hour: 19, minute: 0),      // أذكار الطعام
-    'الطعام': TimeOfDay(hour: 19, minute: 0),
-    
-    'travel': TimeOfDay(hour: 8, minute: 0),       // أذكار السفر
-    'السفر': TimeOfDay(hour: 8, minute: 0),
-    'أذكار السفر': TimeOfDay(hour: 8, minute: 0),
-    
-    'general': TimeOfDay(hour: 14, minute: 0),     // أذكار عامة
-    'عامة': TimeOfDay(hour: 14, minute: 0),
-    'أذكار عامة': TimeOfDay(hour: 14, minute: 0),
-  };
-
-  // الفئات التي يجب تفعيلها تلقائياً
-  static const Set<String> _autoEnabledCategories = {
-    'morning', 'الصباح', 'أذكار الصباح',
-    'evening', 'المساء', 'أذكار المساء',
-    'sleep', 'النوم', 'أذكار النوم',
-  };
 
   @override
   void initState() {
@@ -79,44 +39,6 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     _permissionService = getIt<PermissionService>();
     _logger = getIt<LoggerService>();
     _loadData();
-  }
-
-  /// الحصول على الوقت الافتراضي للفئة مع تطابق أفضل
-  TimeOfDay _getDefaultTimeForCategory(String categoryId) {
-    // البحث عن تطابق مباشر أولاً
-    if (_defaultTimes.containsKey(categoryId)) {
-      return _defaultTimes[categoryId]!;
-    }
-    
-    // البحث عن تطابق جزئي
-    final normalizedId = categoryId.toLowerCase().trim();
-    for (final entry in _defaultTimes.entries) {
-      if (normalizedId.contains(entry.key.toLowerCase()) || 
-          entry.key.toLowerCase().contains(normalizedId)) {
-        return entry.value;
-      }
-    }
-    
-    // وقت افتراضي عام
-    return const TimeOfDay(hour: 9, minute: 0);
-  }
-
-  /// التحقق من أن الفئة يجب تفعيلها تلقائياً
-  bool _shouldAutoEnable(String categoryId) {
-    final normalizedId = categoryId.toLowerCase().trim();
-    return _autoEnabledCategories.any((category) => 
-        normalizedId.contains(category.toLowerCase()) || 
-        category.toLowerCase().contains(normalizedId));
-  }
-
-  /// الحصول على NotificationManager مع التحقق من التهيئة
-  Future<NotificationManager?> _getNotificationManager() async {
-    try {
-      return NotificationManager.instance;
-    } catch (e) {
-      _logger.error(message: '[NotificationSettings] NotificationManager غير مهيأ - $e');
-      return null;
-    }
   }
 
   /// تحميل البيانات مع معالجة محسنة للأخطاء
@@ -155,12 +77,13 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       for (final category in allCategories) {
         // حفظ الوقت الأصلي
         _originalTimes[category.id] = category.notifyTime ?? 
-            _getDefaultTimeForCategory(category.id);
+            CategoryHelper.getDefaultReminderTime(category.id);
         
         // تحديد حالة التفعيل
         bool shouldEnable = enabledIds.contains(category.id);
         
-        if (isFirstLaunch && _shouldAutoEnable(category.id)) {
+        // ✅ استخدام CategoryHelper
+        if (isFirstLaunch && CategoryHelper.shouldAutoEnable(category.id)) {
           shouldEnable = true;
           autoEnabledIds.add(category.id);
         }
@@ -191,6 +114,16 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
         _isLoading = false;
         _errorMessage = 'فشل في تحميل البيانات. يرجى المحاولة مرة أخرى.';
       });
+    }
+  }
+
+  /// الحصول على NotificationManager مع التحقق من التهيئة
+  Future<NotificationManager?> _getNotificationManager() async {
+    try {
+      return NotificationManager.instance;
+    } catch (e) {
+      _logger.error(message: '[NotificationSettings] NotificationManager غير مهيأ - $e');
+      return null;
     }
   }
 
@@ -798,7 +731,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       ),
       child: Column(
         children: [
-          Icon(
+          const Icon(
             Icons.notifications_off_outlined,
             size: 48,
             color: Colors.orange,
@@ -837,10 +770,15 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
   Widget _buildCategoryTile(AthkarCategory category) {
     final isEnabled = _enabled[category.id] ?? false;
     final currentTime = _customTimes[category.id] ?? 
-        _getDefaultTimeForCategory(category.id);
+        CategoryHelper.getDefaultReminderTime(category.id);
     final originalTime = _originalTimes[category.id];
     final hasCustomTime = originalTime != null && currentTime != originalTime;
-    final isAutoEnabled = _shouldAutoEnable(category.id);
+    
+    // ✅ استخدام CategoryHelper
+    final isAutoEnabled = CategoryHelper.shouldAutoEnable(category.id);
+    final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
+    final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
+    final categoryDescription = CategoryHelper.getCategoryDescription(category.id);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -861,12 +799,12 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: category.color.withOpacity(0.1),
+                    color: categoryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
-                    category.icon,
-                    color: category.color,
+                    categoryIcon,
+                    color: categoryColor,
                     size: 20,
                   ),
                 ),
@@ -926,9 +864,9 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
                             ),
                         ],
                       ),
-                      if (category.description?.isNotEmpty == true)
+                      if (categoryDescription.isNotEmpty)
                         Text(
-                          category.description!,
+                          categoryDescription,
                           style: context.bodySmall?.copyWith(
                             color: context.textSecondaryColor,
                           ),

@@ -1,9 +1,9 @@
-// lib/features/athkar/widgets/athkar_category_card.dart
+// lib/features/athkar/widgets/athkar_category_card.dart - منظف من التكرار
+import 'package:athkar_app/app/themes/widgets/utils/category_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
-import '../../../app/themes/widgets/animations/animated_press.dart';
 import '../models/athkar_model.dart';
 
 class AthkarCategoryCard extends StatefulWidget {
@@ -57,9 +57,15 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
   @override
   Widget build(BuildContext context) {
     final isCompleted = widget.progress >= 100;
-    // ✅ استخدام دالة محلية بدلاً من CategoryUtils
-    final categoryColor = _getCategoryThemeColor(widget.category.id);
-    final categoryIcon = _getCategoryIcon(widget.category.id);
+    
+    // ✅ استخدام CategoryHelper الموحد
+    final categoryColor = CategoryHelper.getCategoryColor(context, widget.category.id);
+    final categoryIcon = CategoryHelper.getCategoryIcon(widget.category.id);
+    final gradient = CategoryHelper.getCategoryGradientWithOpacity(
+      context, 
+      widget.category.id,
+      opacity: 0.9,
+    );
     
     return AnimatedPress(
       onTap: () {
@@ -70,14 +76,14 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              categoryColor.withValues(alpha: 0.9),
-              categoryColor.darken(0.1).withValues(alpha: 0.9),
-            ],
-          ),
+          gradient: gradient,
+          boxShadow: [
+            BoxShadow(
+              color: categoryColor.withValues(alpha: 0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
@@ -99,11 +105,7 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(ThemeConstants.space4),
-                    child: _buildCardContent(
-                      context,
-                      categoryIcon,
-                      isCompleted,
-                    ),
+                    child: _buildCardContent(context, categoryIcon, isCompleted),
                   ),
                 ),
               ],
@@ -180,7 +182,7 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
             
             ThemeConstants.space4.h,
             
-            // المعلومات السفلية (بدون أيقونة السهم)
+            // المعلومات السفلية
             Row(
               children: [
                 // عدد الأذكار
@@ -259,72 +261,5 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
         ),
       ],
     );
-  }
-
-  // ===== دوال محلية بدلاً من CategoryUtils =====
-
-  /// ✅ دالة محلية بدلاً من CategoryUtils.getCategoryThemeColor
-  Color _getCategoryThemeColor(String categoryId) {
-    // نفس النتيجة البصرية بالضبط
-    switch (categoryId.toLowerCase()) {
-      case 'morning':
-      case 'الصباح':
-      case 'أذكار الصباح':
-        return context.primaryColor; // ThemeConstants.primary
-      case 'evening':
-      case 'المساء':
-      case 'أذكار المساء':
-        return context.accentColor; // ThemeConstants.accent
-      case 'sleep':
-      case 'النوم':
-      case 'أذكار النوم':
-        return context.tertiaryColor; // ThemeConstants.tertiary
-      case 'prayer':
-      case 'بعد الصلاة':
-      case 'أذكار بعد الصلاة':
-        return context.primaryLightColor; // ThemeConstants.primaryLight
-      case 'travel':
-      case 'السفر':
-      case 'أذكار السفر':
-        return context.accentDarkColor; // ThemeConstants.accentDark
-      case 'general':
-      case 'عامة':
-      case 'أذكار عامة':
-        return context.tertiaryDarkColor; // ThemeConstants.tertiaryDark
-      default:
-        return context.primaryColor;
-    }
-  }
-
-  /// ✅ دالة محلية بدلاً من CategoryUtils.getCategoryIcon
-  IconData _getCategoryIcon(String categoryId) {
-    switch (categoryId.toLowerCase()) {
-      case 'morning':
-      case 'الصباح':
-      case 'أذكار الصباح':
-        return Icons.wb_sunny_rounded;
-      case 'evening':
-      case 'المساء':
-      case 'أذكار المساء':
-        return Icons.nights_stay_rounded;
-      case 'sleep':
-      case 'النوم':
-      case 'أذكار النوم':
-        return Icons.bedtime_rounded;
-      case 'prayer':
-      case 'بعد الصلاة':
-      case 'أذكار بعد الصلاة':
-        return Icons.mosque_rounded;
-      case 'travel':
-      case 'السفر':
-      case 'أذكار السفر':
-        return Icons.luggage_rounded;
-      case 'general':
-      case 'عامة':
-      case 'أذكار عامة':
-        return Icons.auto_awesome_rounded;
-      default:
-        return Icons.menu_book_rounded;
-    }
   }
 }

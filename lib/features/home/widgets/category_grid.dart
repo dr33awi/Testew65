@@ -1,8 +1,8 @@
-// lib/features/home/widgets/category_grid.dart
+// lib/features/home/widgets/category_grid.dart - منظف من التكرار
+import 'package:athkar_app/app/themes/widgets/utils/category_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-import 'dart:math' as math;
 import '../../../app/themes/app_theme.dart';
 
 class CategoryGrid extends StatefulWidget {
@@ -103,20 +103,22 @@ class _CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ استخدام دالة محلية بدلاً من ColorHelper
-    final gradient = _getCategoryGradient(context, category.id);
+    // ✅ استخدام CategoryHelper الموحد
+    final gradient = CategoryHelper.getCategoryGradientWithOpacity(
+      context, 
+      category.id,
+      opacity: 0.9,
+    );
+    final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
+    final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
     
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: gradient.colors.map((c) => c.withValues(alpha: 0.9)).toList(),
-        ),
+        gradient: gradient,
         boxShadow: [
           BoxShadow(
-            color: gradient.colors[0].withValues(alpha: 0.3),
+            color: categoryColor.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -141,7 +143,7 @@ class _CategoryCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
                 child: Padding(
                   padding: const EdgeInsets.all(ThemeConstants.space4),
-                  child: _buildContent(context),
+                  child: _buildContent(context, categoryIcon),
                 ),
               ),
             ),
@@ -151,7 +153,7 @@ class _CategoryCard extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context) {
+  Widget _buildContent(BuildContext context, IconData categoryIcon) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -165,7 +167,7 @@ class _CategoryCard extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.2),
             ),
             child: Icon(
-              category.icon,
+              categoryIcon,
               color: Colors.white,
               size: 42,
             ),
@@ -194,49 +196,6 @@ class _CategoryCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  /// ✅ دالة محلية مبسطة بدلاً من ColorHelper.getCategoryGradient
-  LinearGradient _getCategoryGradient(BuildContext context, String categoryId) {
-    // تحديد الألوان حسب الفئة - نفس النتيجة البصرية بالضبط
-    Color primaryColor;
-    Color secondaryColor;
-    
-    switch (categoryId) {
-      case 'prayer_times':
-        primaryColor = context.primaryColor; // ThemeConstants.primary
-        secondaryColor = context.primaryLightColor; // ThemeConstants.primaryLight
-        break;
-      case 'athkar':
-        primaryColor = context.accentColor; // ThemeConstants.accent  
-        secondaryColor = context.accentLightColor; // ThemeConstants.accentLight
-        break;
-      case 'quran':
-        primaryColor = context.tertiaryColor; // ThemeConstants.tertiary
-        secondaryColor = context.tertiaryLightColor; // ThemeConstants.tertiaryLight
-        break;
-      case 'qibla':
-        primaryColor = context.primaryDarkColor; // ThemeConstants.primaryDark
-        secondaryColor = context.primaryColor; // ThemeConstants.primary
-        break;
-      case 'tasbih':
-        primaryColor = context.accentDarkColor; // ThemeConstants.accentDark
-        secondaryColor = context.accentColor; // ThemeConstants.accent
-        break;
-      case 'dua':
-        primaryColor = context.tertiaryDarkColor; // ThemeConstants.tertiaryDark
-        secondaryColor = context.tertiaryColor; // ThemeConstants.tertiary
-        break;
-      default:
-        primaryColor = context.primaryColor;
-        secondaryColor = context.primaryLightColor;
-    }
-
-    return LinearGradient(
-      colors: [primaryColor, secondaryColor],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
     );
   }
 }

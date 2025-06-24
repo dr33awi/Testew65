@@ -1,4 +1,4 @@
-// lib/features/home/widgets/welcome_message.dart
+// lib/features/home/widgets/welcome_message.dart - منظف من التكرار
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
@@ -21,7 +21,8 @@ class WelcomeMessage extends StatelessWidget {
     final hour = now.hour;
     final greeting = _getGreeting(hour);
     final message = _getMessage(hour);
-    // ✅ استخدام context بدلاً من ColorHelper
+    
+    // ✅ استخدام context.getTimeBasedGradient مباشرة
     final gradient = context.getTimeBasedGradient(dateTime: now);
     
     return Container(
@@ -30,9 +31,15 @@ class WelcomeMessage extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          // ✅ استخدام colors من الـ gradient مباشرة
           colors: gradient.colors.map((c) => c.withValues(alpha: 0.9)).toList(),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: gradient.colors.first.withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),

@@ -1,4 +1,5 @@
-// lib/features/daily_quote/widgets/daily_quotes_card.dart
+// lib/features/daily_quote/widgets/daily_quotes_card.dart - منظف من التكرار
+import 'package:athkar_app/app/themes/widgets/utils/quote_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -6,7 +7,6 @@ import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../services/daily_quote_service.dart';
-import '../models/daily_quote_model.dart';
 
 class DailyQuotesCard extends StatefulWidget {
   const DailyQuotesCard({super.key});
@@ -226,21 +226,18 @@ class _QuoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ استخدام دالة محلية بدلاً من _getQuoteGradient منفصلة
-    final gradient = _getQuoteGradient(context, quote.type);
+    // ✅ استخدام QuoteHelper الموحد
+    final gradient = QuoteHelper.getQuoteGradient(context, quote.type);
+    final primaryColor = QuoteHelper.getQuotePrimaryColor(context, quote.type);
     
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space1),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: gradient,
-        ),
+        gradient: gradient,
         boxShadow: [
           BoxShadow(
-            color: gradient.first.withValues(alpha: 0.3),
+            color: primaryColor.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
             spreadRadius: 0,
@@ -262,10 +259,10 @@ class _QuoteCard extends StatelessWidget {
             child: InkWell(
               onTap: () => _showQuoteDetails(context),
               borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-              splashColor: gradient.first.withValues(alpha: 0.3),
-              highlightColor: gradient.first.withValues(alpha: 0.2),
-              hoverColor: gradient.first.withValues(alpha: 0.1),
-              focusColor: gradient.first.withValues(alpha: 0.2),
+              splashColor: primaryColor.withValues(alpha: 0.3),
+              highlightColor: primaryColor.withValues(alpha: 0.2),
+              hoverColor: primaryColor.withValues(alpha: 0.1),
+              focusColor: primaryColor.withValues(alpha: 0.2),
               child: Container(
                 decoration: BoxDecoration(
                   border: Border.all(
@@ -284,32 +281,6 @@ class _QuoteCard extends StatelessWidget {
     );
   }
 
-  /// ✅ دالة محلية مبسطة بدلاً من دالة منفصلة
-  List<Color> _getQuoteGradient(BuildContext context, String type) {
-    switch (type) {
-      case 'verse':
-        return [
-          context.successColor.withValues(alpha: 0.9),
-          context.successLightColor.withValues(alpha: 0.7),
-        ];
-      case 'hadith':
-        return [
-          context.accentColor.withValues(alpha: 0.9),
-          context.accentLightColor.withValues(alpha: 0.7),
-        ];
-      case 'dua':
-        return [
-          context.tertiaryColor.withValues(alpha: 0.9),
-          context.tertiaryLightColor.withValues(alpha: 0.7),
-        ];
-      default:
-        return [
-          context.primaryColor.withValues(alpha: 0.9),
-          context.primaryLightColor.withValues(alpha: 0.7),
-        ];
-    }
-  }
-
   Widget _buildContent(BuildContext context) {
     return Column(
       children: [
@@ -326,7 +297,8 @@ class _QuoteCard extends StatelessWidget {
                 ),
               ),
               child: Icon(
-                _getQuoteIcon(),
+                // ✅ استخدام QuoteHelper
+                QuoteHelper.getQuoteIcon(quote.type),
                 color: Colors.white,
                 size: ThemeConstants.iconLg,
               ),
@@ -339,14 +311,16 @@ class _QuoteCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _getQuoteTitle(),
+                    // ✅ استخدام QuoteHelper
+                    QuoteHelper.getQuoteTitle(quote.type),
                     style: context.titleLarge?.copyWith(
                       color: Colors.white,
                       fontWeight: ThemeConstants.bold,
                     ),
                   ),
                   Text(
-                    _getQuoteSubtitle(),
+                    // ✅ استخدام QuoteHelper
+                    QuoteHelper.getQuoteSubtitle(quote.type),
                     style: context.labelMedium?.copyWith(
                       color: Colors.white.withValues(alpha: 0.8),
                     ),
@@ -423,45 +397,6 @@ class _QuoteCard extends StatelessWidget {
     );
   }
 
-  IconData _getQuoteIcon() {
-    switch (quote.type) {
-      case 'verse':
-        return Icons.menu_book_rounded;
-      case 'hadith':
-        return Icons.auto_stories_rounded;
-      case 'dua':
-        return Icons.pan_tool_rounded;
-      default:
-        return Icons.auto_stories_rounded;
-    }
-  }
-
-  String _getQuoteTitle() {
-    switch (quote.type) {
-      case 'verse':
-        return 'آية اليوم';
-      case 'hadith':
-        return 'حديث اليوم';
-      case 'dua':
-        return 'دعاء اليوم';
-      default:
-        return 'اقتباس اليوم';
-    }
-  }
-
-  String _getQuoteSubtitle() {
-    switch (quote.type) {
-      case 'verse':
-        return 'من القرآن الكريم';
-      case 'hadith':
-        return 'من السنة النبوية';
-      case 'dua':
-        return 'دعاء مأثور';
-      default:
-        return 'اقتباس مختار';
-    }
-  }
-
   void _showQuoteDetails(BuildContext context) {
     HapticFeedback.lightImpact();
     
@@ -495,8 +430,8 @@ class _QuoteDetailsModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ استخدام دالة محلية 
-    final gradient = _getModalGradient(context, quote.type);
+    // ✅ استخدام QuoteHelper الموحد
+    final gradient = QuoteHelper.getModalGradient(context, quote.type);
     
     return Container(
       constraints: BoxConstraints(
@@ -506,17 +441,10 @@ class _QuoteDetailsModal extends StatelessWidget {
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(ThemeConstants.radius2xl),
         ),
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            gradient.first.withValues(alpha: 0.95),
-            gradient.last.withValues(alpha: 0.9),
-          ],
-        ),
+        gradient: gradient,
         boxShadow: [
           BoxShadow(
-            color: gradient.first.withValues(alpha: 0.4),
+            color: QuoteHelper.getQuotePrimaryColor(context, quote.type).withValues(alpha: 0.4),
             blurRadius: 30,
             offset: const Offset(0, -10),
             spreadRadius: 0,
@@ -559,7 +487,8 @@ class _QuoteDetailsModal extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _getQuoteTitle(),
+                          // ✅ استخدام QuoteHelper
+                          QuoteHelper.getQuoteDetailTitle(quote.type),
                           style: context.headlineSmall?.copyWith(
                             fontWeight: ThemeConstants.bold,
                             color: Colors.white,
@@ -658,7 +587,7 @@ class _QuoteDetailsModal extends StatelessWidget {
                                 label: const Text('نسخ النص'),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: Colors.white,
-                                  side: BorderSide(
+                                  side: const BorderSide(
                                     color: Colors.white,
                                     width: 1,
                                   ),
@@ -678,7 +607,7 @@ class _QuoteDetailsModal extends StatelessWidget {
                                 label: const Text('مشاركة'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
-                                  foregroundColor: gradient.first,
+                                  foregroundColor: QuoteHelper.getQuotePrimaryColor(context, quote.type),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
                                   ),
@@ -697,33 +626,6 @@ class _QuoteDetailsModal extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  /// ✅ دالة محلية للمودال
-  List<Color> _getModalGradient(BuildContext context, String type) {
-    switch (type) {
-      case 'verse':
-        return [context.successColor, context.successLightColor];
-      case 'hadith':
-        return [context.accentColor, context.accentLightColor];
-      case 'dua':
-        return [context.tertiaryColor, context.tertiaryLightColor];
-      default:
-        return [context.primaryColor, context.primaryLightColor];
-    }
-  }
-
-  String _getQuoteTitle() {
-    switch (quote.type) {
-      case 'verse':
-        return 'آية من القرآن الكريم';
-      case 'hadith':
-        return 'حديث شريف';
-      case 'dua':
-        return 'دعاء مأثور';
-      default:
-        return 'اقتباس مختار';
-    }
   }
 
   void _copyQuote(BuildContext context) {
@@ -747,10 +649,11 @@ class _QuoteDetailsModal extends StatelessWidget {
 
   void _shareQuote(BuildContext context) async {
     try {
-      final fullText = '${quote.content}\n\n${quote.source}\n\n📱 مشارك من تطبيق الأذكار';
+      // ✅ استخدام QuoteHelper للمشاركة
+      final shareText = QuoteHelper.getShareText(quote.type, quote.content, quote.source);
       await Share.share(
-        fullText,
-        subject: _getQuoteTitle(),
+        shareText,
+        subject: QuoteHelper.getQuoteDetailTitle(quote.type),
       );
       HapticFeedback.lightImpact();
     } catch (e) {
