@@ -29,8 +29,9 @@ class _LocationHeaderState extends State<LocationHeader> {
         borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
         gradient: LinearGradient(
           colors: [
-            ThemeConstants.primary.withValues(alpha: 0.9),
-            ThemeConstants.primary.darken(0.1).withValues(alpha: 0.9),
+            // ✅ استخدام context بدلاً من ThemeConstants مباشر
+            context.primaryColor.withValues(alpha: 0.9),
+            context.primaryColor.darken(0.1).withValues(alpha: 0.9),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,

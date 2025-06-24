@@ -327,3 +327,4 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
         return Icons.menu_book_rounded;
     }
   }
+}

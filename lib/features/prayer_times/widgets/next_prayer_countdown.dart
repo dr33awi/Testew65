@@ -23,7 +23,8 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
 
   @override
   Widget build(BuildContext context) {
-    final prayerColor = _getPrayerColor(widget.nextPrayer.type);
+    // ✅ استخدام context بدلاً من دالة منفصلة
+    final prayerColor = context.getPrayerColor(widget.nextPrayer.type.name);
     
     return Container(
       margin: const EdgeInsets.all(ThemeConstants.space4),
@@ -196,7 +197,8 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
             ),
           ),
           child: Icon(
-            _getPrayerIcon(widget.nextPrayer.type),
+            // ✅ استخدام context بدلاً من دالة منفصلة
+            context.getPrayerIcon(widget.nextPrayer.type.name),
             color: Colors.white,
             size: 40,
           ),
@@ -343,13 +345,5 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
     if (totalDuration.inSeconds == 0) return 0.0;
     
     return (elapsed.inSeconds / totalDuration.inSeconds).clamp(0.0, 1.0);
-  }
-  
-  Color _getPrayerColor(PrayerType type) {
-    return ThemeConstants.getPrayerColor(type.name);
-  }
-
-  IconData _getPrayerIcon(PrayerType type) {
-    return ThemeConstants.getPrayerIcon(type.name);
   }
 }
