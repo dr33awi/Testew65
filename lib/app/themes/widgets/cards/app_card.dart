@@ -1,4 +1,4 @@
-// lib/app/themes/widgets/cards/app_card.dart
+// lib/app/themes/widgets/cards/app_card.dart - مُحدث لحل مشكلة تكرار الأزرار
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
@@ -353,11 +353,11 @@ class AppCard extends StatelessWidget {
           ),
         ],
         
-        // الإجراءات
-        if (actions != null && actions!.isNotEmpty) ...[
-          ThemeConstants.space4.h,
-          _buildActions(context),
-        ],
+        // ✅ إزالة الإجراءات من الأسفل لنوع athkar - ستظهر فقط في الهيدر
+        // if (actions != null && actions!.isNotEmpty && type != CardType.athkar) ...[
+        //   ThemeConstants.space4.h,
+        //   _buildActions(context),
+        // ],
       ],
     );
   }
@@ -684,7 +684,7 @@ class AppCard extends StatelessWidget {
   Widget _buildAthkarHeader(BuildContext context) {
     return Row(
       children: [
-        // عداد التكرار
+        // عداد التكرار (في اليسار)
         if (currentCount != null && totalCount != null)
           Container(
             padding: const EdgeInsets.symmetric(
@@ -710,7 +710,7 @@ class AppCard extends StatelessWidget {
         
         const Spacer(),
         
-        // أيقونات المفضلة والمشاركة من actions
+        // أيقونات المفضلة والمشاركة من actions (في اليمين)
         if (actions != null && actions!.isNotEmpty)
           Row(
             mainAxisSize: MainAxisSize.min,

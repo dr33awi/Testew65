@@ -1,5 +1,3 @@
-// lib/features/athkar/screens/athkar_details_screen.dart - مُحدث بالـ widgets الموحدة
-import 'package:athkar_app/app/routes/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -9,7 +7,7 @@ import '../../../core/infrastructure/services/storage/storage_service.dart';
 import '../../../core/infrastructure/services/utils/extensions/string_extensions.dart';
 import '../services/athkar_service.dart';
 import '../models/athkar_model.dart';
-import '../utils/category_utils.dart';
+import 'notification_settings_screen.dart';
 
 class AthkarDetailsScreen extends StatefulWidget {
   String categoryId;
@@ -275,9 +273,14 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
           ),
           actions: [
             AppBarAction(
-              icon: Icons.share_outlined,
-              onPressed: _shareProgress,
-              tooltip: 'مشاركة',
+              icon: Icons.notifications_outlined,
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AthkarNotificationSettingsScreen(),
+                ),
+              ),
+              tooltip: 'إعدادات الإشعارات',
             ),
           ],
           // إضافة شريط التقدم كـ bottom
@@ -384,14 +387,14 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                           ? ThemeConstants.space4
                           : 0,
                     ),
-                    // ✅ استخدام AppCard.athkar المحدث
+                    // ✅ استخدام AppCard.athkar بدون تكرار الأزرار
                     child: AppCard.athkar(
                       content: item.text,
                       source: item.source,
-                      fadl: item.fadl, // دمج الفضل في الكارد
+                      fadl: item.fadl,
                       currentCount: currentCount,
                       totalCount: item.count,
-                      primaryColor: ThemeConstants.success, // لون أخضر موحد
+                      primaryColor: ThemeConstants.success,
                       onTap: () => _onItemTap(item),
                       actions: [
                         CardAction(
@@ -413,7 +416,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
   }
 
   Widget _buildEmptyState() {
-    // ✅ استخدام AppCard للحالة المكتملة
+    // ✅ استخدام AppCard للحالة المكتملة بدون زر المشاركة
     return Center(
       child: AppCard.completion(
         title: 'أكملت جميع الأذكار! 🎉',
@@ -426,21 +429,30 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
             icon: Icons.refresh_rounded,
             label: 'إعادة القراءة',
             onPressed: _rereadAthkar,
-            isPrimary: true,
+            isPrimary: false, // جعل الزر شفاف بدلاً من primary
           ),
-          CardAction(
-            icon: Icons.share_rounded,
-            label: 'مشاركة الإنجاز',
-            onPressed: _shareProgress,
-          ),
+          // إزالة زر المشاركة
         ],
       ),
     );
   }
-
   void _toggleFavorite(AthkarItem item) {
-    // إدارة المفضلة
     HapticFeedback.lightImpact();
-    // يمكن إضافة منطق المفضلة هنا
+    
+    // يمكن إضافة منطق حفظ/إزالة من المفضلة هنا
+    // مثلاً: حفظ معرف الذكر في قائمة المفضلة في التخزين المحلي
+    
+    // إظهار رسالة للمستخدم
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('تمت إضافة الذكر للمفضلة'),
+        backgroundColor: ThemeConstants.success,
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
+      ),
+    );
   }
 }
