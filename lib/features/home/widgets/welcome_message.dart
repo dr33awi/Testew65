@@ -1,5 +1,4 @@
 // lib/features/home/widgets/welcome_message.dart
-import 'package:athkar_app/features/home/widgets/color_helper.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
@@ -22,7 +21,8 @@ class WelcomeMessage extends StatelessWidget {
     final hour = now.hour;
     final greeting = _getGreeting(hour);
     final message = _getMessage(hour);
-    final gradient = ColorHelper.getTimeBasedGradient(dateTime: now);
+    // ✅ استخدام context بدلاً من ColorHelper
+    final gradient = context.getTimeBasedGradient(dateTime: now);
     
     return Container(
       decoration: BoxDecoration(
@@ -30,6 +30,7 @@ class WelcomeMessage extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
+          // ✅ استخدام colors من الـ gradient مباشرة
           colors: gradient.colors.map((c) => c.withValues(alpha: 0.9)).toList(),
         ),
       ),

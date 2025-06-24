@@ -1,4 +1,4 @@
-// lib/features/prayer_times/screens/prayer_times_screen.dart
+// lib/features/prayer_times/screens/prayer_times_screen.dart (مُصلح)
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -210,11 +210,11 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
       padding: const EdgeInsets.all(ThemeConstants.space4),
       child: Row(
         children: [
-          // أيقونة التطبيق - استخدام ألوان الثيم
+          // أيقونة التطبيق - استخدام ألوان الثيم الموحدة
           Container(
             padding: const EdgeInsets.all(ThemeConstants.space3),
             decoration: BoxDecoration(
-              gradient: ThemeConstants.primaryGradient,
+              gradient: context.primaryGradient,
               borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
               boxShadow: ThemeConstants.shadowSm,
             ),
@@ -399,13 +399,13 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity10),
-            ThemeConstants.primaryLight.withValues(alpha: ThemeConstants.opacity10),
+            context.primaryColor.withValues(alpha: ThemeConstants.opacity10),
+            context.primaryColor.withValues(alpha: ThemeConstants.opacity5),
           ],
         ),
         borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
         border: Border.all(
-          color: ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity20),
+          color: context.primaryColor.withValues(alpha: ThemeConstants.opacity20),
           width: ThemeConstants.borderThin,
         ),
         boxShadow: ThemeConstants.shadowSm,
@@ -415,12 +415,12 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
           Container(
             padding: const EdgeInsets.all(ThemeConstants.space2),
             decoration: BoxDecoration(
-              color: ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity20),
+              color: context.primaryColor.withValues(alpha: ThemeConstants.opacity20),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
             ),
             child: Icon(
               ThemeConstants.iconPrayerTime,
-              color: ThemeConstants.primary,
+              color: context.primaryColor,
               size: ThemeConstants.iconMd,
             ),
           ),
@@ -498,7 +498,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
               ? 'تم تفعيل تنبيه ${prayer.nameAr}'
               : 'تم إيقاف تنبيه ${prayer.nameAr}',
         ),
-        backgroundColor: ThemeConstants.success,
+        backgroundColor: context.successColor,
       ),
     );
   }
@@ -513,41 +513,43 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   }
 }
 
-// Widgets مساعدة محدثة بألوان الثيم
+// Widgets مساعدة محدثة بألوان الثيم الموحدة
 class AppLoading {
   static Widget page({String? message}) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(ThemeConstants.space6),
-          decoration: BoxDecoration(
-            gradient: ThemeConstants.primaryGradient,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity30),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            strokeWidth: 3,
-          ),
-        ),
-        if (message != null) ...[
-          const SizedBox(height: ThemeConstants.space5),
-          Text(
-            message,
-            style: const TextStyle(
-              fontWeight: ThemeConstants.semiBold,
-              color: ThemeConstants.lightTextPrimary,
+    return Builder(
+      builder: (context) => Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space6),
+            decoration: BoxDecoration(
+              gradient: context.primaryGradient,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: context.primaryColor.withValues(alpha: ThemeConstants.opacity30),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              strokeWidth: 3,
             ),
           ),
+          if (message != null) ...[
+            const SizedBox(height: ThemeConstants.space5),
+            Text(
+              message,
+              style: context.bodyMedium?.copyWith(
+                fontWeight: ThemeConstants.semiBold,
+                color: context.textPrimaryColor,
+              ),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
@@ -557,58 +559,59 @@ class AppEmptyState {
     required String message,
     VoidCallback? onRetry,
   }) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(ThemeConstants.space4),
-          decoration: BoxDecoration(
-            color: ThemeConstants.error.withValues(alpha: ThemeConstants.opacity10),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: ThemeConstants.error.withValues(alpha: ThemeConstants.opacity30),
-              width: ThemeConstants.borderThin,
-            ),
-          ),
-          child: Icon(
-            Icons.error_outline,
-            size: ThemeConstants.icon3xl,
-            color: ThemeConstants.error,
-          ),
-        ),
-        const SizedBox(height: ThemeConstants.space4),
-        const Text(
-          'خطأ في التحميل',
-          style: TextStyle(
-            fontSize: ThemeConstants.textSizeXl,
-            fontWeight: ThemeConstants.bold,
-            color: ThemeConstants.lightTextPrimary,
-          ),
-        ),
-        const SizedBox(height: ThemeConstants.space2),
-        Text(
-          message,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: ThemeConstants.lightTextSecondary,
-          ),
-        ),
-        if (onRetry != null) ...[
-          const SizedBox(height: ThemeConstants.space4),
-          ElevatedButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
-            label: const Text('المحاولة مرة أخرى'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ThemeConstants.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+    return Builder(
+      builder: (context) => Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space4),
+            decoration: BoxDecoration(
+              color: context.errorColor.withValues(alpha: ThemeConstants.opacity10),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: context.errorColor.withValues(alpha: ThemeConstants.opacity30),
+                width: ThemeConstants.borderThin,
               ),
             ),
+            child: Icon(
+              Icons.error_outline,
+              size: ThemeConstants.icon3xl,
+              color: context.errorColor,
+            ),
           ),
+          const SizedBox(height: ThemeConstants.space4),
+          Text(
+            'خطأ في التحميل',
+            style: context.titleLarge?.copyWith(
+              fontWeight: ThemeConstants.bold,
+              color: context.textPrimaryColor,
+            ),
+          ),
+          const SizedBox(height: ThemeConstants.space2),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: context.bodyMedium?.copyWith(
+              color: context.textSecondaryColor,
+            ),
+          ),
+          if (onRetry != null) ...[
+            const SizedBox(height: ThemeConstants.space4),
+            ElevatedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('المحاولة مرة أخرى'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                ),
+              ),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 
@@ -618,57 +621,58 @@ class AppEmptyState {
     String? actionText,
     VoidCallback? onAction,
   }) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(ThemeConstants.space4),
-          decoration: BoxDecoration(
-            gradient: ThemeConstants.primaryGradient,
-            shape: BoxShape.circle,
-            boxShadow: ThemeConstants.shadowMd,
-          ),
-          child: Icon(
-            Icons.my_location,
-            size: ThemeConstants.icon3xl,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: ThemeConstants.space4),
-        Text(
-          message,
-          style: const TextStyle(
-            fontSize: ThemeConstants.textSizeXl,
-            fontWeight: ThemeConstants.bold,
-            color: ThemeConstants.lightTextPrimary,
-          ),
-        ),
-        if (description != null) ...[
-          const SizedBox(height: ThemeConstants.space2),
-          Text(
-            description,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: ThemeConstants.lightTextSecondary,
+    return Builder(
+      builder: (context) => Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space4),
+            decoration: BoxDecoration(
+              gradient: context.primaryGradient,
+              shape: BoxShape.circle,
+              boxShadow: ThemeConstants.shadowMd,
+            ),
+            child: Icon(
+              Icons.my_location,
+              size: ThemeConstants.icon3xl,
+              color: Colors.white,
             ),
           ),
-        ],
-        if (onAction != null && actionText != null) ...[
           const SizedBox(height: ThemeConstants.space4),
-          ElevatedButton.icon(
-            onPressed: onAction,
-            icon: const Icon(Icons.my_location),
-            label: Text(actionText),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ThemeConstants.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+          Text(
+            message,
+            style: context.titleLarge?.copyWith(
+              fontWeight: ThemeConstants.bold,
+              color: context.textPrimaryColor,
+            ),
+          ),
+          if (description != null) ...[
+            const SizedBox(height: ThemeConstants.space2),
+            Text(
+              description,
+              textAlign: TextAlign.center,
+              style: context.bodyMedium?.copyWith(
+                color: context.textSecondaryColor,
               ),
             ),
-          ),
+          ],
+          if (onAction != null && actionText != null) ...[
+            const SizedBox(height: ThemeConstants.space4),
+            ElevatedButton.icon(
+              onPressed: onAction,
+              icon: const Icon(Icons.my_location),
+              label: Text(actionText),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.primaryColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                ),
+              ),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }

@@ -1,13 +1,11 @@
-// lib/features/athkar/screens/athkar_categories_screen.dart
+// lib/features/athkar/screens/athkar_categories_screen.dart (مُصلح)
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../app/routes/app_router.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
-import '../../../core/infrastructure/services/notifications/notification_manager.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
 import '../services/athkar_service.dart';
 import '../models/athkar_model.dart';
@@ -211,11 +209,11 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
           Container(
             padding: const EdgeInsets.all(ThemeConstants.space3),
             decoration: BoxDecoration(
-              gradient: context.primaryGradient, // استخدام context بدلاً من ThemeConstants مباشرة
+              gradient: context.primaryGradient,
               borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
               boxShadow: ThemeConstants.shadowSm,
             ),
-            child: Icon(
+            child: const Icon(
               ThemeConstants.iconAthkar,
               color: Colors.white,
               size: ThemeConstants.iconMd,
@@ -312,8 +310,8 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                         child: Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(
-                            color: ThemeConstants.success, // يمكن الاحتفاظ بهذا لأنه مجرد نقطة صغيرة
+                          decoration: BoxDecoration(
+                            color: context.successColor,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -333,10 +331,10 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
       margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-        gradient: context.primaryGradient, // استخدام context بدلاً من ThemeConstants مباشرة
+        gradient: context.primaryGradient,
         boxShadow: [
           BoxShadow(
-            color: context.primaryColor.withValues(alpha: ThemeConstants.opacity30), // استخدام context
+            color: context.primaryColor.withValues(alpha: ThemeConstants.opacity30),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -369,7 +367,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                       width: ThemeConstants.borderThin,
                     ),
                   ),
-                  child: Icon(
+                  child: const Icon(
                     ThemeConstants.iconAthkar,
                     color: Colors.white,
                     size: ThemeConstants.icon2xl,
@@ -457,11 +455,11 @@ class _AppLoading {
           Container(
             padding: const EdgeInsets.all(ThemeConstants.space6),
             decoration: BoxDecoration(
-              gradient: context.primaryGradient, // استخدام context
+              gradient: context.primaryGradient,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: context.primaryColor.withValues(alpha: ThemeConstants.opacity30), // استخدام context
+                  color: context.primaryColor.withValues(alpha: ThemeConstants.opacity30),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -476,9 +474,9 @@ class _AppLoading {
             const SizedBox(height: ThemeConstants.space5),
             Text(
               message,
-              style: const TextStyle(
+              style: context.bodyMedium?.copyWith(
                 fontWeight: ThemeConstants.semiBold,
-                color: ThemeConstants.lightTextPrimary, // يمكن الاحتفاظ بها لأنها ثابتة
+                color: context.textPrimaryColor,
               ),
             ),
           ],
@@ -500,34 +498,33 @@ class _AppEmptyState {
           Container(
             padding: const EdgeInsets.all(ThemeConstants.space4),
             decoration: BoxDecoration(
-              color: context.errorColor.withValues(alpha: ThemeConstants.opacity10), // استخدام context
+              color: context.errorColor.withValues(alpha: ThemeConstants.opacity10),
               shape: BoxShape.circle,
               border: Border.all(
-                color: context.errorColor.withValues(alpha: ThemeConstants.opacity30), // استخدام context
+                color: context.errorColor.withValues(alpha: ThemeConstants.opacity30),
                 width: ThemeConstants.borderThin,
               ),
             ),
             child: Icon(
               Icons.error_outline,
               size: ThemeConstants.icon3xl,
-              color: context.errorColor, // استخدام context
+              color: context.errorColor,
             ),
           ),
           const SizedBox(height: ThemeConstants.space4),
-          const Text(
+          Text(
             'خطأ في التحميل',
-            style: TextStyle(
-              fontSize: ThemeConstants.textSizeXl,
+            style: context.titleLarge?.copyWith(
               fontWeight: ThemeConstants.bold,
-              color: ThemeConstants.lightTextPrimary, // يمكن الاحتفاظ بها
+              color: context.textPrimaryColor,
             ),
           ),
           const SizedBox(height: ThemeConstants.space2),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: ThemeConstants.lightTextSecondary, // يمكن الاحتفاظ بها
+            style: context.bodyMedium?.copyWith(
+              color: context.textSecondaryColor,
             ),
           ),
           if (onRetry != null) ...[
@@ -537,7 +534,7 @@ class _AppEmptyState {
               icon: const Icon(Icons.refresh),
               label: const Text('المحاولة مرة أخرى'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: context.primaryColor, // استخدام context
+                backgroundColor: context.primaryColor,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
@@ -563,11 +560,11 @@ class _AppEmptyState {
           Container(
             padding: const EdgeInsets.all(ThemeConstants.space4),
             decoration: BoxDecoration(
-              gradient: context.primaryGradient, // استخدام context
+              gradient: context.primaryGradient,
               shape: BoxShape.circle,
               boxShadow: ThemeConstants.shadowMd,
             ),
-            child: Icon(
+            child: const Icon(
               ThemeConstants.iconAthkar,
               size: ThemeConstants.icon3xl,
               color: Colors.white,
@@ -576,10 +573,9 @@ class _AppEmptyState {
           const SizedBox(height: ThemeConstants.space4),
           Text(
             message,
-            style: const TextStyle(
-              fontSize: ThemeConstants.textSizeXl,
+            style: context.titleLarge?.copyWith(
               fontWeight: ThemeConstants.bold,
-              color: ThemeConstants.lightTextPrimary, // يمكن الاحتفاظ بها
+              color: context.textPrimaryColor,
             ),
           ),
           if (description != null) ...[
@@ -587,8 +583,8 @@ class _AppEmptyState {
             Text(
               description,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: ThemeConstants.lightTextSecondary, // يمكن الاحتفاظ بها
+              style: context.bodyMedium?.copyWith(
+                color: context.textSecondaryColor,
               ),
             ),
           ],
@@ -596,10 +592,10 @@ class _AppEmptyState {
             const SizedBox(height: ThemeConstants.space4),
             ElevatedButton.icon(
               onPressed: onAction,
-              icon: Icon(ThemeConstants.iconAthkar),
+              icon: const Icon(ThemeConstants.iconAthkar),
               label: Text(actionText),
               style: ElevatedButton.styleFrom(
-                backgroundColor: context.primaryColor, // استخدام context
+                backgroundColor: context.primaryColor,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),

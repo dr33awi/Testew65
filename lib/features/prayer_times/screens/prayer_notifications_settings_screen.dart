@@ -1,4 +1,4 @@
-// lib/features/prayer_times/screens/prayer_notifications_settings_screen.dart
+// lib/features/prayer_times/screens/prayer_notifications_settings_screen.dart (مُصلح)
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -169,12 +169,12 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: context.unifiedGreenColor.withValues(alpha: 0.1), // استخدام context بدلاً من المتغير المحلي
+                    color: context.primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     Icons.notifications_active,
-                    color: context.unifiedGreenColor, // استخدام context بدلاً من المتغير المحلي
+                    color: context.primaryColor,
                     size: 24,
                   ),
                 ),
@@ -215,7 +215,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 _markAsChanged();
               });
             },
-            activeColor: context.unifiedGreenColor, // استخدام context بدلاً من المتغير المحلي
+            activeColor: context.primaryColor,
           ),
           
           // الاهتزاز
@@ -233,7 +233,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                     });
                   }
                 : null,
-            activeColor: context.unifiedGreenColor, // استخدام context بدلاً من المتغير المحلي
+            activeColor: context.primaryColor,
           ),
           
           const SizedBox(height: 8),
@@ -275,12 +275,12 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: context.unifiedGreenColor.withValues(alpha: 0.1), // استخدام context بدلاً من المتغير المحلي
+                    color: context.primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     Icons.mosque,
-                    color: context.unifiedGreenColor, // استخدام context بدلاً من المتغير المحلي
+                    color: context.primaryColor,
                     size: 24,
                   ),
                 ),
@@ -332,12 +332,12 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: context.unifiedGreenColor.withValues(alpha: 0.1), // استخدام context بدلاً من المتغير المحلي
+          color: context.primaryColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
           icon,
-          color: context.unifiedGreenColor, // استخدام context بدلاً من المتغير المحلي
+          color: context.primaryColor,
           size: 20,
         ),
       ),
@@ -365,7 +365,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 });
               }
             : null,
-        activeColor: context.unifiedGreenColor, // استخدام context بدلاً من المتغير المحلي
+        activeColor: context.primaryColor,
       ),
       children: [
         if (isEnabled && _notificationSettings.enabled)
@@ -435,7 +435,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
         child: ElevatedButton(
           onPressed: _isSaving || !_hasChanges ? null : _saveSettings,
           style: ElevatedButton.styleFrom(
-            backgroundColor: context.unifiedGreenColor, // استخدام context بدلاً من المتغير المحلي
+            backgroundColor: context.primaryColor,
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -485,7 +485,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
               });
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: context.unifiedGreenColor, // استخدام context بدلاً من المتغير المحلي
+              backgroundColor: context.primaryColor,
             ),
             child: const Text('حفظ وخروج'),
           ),

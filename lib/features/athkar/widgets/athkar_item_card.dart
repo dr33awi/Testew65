@@ -78,7 +78,8 @@ class _AthkarItemCardState extends State<AthkarItemCard>
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = widget.color ?? ThemeConstants.primary;
+    // ✅ استخدام context بدلاً من widget.color مباشرة
+    final effectiveColor = widget.color ?? context.primaryColor;
     
     return AnimatedBuilder(
       animation: _animationController,
@@ -122,13 +123,10 @@ class _AthkarItemCardState extends State<AthkarItemCard>
                 borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
                 child: Stack(
                   children: [
-                    // الخلفية المتحركة للبطاقات المكتملة
                     if (widget.isCompleted) _buildAnimatedBackground(),
                     
-                    // الحد اللامع للبطاقات المكتملة
                     if (widget.isCompleted) _buildGlowBorder(effectiveColor),
                     
-                    // المحتوى الرئيسي
                     _buildCardContent(context, effectiveColor),
                   ],
                 ),
@@ -181,16 +179,13 @@ class _AthkarItemCardState extends State<AthkarItemCard>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // الرأس
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // رقم الذكر
                 _buildNumberBadge(context, effectiveColor),
                 
                 ThemeConstants.space3.w,
                 
-                // محتوى الذكر
                 Expanded(
                   child: _buildMainContent(context, effectiveColor),
                 ),
@@ -199,7 +194,6 @@ class _AthkarItemCardState extends State<AthkarItemCard>
             
             ThemeConstants.space4.h,
             
-            // الفوتر
             _buildFooter(context, effectiveColor),
           ],
         ),
@@ -255,7 +249,6 @@ class _AthkarItemCardState extends State<AthkarItemCard>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // النص الرئيسي
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(ThemeConstants.space4),
@@ -298,7 +291,6 @@ class _AthkarItemCardState extends State<AthkarItemCard>
           ),
         ),
         
-        // الفضل
         if (widget.item.fadl != null) ...[
           ThemeConstants.space3.h,
           Container(
@@ -313,13 +305,14 @@ class _AthkarItemCardState extends State<AthkarItemCard>
                     )
                   : null,
               color: !widget.isCompleted
-                  ? ThemeConstants.accent.withValues(alpha: 0.08)
+                  // ✅ استخدام context بدلاً من ThemeConstants مباشر
+                  ? context.accentColor.withValues(alpha: 0.08)
                   : null,
               borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
               border: Border.all(
                 color: widget.isCompleted
                     ? Colors.white.withValues(alpha: 0.2)
-                    : ThemeConstants.accent.withValues(alpha: 0.2),
+                    : context.accentColor.withValues(alpha: 0.2),
               ),
             ),
             child: Row(
@@ -330,7 +323,7 @@ class _AthkarItemCardState extends State<AthkarItemCard>
                   decoration: BoxDecoration(
                     color: widget.isCompleted
                         ? Colors.white.withValues(alpha: 0.2)
-                        : ThemeConstants.accent.withValues(alpha: 0.15),
+                        : context.accentColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
                   ),
                   child: Icon(
@@ -338,7 +331,7 @@ class _AthkarItemCardState extends State<AthkarItemCard>
                     size: ThemeConstants.iconSm,
                     color: widget.isCompleted
                         ? Colors.white
-                        : ThemeConstants.accent,
+                        : context.accentColor,
                   ),
                 ),
                 ThemeConstants.space2.w,
@@ -351,7 +344,7 @@ class _AthkarItemCardState extends State<AthkarItemCard>
                         style: context.labelMedium?.copyWith(
                           color: widget.isCompleted
                               ? Colors.white.withValues(alpha: 0.9)
-                              : ThemeConstants.accent,
+                              : context.accentColor,
                           fontWeight: ThemeConstants.semiBold,
                         ),
                       ),
@@ -379,7 +372,6 @@ class _AthkarItemCardState extends State<AthkarItemCard>
   Widget _buildFooter(BuildContext context, Color effectiveColor) {
     return Row(
       children: [
-        // المصدر
         if (widget.item.source != null) ...[
           Expanded(
             child: Container(
@@ -429,10 +421,8 @@ class _AthkarItemCardState extends State<AthkarItemCard>
         ] else
           const Spacer(),
         
-        // العداد
         _buildCounter(context, effectiveColor),
         
-        // الإجراءات
         if (widget.onShare != null || widget.onFavoriteToggle != null) ...[
           ThemeConstants.space3.w,
           _buildActions(context),
@@ -476,14 +466,12 @@ class _AthkarItemCardState extends State<AthkarItemCard>
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // أيقونة التقدم
           SizedBox(
             width: 24,
             height: 24,
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // دائرة الخلفية
                 Container(
                   width: 24,
                   height: 24,
@@ -498,7 +486,6 @@ class _AthkarItemCardState extends State<AthkarItemCard>
                   ),
                 ),
                 
-                // دائرة التقدم
                 SizedBox(
                   width: 24,
                   height: 24,
@@ -512,7 +499,6 @@ class _AthkarItemCardState extends State<AthkarItemCard>
                   ),
                 ),
                 
-                // أيقونة الحالة
                 if (widget.isCompleted)
                   Icon(
                     Icons.check_rounded,
@@ -534,7 +520,6 @@ class _AthkarItemCardState extends State<AthkarItemCard>
           
           ThemeConstants.space2.w,
           
-          // النص
           Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,

@@ -9,45 +9,163 @@ extension ThemeExtension on BuildContext {
   TextTheme get textTheme => theme.textTheme;
   ColorScheme get colorScheme => theme.colorScheme;
 
-  // الألوان الأساسية - مضمونة التطابق مع ThemeConstants
-  Color get primaryColor => ThemeConstants.primary; // نفس القيمة بالضبط
-  Color get backgroundColor => theme.scaffoldBackgroundColor;
-  Color get surfaceColor => colorScheme.surface;
-  Color get cardColor => theme.cardTheme.color ?? ThemeConstants.card(this);
-  Color get errorColor => ThemeConstants.error; // نفس القيمة بالضبط
-  Color get dividerColor => theme.dividerTheme.color ?? ThemeConstants.divider(this);
+  // ===== الألوان الأساسية - مضمونة التطابق مع ThemeConstants =====
+  
+  /// اللون الأساسي - نفس ThemeConstants.primary بالضبط
+  Color get primaryColor => ThemeConstants.primary;
+  
+  /// اللون الأساسي الفاتح - نفس ThemeConstants.primaryLight بالضبط
+  Color get primaryLightColor => ThemeConstants.primaryLight;
+  
+  /// اللون الأساسي الداكن - نفس ThemeConstants.primaryDark بالضبط
+  Color get primaryDarkColor => ThemeConstants.primaryDark;
 
-  // ألوان النصوص
-  Color get textPrimaryColor => ThemeConstants.textPrimary(this);
-  Color get textSecondaryColor => ThemeConstants.textSecondary(this);
-
-  // الألوان الدلالية - مطابقة تماماً لـ ThemeConstants
-  Color get successColor => ThemeConstants.success; // نفس primary
-  Color get warningColor => ThemeConstants.warning;
-  Color get infoColor => ThemeConstants.info;
-
-  // ألوان إضافية للتوافق مع الاستخدام الحالي
+  // ===== الألوان الثانوية =====
+  
+  /// اللون الثانوي (الذهبي) - نفس ThemeConstants.accent بالضبط
   Color get accentColor => ThemeConstants.accent;
+  
+  /// اللون الثانوي الفاتح
+  Color get accentLightColor => ThemeConstants.accentLight;
+  
+  /// اللون الثانوي الداكن
+  Color get accentDarkColor => ThemeConstants.accentDark;
+
+  // ===== اللون الثالث (البني) =====
+  
+  /// اللون الثالث - نفس ThemeConstants.tertiary بالضبط
   Color get tertiaryColor => ThemeConstants.tertiary;
   
-  // الـ gradients الأساسية
-  LinearGradient get primaryGradient => ThemeConstants.primaryGradient;
-  LinearGradient get accentGradient => ThemeConstants.accentGradient;
-  LinearGradient get tertiaryGradient => ThemeConstants.tertiaryGradient;
+  /// اللون الثالث الفاتح
+  Color get tertiaryLightColor => ThemeConstants.tertiaryLight;
+  
+  /// اللون الثالث الداكن
+  Color get tertiaryDarkColor => ThemeConstants.tertiaryDark;
 
-  // دوال الـ gradients المتخصصة
+  // ===== الألوان الدلالية - مطابقة تماماً لـ ThemeConstants =====
+  
+  /// لون النجاح - نفس ThemeConstants.success (= primary) بالضبط
+  Color get successColor => ThemeConstants.success;
+  
+  /// لون النجاح الفاتح
+  Color get successLightColor => ThemeConstants.successLight;
+  
+  /// لون الخطأ - نفس ThemeConstants.error بالضبط
+  Color get errorColor => ThemeConstants.error;
+  
+  /// لون التحذير - نفس ThemeConstants.warning بالضبط
+  Color get warningColor => ThemeConstants.warning;
+  
+  /// لون التحذير الفاتح
+  Color get warningLightColor => ThemeConstants.warningLight;
+  
+  /// لون المعلومات - نفس ThemeConstants.info بالضبط
+  Color get infoColor => ThemeConstants.info;
+  
+  /// لون المعلومات الفاتح
+  Color get infoLightColor => ThemeConstants.infoLight;
+
+  // ===== ألوان الخلفيات والأسطح =====
+  
+  /// لون الخلفية الرئيسية
+  Color get backgroundColor => theme.scaffoldBackgroundColor;
+  
+  /// لون السطح
+  Color get surfaceColor => theme.colorScheme.surface;
+  
+  /// لون البطاقات
+  Color get cardColor => theme.cardTheme.color ?? ThemeConstants.card(this);
+  
+  /// لون الفواصل
+  Color get dividerColor => theme.dividerTheme.color ?? ThemeConstants.divider(this);
+
+  // ===== ألوان النصوص =====
+  
+  /// لون النص الأساسي
+  Color get textPrimaryColor => ThemeConstants.textPrimary(this);
+  
+  /// لون النص الثانوي
+  Color get textSecondaryColor => ThemeConstants.textSecondary(this);
+
+  // ===== التدرجات الأساسية - نفس ThemeConstants بالضبط =====
+  
+  /// التدرج الأساسي - نفس ThemeConstants.primaryGradient بالضبط
+  LinearGradient get primaryGradient => ThemeConstants.primaryGradient;
+  
+  /// التدرج الثانوي - نفس ThemeConstants.accentGradient بالضبط
+  LinearGradient get accentGradient => ThemeConstants.accentGradient;
+  
+  /// التدرج الثالث - نفس ThemeConstants.tertiaryGradient بالضبط
+  LinearGradient get tertiaryGradient => ThemeConstants.tertiaryGradient;
+  
+  /// تدرج النجاح
+  LinearGradient get successGradient => const LinearGradient(
+    colors: [ThemeConstants.success, ThemeConstants.successLight],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  // ===== دوال الـ gradients المتخصصة - نفس ThemeConstants =====
+  
+  /// الحصول على تدرج حسب اسم الصلاة
   LinearGradient prayerGradient(String prayerName) => 
     ThemeConstants.prayerGradient(prayerName);
+  
+  /// الحصول على تدرج حسب الوقت
   LinearGradient getTimeBasedGradient({DateTime? dateTime}) => 
     ThemeConstants.getTimeBasedGradient();
+  
+  /// الحصول على لون حسب اسم الصلاة
   Color getPrayerColor(String prayerName) => 
     ThemeConstants.getPrayerColor(prayerName);
+  
+  /// الحصول على أيقونة حسب اسم الصلاة
+  IconData getPrayerIcon(String prayerName) =>
+    ThemeConstants.getPrayerIcon(prayerName);
 
-  // حالة الثيم
+  // ===== دوال الفئات المبسطة =====
+  
+  /// الحصول على لون فئة الأذكار
+  Color getCategoryColor(String categoryId) {
+    switch (categoryId) {
+      case 'morning':
+      case 'الصباح':
+      case 'أذكار الصباح':
+        return ThemeConstants.primary;
+      case 'evening':
+      case 'المساء':
+      case 'أذكار المساء':
+        return ThemeConstants.accent;
+      case 'sleep':
+      case 'النوم':
+      case 'أذكار النوم':
+        return ThemeConstants.tertiary;
+      case 'prayer':
+      case 'بعد الصلاة':
+      case 'أذكار بعد الصلاة':
+        return ThemeConstants.primaryLight;
+      default:
+        return ThemeConstants.primary;
+    }
+  }
+  
+  /// الحصول على تدرج فئة الأذكار
+  LinearGradient getCategoryGradient(String categoryId) {
+    final color = getCategoryColor(categoryId);
+    return LinearGradient(
+      colors: [color, color.darken(0.1)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+  }
+
+  // ===== حالة الثيم =====
+  
   bool get isDarkMode => theme.brightness == Brightness.dark;
   bool get isLightMode => !isDarkMode;
 
-  // أنماط النصوص - مباشرة من TextTheme
+  // ===== أنماط النصوص - مباشرة من TextTheme =====
+  
   TextStyle? get displayLarge => textTheme.displayLarge;
   TextStyle? get displayMedium => textTheme.displayMedium;
   TextStyle? get displaySmall => textTheme.displaySmall;
@@ -64,38 +182,45 @@ extension ThemeExtension on BuildContext {
   TextStyle? get labelMedium => textTheme.labelMedium;
   TextStyle? get labelSmall => textTheme.labelSmall;
 
-  // أنماط خاصة
+  // ===== أنماط خاصة =====
+  
   TextStyle get quranStyle => AppTextStyles.quran;
   TextStyle get athkarStyle => AppTextStyles.athkar;
   TextStyle get duaStyle => AppTextStyles.dua;
 
-  // معلومات الشاشة
+  // ===== معلومات الشاشة =====
+  
   double get screenWidth => MediaQuery.sizeOf(this).width;
   double get screenHeight => MediaQuery.sizeOf(this).height;
   EdgeInsets get screenPadding => MediaQuery.paddingOf(this);
   EdgeInsets get viewInsets => MediaQuery.viewInsetsOf(this);
 
-  // نوع الجهاز
+  // ===== نوع الجهاز =====
+  
   bool get isMobile => screenWidth < ThemeConstants.breakpointMobile;
   bool get isTablet => screenWidth >= ThemeConstants.breakpointMobile && screenWidth < ThemeConstants.breakpointTablet;
   bool get isDesktop => screenWidth >= ThemeConstants.breakpointTablet;
 
-  // الحشوات المتجاوبة
+  // ===== الحشوات المتجاوبة =====
+  
   EdgeInsets get responsivePadding {
     if (isMobile) return const EdgeInsets.all(ThemeConstants.space4);
     if (isTablet) return const EdgeInsets.all(ThemeConstants.space6);
     return const EdgeInsets.all(ThemeConstants.space8);
   }
 
-  // معلومات النظام
+  // ===== معلومات النظام =====
+  
   bool get isIOS => theme.platform == TargetPlatform.iOS;
   bool get isAndroid => theme.platform == TargetPlatform.android;
 
-  // لوحة المفاتيح
+  // ===== لوحة المفاتيح =====
+  
   bool get isKeyboardOpen => viewInsets.bottom > 0;
   double get keyboardHeight => viewInsets.bottom;
 
-  // المناطق الآمنة
+  // ===== المناطق الآمنة =====
+  
   double get safeTop => screenPadding.top;
   double get safeBottom => screenPadding.bottom;
 }
@@ -314,24 +439,5 @@ extension WidgetExtensions on Widget {
   Widget scale(double scale) => Transform.scale(
     scale: scale,
     child: this,
-  );
-}
-
-/// Extensions إضافية للألوان الموحدة
-extension UnifiedColorExtensions on BuildContext {
-  /// الحصول على اللون الأخضر الموحد (نفس success و primary)
-  Color get unifiedGreenColor => ThemeConstants.success; // = ThemeConstants.primary
-  
-  /// الحصول على لون الأذكار
-  Color get athkarColor => ThemeConstants.accent;
-  
-  /// الحصول على لون القرآن
-  Color get quranColor => ThemeConstants.tertiary;
-  
-  /// الحصول على gradients موحدة
-  LinearGradient get successGradient => LinearGradient(
-    colors: [ThemeConstants.success, ThemeConstants.successLight],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
   );
 }

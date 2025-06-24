@@ -39,13 +39,9 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
         _isLoading = true;
       });
 
-      // تحميل الاقتباس اليومي
       final dailyQuote = await _quoteService.getDailyQuote();
-      
-      // تحميل دعاء عشوائي من JSON
       final randomDua = _quoteService.getRandomDua();
       
-      // تحويل البيانات إلى QuoteData
       quotes = [
         QuoteData(
           type: 'verse',
@@ -79,7 +75,6 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
         });
       }
       
-      // في حالة الخطأ، استخدم بيانات افتراضية
       quotes = [
         const QuoteData(
           type: 'verse',
@@ -117,7 +112,6 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
 
     return Column(
       children: [
-        // بطاقة الاقتباسات
         SizedBox(
           height: 280,
           child: PageView.builder(
@@ -137,7 +131,6 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
         
         const SizedBox(height: ThemeConstants.space4),
         
-        // مؤشر الصفحات
         _buildPageIndicator(),
       ],
     );
@@ -233,7 +226,8 @@ class _QuoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gradient = _getQuoteGradient(quote.type, context);
+    // ✅ استخدام دالة محلية بدلاً من _getQuoteGradient منفصلة
+    final gradient = _getQuoteGradient(context, quote.type);
     
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space1),
@@ -268,7 +262,6 @@ class _QuoteCard extends StatelessWidget {
             child: InkWell(
               onTap: () => _showQuoteDetails(context),
               borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-              // تخصيص لون الضغط ليكون نفس لون الكارد
               splashColor: gradient.first.withValues(alpha: 0.3),
               highlightColor: gradient.first.withValues(alpha: 0.2),
               hoverColor: gradient.first.withValues(alpha: 0.1),
@@ -291,27 +284,28 @@ class _QuoteCard extends StatelessWidget {
     );
   }
 
-  List<Color> _getQuoteGradient(String type, BuildContext context) {
+  /// ✅ دالة محلية مبسطة بدلاً من دالة منفصلة
+  List<Color> _getQuoteGradient(BuildContext context, String type) {
     switch (type) {
       case 'verse':
         return [
-          ThemeConstants.success.withValues(alpha: 0.9),
-          ThemeConstants.successLight.withValues(alpha: 0.7),
+          context.successColor.withValues(alpha: 0.9),
+          context.successLightColor.withValues(alpha: 0.7),
         ];
       case 'hadith':
         return [
-          ThemeConstants.accent.withValues(alpha: 0.9),
-          ThemeConstants.accentLight.withValues(alpha: 0.7),
+          context.accentColor.withValues(alpha: 0.9),
+          context.accentLightColor.withValues(alpha: 0.7),
         ];
       case 'dua':
         return [
-          ThemeConstants.tertiary.withValues(alpha: 0.9),
-          ThemeConstants.tertiaryLight.withValues(alpha: 0.7),
+          context.tertiaryColor.withValues(alpha: 0.9),
+          context.tertiaryLightColor.withValues(alpha: 0.7),
         ];
       default:
         return [
-          ThemeConstants.primary.withValues(alpha: 0.9),
-          ThemeConstants.primaryLight.withValues(alpha: 0.7),
+          context.primaryColor.withValues(alpha: 0.9),
+          context.primaryLightColor.withValues(alpha: 0.7),
         ];
     }
   }
@@ -319,7 +313,6 @@ class _QuoteCard extends StatelessWidget {
   Widget _buildContent(BuildContext context) {
     return Column(
       children: [
-        // رأس البطاقة
         Row(
           children: [
             Container(
@@ -366,7 +359,6 @@ class _QuoteCard extends StatelessWidget {
         
         const SizedBox(height: ThemeConstants.space4),
         
-        // النص الرئيسي
         Expanded(
           child: Container(
             width: double.infinity,
@@ -382,7 +374,6 @@ class _QuoteCard extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // النص
                 Text(
                   quote.content,
                   textAlign: TextAlign.center,
@@ -400,7 +391,6 @@ class _QuoteCard extends StatelessWidget {
         
         const SizedBox(height: ThemeConstants.space3),
         
-        // المصدر
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: ThemeConstants.space3,
@@ -433,7 +423,6 @@ class _QuoteCard extends StatelessWidget {
     );
   }
 
-  // دوال مساعدة
   IconData _getQuoteIcon() {
     switch (quote.type) {
       case 'verse':
@@ -485,7 +474,6 @@ class _QuoteCard extends StatelessWidget {
   }
 }
 
-/// نموذج بيانات الاقتباس المبسط
 class QuoteData {
   final String type;
   final String content;
@@ -500,7 +488,6 @@ class QuoteData {
   });
 }
 
-/// نافذة تفاصيل الاقتباس
 class _QuoteDetailsModal extends StatelessWidget {
   final QuoteData quote;
 
@@ -508,7 +495,8 @@ class _QuoteDetailsModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gradient = _getQuoteGradient(quote.type, context);
+    // ✅ استخدام دالة محلية 
+    final gradient = _getModalGradient(context, quote.type);
     
     return Container(
       constraints: BoxConstraints(
@@ -554,7 +542,6 @@ class _QuoteDetailsModal extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // مقبض السحب
                 Container(
                   margin: const EdgeInsets.only(top: ThemeConstants.space3),
                   width: 50,
@@ -565,14 +552,12 @@ class _QuoteDetailsModal extends StatelessWidget {
                   ),
                 ),
                 
-                // المحتوى
                 Flexible(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(ThemeConstants.space5),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // العنوان
                         Text(
                           _getQuoteTitle(),
                           style: context.headlineSmall?.copyWith(
@@ -583,7 +568,6 @@ class _QuoteDetailsModal extends StatelessWidget {
                         
                         const SizedBox(height: ThemeConstants.space4),
                         
-                        // عرض الموضوع إذا كان متوفراً
                         if (quote.theme != null) ...[
                           Center(
                             child: Container(
@@ -611,7 +595,6 @@ class _QuoteDetailsModal extends StatelessWidget {
                           const SizedBox(height: ThemeConstants.space5),
                         ],
                         
-                        // النص الكامل
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(ThemeConstants.space5),
@@ -644,7 +627,6 @@ class _QuoteDetailsModal extends StatelessWidget {
                         
                         const SizedBox(height: ThemeConstants.space4),
                         
-                        // المصدر
                         Center(
                           child: Container(
                             padding: const EdgeInsets.symmetric(
@@ -667,7 +649,6 @@ class _QuoteDetailsModal extends StatelessWidget {
                         
                         const SizedBox(height: ThemeConstants.space6),
                         
-                        // أزرار الإجراءات
                         Row(
                           children: [
                             Expanded(
@@ -718,28 +699,17 @@ class _QuoteDetailsModal extends StatelessWidget {
     );
   }
 
-  List<Color> _getQuoteGradient(String type, BuildContext context) {
+  /// ✅ دالة محلية للمودال
+  List<Color> _getModalGradient(BuildContext context, String type) {
     switch (type) {
       case 'verse':
-        return [
-          ThemeConstants.success.withValues(alpha: 0.9),
-          ThemeConstants.successLight.withValues(alpha: 0.7),
-        ];
+        return [context.successColor, context.successLightColor];
       case 'hadith':
-        return [
-          ThemeConstants.accent.withValues(alpha: 0.9),
-          ThemeConstants.accentLight.withValues(alpha: 0.7),
-        ];
+        return [context.accentColor, context.accentLightColor];
       case 'dua':
-        return [
-          ThemeConstants.tertiary.withValues(alpha: 0.9),
-          ThemeConstants.tertiaryLight.withValues(alpha: 0.7),
-        ];
+        return [context.tertiaryColor, context.tertiaryLightColor];
       default:
-        return [
-          ThemeConstants.primary.withValues(alpha: 0.9),
-          ThemeConstants.primaryLight.withValues(alpha: 0.7),
-        ];
+        return [context.primaryColor, context.primaryLightColor];
     }
   }
 
@@ -760,7 +730,6 @@ class _QuoteDetailsModal extends StatelessWidget {
     final fullText = '${quote.content}\n\n${quote.source}';
     Clipboard.setData(ClipboardData(text: fullText));
     
-    // إظهار رسالة النجاح
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

@@ -1,5 +1,4 @@
 // lib/features/home/widgets/category_grid.dart
-import 'package:athkar_app/features/home/widgets/color_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
@@ -104,7 +103,8 @@ class _CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gradient = ColorHelper.getCategoryGradient(category.id);
+    // ✅ استخدام دالة محلية بدلاً من ColorHelper
+    final gradient = _getCategoryGradient(context, category.id);
     
     return Container(
       decoration: BoxDecoration(
@@ -194,6 +194,49 @@ class _CategoryCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  /// ✅ دالة محلية مبسطة بدلاً من ColorHelper.getCategoryGradient
+  LinearGradient _getCategoryGradient(BuildContext context, String categoryId) {
+    // تحديد الألوان حسب الفئة - نفس النتيجة البصرية بالضبط
+    Color primaryColor;
+    Color secondaryColor;
+    
+    switch (categoryId) {
+      case 'prayer_times':
+        primaryColor = context.primaryColor; // ThemeConstants.primary
+        secondaryColor = context.primaryLightColor; // ThemeConstants.primaryLight
+        break;
+      case 'athkar':
+        primaryColor = context.accentColor; // ThemeConstants.accent  
+        secondaryColor = context.accentLightColor; // ThemeConstants.accentLight
+        break;
+      case 'quran':
+        primaryColor = context.tertiaryColor; // ThemeConstants.tertiary
+        secondaryColor = context.tertiaryLightColor; // ThemeConstants.tertiaryLight
+        break;
+      case 'qibla':
+        primaryColor = context.primaryDarkColor; // ThemeConstants.primaryDark
+        secondaryColor = context.primaryColor; // ThemeConstants.primary
+        break;
+      case 'tasbih':
+        primaryColor = context.accentDarkColor; // ThemeConstants.accentDark
+        secondaryColor = context.accentColor; // ThemeConstants.accent
+        break;
+      case 'dua':
+        primaryColor = context.tertiaryDarkColor; // ThemeConstants.tertiaryDark
+        secondaryColor = context.tertiaryColor; // ThemeConstants.tertiary
+        break;
+      default:
+        primaryColor = context.primaryColor;
+        secondaryColor = context.primaryLightColor;
+    }
+
+    return LinearGradient(
+      colors: [primaryColor, secondaryColor],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
     );
   }
 }

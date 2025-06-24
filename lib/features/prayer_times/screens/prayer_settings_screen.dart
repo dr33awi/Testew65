@@ -1,4 +1,4 @@
-// lib/features/prayer_times/screens/prayer_settings_screen.dart
+// lib/features/prayer_times/screens/prayer_settings_screen.dart (مُصلح)
 
 import 'package:flutter/material.dart';
 import '../../../app/themes/app_theme.dart';
@@ -232,7 +232,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
               });
             }
           },
-          activeColor: context.unifiedGreenColor, // استخدام context بدلاً من ThemeConstants.success مباشرة
+          activeColor: context.primaryColor,
         ),
         RadioListTile<AsrJuristic>(
           title: const Text('الحنفي'),
@@ -249,7 +249,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
               });
             }
           },
-          activeColor: context.unifiedGreenColor, // استخدام context بدلاً من ThemeConstants.success مباشرة
+          activeColor: context.primaryColor,
         ),
       ],
     );
@@ -281,7 +281,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
         children: [
           IconButton(
             icon: const Icon(Icons.remove_circle_outline),
-            color: context.unifiedGreenColor, // استخدام context بدلاً من ThemeConstants.success مباشرة
+            color: context.primaryColor,
             onPressed: () {
               _updateAdjustment(key, adjustment - 1);
             },
@@ -296,7 +296,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
-            color: context.unifiedGreenColor, // استخدام context بدلاً من ThemeConstants.success مباشرة
+            color: context.primaryColor,
             onPressed: () {
               _updateAdjustment(key, adjustment + 1);
             },
@@ -329,7 +329,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
         isLoading: _isSaving,
         isFullWidth: true,
         icon: Icons.save,
-        backgroundColor: context.unifiedGreenColor, // استخدام context بدلاً من ThemeConstants.success مباشرة
+        backgroundColor: context.primaryColor,
       ),
     );
   }
@@ -362,12 +362,12 @@ class SettingsSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(ThemeConstants.space2),
                 decoration: BoxDecoration(
-                  color: context.unifiedGreenColor.withValues(alpha: 0.1), // استخدام context بدلاً من ThemeConstants.success مباشرة
+                  color: context.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                 ),
                 child: Icon(
                   icon,
-                  color: context.unifiedGreenColor, // استخدام context بدلاً من ThemeConstants.success مباشرة
+                  color: context.primaryColor,
                   size: ThemeConstants.iconMd,
                 ),
               ),
@@ -470,7 +470,7 @@ class CalculationMethodDialog extends StatelessWidget {
                         onMethodSelected(value);
                       }
                     },
-                    activeColor: context.unifiedGreenColor, // استخدام context بدلاً من ThemeConstants.success مباشرة
+                    activeColor: context.primaryColor,
                   );
                 }).toList(),
               ),
@@ -485,7 +485,7 @@ class CalculationMethodDialog extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
               child: const Text('إلغاء'),
               style: TextButton.styleFrom(
-                foregroundColor: context.unifiedGreenColor, // استخدام context بدلاً من ThemeConstants.success مباشرة
+                foregroundColor: context.primaryColor,
               ),
             ),
           ),

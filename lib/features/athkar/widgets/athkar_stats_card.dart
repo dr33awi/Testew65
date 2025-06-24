@@ -26,23 +26,24 @@ class _AthkarStatsCardState extends State<AthkarStatsCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(ThemeConstants.space3), // تقليل المارجن
+      margin: const EdgeInsets.all(ThemeConstants.space3),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl), // تقليل الزاوية
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
         gradient: LinearGradient(
           colors: [
-            ThemeConstants.primary.withValues(alpha: 0.9),
-            ThemeConstants.primary.darken(0.1).withValues(alpha: 0.9),
+            // ✅ استخدام context بدلاً من ThemeConstants مباشر
+            context.primaryColor.withValues(alpha: 0.9),
+            context.primaryColor.darken(0.1).withValues(alpha: 0.9),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         boxShadow: [
           BoxShadow(
-            color: ThemeConstants.primary.withValues(alpha: 0.2), // تقليل الظل
-            blurRadius: 15, // تقليل الضبابية
-            offset: const Offset(0, 8), // تقليل الإزاحة
-            spreadRadius: 1, // تقليل الانتشار
+            color: context.primaryColor.withValues(alpha: 0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+            spreadRadius: 1,
           ),
         ],
       ),
@@ -67,21 +68,17 @@ class _AthkarStatsCardState extends State<AthkarStatsCard> {
 
   Widget _buildContent(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(ThemeConstants.space4), // تقليل الpadding
+      padding: const EdgeInsets.all(ThemeConstants.space4),
       child: Column(
         children: [
-          // الرأس
           _buildHeader(context),
           
-          ThemeConstants.space3.h, // تقليل المسافة
+          ThemeConstants.space3.h,
           
-          // الإحصائيات
           _buildStatistics(context),
           
           if (widget.onViewDetails != null) ...[
-            ThemeConstants.space3.h, // تقليل المسافة
-            
-            // زر عرض التفاصيل
+            ThemeConstants.space3.h,
             _buildDetailsButton(context),
           ],
         ],
@@ -92,9 +89,8 @@ class _AthkarStatsCardState extends State<AthkarStatsCard> {
   Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
-        // الأيقونة الثابتة (مصغرة)
         Container(
-          width: 50, // تصغير الحجم
+          width: 50,
           height: 50,
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
@@ -106,28 +102,27 @@ class _AthkarStatsCardState extends State<AthkarStatsCard> {
             boxShadow: [
               BoxShadow(
                 color: Colors.white.withValues(alpha: 0.2),
-                blurRadius: 10, // تقليل الضبابية
-                spreadRadius: 1, // تقليل الانتشار
+                blurRadius: 10,
+                spreadRadius: 1,
               ),
             ],
           ),
           child: const Icon(
             Icons.insights_rounded,
             color: Colors.white,
-            size: 24, // تصغير الأيقونة
+            size: 24,
           ),
         ),
         
-        ThemeConstants.space3.w, // تقليل المسافة
+        ThemeConstants.space3.w,
         
-        // العنوان والوصف
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'إحصائياتك اليوم',
-                style: context.titleLarge?.copyWith( // تصغير الخط
+                style: context.titleLarge?.copyWith(
                   color: Colors.white,
                   fontWeight: ThemeConstants.bold,
                 ),
@@ -137,7 +132,7 @@ class _AthkarStatsCardState extends State<AthkarStatsCard> {
               
               Text(
                 _getMotivationalMessage(),
-                style: context.bodyMedium?.copyWith( // تصغير الخط
+                style: context.bodyMedium?.copyWith(
                   color: Colors.white.withValues(alpha: 0.9),
                   height: 1.4,
                 ),
@@ -151,10 +146,10 @@ class _AthkarStatsCardState extends State<AthkarStatsCard> {
 
   Widget _buildStatistics(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space3), // تقليل الpadding
+      padding: const EdgeInsets.all(ThemeConstants.space3),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg), // تقليل الزاوية
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.3),
           width: 1,
@@ -162,7 +157,6 @@ class _AthkarStatsCardState extends State<AthkarStatsCard> {
       ),
       child: Row(
         children: [
-          // الأذكار المكتملة
           Expanded(
             child: _StatItem(
               icon: Icons.check_circle_rounded,
@@ -176,14 +170,12 @@ class _AthkarStatsCardState extends State<AthkarStatsCard> {
             ),
           ),
           
-          // الفاصل
           Container(
             width: 1,
-            height: 40, // تقليل الارتفاع
+            height: 40,
             color: Colors.white.withValues(alpha: 0.3),
           ),
           
-          // سلسلة الأيام (بدون أنيميشن)
           Expanded(
             child: _StatItem(
               icon: Icons.local_fire_department_rounded,
@@ -209,17 +201,17 @@ class _AthkarStatsCardState extends State<AthkarStatsCard> {
         },
         child: Container(
           padding: const EdgeInsets.symmetric(
-            vertical: ThemeConstants.space3, // تقليل الpadding
+            vertical: ThemeConstants.space3,
             horizontal: ThemeConstants.space4,
           ),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg), // تقليل الزاوية
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 10, // تقليل الضبابية
-                offset: const Offset(0, 4), // تقليل الإزاحة
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -228,23 +220,23 @@ class _AthkarStatsCardState extends State<AthkarStatsCard> {
             children: [
               Icon(
                 Icons.analytics_outlined,
-                size: ThemeConstants.iconSm, // تصغير الأيقونة
-                color: ThemeConstants.primary,
+                size: ThemeConstants.iconSm,
+                // ✅ استخدام context بدلاً من ThemeConstants
+                color: context.primaryColor,
               ),
               ThemeConstants.space2.w,
               Text(
                 'عرض التفاصيل',
-                style: context.titleSmall?.copyWith( // تصغير الخط
-                  color: ThemeConstants.primary,
+                style: context.titleSmall?.copyWith(
+                  color: context.primaryColor,
                   fontWeight: ThemeConstants.semiBold,
                 ),
               ),
               ThemeConstants.space2.w,
-              // أيقونة السهم الثابتة
               Icon(
                 Icons.arrow_forward_ios_rounded,
-                size: ThemeConstants.iconXs, // تصغير الأيقونة
-                color: ThemeConstants.primary,
+                size: ThemeConstants.iconXs,
+                color: context.primaryColor,
               ),
             ],
           ),
@@ -297,30 +289,27 @@ class _StatItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // الأيقونة (بدون تأثيرات)
         Stack(
           alignment: Alignment.center,
           children: [
-            // توهج بسيط للخطوط المتتالية
             if (showGlow)
               Container(
-                width: 35, // تصغير الحجم
+                width: 35,
                 height: 35,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.white.withValues(alpha: 0.3),
-                      blurRadius: 15, // تقليل الضبابية
-                      spreadRadius: 3, // تقليل الانتشار
+                      blurRadius: 15,
+                      spreadRadius: 3,
                     ),
                   ],
                 ),
               ),
             
-            // الأيقونة
             Container(
-              width: 32, // تصغير الحجم
+              width: 32,
               height: 32,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.2),
@@ -329,18 +318,17 @@ class _StatItem extends StatelessWidget {
               child: Icon(
                 icon,
                 color: color,
-                size: hasStreak ? ThemeConstants.iconMd : ThemeConstants.iconSm, // تصغير الأيقونة
+                size: hasStreak ? ThemeConstants.iconMd : ThemeConstants.iconSm,
               ),
             ),
             
-            // شريط التقدم الدائري
             if (showProgress)
               SizedBox(
-                width: 35, // تصغير الحجم
+                width: 35,
                 height: 35,
                 child: CircularProgressIndicator(
                   value: progress,
-                  strokeWidth: 2, // تقليل السماكة
+                  strokeWidth: 2,
                   backgroundColor: Colors.white.withValues(alpha: 0.2),
                   valueColor: AlwaysStoppedAnimation<Color>(color),
                 ),
@@ -348,24 +336,22 @@ class _StatItem extends StatelessWidget {
           ],
         ),
         
-        ThemeConstants.space2.h, // تقليل المسافة
+        ThemeConstants.space2.h,
         
-        // القيمة
         Text(
           value,
-          style: context.titleLarge?.copyWith( // تصغير الخط
+          style: context.titleLarge?.copyWith(
             color: color,
             fontWeight: ThemeConstants.bold,
-            fontSize: hasStreak ? 20 : 18, // تصغير الحجم
+            fontSize: hasStreak ? 20 : 18,
           ),
         ),
         
         ThemeConstants.space1.h,
         
-        // التسمية
         Text(
           label,
-          style: context.labelSmall?.copyWith( // تصغير الخط
+          style: context.labelSmall?.copyWith(
             color: color.withValues(alpha: 0.9),
             fontWeight: ThemeConstants.medium,
           ),

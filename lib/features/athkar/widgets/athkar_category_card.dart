@@ -5,7 +5,6 @@ import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/themes/widgets/animations/animated_press.dart';
 import '../models/athkar_model.dart';
-import '../utils/category_utils.dart';
 
 class AthkarCategoryCard extends StatefulWidget {
   final AthkarCategory category;
@@ -58,8 +57,9 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
   @override
   Widget build(BuildContext context) {
     final isCompleted = widget.progress >= 100;
-    final categoryColor = CategoryUtils.getCategoryThemeColor(widget.category.id);
-    final categoryIcon = CategoryUtils.getCategoryIcon(widget.category.id);
+    // ✅ استخدام دالة محلية بدلاً من CategoryUtils
+    final categoryColor = _getCategoryThemeColor(widget.category.id);
+    final categoryIcon = _getCategoryIcon(widget.category.id);
     
     return AnimatedPress(
       onTap: () {
@@ -260,4 +260,70 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
       ],
     );
   }
-}
+
+  // ===== دوال محلية بدلاً من CategoryUtils =====
+
+  /// ✅ دالة محلية بدلاً من CategoryUtils.getCategoryThemeColor
+  Color _getCategoryThemeColor(String categoryId) {
+    // نفس النتيجة البصرية بالضبط
+    switch (categoryId.toLowerCase()) {
+      case 'morning':
+      case 'الصباح':
+      case 'أذكار الصباح':
+        return context.primaryColor; // ThemeConstants.primary
+      case 'evening':
+      case 'المساء':
+      case 'أذكار المساء':
+        return context.accentColor; // ThemeConstants.accent
+      case 'sleep':
+      case 'النوم':
+      case 'أذكار النوم':
+        return context.tertiaryColor; // ThemeConstants.tertiary
+      case 'prayer':
+      case 'بعد الصلاة':
+      case 'أذكار بعد الصلاة':
+        return context.primaryLightColor; // ThemeConstants.primaryLight
+      case 'travel':
+      case 'السفر':
+      case 'أذكار السفر':
+        return context.accentDarkColor; // ThemeConstants.accentDark
+      case 'general':
+      case 'عامة':
+      case 'أذكار عامة':
+        return context.tertiaryDarkColor; // ThemeConstants.tertiaryDark
+      default:
+        return context.primaryColor;
+    }
+  }
+
+  /// ✅ دالة محلية بدلاً من CategoryUtils.getCategoryIcon
+  IconData _getCategoryIcon(String categoryId) {
+    switch (categoryId.toLowerCase()) {
+      case 'morning':
+      case 'الصباح':
+      case 'أذكار الصباح':
+        return Icons.wb_sunny_rounded;
+      case 'evening':
+      case 'المساء':
+      case 'أذكار المساء':
+        return Icons.nights_stay_rounded;
+      case 'sleep':
+      case 'النوم':
+      case 'أذكار النوم':
+        return Icons.bedtime_rounded;
+      case 'prayer':
+      case 'بعد الصلاة':
+      case 'أذكار بعد الصلاة':
+        return Icons.mosque_rounded;
+      case 'travel':
+      case 'السفر':
+      case 'أذكار السفر':
+        return Icons.luggage_rounded;
+      case 'general':
+      case 'عامة':
+      case 'أذكار عامة':
+        return Icons.auto_awesome_rounded;
+      default:
+        return Icons.menu_book_rounded;
+    }
+  }

@@ -2,125 +2,79 @@
 import 'package:athkar_app/app/themes/theme_constants.dart';
 import 'package:flutter/material.dart';
 
-/// مساعد لتوحيد الألوان في جميع أنحاء التطبيق
+/// مساعد مبسط للألوان - الدوال الأساسية فقط
+/// معظم الوظائف الآن متاحة مباشرة من context
 class ColorHelper {
   ColorHelper._();
 
-  // تدرجات الفئات محفوظة للأداء
-  static const Map<String, List<Color>> _categoryGradients = {
-    'prayer_times': [ThemeConstants.primary, ThemeConstants.primaryLight],
-    'athkar': [ThemeConstants.accent, ThemeConstants.accentLight],
-    'quran': [ThemeConstants.tertiary, ThemeConstants.tertiaryLight],
-    'qibla': [ThemeConstants.primaryDark, ThemeConstants.primary],
-    'tasbih': [ThemeConstants.accentDark, ThemeConstants.accent],
-    'dua': [ThemeConstants.tertiaryDark, ThemeConstants.tertiary],
-  };
-
-  static const Map<String, Color> _categoryColors = {
-    'prayer_times': ThemeConstants.primary,
-    'athkar': ThemeConstants.accent,
-    'quran': ThemeConstants.tertiary,
-    'qibla': ThemeConstants.primaryDark,
-    'tasbih': ThemeConstants.accentDark,
-    'dua': ThemeConstants.tertiaryDark,
-  };
-
-  /// الحصول على تدرج لوني حسب الفئة
+  /// ⚠️ مُهمل - استخدم context.getCategoryGradient() بدلاً منه
+  @Deprecated('استخدم context.getCategoryGradient() بدلاً من ذلك')
   static LinearGradient getCategoryGradient(String categoryId) {
-    final colors = _categoryGradients[categoryId] ?? 
-                  [ThemeConstants.primary, ThemeConstants.primaryLight];
-    
-    return LinearGradient(
-      colors: colors,
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
-  }
-
-  /// الحصول على تدرج لوني حسب نوع المحتوى
-  static LinearGradient getContentGradient(String contentType) {
-    switch (contentType.toLowerCase()) {
-      case 'verse':
-      case 'آية':
-        return getCategoryGradient('quran');
-      case 'hadith':
-      case 'حديث':
-        return getCategoryGradient('athkar');
-      case 'dua':
-      case 'دعاء':
-        return getCategoryGradient('dua');
+    // إبقاء للتوافق المؤقت - سيتم حذفه لاحقاً
+    switch (categoryId) {
+      case 'prayer_times':
+        return const LinearGradient(
+          colors: [ThemeConstants.primary, ThemeConstants.primaryLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
       case 'athkar':
-      case 'أذكار':
-        return getCategoryGradient('athkar');
+        return const LinearGradient(
+          colors: [ThemeConstants.accent, ThemeConstants.accentLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case 'quran':
+        return const LinearGradient(
+          colors: [ThemeConstants.tertiary, ThemeConstants.tertiaryLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case 'qibla':
+        return const LinearGradient(
+          colors: [ThemeConstants.primaryDark, ThemeConstants.primary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case 'tasbih':
+        return const LinearGradient(
+          colors: [ThemeConstants.accentDark, ThemeConstants.accent],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
+      case 'dua':
+        return const LinearGradient(
+          colors: [ThemeConstants.tertiaryDark, ThemeConstants.tertiary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        );
       default:
         return ThemeConstants.primaryGradient;
     }
   }
 
-  /// الحصول على تدرج لوني حسب حالة التقدم
-  static LinearGradient getProgressGradient(double progress) {
-    if (progress < 0.3) {
-      return LinearGradient(
-        colors: [ThemeConstants.error.withOpacity(0.8), ThemeConstants.warning],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
-    } else if (progress < 0.7) {
-      return const LinearGradient(
-        colors: [ThemeConstants.warning, ThemeConstants.accent],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
-    } else {
-      return const LinearGradient(
-        colors: [ThemeConstants.success, ThemeConstants.primary],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      );
-    }
-  }
-
-  /// الحصول على تدرج لوني حسب الوقت
-  static LinearGradient getTimeBasedGradient({DateTime? dateTime}) {
-    final time = dateTime ?? DateTime.now();
-    final hour = time.hour;
-    
-    List<Color> colors;
-    
-    if (hour < 5) {
-      // ليل
-      colors = [ThemeConstants.darkBackground, ThemeConstants.darkCard];
-    } else if (hour < 8) {
-      // فجر
-      colors = [ThemeConstants.primaryDark, ThemeConstants.primary];
-    } else if (hour < 12) {
-      // صباح
-      colors = [ThemeConstants.accent, ThemeConstants.accentLight];
-    } else if (hour < 15) {
-      // ظهر
-      colors = [ThemeConstants.primary, ThemeConstants.primaryLight];
-    } else if (hour < 17) {
-      // عصر
-      colors = [ThemeConstants.primaryLight, ThemeConstants.primarySoft];
-    } else if (hour < 20) {
-      // مغرب
-      colors = [ThemeConstants.tertiary, ThemeConstants.tertiaryLight];
-    } else {
-      // مساء
-      colors = [ThemeConstants.primaryDark, ThemeConstants.primary];
-    }
-    
-    return LinearGradient(
-      colors: colors,
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
-  }
-
-  /// الحصول على لون أساسي حسب الفئة
+  /// ⚠️ مُهمل - استخدم context.getCategoryColor() بدلاً منه
+  @Deprecated('استخدم context.getCategoryColor() بدلاً من ذلك')
   static Color getCategoryColor(String categoryId) {
-    return _categoryColors[categoryId] ?? ThemeConstants.primary;
+    switch (categoryId) {
+      case 'prayer_times':
+        return ThemeConstants.primary;
+      case 'athkar':
+        return ThemeConstants.accent;
+      case 'quran':
+        return ThemeConstants.tertiary;
+      case 'qibla':
+        return ThemeConstants.primaryDark;
+      case 'tasbih':
+        return ThemeConstants.accentDark;
+      case 'dua':
+        return ThemeConstants.tertiaryDark;
+      default:
+        return ThemeConstants.primary;
+    }
   }
+
+  // ===== الدوال المفيدة المتبقية =====
 
   /// الحصول على لون حسب مستوى الأهمية
   static Color getImportanceColor(String level) {
@@ -197,3 +151,29 @@ class ColorHelper {
     );
   }
 }
+
+// ===== تعليق للمطورين =====
+/*
+ملاحظة: هذا الملف سيتم تبسيطه أو حذفه مستقبلاً
+
+الدوال المُهملة:
+- getCategoryGradient() -> استخدم context.getCategoryGradient()
+- getCategoryColor() -> استخدم context.getCategoryColor()
+- getContentGradient() -> استخدم context.getPrayerGradient()
+- getProgressGradient() -> قيم إنشاء دالة في context
+- getTimeBasedGradient() -> متاحة في context.getTimeBasedGradient()
+
+الدوال المفيدة المتبقية:
+- getImportanceColor()
+- getContrastingTextColor()
+- blendColors()
+- getHarmoniousColors()
+- applyOpacitySafely()
+- getTransparentGradient()
+
+خطة الإزالة:
+1. إصلاح جميع الشاشات لاستخدام context بدلاً من ColorHelper
+2. حذف الدوال المُهملة
+3. نقل الدوال المفيدة إلى ColorExtensions أو ملف منفصل
+4. حذف الملف نهائياً
+*/

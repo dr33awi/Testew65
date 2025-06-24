@@ -1,4 +1,4 @@
-// lib/features/qibla/screens/qibla_screen.dart
+// lib/features/qibla/screens/qibla_screen.dart (مُصلح)
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -81,7 +81,7 @@ class _QiblaScreenState extends State<QiblaScreen>
                 _qiblaService.startCalibration();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: ThemeConstants.primary,
+                backgroundColor: context.primaryColor,
                 foregroundColor: Colors.white,
               ),
               child: const Text('بدء المعايرة'),
@@ -156,11 +156,11 @@ class _QiblaScreenState extends State<QiblaScreen>
       padding: const EdgeInsets.all(ThemeConstants.space4),
       child: Row(
         children: [
-          // أيقونة التطبيق - استخدام ألوان الثيم
+          // أيقونة التطبيق - استخدام ألوان الثيم الموحدة
           Container(
             padding: const EdgeInsets.all(ThemeConstants.space3),
             decoration: BoxDecoration(
-              gradient: ThemeConstants.primaryGradient,
+              gradient: context.primaryGradient,
               borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
               boxShadow: ThemeConstants.shadowSm,
             ),
@@ -270,10 +270,10 @@ class _QiblaScreenState extends State<QiblaScreen>
       padding: const EdgeInsets.all(ThemeConstants.space5),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-        gradient: ThemeConstants.primaryGradient,
+        gradient: context.primaryGradient,
         boxShadow: [
           BoxShadow(
-            color: ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity30),
+            color: context.primaryColor.withValues(alpha: ThemeConstants.opacity30),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -399,10 +399,10 @@ class _QiblaScreenState extends State<QiblaScreen>
     return Container(
       padding: const EdgeInsets.all(ThemeConstants.space4),
       decoration: BoxDecoration(
-        color: ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity10),
+        color: context.primaryColor.withValues(alpha: ThemeConstants.opacity10),
         borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
         border: Border.all(
-          color: ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity20),
+          color: context.primaryColor.withValues(alpha: ThemeConstants.opacity20),
           width: ThemeConstants.borderThin,
         ),
         boxShadow: ThemeConstants.shadowSm,
@@ -412,12 +412,12 @@ class _QiblaScreenState extends State<QiblaScreen>
           Container(
             padding: const EdgeInsets.all(ThemeConstants.space2),
             decoration: BoxDecoration(
-              color: ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity20),
+              color: context.primaryColor.withValues(alpha: ThemeConstants.opacity20),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
             ),
             child: Icon(
               Icons.compass_calibration,
-              color: ThemeConstants.primary,
+              color: context.primaryColor,
               size: ThemeConstants.iconMd,
             ),
           ),
@@ -454,9 +454,9 @@ class _QiblaScreenState extends State<QiblaScreen>
               icon: const Icon(Icons.compass_calibration),
               label: const Text('معايرة'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: ThemeConstants.warning,
+                foregroundColor: context.warningColor,
                 side: BorderSide(
-                  color: ThemeConstants.warning,
+                  color: context.warningColor,
                   width: ThemeConstants.borderMedium,
                 ),
                 shape: RoundedRectangleBorder(
@@ -485,7 +485,7 @@ class _QiblaScreenState extends State<QiblaScreen>
           Container(
             padding: const EdgeInsets.all(ThemeConstants.space4),
             decoration: BoxDecoration(
-              gradient: ThemeConstants.primaryGradient,
+              gradient: context.primaryGradient,
               shape: BoxShape.circle,
             ),
             child: const CircularProgressIndicator(
@@ -529,17 +529,17 @@ class _QiblaScreenState extends State<QiblaScreen>
           Container(
             padding: const EdgeInsets.all(ThemeConstants.space4),
             decoration: BoxDecoration(
-              color: ThemeConstants.error.withValues(alpha: ThemeConstants.opacity10),
+              color: context.errorColor.withValues(alpha: ThemeConstants.opacity10),
               shape: BoxShape.circle,
               border: Border.all(
-                color: ThemeConstants.error.withValues(alpha: ThemeConstants.opacity30),
+                color: context.errorColor.withValues(alpha: ThemeConstants.opacity30),
                 width: ThemeConstants.borderThin,
               ),
             ),
             child: Icon(
               Icons.error_outline,
               size: ThemeConstants.icon3xl,
-              color: ThemeConstants.error,
+              color: context.errorColor,
             ),
           ),
           const SizedBox(height: ThemeConstants.space4),
@@ -567,7 +567,7 @@ class _QiblaScreenState extends State<QiblaScreen>
             icon: const Icon(Icons.refresh),
             label: const Text('المحاولة مرة أخرى'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: ThemeConstants.primary,
+              backgroundColor: context.primaryColor,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
@@ -584,10 +584,10 @@ class _QiblaScreenState extends State<QiblaScreen>
       margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
       padding: const EdgeInsets.all(ThemeConstants.space6),
       decoration: BoxDecoration(
-        color: ThemeConstants.warning.withValues(alpha: ThemeConstants.opacity10),
+        color: context.warningColor.withValues(alpha: ThemeConstants.opacity10),
         borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
         border: Border.all(
-          color: ThemeConstants.warning.withValues(alpha: ThemeConstants.opacity30),
+          color: context.warningColor.withValues(alpha: ThemeConstants.opacity30),
           width: ThemeConstants.borderThin,
         ),
       ),
@@ -596,7 +596,7 @@ class _QiblaScreenState extends State<QiblaScreen>
           Icon(
             Icons.compass_calibration_outlined,
             size: ThemeConstants.icon3xl,
-            color: ThemeConstants.warning,
+            color: context.warningColor,
           ),
           const SizedBox(height: ThemeConstants.space3),
           Text(
@@ -647,14 +647,14 @@ class _QiblaScreenState extends State<QiblaScreen>
               Icon(
                 Icons.navigation,
                 size: ThemeConstants.icon2xl,
-                color: ThemeConstants.primary,
+                color: context.primaryColor,
               ),
               const SizedBox(width: ThemeConstants.space2),
               Text(
                 '${service.qiblaData!.qiblaDirection.toStringAsFixed(1)}°',
                 style: context.headlineMedium?.copyWith(
                   fontWeight: ThemeConstants.bold,
-                  color: ThemeConstants.primary,
+                  color: context.primaryColor,
                 ),
               ),
             ],
@@ -688,7 +688,7 @@ class _QiblaScreenState extends State<QiblaScreen>
           Container(
             padding: const EdgeInsets.all(ThemeConstants.space4),
             decoration: BoxDecoration(
-              gradient: ThemeConstants.primaryGradient,
+              gradient: context.primaryGradient,
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -722,7 +722,7 @@ class _QiblaScreenState extends State<QiblaScreen>
             icon: const Icon(Icons.my_location),
             label: const Text('تحديد الموقع'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: ThemeConstants.primary,
+              backgroundColor: context.primaryColor,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
@@ -747,7 +747,7 @@ class _QiblaScreenState extends State<QiblaScreen>
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
               'فهمت',
-              style: TextStyle(color: ThemeConstants.primary),
+              style: TextStyle(color: context.primaryColor),
             ),
           ),
         ],
