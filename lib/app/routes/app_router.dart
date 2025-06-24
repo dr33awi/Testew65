@@ -1,4 +1,4 @@
-// lib/app/routes/app_router.dart
+// lib/app/routes/app_router.dart (مُصحح)
 import 'package:flutter/material.dart';
 import '../../app/themes/app_theme.dart';
 import '../../features/home/screens/home_screen.dart';
@@ -8,7 +8,7 @@ import '../../features/prayer_times/screens/prayer_settings_screen.dart';
 import '../../features/prayer_times/screens/prayer_notifications_settings_screen.dart';
 import '../../features/qibla/screens/qibla_screen.dart';
 import '../../features/athkar/screens/athkar_categories_screen.dart';
-import '../../features/athkar/screens/athkar_details_screen.dart' hide CustomAppBar;
+import '../../features/athkar/screens/athkar_details_screen.dart'; // ✅ إزالة hide CustomAppBar
 import '../../features/athkar/screens/notification_settings_screen.dart';
 import '../../features/tasbih/screens/tasbih_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
@@ -157,6 +157,7 @@ class AppRouter {
   // Screen Builders
   static Widget _buildComingSoonScreen(String title) {
     return Scaffold(
+      // ✅ استخدام CustomAppBar من app_theme.dart بدون تعارض
       appBar: CustomAppBar.simple(title: title),
       body: Center(
         child: Column(
@@ -294,6 +295,7 @@ class AppRouter {
 
   static Widget _buildErrorScreen(String message) {
     return Scaffold(
+      // ✅ استخدام CustomAppBar من app_theme.dart بدون تعارض
       appBar: CustomAppBar.simple(title: 'خطأ'),
       body: Center(
         child: Column(

@@ -1,19 +1,15 @@
-// lib/features/athkar/screens/athkar_details_screen.dart
+// lib/features/athkar/screens/athkar_details_screen.dart (مُصحح)
 import 'package:athkar_app/app/routes/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:share_plus/share_plus.dart';
-import 'dart:ui';
-import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/app_theme.dart'; // ✅ يحتوي على جميع widgets المطلوبة
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
 import '../../../core/infrastructure/services/utils/extensions/string_extensions.dart';
 import '../services/athkar_service.dart';
 import '../models/athkar_model.dart';
-import '../widgets/athkar_item_card.dart';
 import '../utils/category_utils.dart';
-import 'notification_settings_screen.dart';
 
 class AthkarDetailsScreen extends StatefulWidget {
   String categoryId;
@@ -240,6 +236,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
       return Scaffold(
         backgroundColor: context.backgroundColor,
         body: Center(
+          // ✅ استخدام AppLoading من app_theme.dart
           child: AppLoading.page(
             message: 'جاري تحميل الأذكار...',
           ),
@@ -250,6 +247,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     if (_category == null) {
       return Scaffold(
         backgroundColor: context.backgroundColor,
+        // ✅ استخدام CustomAppBar من app_theme.dart
         appBar: CustomAppBar.simple(title: 'الأذكار'),
         body: AppEmptyState.error(
           message: 'تعذر تحميل الأذكار المطلوبة',
@@ -347,7 +345,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                               color: context.textSecondaryColor,
                             ),
                           ),
-                          Icon(
+                          const Icon(
                             Icons.check_circle,
                             size: 16,
                             color: ThemeConstants.success,
@@ -647,7 +645,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                       children: [
                         Row(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.star_rounded,
                               size: ThemeConstants.iconSm,
                               color: ThemeConstants.accent,
@@ -862,114 +860,5 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
 
   void _toggleFavorite(AthkarItem item) {
     // إدارة المفضلة
-  }
-}
-
-// Widgets مساعدة
-class AppLoading {
-  static Widget page({String? message}) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(ThemeConstants.space6),
-          decoration: BoxDecoration(
-            gradient: ThemeConstants.primaryGradient,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity30),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            strokeWidth: 3,
-          ),
-        ),
-        if (message != null) ...[
-          const SizedBox(height: ThemeConstants.space5),
-          Text(
-            message,
-            style: const TextStyle(
-              fontWeight: ThemeConstants.semiBold,
-              color: ThemeConstants.lightTextPrimary,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class AppEmptyState {
-  static Widget error({
-    required String message,
-    VoidCallback? onRetry,
-  }) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(ThemeConstants.space4),
-          decoration: BoxDecoration(
-            color: ThemeConstants.error.withValues(alpha: ThemeConstants.opacity10),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: ThemeConstants.error.withValues(alpha: ThemeConstants.opacity30),
-              width: ThemeConstants.borderThin,
-            ),
-          ),
-          child: Icon(
-            Icons.error_outline,
-            size: ThemeConstants.icon3xl,
-            color: ThemeConstants.error,
-          ),
-        ),
-        const SizedBox(height: ThemeConstants.space4),
-        const Text(
-          'خطأ في التحميل',
-          style: TextStyle(
-            fontSize: ThemeConstants.textSizeXl,
-            fontWeight: ThemeConstants.bold,
-            color: ThemeConstants.lightTextPrimary,
-          ),
-        ),
-        const SizedBox(height: ThemeConstants.space2),
-        Text(
-          message,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: ThemeConstants.lightTextSecondary,
-          ),
-        ),
-        if (onRetry != null) ...[
-          const SizedBox(height: ThemeConstants.space4),
-          ElevatedButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
-            label: const Text('المحاولة مرة أخرى'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ThemeConstants.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class CustomAppBar {
-  static PreferredSizeWidget simple({required String title}) {
-    return AppBar(
-      title: Text(title),
-      centerTitle: true,
-    );
   }
 }

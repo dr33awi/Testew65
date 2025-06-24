@@ -1,4 +1,4 @@
-// lib/app/app.dart
+// lib/app/app.dart (مُصحح)
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -35,9 +35,9 @@ class AthkarApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      // إضافة navigatorKey
+      // ✅ استخدام NavigationService الموحد
       navigatorKey: NavigationService.navigatorKey,
-      // استخدام AppRouter
+      // ✅ استخدام AppRouter للتوجيه
       initialRoute: AppRouter.initialRoute,
       onGenerateRoute: AppRouter.onGenerateRoute,
     );

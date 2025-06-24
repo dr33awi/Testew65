@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/app_theme.dart'; // ✅ يحتوي على AppLoading و AppEmptyState
 import '../../../app/di/service_locator.dart';
 import '../../../app/routes/app_router.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
@@ -130,7 +130,8 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return SliverFillRemaining(
                             child: Center(
-                              child: _AppLoading.page(
+                              // ✅ استخدام AppLoading من app_theme.dart
+                              child: AppLoading.page(
                                 message: 'جاري تحميل الأذكار...',
                               ),
                             ),
@@ -139,7 +140,8 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                         
                         if (snapshot.hasError) {
                           return SliverFillRemaining(
-                            child: _AppEmptyState.error(
+                            // ✅ استخدام AppEmptyState من app_theme.dart
+                            child: AppEmptyState.error(
                               message: 'حدث خطأ في تحميل البيانات',
                               onRetry: () {
                                 setState(() {
@@ -154,7 +156,8 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                         
                         if (categories.isEmpty) {
                           return SliverFillRemaining(
-                            child: _AppEmptyState.noData(
+                            // ✅ استخدام AppEmptyState من app_theme.dart
+                            child: AppEmptyState.noData(
                               message: 'لا توجد أذكار متاحة حالياً',
                             ),
                           );
@@ -442,169 +445,5 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
     ).then((_) {
       _loadProgress();
     });
-  }
-}
-
-// Widgets محسنة مع استخدام الثيم الموحد
-class _AppLoading {
-  static Widget page({String? message}) {
-    return Builder(
-      builder: (context) => Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(ThemeConstants.space6),
-            decoration: BoxDecoration(
-              gradient: context.primaryGradient,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: context.primaryColor.withValues(alpha: ThemeConstants.opacity30),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              strokeWidth: 3,
-            ),
-          ),
-          if (message != null) ...[
-            const SizedBox(height: ThemeConstants.space5),
-            Text(
-              message,
-              style: context.bodyMedium?.copyWith(
-                fontWeight: ThemeConstants.semiBold,
-                color: context.textPrimaryColor,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _AppEmptyState {
-  static Widget error({
-    required String message,
-    VoidCallback? onRetry,
-  }) {
-    return Builder(
-      builder: (context) => Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(ThemeConstants.space4),
-            decoration: BoxDecoration(
-              color: context.errorColor.withValues(alpha: ThemeConstants.opacity10),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: context.errorColor.withValues(alpha: ThemeConstants.opacity30),
-                width: ThemeConstants.borderThin,
-              ),
-            ),
-            child: Icon(
-              Icons.error_outline,
-              size: ThemeConstants.icon3xl,
-              color: context.errorColor,
-            ),
-          ),
-          const SizedBox(height: ThemeConstants.space4),
-          Text(
-            'خطأ في التحميل',
-            style: context.titleLarge?.copyWith(
-              fontWeight: ThemeConstants.bold,
-              color: context.textPrimaryColor,
-            ),
-          ),
-          const SizedBox(height: ThemeConstants.space2),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: context.bodyMedium?.copyWith(
-              color: context.textSecondaryColor,
-            ),
-          ),
-          if (onRetry != null) ...[
-            const SizedBox(height: ThemeConstants.space4),
-            ElevatedButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: const Text('المحاولة مرة أخرى'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: context.primaryColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  static Widget noData({
-    required String message,
-    String? description,
-    String? actionText,
-    VoidCallback? onAction,
-  }) {
-    return Builder(
-      builder: (context) => Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(ThemeConstants.space4),
-            decoration: BoxDecoration(
-              gradient: context.primaryGradient,
-              shape: BoxShape.circle,
-              boxShadow: ThemeConstants.shadowMd,
-            ),
-            child: const Icon(
-              ThemeConstants.iconAthkar,
-              size: ThemeConstants.icon3xl,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: ThemeConstants.space4),
-          Text(
-            message,
-            style: context.titleLarge?.copyWith(
-              fontWeight: ThemeConstants.bold,
-              color: context.textPrimaryColor,
-            ),
-          ),
-          if (description != null) ...[
-            const SizedBox(height: ThemeConstants.space2),
-            Text(
-              description,
-              textAlign: TextAlign.center,
-              style: context.bodyMedium?.copyWith(
-                color: context.textSecondaryColor,
-              ),
-            ),
-          ],
-          if (onAction != null && actionText != null) ...[
-            const SizedBox(height: ThemeConstants.space4),
-            ElevatedButton.icon(
-              onPressed: onAction,
-              icon: const Icon(ThemeConstants.iconAthkar),
-              label: Text(actionText),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: context.primaryColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
   }
 }
