@@ -1,4 +1,4 @@
-// lib/features/home/screens/home_screen.dart - مُحدث بالـ widgets الموحدة
+// lib/features/home/screens/home_screen.dart - مُحدث بإزالة البحث والعنوان
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
@@ -20,49 +20,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      // ✅ استخدام CustomAppBar الموحد بدلاً من custom AppBar
+      // ✅ شريط تطبيق مبسط - بدون عنوان وبدون أيقونة
       appBar: CustomAppBar(
-        title: 'أذكاري',
-        titleWidget: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'أذكاري',
-              style: context.titleLarge?.copyWith(
-                fontWeight: ThemeConstants.bold,
-                color: context.textPrimaryColor,
-              ),
-            ),
-            Text(
-              'تطبيقك للأذكار والدعاء',
-              style: context.bodySmall?.copyWith(
-                color: context.textSecondaryColor,
-              ),
-            ),
-          ],
-        ),
-        leading: Container(
-          padding: const EdgeInsets.all(ThemeConstants.space3),
-          decoration: BoxDecoration(
-            gradient: context.primaryGradient,
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-            boxShadow: ThemeConstants.shadowSm,
-          ),
-          child: const Icon(
-            Icons.home_rounded,
-            color: Colors.white,
-            size: ThemeConstants.iconMd,
-          ),
-        ),
         actions: [
-          AppBarAction(
-            icon: Icons.search_rounded,
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              context.showInfoSnackBar('البحث قيد التطوير');
-            },
-            tooltip: 'البحث',
-          ),
           AppBarAction(
             icon: Icons.settings_rounded,
             onPressed: () {
@@ -76,6 +36,9 @@ class _HomeScreenState extends State<HomeScreen> {
             color: context.primaryColor,
           ),
         ],
+        // شريط شفاف بدون عنوان
+        isTransparent: true,
+        automaticallyImplyLeading: false,
       ),
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
