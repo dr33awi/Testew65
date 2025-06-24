@@ -132,7 +132,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return SliverFillRemaining(
                             child: Center(
-                              child: AppLoading.page(
+                              child: _AppLoading.page(
                                 message: 'جاري تحميل الأذكار...',
                               ),
                             ),
@@ -141,7 +141,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                         
                         if (snapshot.hasError) {
                           return SliverFillRemaining(
-                            child: AppEmptyState.error(
+                            child: _AppEmptyState.error(
                               message: 'حدث خطأ في تحميل البيانات',
                               onRetry: () {
                                 setState(() {
@@ -156,7 +156,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                         
                         if (categories.isEmpty) {
                           return SliverFillRemaining(
-                            child: AppEmptyState.noData(
+                            child: _AppEmptyState.noData(
                               message: 'لا توجد أذكار متاحة حالياً',
                             ),
                           );
@@ -207,11 +207,11 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
       padding: const EdgeInsets.all(ThemeConstants.space4),
       child: Row(
         children: [
-          // أيقونة التطبيق - استخدام ألوان الثيم
+          // أيقونة التطبيق
           Container(
             padding: const EdgeInsets.all(ThemeConstants.space3),
             decoration: BoxDecoration(
-              gradient: ThemeConstants.primaryGradient,
+              gradient: context.primaryGradient, // استخدام context بدلاً من ThemeConstants مباشرة
               borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
               boxShadow: ThemeConstants.shadowSm,
             ),
@@ -312,8 +312,8 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                         child: Container(
                           width: 8,
                           height: 8,
-                          decoration: BoxDecoration(
-                            color: ThemeConstants.success,
+                          decoration: const BoxDecoration(
+                            color: ThemeConstants.success, // يمكن الاحتفاظ بهذا لأنه مجرد نقطة صغيرة
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -333,10 +333,10 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
       margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-        gradient: ThemeConstants.primaryGradient,
+        gradient: context.primaryGradient, // استخدام context بدلاً من ThemeConstants مباشرة
         boxShadow: [
           BoxShadow(
-            color: ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity30),
+            color: context.primaryColor.withValues(alpha: ThemeConstants.opacity30), // استخدام context
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -447,102 +447,106 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
   }
 }
 
-// Widgets مساعدة محدثة بألوان الثيم
-class AppLoading {
+// Widgets محسنة مع استخدام الثيم الموحد
+class _AppLoading {
   static Widget page({String? message}) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(ThemeConstants.space6),
-          decoration: BoxDecoration(
-            gradient: ThemeConstants.primaryGradient,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: ThemeConstants.primary.withValues(alpha: ThemeConstants.opacity30),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            strokeWidth: 3,
-          ),
-        ),
-        if (message != null) ...[
-          const SizedBox(height: ThemeConstants.space5),
-          Text(
-            message,
-            style: const TextStyle(
-              fontWeight: ThemeConstants.semiBold,
-              color: ThemeConstants.lightTextPrimary,
+    return Builder(
+      builder: (context) => Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space6),
+            decoration: BoxDecoration(
+              gradient: context.primaryGradient, // استخدام context
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: context.primaryColor.withValues(alpha: ThemeConstants.opacity30), // استخدام context
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: const CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              strokeWidth: 3,
             ),
           ),
+          if (message != null) ...[
+            const SizedBox(height: ThemeConstants.space5),
+            Text(
+              message,
+              style: const TextStyle(
+                fontWeight: ThemeConstants.semiBold,
+                color: ThemeConstants.lightTextPrimary, // يمكن الاحتفاظ بها لأنها ثابتة
+              ),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
 
-class AppEmptyState {
+class _AppEmptyState {
   static Widget error({
     required String message,
     VoidCallback? onRetry,
   }) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(ThemeConstants.space4),
-          decoration: BoxDecoration(
-            color: ThemeConstants.error.withValues(alpha: ThemeConstants.opacity10),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: ThemeConstants.error.withValues(alpha: ThemeConstants.opacity30),
-              width: ThemeConstants.borderThin,
-            ),
-          ),
-          child: Icon(
-            Icons.error_outline,
-            size: ThemeConstants.icon3xl,
-            color: ThemeConstants.error,
-          ),
-        ),
-        const SizedBox(height: ThemeConstants.space4),
-        const Text(
-          'خطأ في التحميل',
-          style: TextStyle(
-            fontSize: ThemeConstants.textSizeXl,
-            fontWeight: ThemeConstants.bold,
-            color: ThemeConstants.lightTextPrimary,
-          ),
-        ),
-        const SizedBox(height: ThemeConstants.space2),
-        Text(
-          message,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: ThemeConstants.lightTextSecondary,
-          ),
-        ),
-        if (onRetry != null) ...[
-          const SizedBox(height: ThemeConstants.space4),
-          ElevatedButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
-            label: const Text('المحاولة مرة أخرى'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ThemeConstants.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+    return Builder(
+      builder: (context) => Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space4),
+            decoration: BoxDecoration(
+              color: context.errorColor.withValues(alpha: ThemeConstants.opacity10), // استخدام context
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: context.errorColor.withValues(alpha: ThemeConstants.opacity30), // استخدام context
+                width: ThemeConstants.borderThin,
               ),
             ),
+            child: Icon(
+              Icons.error_outline,
+              size: ThemeConstants.icon3xl,
+              color: context.errorColor, // استخدام context
+            ),
           ),
+          const SizedBox(height: ThemeConstants.space4),
+          const Text(
+            'خطأ في التحميل',
+            style: TextStyle(
+              fontSize: ThemeConstants.textSizeXl,
+              fontWeight: ThemeConstants.bold,
+              color: ThemeConstants.lightTextPrimary, // يمكن الاحتفاظ بها
+            ),
+          ),
+          const SizedBox(height: ThemeConstants.space2),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: ThemeConstants.lightTextSecondary, // يمكن الاحتفاظ بها
+            ),
+          ),
+          if (onRetry != null) ...[
+            const SizedBox(height: ThemeConstants.space4),
+            ElevatedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh),
+              label: const Text('المحاولة مرة أخرى'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.primaryColor, // استخدام context
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                ),
+              ),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 
@@ -552,57 +556,59 @@ class AppEmptyState {
     String? actionText,
     VoidCallback? onAction,
   }) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(ThemeConstants.space4),
-          decoration: BoxDecoration(
-            gradient: ThemeConstants.primaryGradient,
-            shape: BoxShape.circle,
-            boxShadow: ThemeConstants.shadowMd,
-          ),
-          child: Icon(
-            ThemeConstants.iconAthkar,
-            size: ThemeConstants.icon3xl,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: ThemeConstants.space4),
-        Text(
-          message,
-          style: const TextStyle(
-            fontSize: ThemeConstants.textSizeXl,
-            fontWeight: ThemeConstants.bold,
-            color: ThemeConstants.lightTextPrimary,
-          ),
-        ),
-        if (description != null) ...[
-          const SizedBox(height: ThemeConstants.space2),
-          Text(
-            description,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: ThemeConstants.lightTextSecondary,
+    return Builder(
+      builder: (context) => Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space4),
+            decoration: BoxDecoration(
+              gradient: context.primaryGradient, // استخدام context
+              shape: BoxShape.circle,
+              boxShadow: ThemeConstants.shadowMd,
+            ),
+            child: Icon(
+              ThemeConstants.iconAthkar,
+              size: ThemeConstants.icon3xl,
+              color: Colors.white,
             ),
           ),
-        ],
-        if (onAction != null && actionText != null) ...[
           const SizedBox(height: ThemeConstants.space4),
-          ElevatedButton.icon(
-            onPressed: onAction,
-            icon: Icon(ThemeConstants.iconAthkar),
-            label: Text(actionText),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ThemeConstants.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+          Text(
+            message,
+            style: const TextStyle(
+              fontSize: ThemeConstants.textSizeXl,
+              fontWeight: ThemeConstants.bold,
+              color: ThemeConstants.lightTextPrimary, // يمكن الاحتفاظ بها
+            ),
+          ),
+          if (description != null) ...[
+            const SizedBox(height: ThemeConstants.space2),
+            Text(
+              description,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: ThemeConstants.lightTextSecondary, // يمكن الاحتفاظ بها
               ),
             ),
-          ),
+          ],
+          if (onAction != null && actionText != null) ...[
+            const SizedBox(height: ThemeConstants.space4),
+            ElevatedButton.icon(
+              onPressed: onAction,
+              icon: Icon(ThemeConstants.iconAthkar),
+              label: Text(actionText),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.primaryColor, // استخدام context
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                ),
+              ),
+            ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }

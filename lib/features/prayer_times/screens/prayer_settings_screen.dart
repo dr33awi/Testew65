@@ -151,7 +151,6 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       content: 'لديك تغييرات لم يتم حفظها. هل تريد حفظ التغييرات قبل المغادرة؟',
       confirmText: 'حفظ وخروج',
       cancelText: 'تجاهل التغييرات',
-      // يمكن تمرير confirmButtonColor هنا إذا كان مطلوباً
     ).then((result) {
       if (result == true) {
         _saveSettings();
@@ -233,7 +232,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
               });
             }
           },
-          activeColor: ThemeConstants.success, // استخدام اللون الأخضر
+          activeColor: context.unifiedGreenColor, // استخدام context بدلاً من ThemeConstants.success مباشرة
         ),
         RadioListTile<AsrJuristic>(
           title: const Text('الحنفي'),
@@ -250,7 +249,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
               });
             }
           },
-          activeColor: ThemeConstants.success, // استخدام اللون الأخضر
+          activeColor: context.unifiedGreenColor, // استخدام context بدلاً من ThemeConstants.success مباشرة
         ),
       ],
     );
@@ -282,7 +281,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
         children: [
           IconButton(
             icon: const Icon(Icons.remove_circle_outline),
-            color: ThemeConstants.success, // استخدام اللون الأخضر
+            color: context.unifiedGreenColor, // استخدام context بدلاً من ThemeConstants.success مباشرة
             onPressed: () {
               _updateAdjustment(key, adjustment - 1);
             },
@@ -297,7 +296,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
-            color: ThemeConstants.success, // استخدام اللون الأخضر
+            color: context.unifiedGreenColor, // استخدام context بدلاً من ThemeConstants.success مباشرة
             onPressed: () {
               _updateAdjustment(key, adjustment + 1);
             },
@@ -330,9 +329,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
         isLoading: _isSaving,
         isFullWidth: true,
         icon: Icons.save,
-        // استخدام الخاصية backgroundColor إذا كانت مدعومة في AppButton.primary
-        // وإلا يمكن استخدام customColor من خلال الطريقة العادية
-        backgroundColor: ThemeConstants.success,
+        backgroundColor: context.unifiedGreenColor, // استخدام context بدلاً من ThemeConstants.success مباشرة
       ),
     );
   }
@@ -365,12 +362,12 @@ class SettingsSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(ThemeConstants.space2),
                 decoration: BoxDecoration(
-                  color: ThemeConstants.success.withValues(alpha: 0.1),
+                  color: context.unifiedGreenColor.withValues(alpha: 0.1), // استخدام context بدلاً من ThemeConstants.success مباشرة
                   borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                 ),
                 child: Icon(
                   icon,
-                  color: ThemeConstants.success,
+                  color: context.unifiedGreenColor, // استخدام context بدلاً من ThemeConstants.success مباشرة
                   size: ThemeConstants.iconMd,
                 ),
               ),
@@ -473,7 +470,7 @@ class CalculationMethodDialog extends StatelessWidget {
                         onMethodSelected(value);
                       }
                     },
-                    activeColor: ThemeConstants.success, // استخدام اللون الأخضر
+                    activeColor: context.unifiedGreenColor, // استخدام context بدلاً من ThemeConstants.success مباشرة
                   );
                 }).toList(),
               ),
@@ -488,7 +485,7 @@ class CalculationMethodDialog extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
               child: const Text('إلغاء'),
               style: TextButton.styleFrom(
-                foregroundColor: ThemeConstants.success, // استخدام اللون الأخضر
+                foregroundColor: context.unifiedGreenColor, // استخدام context بدلاً من ThemeConstants.success مباشرة
               ),
             ),
           ),

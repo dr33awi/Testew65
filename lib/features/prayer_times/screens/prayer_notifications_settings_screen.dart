@@ -25,9 +25,6 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
   bool _isSaving = false;
   bool _hasChanges = false;
 
-  // استخدام اللون الأخضر الموحد
-  static const Color _primaryGreenColor = ThemeConstants.success;
-
   @override
   void initState() {
     super.initState();
@@ -172,12 +169,12 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: _primaryGreenColor.withValues(alpha: 0.1),
+                    color: context.unifiedGreenColor.withValues(alpha: 0.1), // استخدام context بدلاً من المتغير المحلي
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.notifications_active,
-                    color: _primaryGreenColor,
+                    color: context.unifiedGreenColor, // استخدام context بدلاً من المتغير المحلي
                     size: 24,
                   ),
                 ),
@@ -218,7 +215,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 _markAsChanged();
               });
             },
-            activeColor: _primaryGreenColor,
+            activeColor: context.unifiedGreenColor, // استخدام context بدلاً من المتغير المحلي
           ),
           
           // الاهتزاز
@@ -236,7 +233,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                     });
                   }
                 : null,
-            activeColor: _primaryGreenColor,
+            activeColor: context.unifiedGreenColor, // استخدام context بدلاً من المتغير المحلي
           ),
           
           const SizedBox(height: 8),
@@ -278,12 +275,12 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: _primaryGreenColor.withValues(alpha: 0.1),
+                    color: context.unifiedGreenColor.withValues(alpha: 0.1), // استخدام context بدلاً من المتغير المحلي
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.mosque,
-                    color: _primaryGreenColor,
+                    color: context.unifiedGreenColor, // استخدام context بدلاً من المتغير المحلي
                     size: 24,
                   ),
                 ),
@@ -335,12 +332,12 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: _primaryGreenColor.withValues(alpha: 0.1),
+          color: context.unifiedGreenColor.withValues(alpha: 0.1), // استخدام context بدلاً من المتغير المحلي
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(
           icon,
-          color: _primaryGreenColor,
+          color: context.unifiedGreenColor, // استخدام context بدلاً من المتغير المحلي
           size: 20,
         ),
       ),
@@ -368,7 +365,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 });
               }
             : null,
-        activeColor: _primaryGreenColor,
+        activeColor: context.unifiedGreenColor, // استخدام context بدلاً من المتغير المحلي
       ),
       children: [
         if (isEnabled && _notificationSettings.enabled)
@@ -438,7 +435,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
         child: ElevatedButton(
           onPressed: _isSaving || !_hasChanges ? null : _saveSettings,
           style: ElevatedButton.styleFrom(
-            backgroundColor: _primaryGreenColor,
+            backgroundColor: context.unifiedGreenColor, // استخدام context بدلاً من المتغير المحلي
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -488,7 +485,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
               });
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: _primaryGreenColor,
+              backgroundColor: context.unifiedGreenColor, // استخدام context بدلاً من المتغير المحلي
             ),
             child: const Text('حفظ وخروج'),
           ),

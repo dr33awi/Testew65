@@ -3,28 +3,45 @@ import 'package:athkar_app/app/themes/text_styles.dart';
 import 'package:flutter/material.dart';
 import '../theme_constants.dart';
 
-/// Extensions لتسهيل الوصول للثيم
+/// Extensions لتسهيل الوصول للثيم مع ضمان التطابق الكامل
 extension ThemeExtension on BuildContext {
   ThemeData get theme => Theme.of(this);
   TextTheme get textTheme => theme.textTheme;
   ColorScheme get colorScheme => theme.colorScheme;
 
-  // الألوان الأساسية
-  Color get primaryColor => theme.primaryColor;
+  // الألوان الأساسية - مضمونة التطابق مع ThemeConstants
+  Color get primaryColor => ThemeConstants.primary; // نفس القيمة بالضبط
   Color get backgroundColor => theme.scaffoldBackgroundColor;
   Color get surfaceColor => colorScheme.surface;
   Color get cardColor => theme.cardTheme.color ?? ThemeConstants.card(this);
-  Color get errorColor => colorScheme.error;
+  Color get errorColor => ThemeConstants.error; // نفس القيمة بالضبط
   Color get dividerColor => theme.dividerTheme.color ?? ThemeConstants.divider(this);
 
   // ألوان النصوص
   Color get textPrimaryColor => ThemeConstants.textPrimary(this);
   Color get textSecondaryColor => ThemeConstants.textSecondary(this);
 
-  // الألوان الدلالية
-  Color get successColor => ThemeConstants.success;
+  // الألوان الدلالية - مطابقة تماماً لـ ThemeConstants
+  Color get successColor => ThemeConstants.success; // نفس primary
   Color get warningColor => ThemeConstants.warning;
   Color get infoColor => ThemeConstants.info;
+
+  // ألوان إضافية للتوافق مع الاستخدام الحالي
+  Color get accentColor => ThemeConstants.accent;
+  Color get tertiaryColor => ThemeConstants.tertiary;
+  
+  // الـ gradients الأساسية
+  LinearGradient get primaryGradient => ThemeConstants.primaryGradient;
+  LinearGradient get accentGradient => ThemeConstants.accentGradient;
+  LinearGradient get tertiaryGradient => ThemeConstants.tertiaryGradient;
+
+  // دوال الـ gradients المتخصصة
+  LinearGradient prayerGradient(String prayerName) => 
+    ThemeConstants.prayerGradient(prayerName);
+  LinearGradient getTimeBasedGradient({DateTime? dateTime}) => 
+    ThemeConstants.getTimeBasedGradient();
+  Color getPrayerColor(String prayerName) => 
+    ThemeConstants.getPrayerColor(prayerName);
 
   // حالة الثيم
   bool get isDarkMode => theme.brightness == Brightness.dark;
@@ -83,11 +100,10 @@ extension ThemeExtension on BuildContext {
   double get safeBottom => screenPadding.bottom;
 }
 
-/// Extensions للألوان - موحدة من جميع الملفات
+/// Extensions للألوان - موحدة مع إصلاح withValues
 extension ColorExtensions on Color {
-  /// إنشاء لون بشفافية - تم إصلاحها لاستخدام withValues بدلاً من withOpacity المكرر
+  /// إنشاء لون بشفافية - مع إصلاح الخطأ
   Color withOpacitySafe(double opacity) {
-    // التأكد من أن القيمة في النطاق الصحيح
     final safeOpacity = opacity.clamp(0.0, 1.0);
     return withValues(alpha: safeOpacity);
   }
@@ -127,7 +143,6 @@ extension ColorExtensions on Color {
           : darken(strength - 0.5);
     }
     
-    // استخدام value بدلاً من toARGB32() غير الموجود
     return MaterialColor(value, swatch);
   }
 }
@@ -201,7 +216,7 @@ extension NumberExtensions on num {
     bottomRight: Radius.circular(toDouble()),
   );
 
-  /// إنشاء SliverToBoxAdapter للمسافات العمودية - الإصلاح المطلوب
+  /// إنشاء SliverToBoxAdapter للمسافات العمودية
   Widget get sliverBox => SliverToBoxAdapter(
     child: SizedBox(height: toDouble()),
   );
@@ -280,9 +295,8 @@ extension WidgetExtensions on Widget {
     child: this,
   );
 
-  /// إضافة تأثير تلاشي - مع التأكد من صحة قيمة opacity
+  /// إضافة تأثير تلاشي - مع إصلاح قيمة opacity
   Widget opacity(double opacity) {
-    // التأكد من أن القيمة في النطاق الصحيح
     final safeOpacity = opacity.clamp(0.0, 1.0);
     return Opacity(
       opacity: safeOpacity,
@@ -300,5 +314,24 @@ extension WidgetExtensions on Widget {
   Widget scale(double scale) => Transform.scale(
     scale: scale,
     child: this,
+  );
+}
+
+/// Extensions إضافية للألوان الموحدة
+extension UnifiedColorExtensions on BuildContext {
+  /// الحصول على اللون الأخضر الموحد (نفس success و primary)
+  Color get unifiedGreenColor => ThemeConstants.success; // = ThemeConstants.primary
+  
+  /// الحصول على لون الأذكار
+  Color get athkarColor => ThemeConstants.accent;
+  
+  /// الحصول على لون القرآن
+  Color get quranColor => ThemeConstants.tertiary;
+  
+  /// الحصول على gradients موحدة
+  LinearGradient get successGradient => LinearGradient(
+    colors: [ThemeConstants.success, ThemeConstants.successLight],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
 }
