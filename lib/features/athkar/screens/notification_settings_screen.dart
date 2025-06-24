@@ -1,9 +1,8 @@
-// lib/features/athkar/screens/notification_settings_screen.dart - منظف ومحسن
-import 'package:athkar_app/app/themes/widgets/utils/category_helper.dart';
+// lib/features/athkar/screens/notification_settings_screen.dart - مُصحح
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/di/service_locator.dart';
-import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/app_theme.dart'; // ✅ الاستيراد الموحد الوحيد
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
 import '../services/athkar_service.dart';
 import '../models/athkar_model.dart';
@@ -77,12 +76,12 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       for (final category in allCategories) {
         // حفظ الوقت الأصلي
         _originalTimes[category.id] = category.notifyTime ?? 
-            CategoryHelper.getDefaultReminderTime(category.id);
+            CategoryHelper.getDefaultReminderTime(category.id); // ✅ من app_theme
         
         // تحديد حالة التفعيل
         bool shouldEnable = enabledIds.contains(category.id);
         
-        // ✅ استخدام CategoryHelper
+        // ✅ استخدام CategoryHelper من app_theme
         if (isFirstLaunch && CategoryHelper.shouldAutoEnable(category.id)) {
           shouldEnable = true;
           autoEnabledIds.add(category.id);
@@ -770,11 +769,11 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
   Widget _buildCategoryTile(AthkarCategory category) {
     final isEnabled = _enabled[category.id] ?? false;
     final currentTime = _customTimes[category.id] ?? 
-        CategoryHelper.getDefaultReminderTime(category.id);
+        CategoryHelper.getDefaultReminderTime(category.id); // ✅ من app_theme
     final originalTime = _originalTimes[category.id];
     final hasCustomTime = originalTime != null && currentTime != originalTime;
     
-    // ✅ استخدام CategoryHelper
+    // ✅ استخدام CategoryHelper من app_theme
     final isAutoEnabled = CategoryHelper.shouldAutoEnable(category.id);
     final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
     final categoryIcon = CategoryHelper.getCategoryIcon(category.id);

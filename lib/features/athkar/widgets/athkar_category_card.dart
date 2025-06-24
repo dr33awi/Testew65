@@ -1,9 +1,8 @@
-// lib/features/athkar/widgets/athkar_category_card.dart - منظف من التكرار
-import 'package:athkar_app/app/themes/widgets/utils/category_helper.dart';
+// lib/features/athkar/widgets/athkar_category_card.dart - مُصحح
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/app_theme.dart'; // ✅ الاستيراد الموحد الوحيد
 import '../models/athkar_model.dart';
 
 class AthkarCategoryCard extends StatefulWidget {
@@ -58,7 +57,7 @@ class _AthkarCategoryCardState extends State<AthkarCategoryCard>
   Widget build(BuildContext context) {
     final isCompleted = widget.progress >= 100;
     
-    // ✅ استخدام CategoryHelper الموحد
+    // ✅ استخدام CategoryHelper من app_theme
     final categoryColor = CategoryHelper.getCategoryColor(context, widget.category.id);
     final categoryIcon = CategoryHelper.getCategoryIcon(widget.category.id);
     final gradient = CategoryHelper.getCategoryGradientWithOpacity(

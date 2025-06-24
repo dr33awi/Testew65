@@ -1,9 +1,8 @@
-// lib/features/home/widgets/category_grid.dart - منظف من التكرار
-import 'package:athkar_app/app/themes/widgets/utils/category_helper.dart';
+// lib/features/home/widgets/category_grid.dart - مُصحح
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/app_theme.dart'; // ✅ الاستيراد الموحد الوحيد
 
 class CategoryGrid extends StatefulWidget {
   const CategoryGrid({super.key});
@@ -58,6 +57,7 @@ class _CategoryGridState extends State<CategoryGrid> {
     if (category.routeName != null) {
       Navigator.pushNamed(context, category.routeName!).catchError((error) {
         if (mounted) {
+          // ✅ استخدام AppSnackBar من app_theme
           context.showWarningSnackBar('هذه الميزة قيد التطوير');
         }
         return null;
@@ -103,7 +103,7 @@ class _CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ استخدام CategoryHelper الموحد
+    // ✅ استخدام CategoryHelper من app_theme
     final gradient = CategoryHelper.getCategoryGradientWithOpacity(
       context, 
       category.id,

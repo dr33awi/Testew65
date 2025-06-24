@@ -5,23 +5,34 @@ import 'theme_constants.dart';
 import 'text_styles.dart';
 import 'core/theme_extensions.dart';
 
-// ===== Barrel Exports =====
+// ===== Core Theme Exports =====
 export 'theme_constants.dart';
 export 'text_styles.dart';
 export 'core/theme_extensions.dart';
+export 'core/theme_notifier.dart';
 
-// Widgets exports
-export 'widgets/cards/app_card.dart';
-export 'widgets/dialogs/app_info_dialog.dart';
-export 'widgets/feedback/app_snackbar.dart';
-export 'widgets/feedback/app_notice_card.dart';
-export 'widgets/layout/app_bar.dart';
-export 'widgets/states/app_empty_state.dart';
+// ===== Core Components =====
 export 'widgets/core/app_button.dart';
 export 'widgets/core/app_text_field.dart';
 export 'widgets/core/app_loading.dart';
 
-// Animation exports - إضافة AnimatedPress
+// ===== Layout Components =====
+export 'widgets/layout/app_bar.dart';
+
+// ===== Cards & Content =====
+export 'widgets/cards/app_card.dart';
+
+// ===== Dialogs & Modals =====
+export 'widgets/dialogs/app_info_dialog.dart';
+
+// ===== Feedback Components =====
+export 'widgets/feedback/app_snackbar.dart';
+export 'widgets/feedback/app_notice_card.dart';
+
+// ===== State Components =====
+export 'widgets/states/app_empty_state.dart';
+
+// ===== Animations =====
 export 'widgets/animations/animated_press.dart';
 export 'package:flutter_staggered_animations/flutter_staggered_animations.dart'
     show
@@ -31,6 +42,10 @@ export 'package:flutter_staggered_animations/flutter_staggered_animations.dart'
         SlideAnimation,
         ScaleAnimation,
         FlipAnimation;
+
+// ===== Utilities & Helpers =====
+export 'widgets/utils/category_helper.dart';
+export 'widgets/utils/quote_helper.dart';
 
 /// نظام الثيم الموحد للتطبيق
 class AppTheme {
@@ -288,7 +303,7 @@ class AppTheme {
     );
   }
 
-  // ===== Private Helper Methods =====
+  // ===== Text Theme Creation =====
   
   static TextTheme _createTextTheme(Color primaryColor, Color secondaryColor) {
     // Using a map to reduce repetition

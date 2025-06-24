@@ -1,10 +1,9 @@
-// lib/features/daily_quote/widgets/daily_quotes_card.dart - منظف من التكرار
-import 'package:athkar_app/app/themes/widgets/utils/quote_helper.dart';
+// lib/features/daily_quote/widgets/daily_quotes_card.dart - مُصحح كامل
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:ui';
-import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/app_theme.dart'; // ✅ الاستيراد الموحد الوحيد
 import '../../../app/di/service_locator.dart';
 import '../services/daily_quote_service.dart';
 
@@ -226,7 +225,7 @@ class _QuoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ استخدام QuoteHelper الموحد
+    // ✅ استخدام QuoteHelper من app_theme
     final gradient = QuoteHelper.getQuoteGradient(context, quote.type);
     final primaryColor = QuoteHelper.getQuotePrimaryColor(context, quote.type);
     
@@ -297,7 +296,7 @@ class _QuoteCard extends StatelessWidget {
                 ),
               ),
               child: Icon(
-                // ✅ استخدام QuoteHelper
+                // ✅ استخدام QuoteHelper من app_theme
                 QuoteHelper.getQuoteIcon(quote.type),
                 color: Colors.white,
                 size: ThemeConstants.iconLg,
@@ -311,7 +310,7 @@ class _QuoteCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    // ✅ استخدام QuoteHelper
+                    // ✅ استخدام QuoteHelper من app_theme
                     QuoteHelper.getQuoteTitle(quote.type),
                     style: context.titleLarge?.copyWith(
                       color: Colors.white,
@@ -319,7 +318,7 @@ class _QuoteCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    // ✅ استخدام QuoteHelper
+                    // ✅ استخدام QuoteHelper من app_theme
                     QuoteHelper.getQuoteSubtitle(quote.type),
                     style: context.labelMedium?.copyWith(
                       color: Colors.white.withValues(alpha: 0.8),
@@ -430,7 +429,7 @@ class _QuoteDetailsModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ استخدام QuoteHelper الموحد
+    // ✅ استخدام QuoteHelper من app_theme
     final gradient = QuoteHelper.getModalGradient(context, quote.type);
     
     return Container(
@@ -487,7 +486,7 @@ class _QuoteDetailsModal extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          // ✅ استخدام QuoteHelper
+                          // ✅ استخدام QuoteHelper من app_theme
                           QuoteHelper.getQuoteDetailTitle(quote.type),
                           style: context.headlineSmall?.copyWith(
                             fontWeight: ThemeConstants.bold,
@@ -649,7 +648,7 @@ class _QuoteDetailsModal extends StatelessWidget {
 
   void _shareQuote(BuildContext context) async {
     try {
-      // ✅ استخدام QuoteHelper للمشاركة
+      // ✅ استخدام QuoteHelper من app_theme للمشاركة
       final shareText = QuoteHelper.getShareText(quote.type, quote.content, quote.source);
       await Share.share(
         shareText,
