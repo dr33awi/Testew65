@@ -1,8 +1,7 @@
-// lib/features/home/widgets/category_grid.dart - محدث لاستخدام AppCard
+// lib/features/home/widgets/category_grid.dart - محدث بالنظام الموحد
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
-import '../../../app/themes/widgets/cards/app_card.dart';
 
 class CategoryGrid extends StatefulWidget {
   const CategoryGrid({super.key});
@@ -16,37 +15,37 @@ class _CategoryGridState extends State<CategoryGrid> {
     CategoryItem(
       id: 'prayer_times',
       title: 'مواقيت الصلاة',
-      icon: Icons.mosque,
+      description: 'أوقات الصلاة والأذان',
       routeName: '/prayer-times',
     ),
     CategoryItem(
       id: 'athkar',
       title: 'الأذكار اليومية',
-      icon: Icons.auto_awesome,
+      description: 'أذكار الصباح والمساء',
       routeName: '/athkar',
     ),
     CategoryItem(
       id: 'quran',
       title: 'القرآن الكريم',
-      icon: Icons.menu_book_rounded,
+      description: 'تلاوة وتدبر القرآن',
       routeName: '/quran',
     ),
     CategoryItem(
       id: 'qibla',
       title: 'اتجاه القبلة',
-      icon: Icons.explore,
+      description: 'تحديد اتجاه الكعبة',
       routeName: '/qibla',
     ),
     CategoryItem(
       id: 'tasbih',
       title: 'المسبحة الرقمية',
-      icon: Icons.radio_button_checked,
+      description: 'عداد التسبيح والذكر',
       routeName: '/tasbih',
     ),
     CategoryItem(
       id: 'dua',
       title: 'الأدعية المأثورة',
-      icon: Icons.pan_tool_rounded,
+      description: 'أدعية من الكتاب والسنة',
       routeName: '/dua',
     ),
   ];
@@ -73,33 +72,16 @@ class _CategoryGridState extends State<CategoryGrid> {
           crossAxisCount: 2,
           mainAxisSpacing: ThemeConstants.space4,
           crossAxisSpacing: ThemeConstants.space4,
-          childAspectRatio: 1.0,
+          childAspectRatio: 0.9, // تحسين النسبة للمحتوى الجديد
         ),
         delegate: SliverChildBuilderDelegate(
           (context, index) {
             if (index >= _categories.length) return null;
             
             final category = _categories[index];
-            final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
-            final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
             
-            // إنشاء تدرج مباشر من اللون الأساسي
-            final gradientColors = [
-              categoryColor,
-              categoryColor.darken(0.3),
-            ];
-            
-            return AppCard(
-              type: CardType.normal,
-              style: CardStyle.gradient,
-              title: category.title,
-              icon: categoryIcon,
-              primaryColor: categoryColor,
-              gradientColors: gradientColors,
-              onTap: () => _onCategoryTap(category),
-              margin: EdgeInsets.zero,
-              child: _buildCategoryContent(context, category, categoryIcon),
-            );
+            // ✅ استخدام AppCard.info الموحد بدلاً من المحتوى المخصص
+            return _buildCategoryCard(context, category);
           },
           childCount: _categories.length,
         ),
@@ -107,33 +89,161 @@ class _CategoryGridState extends State<CategoryGrid> {
     );
   }
 
-  Widget _buildCategoryContent(BuildContext context, CategoryItem category, IconData categoryIcon) {
-    return Center(
+  Widget _buildCategoryCard(BuildContext context, CategoryItem category) {
+    // ✅ استخدام CategoryHelper للألوان والأيقونات الموحدة
+    final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
+    final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
+    
+    // ✅ استخدام AppCard.info بدلاً من التصميم المعقد
+    return AppCard.info(
+      title: category.title,
+      subtitle: category.description,
+      icon: categoryIcon,
+      iconColor: categoryColor,
+      onTap: () => _onCategoryTap(category),
+      trailing: Container(
+        padding: const EdgeInsets.all(ThemeConstants.space1),
+        decoration: BoxDecoration(
+          color: categoryColor.withValues(alpha: 0.1),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          Icons.arrow_forward_ios_rounded,
+          size: ThemeConstants.iconSm,
+          color: categoryColor,
+        ),
+      ),
+    ).animatedPress(
+      onTap: () => _onCategoryTap(category),
+      scaleFactor: 0.97,
+    );
+  }
+}
+
+/// تصميم بديل للشبكة - بطاقات مضغوطة أكثر جاذبية
+class CompactCategoryGrid extends StatelessWidget {
+  const CompactCategoryGrid({super.key});
+
+  static const List<CategoryItem> _categories = [
+    CategoryItem(
+      id: 'prayer_times',
+      title: 'مواقيت الصلاة',
+      description: 'أوقات الصلاة والأذان',
+      routeName: '/prayer-times',
+    ),
+    CategoryItem(
+      id: 'athkar',
+      title: 'الأذكار اليومية',
+      description: 'أذكار الصباح والمساء',
+      routeName: '/athkar',
+    ),
+    CategoryItem(
+      id: 'quran',
+      title: 'القرآن الكريم',
+      description: 'تلاوة وتدبر القرآن',
+      routeName: '/quran',
+    ),
+    CategoryItem(
+      id: 'qibla',
+      title: 'اتجاه القبلة',
+      description: 'تحديد اتجاه الكعبة',
+      routeName: '/qibla',
+    ),
+    CategoryItem(
+      id: 'tasbih',
+      title: 'المسبحة الرقمية',
+      description: 'عداد التسبيح والذكر',
+      routeName: '/tasbih',
+    ),
+    CategoryItem(
+      id: 'dua',
+      title: 'الأدعية المأثورة',
+      description: 'أدعية من الكتاب والسنة',
+      routeName: '/dua',
+    ),
+  ];
+
+  void _onCategoryTap(BuildContext context, CategoryItem category) {
+    HapticFeedback.lightImpact();
+    
+    if (category.routeName != null) {
+      Navigator.pushNamed(context, category.routeName!).catchError((error) {
+        context.showWarningSnackBar('هذه الميزة قيد التطوير');
+        return null;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(ThemeConstants.space4),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: ThemeConstants.space4,
+        crossAxisSpacing: ThemeConstants.space4,
+        childAspectRatio: 1.1,
+      ),
+      itemCount: _categories.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        final category = _categories[index];
+        final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
+        final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
+        
+        // ✅ استخدام AppCard مع تصميم مضغوط جميل
+        return AppCard(
+          type: CardType.normal,
+          style: CardStyle.gradient,
+          primaryColor: categoryColor,
+          onTap: () => _onCategoryTap(context, category),
+          margin: EdgeInsets.zero,
+          borderRadius: ThemeConstants.radius2xl,
+          child: _buildCompactContent(context, category, categoryIcon),
+        ).animatedPress(
+          onTap: () => _onCategoryTap(context, category),
+          scaleFactor: 0.95,
+        );
+      },
+    );
+  }
+
+  Widget _buildCompactContent(BuildContext context, CategoryItem category, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.all(ThemeConstants.space4),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // الأيقونة مع دائرة
+          // الأيقونة الجميلة
           Container(
-            width: 70,
-            height: 70,
+            width: 64,
+            height: 64,
             decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.25),
               shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.2),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
+                color: Colors.white.withValues(alpha: 0.4),
                 width: 2,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Icon(
-              categoryIcon,
+              icon,
               color: Colors.white,
-              size: 42,
+              size: ThemeConstants.iconLg,
             ),
           ),
           
-          const SizedBox(height: ThemeConstants.space3),
+          ThemeConstants.space3.h,
           
-          // النص الرئيسي
+          // العنوان
           Text(
             category.title,
             style: context.titleMedium?.copyWith(
@@ -143,10 +253,25 @@ class _CategoryGridState extends State<CategoryGrid> {
               shadows: const [
                 Shadow(
                   color: Colors.black26,
-                  offset: Offset(0, 2),
-                  blurRadius: 4,
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
                 ),
               ],
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          
+          ThemeConstants.space1.h,
+          
+          // الوصف
+          Text(
+            category.description,
+            style: context.bodySmall?.copyWith(
+              color: Colors.white.withValues(alpha: 0.8),
+              fontSize: 12,
+              height: 1.3,
             ),
             textAlign: TextAlign.center,
             maxLines: 2,
@@ -158,17 +283,113 @@ class _CategoryGridState extends State<CategoryGrid> {
   }
 }
 
-/// نموذج بيانات الفئة
+/// شبكة أفقية للفئات (للاستخدام في الصفحة الرئيسية)
+class HorizontalCategoryList extends StatelessWidget {
+  final List<CategoryItem> categories;
+  final Function(CategoryItem) onCategoryTap;
+
+  const HorizontalCategoryList({
+    super.key,
+    required this.categories,
+    required this.onCategoryTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 120,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+        itemCount: categories.length,
+        itemBuilder: (context, index) {
+          final category = categories[index];
+          final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
+          final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
+          
+          return Container(
+            width: 160,
+            margin: EdgeInsets.only(
+              left: index < categories.length - 1 ? ThemeConstants.space3 : 0,
+            ),
+            child: AppCard(
+              type: CardType.normal,
+              style: CardStyle.gradient,
+              primaryColor: categoryColor,
+              onTap: () => onCategoryTap(category),
+              margin: EdgeInsets.zero,
+              child: Row(
+                children: [
+                  // الأيقونة
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      categoryIcon,
+                      color: Colors.white,
+                      size: ThemeConstants.iconMd,
+                    ),
+                  ),
+                  
+                  ThemeConstants.space3.w,
+                  
+                  // النص
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          category.title,
+                          style: context.titleSmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: ThemeConstants.bold,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (category.description.isNotEmpty) ...[
+                          ThemeConstants.space1.h,
+                          Text(
+                            category.description,
+                            style: context.bodySmall?.copyWith(
+                              color: Colors.white.withValues(alpha: 0.8),
+                              fontSize: 11,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ).animatedPress(
+              onTap: () => onCategoryTap(category),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// نموذج بيانات الفئة - محدث بالوصف
 class CategoryItem {
   final String id;
   final String title;
-  final IconData icon;
+  final String description;
   final String? routeName;
 
   const CategoryItem({
     required this.id,
     required this.title,
-    required this.icon,
+    required this.description,
     this.routeName,
   });
 }

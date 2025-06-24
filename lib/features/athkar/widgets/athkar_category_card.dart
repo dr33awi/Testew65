@@ -1,11 +1,10 @@
-// lib/features/athkar/widgets/athkar_category_card.dart - مُصحح
+// lib/features/athkar/widgets/athkar_category_card.dart - محدث بالنظام الموحد
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:ui';
-import '../../../app/themes/app_theme.dart'; // ✅ الاستيراد الموحد الوحيد
+import '../../../app/themes/app_theme.dart';
 import '../models/athkar_model.dart';
 
-class AthkarCategoryCard extends StatefulWidget {
+class AthkarCategoryCard extends StatelessWidget {
   final AthkarCategory category;
   final int progress;
   final VoidCallback onTap;
@@ -18,247 +17,252 @@ class AthkarCategoryCard extends StatefulWidget {
   });
 
   @override
-  State<AthkarCategoryCard> createState() => _AthkarCategoryCardState();
+  Widget build(BuildContext context) {
+    // ✅ استخدام CategoryHelper للألوان والأيقونات الموحدة
+    final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
+    final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
+    final categoryDescription = CategoryHelper.getCategoryDescription(category.id);
+    
+    final isCompleted = progress >= 100;
+    final totalAthkar = category.athkar.length;
+    
+    // تحديد نوع البطاقة حسب الحالة
+    if (isCompleted) {
+      // ✅ بطاقة إكمال للفئات المنجزة
+      return AppCard.completion(
+        title: category.title,
+        message: 'تم إكمال جميع الأذكار! 🎉',
+        subMessage: '$totalAthkar ذكر مكتمل',
+        icon: Icons.check_circle_rounded,
+        primaryColor: ThemeConstants.success,
+        actions: [
+          CardAction(
+            icon: Icons.refresh_rounded,
+            label: 'إعادة القراءة',
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              onTap();
+            },
+            isPrimary: true,
+          ),
+          CardAction(
+            icon: Icons.share_rounded,
+            label: 'مشاركة الإنجاز',
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              _shareProgress(context);
+            },
+          ),
+        ],
+      ).animatedPress(
+        onTap: onTap,
+        scaleFactor: 0.98,
+      );
+    }
+    
+    // ✅ بطاقة إحصائيات للفئات قيد التنفيذ
+    return AppCard.stat(
+      title: category.title,
+      value: '$progress%',
+      icon: categoryIcon,
+      color: categoryColor,
+      progress: progress / 100,
+      onTap: onTap,
+      // إضافة معلومات إضافية في الـ trailing
+    ).animatedPress(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      scaleFactor: 0.95,
+    ).container(
+      margin: const EdgeInsets.only(bottom: ThemeConstants.space3),
+      // إضافة تفاصيل إضافية أسفل البطاقة
+    ).padded(
+      EdgeInsets.zero,
+    );
+  }
+
+  void _shareProgress(BuildContext context) {
+    // منطق مشاركة التقدم - يمكن تطويره لاحقاً
+    context.showSuccessSnackBar('سيتم إضافة المشاركة قريباً');
+  }
 }
 
-class _AthkarCategoryCardState extends State<AthkarCategoryCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _glowAnimation;
+/// بطاقة فئة مبسطة للاستخدام في القوائم
+class SimpleCategoryCard extends StatelessWidget {
+  final AthkarCategory category;
+  final VoidCallback onTap;
+  final bool showProgress;
+  final int? progress;
 
-  @override
-  void initState() {
-    super.initState();
-    _setupAnimations();
-  }
-
-  void _setupAnimations() {
-    _animationController = AnimationController(
-      duration: const Duration(seconds: 3),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _glowAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
+  const SimpleCategoryCard({
+    super.key,
+    required this.category,
+    required this.onTap,
+    this.showProgress = false,
+    this.progress,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isCompleted = widget.progress >= 100;
+    final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
+    final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
+    final categoryDescription = CategoryHelper.getCategoryDescription(category.id);
     
-    // ✅ استخدام CategoryHelper من app_theme
-    final categoryColor = CategoryHelper.getCategoryColor(context, widget.category.id);
-    final categoryIcon = CategoryHelper.getCategoryIcon(widget.category.id);
-    final gradient = CategoryHelper.getCategoryGradientWithOpacity(
-      context, 
-      widget.category.id,
-      opacity: 0.9,
+    // ✅ استخدام AppCard.info للبطاقات المبسطة
+    return AppCard.info(
+      title: category.title,
+      subtitle: categoryDescription,
+      icon: categoryIcon,
+      iconColor: categoryColor,
+      onTap: onTap,
+      trailing: showProgress && progress != null
+          ? _buildProgressIndicator(context, categoryColor)
+          : const Icon(Icons.arrow_forward_ios_rounded, size: 16),
     );
-    
-    return AnimatedPress(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        widget.onTap();
-      },
-      scaleFactor: 0.95,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-          gradient: gradient,
-          boxShadow: [
-            BoxShadow(
-              color: categoryColor.withValues(alpha: 0.3),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Stack(
-              children: [
-                // الحد اللامع للبطاقات المكتملة فقط
-                if (isCompleted) _buildGlowBorder(),
-                
-                // المحتوى الرئيسي
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      width: 1,
-                    ),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(ThemeConstants.space4),
-                    child: _buildCardContent(context, categoryIcon, isCompleted),
-                  ),
-                ),
-              ],
-            ),
-          ),
+  }
+
+  Widget _buildProgressIndicator(BuildContext context, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: ThemeConstants.space2,
+        vertical: ThemeConstants.space1,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+      ),
+      child: Text(
+        '$progress%',
+        style: context.labelSmall?.copyWith(
+          color: color,
+          fontWeight: ThemeConstants.bold,
         ),
       ),
     );
   }
+}
 
-  Widget _buildGlowBorder() {
-    return AnimatedBuilder(
-      animation: _glowAnimation,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-            border: Border.all(
-              color: Colors.white.withValues(
-                alpha: 0.5 + (_glowAnimation.value * 0.3),
-              ),
-              width: 2,
-            ),
-          ),
-        );
-      },
-    );
-  }
+/// بطاقة فئة مضغوطة للاستخدام في الشبكات
+class CompactCategoryCard extends StatelessWidget {
+  final AthkarCategory category;
+  final int progress;
+  final VoidCallback onTap;
 
-  Widget _buildCardContent(
-    BuildContext context,
-    IconData categoryIcon,
-    bool isCompleted,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // الأيقونة
-        Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.25),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
-              width: 1,
-            ),
-          ),
-          child: Icon(
-            categoryIcon,
-            color: Colors.white,
-            size: ThemeConstants.icon2xl,
-          ),
-        ),
-        
-        const Spacer(),
-        
-        // النصوص
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // عنوان الفئة
-            Text(
-              widget.category.title,
-              style: context.titleLarge?.copyWith(
-                color: Colors.white,
-                fontWeight: ThemeConstants.bold,
-                fontSize: 20,
+  const CompactCategoryCard({
+    super.key,
+    required this.category,
+    required this.progress,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
+    final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
+    final isCompleted = progress >= 100;
+    
+    // ✅ استخدام AppCard العادي مع محتوى مخصص مبسط
+    return AppCard(
+      type: CardType.normal,
+      style: CardStyle.gradient,
+      primaryColor: categoryColor,
+      onTap: onTap,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // الأيقونة
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.3),
+                width: 2,
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
             ),
-            
-            ThemeConstants.space4.h,
-            
-            // المعلومات السفلية
-            Row(
-              children: [
-                // عدد الأذكار
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: ThemeConstants.space3,
-                      vertical: ThemeConstants.space2,
+            child: Icon(
+              categoryIcon,
+              color: Colors.white,
+              size: ThemeConstants.iconLg,
+            ),
+          ),
+          
+          ThemeConstants.space3.h,
+          
+          // العنوان
+          Text(
+            category.title,
+            style: context.titleMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: ThemeConstants.bold,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          
+          ThemeConstants.space2.h,
+          
+          // شريط التقدم أو حالة الإكمال
+          if (isCompleted)
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: ThemeConstants.space3,
+                vertical: ThemeConstants.space1,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: Colors.white,
+                    size: ThemeConstants.iconSm,
+                  ),
+                  ThemeConstants.space1.w,
+                  Text(
+                    'مكتمل',
+                    style: context.labelSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: ThemeConstants.bold,
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.format_list_numbered_rounded,
-                          color: Colors.white.withValues(alpha: 0.9),
-                          size: ThemeConstants.iconSm,
-                        ),
-                        ThemeConstants.space1.w,
-                        Text(
-                          '${widget.category.athkar.length} ذكر',
-                          style: context.labelMedium?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontSize: 12,
-                            fontWeight: ThemeConstants.medium,
-                          ),
-                        ),
-                      ],
-                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            Container(
+              width: double.infinity,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(2),
+              ),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: progress / 100,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                
-                ThemeConstants.space3.w,
-                
-                // حالة الإكمال فقط
-                if (isCompleted)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: ThemeConstants.space3,
-                      vertical: ThemeConstants.space2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.4),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.check_circle_rounded,
-                          color: Colors.white,
-                          size: ThemeConstants.iconSm,
-                        ),
-                        ThemeConstants.space1.w,
-                        Text(
-                          'مكتمل',
-                          style: context.labelMedium?.copyWith(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: ThemeConstants.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
+              ),
             ),
-          ],
-        ),
-      ],
+        ],
+      ),
+    ).animatedPress(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
     );
   }
 }
