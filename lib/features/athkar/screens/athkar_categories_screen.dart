@@ -1,4 +1,4 @@
-// lib/features/athkar/screens/athkar_categories_screen.dart - بدون عدد التكرار والأذكار
+// lib/features/athkar/screens/athkar_categories_screen.dart - محدث
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
@@ -112,11 +112,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
         title: 'أذكار المسلم',
         actions: [
           AppBarAction(
-            icon: ThemeConstants.iconFavoriteOutline,
-            onPressed: () => Navigator.pushNamed(context, AppRouter.favorites),
-            tooltip: 'المفضلة',
-          ),
-          AppBarAction(
             icon: ThemeConstants.iconNotifications,
             onPressed: () => Navigator.push(
               context,
@@ -125,28 +120,24 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
               ),
             ),
             tooltip: 'إعدادات الإشعارات',
-            badge: _notificationsEnabled ? '●' : null,
-            badgeColor: context.successColor,
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // رسالة الترحيب
-          _buildWelcomeCard(context),
-          
-          // المحتوى
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () async {
-                await _loadProgress();
-              },
-              child: CustomScrollView(
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: ThemeConstants.space4),
-                  ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await _loadProgress();
+        },
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // رسالة الترحيب مدمجة في الصفحة
+            SliverToBoxAdapter(
+              child: _buildWelcomeSection(context),
+            ),
+            
+            const SliverToBoxAdapter(
+              child: SizedBox(height: ThemeConstants.space4),
+            ),
                   
                   // قائمة الفئات
                   FutureBuilder<List<AthkarCategory>>(
@@ -188,20 +179,19 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                         sliver: SliverGrid(
                           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            mainAxisSpacing: ThemeConstants.space4,
-                            crossAxisSpacing: ThemeConstants.space4,
-                            childAspectRatio: 0.85, // تحسين النسبة للمحتوى الأكبر
+                            mainAxisSpacing: ThemeConstants.space3,
+                            crossAxisSpacing: ThemeConstants.space3,
+                            childAspectRatio: 1.0, // تصغير حجم الفئات
                           ),
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {
                               final category = categories[index];
                               final progress = _progress[category.id] ?? 0;
                               
-                              // ✅ استخدام AppCard مخصص مع تصميم أكبر وأوضح
                               return AppCard(
                                 type: CardType.normal,
                                 style: CardStyle.gradient,
-                                primaryColor: CategoryHelper.getCategoryColor(context, category.id),
+                                primaryColor: ThemeConstants.success, // اللون الأخضر الموجود في النظام
                                 onTap: () => _openCategoryDetails(category),
                                 margin: EdgeInsets.zero,
                                 borderRadius: ThemeConstants.radius3xl,
@@ -214,15 +204,32 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                       );
                     },
                   ),
-                  
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: ThemeConstants.space8),
-                  ),
-                ],
-              ),
+            
+            const SliverToBoxAdapter(
+              child: SizedBox(height: ThemeConstants.space8),
             ),
-          ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWelcomeSection(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(ThemeConstants.space4),
+      child: AppCard(
+        type: CardType.info,
+        style: CardStyle.gradient,
+        content: 'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
+        subtitle: 'اقرأ الأذكار اليومية وحافظ على ذكر الله',
+        icon: ThemeConstants.iconAthkar,
+        primaryColor: context.primaryColor,
+        gradientColors: [
+          context.primaryColor.withValues(alpha: 0.9),
+          context.primaryLightColor.withValues(alpha: 0.7),
         ],
+        padding: const EdgeInsets.all(ThemeConstants.space5),
+        borderRadius: ThemeConstants.radiusXl,
       ),
     );
   }
@@ -232,51 +239,51 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
     final isCompleted = progress >= 100;
     
     return Padding(
-      padding: const EdgeInsets.all(ThemeConstants.space5),
+      padding: const EdgeInsets.all(ThemeConstants.space4), // تقليل المساحة الداخلية
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // أيقونة كبيرة وواضحة
+          // أيقونة أصغر
           Container(
-            width: 80,
-            height: 80,
+            width: 60, // تصغير حجم الأيقونة
+            height: 60,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.white.withValues(alpha: 0.25),
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.4),
-                width: 3,
+                width: 2,
               ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: Icon(
               categoryIcon,
               color: Colors.white,
-              size: 48,
+              size: 32, // تصغير حجم الأيقونة
             ),
           ),
           
-          const SizedBox(height: ThemeConstants.space4),
+          const SizedBox(height: ThemeConstants.space3),
           
-          // عنوان كبير وواضح
+          // عنوان أصغر
           Text(
             category.title,
-            style: context.titleLarge?.copyWith(
+            style: context.titleMedium?.copyWith( // استخدام titleMedium بدلاً من titleLarge
               color: Colors.white,
               fontWeight: ThemeConstants.bold,
-              fontSize: 20,
+              fontSize: 16, // تصغير حجم الخط
               height: 1.3,
               shadows: const [
                 Shadow(
                   color: Colors.black26,
-                  offset: Offset(0, 2),
-                  blurRadius: 4,
+                  offset: Offset(0, 1),
+                  blurRadius: 3,
                 ),
               ],
             ),
@@ -287,10 +294,10 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
           
           // مؤشر الإكمال إذا كانت مكتملة
           if (isCompleted) ...[
-            const SizedBox(height: ThemeConstants.space3),
+            const SizedBox(height: ThemeConstants.space2),
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: ThemeConstants.space3,
+                horizontal: ThemeConstants.space2,
                 vertical: ThemeConstants.space1,
               ),
               decoration: BoxDecoration(
@@ -307,12 +314,12 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
                   const Icon(
                     Icons.check_circle_rounded,
                     color: Colors.white,
-                    size: ThemeConstants.iconSm,
+                    size: 14, // تصغير الأيقونة
                   ),
                   const SizedBox(width: ThemeConstants.space1),
                   Text(
                     'مكتمل',
-                    style: context.labelMedium?.copyWith(
+                    style: context.labelSmall?.copyWith( // استخدام labelSmall
                       color: Colors.white,
                       fontWeight: ThemeConstants.bold,
                     ),
@@ -322,27 +329,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
             ),
           ],
         ],
-      ),
-    );
-  }
-
-  Widget _buildWelcomeCard(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: AppCard(
-        type: CardType.info,
-        style: CardStyle.gradient,
-        title: 'اختر فئة الأذكار',
-        content: 'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
-        subtitle: 'اقرأ الأذكار اليومية وحافظ على ذكر الله',
-        icon: ThemeConstants.iconAthkar,
-        primaryColor: context.primaryColor,
-        gradientColors: [
-          context.primaryColor.withValues(alpha: 0.9),
-          context.primaryLightColor.withValues(alpha: 0.7),
-        ],
-        padding: const EdgeInsets.all(ThemeConstants.space5),
-        borderRadius: ThemeConstants.radiusXl,
       ),
     );
   }

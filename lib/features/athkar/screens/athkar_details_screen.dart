@@ -275,11 +275,6 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
           ),
           actions: [
             AppBarAction(
-              icon: Icons.favorite_outline,
-              onPressed: () => Navigator.pushNamed(context, AppRouter.favorites),
-              tooltip: 'المفضلة',
-            ),
-            AppBarAction(
               icon: Icons.share_outlined,
               onPressed: _shareProgress,
               tooltip: 'مشاركة',
@@ -350,7 +345,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                           valueColor: AlwaysStoppedAnimation<Color>(
                             completedAthkar == totalAthkar 
                                 ? ThemeConstants.success 
-                                : CategoryUtils.getCategoryThemeColor(category.id),
+                                : ThemeConstants.success, // استخدام اللون الأخضر الموحد
                           ),
                         ),
                       ),
@@ -372,74 +367,48 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
       },
       child: _visibleItems.isEmpty 
           ? _buildEmptyState()
-          : AnimationLimiter(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(ThemeConstants.space4),
-                itemCount: _visibleItems.length,
-                itemBuilder: (context, index) {
-                  final item = _visibleItems[index];
-                  final currentCount = _counts[item.id] ?? 0;
-                  final isCompleted = _completedItems.contains(item.id);
+          : ListView.builder(
+              padding: const EdgeInsets.all(ThemeConstants.space4),
+              itemCount: _visibleItems.length,
+              itemBuilder: (context, index) {
+                final item = _visibleItems[index];
+                final currentCount = _counts[item.id] ?? 0;
+                final isCompleted = _completedItems.contains(item.id);
+                
+                final originalIndex = category.athkar.indexOf(item);
+                final number = originalIndex + 1;
                   
-                  final originalIndex = category.athkar.indexOf(item);
-                  final number = originalIndex + 1;
-                  
-                  return AnimationConfiguration.staggeredList(
-                    position: index,
-                    duration: ThemeConstants.durationNormal,
-                    child: SlideAnimation(
-                      verticalOffset: 50.0,
-                      child: FadeInAnimation(
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            bottom: index < _visibleItems.length - 1
-                                ? ThemeConstants.space4
-                                : 0,
-                          ),
-                          // ✅ استخدام AppCard الموحد بدلاً من custom card
-                          child: Column(
-                            children: [
-                              // بطاقة الذكر الرئيسية
-                              AppCard.athkar(
-                                content: item.text,
-                                source: item.source,
-                                currentCount: currentCount,
-                                totalCount: item.count,
-                                primaryColor: CategoryUtils.getCategoryThemeColor(category.id),
-                                onTap: () => _onItemTap(item),
-                                onFavoriteToggle: () => _toggleFavorite(item),
-                                actions: [
-                                  CardAction(
-                                    icon: Icons.share_rounded,
-                                    label: 'مشاركة',
-                                    onPressed: () => _shareItem(item),
-                                  ),
-                                  CardAction(
-                                    icon: Icons.refresh_rounded,
-                                    label: 'إعادة تعيين',
-                                    onPressed: () => _onItemLongPress(item),
-                                  ),
-                                ],
-                              ),
-                              
-                              // بطاقة الفضل إذا وُجدت
-                              if (item.fadl != null) ...[
-                                ThemeConstants.space3.h,
-                                AppNoticeCard.info(
-                                  title: 'الفضل',
-                                  message: item.fadl!,
-                                  margin: EdgeInsets.zero,
-                                ),
-                              ],
-                            ],
-                          ),
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: index < _visibleItems.length - 1
+                          ? ThemeConstants.space4
+                          : 0,
+                    ),
+                    // ✅ استخدام AppCard.athkar المحدث
+                    child: AppCard.athkar(
+                      content: item.text,
+                      source: item.source,
+                      fadl: item.fadl, // دمج الفضل في الكارد
+                      currentCount: currentCount,
+                      totalCount: item.count,
+                      primaryColor: ThemeConstants.success, // لون أخضر موحد
+                      onTap: () => _onItemTap(item),
+                      actions: [
+                        CardAction(
+                          icon: Icons.favorite_outline,
+                          label: 'مفضلة',
+                          onPressed: () => _toggleFavorite(item),
                         ),
-                      ),
+                        CardAction(
+                          icon: Icons.share_rounded,
+                          label: 'مشاركة',
+                          onPressed: () => _shareItem(item),
+                        ),
+                      ],
                     ),
                   );
                 },
               ),
-            ),
     );
   }
 

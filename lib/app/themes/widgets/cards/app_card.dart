@@ -84,6 +84,7 @@ class AppCard extends StatelessWidget {
   final int? totalCount;
   final bool? isFavorite;
   final String? source;
+  final String? fadl; // إضافة خاصية الفضل
   final VoidCallback? onFavoriteToggle;
   
   // خصائص خاصة بالإحصائيات
@@ -121,6 +122,7 @@ class AppCard extends StatelessWidget {
     this.totalCount,
     this.isFavorite,
     this.source,
+    this.fadl, // إضافة خاصية الفضل
     this.onFavoriteToggle,
     this.value,
     this.unit,
@@ -287,12 +289,10 @@ class AppCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // الرأس مع العداد والمفضلة
-        if (currentCount != null || onFavoriteToggle != null)
-          _buildAthkarHeader(context),
+        // الرأس مع العداد والأيقونات
+        _buildAthkarHeader(context),
         
-        if (currentCount != null || onFavoriteToggle != null)
-          ThemeConstants.space3.h,
+        ThemeConstants.space3.h,
         
         // محتوى الذكر
         _buildAthkarBody(context),
@@ -301,6 +301,56 @@ class AppCard extends StatelessWidget {
         if (source != null) ...[
           ThemeConstants.space3.h,
           _buildSource(context),
+        ],
+        
+        // الفضل إن وُجد - مدمج في الكارد
+        if (fadl != null) ...[
+          ThemeConstants.space3.h,
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.star_outline,
+                  color: Colors.white.withValues(alpha: 0.8),
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'الفضل',
+                        style: context.labelSmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        fadl!,
+                        style: context.bodySmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
         
         // الإجراءات
@@ -633,68 +683,46 @@ class AppCard extends StatelessWidget {
 
   Widget _buildAthkarHeader(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        // عداد التكرار
         if (currentCount != null && totalCount != null)
           Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 6,
+            ),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: ThemeConstants.space3,
-              vertical: ThemeConstants.space1,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (icon != null) ...[
-                  Icon(
-                    icon,
-                    color: Colors.white,
-                    size: ThemeConstants.iconSm,
-                  ),
-                  ThemeConstants.space1.w,
-                ],
-                Text(
-                  'عدد التكرار $currentCount/$totalCount',
-                  style: context.labelMedium?.textColor(Colors.white).semiBold,
-                ),
-              ],
+            child: Text(
+              '${currentCount}/${totalCount}',
+              style: context.labelMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         
-        if (onFavoriteToggle != null)
-          Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-            child: InkWell(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                onFavoriteToggle!();
-              },
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-              child: Container(
-                padding: const EdgeInsets.all(ThemeConstants.space2),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    width: 1,
-                  ),
-                ),
-                child: Icon(
-                  isFavorite == true ? Icons.favorite : Icons.favorite_border,
-                  color: Colors.white,
-                  size: ThemeConstants.iconMd,
-                ),
+        const Spacer(),
+        
+        // أيقونات المفضلة والمشاركة من actions
+        if (actions != null && actions!.isNotEmpty)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: actions!.map((action) => 
+              IconButton(
+                onPressed: action.onPressed,
+                icon: Icon(action.icon),
+                iconSize: 20,
+                color: Colors.white.withValues(alpha: 0.8),
+                tooltip: action.label,
               ),
-            ),
+            ).toList(),
           ),
       ],
     );
@@ -967,6 +995,7 @@ class AppCard extends StatelessWidget {
   factory AppCard.athkar({
     required String content,
     String? source,
+    String? fadl, // إضافة معامل الفضل
     int currentCount = 0,
     int totalCount = 1,
     bool isFavorite = false,
@@ -980,6 +1009,7 @@ class AppCard extends StatelessWidget {
       style: CardStyle.gradient,
       content: content,
       source: source,
+      fadl: fadl, // تمرير معامل الفضل
       currentCount: currentCount,
       totalCount: totalCount,
       isFavorite: isFavorite,
