@@ -318,27 +318,27 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
   Widget _buildWelcomeSection(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: Stack(
-        children: [
-          AppCard(
-            type: CardType.info,
-            style: CardStyle.gradient,
-            content: 'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
-            subtitle: 'اقرأ الأذكار اليومية وحافظ على ذكر الله',
-            icon: ThemeConstants.iconAthkar,
-            primaryColor: context.primaryColor,
-            gradientColors: [
-              context.primaryColor.withValues(alpha: 0.9),
-              context.primaryLightColor.withValues(alpha: 0.7),
-            ],
-            padding: const EdgeInsets.all(ThemeConstants.space5),
-            borderRadius: ThemeConstants.radiusXl,
-          ),
-          
-          // تأثير التلميع المتحرك فوق الكارد
-          Positioned.fill(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        child: Stack(
+          children: [
+            AppCard(
+              type: CardType.info,
+              style: CardStyle.gradient,
+              content: 'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
+              subtitle: 'اقرأ الأذكار اليومية وحافظ على ذكر الله',
+              icon: ThemeConstants.iconAthkar,
+              primaryColor: context.primaryColor,
+              gradientColors: [
+                context.primaryColor.withValues(alpha: 0.9),
+                context.primaryLightColor.withValues(alpha: 0.7),
+              ],
+              padding: const EdgeInsets.all(ThemeConstants.space5),
+              borderRadius: ThemeConstants.radiusXl,
+            ),
+            
+            // تأثير التلميع المتحرك من داخل الكارد
+            Positioned.fill(
               child: AnimatedBuilder(
                 animation: _shimmerAnimation,
                 builder: (context, child) {
@@ -349,7 +349,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                         end: Alignment.bottomRight,
                         colors: [
                           Colors.transparent,
-                          Colors.white.withValues(alpha: 0.1),
+                          Colors.white.withValues(alpha: 0.2),
                           Colors.transparent,
                         ],
                         stops: [
@@ -363,8 +363,8 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                 },
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -372,7 +372,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
   Widget _buildCategoryCard(BuildContext context, AthkarCategory category, int progress, int index) {
     final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
     final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
-    final isCompleted = progress >= 100;
     final gradientColors = [
       categoryColor,
       categoryColor.darken(0.2),
@@ -383,14 +382,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-          boxShadow: [
-            BoxShadow(
-              color: categoryColor.withValues(alpha: 0.3),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-              spreadRadius: -3,
-            ),
-          ],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
@@ -480,94 +471,15 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        
-                        const SizedBox(height: 6),
-                        
-                        // مؤشر التقدم أو حالة الإكمال
-                        if (isCompleted)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.25),
-                              borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.4),
-                                width: 1,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.check_circle_rounded,
-                                  color: Colors.white,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'مكتمل',
-                                  style: context.labelSmall?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: ThemeConstants.bold,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        else
-                          Text(
-                            '$progress% مكتمل',
-                            style: context.bodyMedium?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 14,
-                              fontWeight: ThemeConstants.medium,
-                              height: 1.4,
-                              letterSpacing: 0.2,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black.withValues(alpha: 0.3),
-                                  offset: const Offset(0, 1),
-                                  blurRadius: 2,
-                                ),
-                              ],
-                            ),
-                          ),
                       ],
                     ),
                     
                     const SizedBox(height: ThemeConstants.space3),
                     
-                    // مؤشر الانتقال وشريط التقدم
+                    // مؤشر الانتقال فقط
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        // شريط التقدم
-                        Expanded(
-                          child: Container(
-                            height: 3,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.3),
-                              borderRadius: BorderRadius.circular(1.5),
-                            ),
-                            child: FractionallySizedBox(
-                              alignment: Alignment.centerRight,
-                              widthFactor: progress / 100,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.8),
-                                  borderRadius: BorderRadius.circular(1.5),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        
-                        const SizedBox(width: 8),
-                        
                         Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
@@ -620,20 +532,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white.withValues(alpha: 0.3),
-              ),
-            ),
-          ),
-          
-          // خط زخرفي
-          Positioned(
-            bottom: 12,
-            left: 12,
-            child: Container(
-              width: 30,
-              height: 2,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(1),
               ),
             ),
           ),
