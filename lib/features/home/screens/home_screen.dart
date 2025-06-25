@@ -1,4 +1,4 @@
-// lib/features/home/screens/home_screen.dart - مُحدث بإزالة البحث والعنوان
+// lib/features/home/screens/home_screen.dart - محسن ومرتب
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
@@ -20,7 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      // ✅ شريط تطبيق مبسط - بدون عنوان وبدون أيقونة
       appBar: CustomAppBar(
         actions: [
           AppBarAction(
@@ -36,48 +35,66 @@ class _HomeScreenState extends State<HomeScreen> {
             color: context.primaryColor,
           ),
         ],
-        // شريط شفاف بدون عنوان
         isTransparent: true,
         automaticallyImplyLeading: false,
       ),
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
+          // الترحيب
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                ThemeConstants.space3.h,
-                
-                // رسالة الترحيب
-                const WelcomeMessage(),
-                
-                ThemeConstants.space5.h,
-                
-                // بطاقة مواقيت الصلاة
-                const PrayerTimesCard(),
-                
-                ThemeConstants.space5.h,
-                
-                // بطاقة الاقتباسات اليومية
-                const DailyQuotesCard(),
-                
-                ThemeConstants.space6.h,
-                
-                // عنوان الفئات
-                _buildSectionTitle(context, 'الميزات الرئيسية'),
-                
-                ThemeConstants.space4.h,
-              ]),
+            padding: const EdgeInsets.fromLTRB(
+              ThemeConstants.space4,
+              ThemeConstants.space2,
+              ThemeConstants.space4,
+              ThemeConstants.space3,
+            ),
+            sliver: const SliverToBoxAdapter(
+              child: WelcomeMessage(),
+            ),
+          ),
+          
+          // مواقيت الصلاة
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: ThemeConstants.space4,
+              vertical: ThemeConstants.space2,
+            ),
+            sliver: const SliverToBoxAdapter(
+              child: PrayerTimesCard(),
+            ),
+          ),
+          
+          // الاقتباسات اليومية
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: ThemeConstants.space4,
+              vertical: ThemeConstants.space2,
+            ),
+            sliver: const SliverToBoxAdapter(
+              child: DailyQuotesCard(),
+            ),
+          ),
+          
+          // عنوان الميزات
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(
+              ThemeConstants.space4,
+              ThemeConstants.space5,
+              ThemeConstants.space4,
+              ThemeConstants.space3,
+            ),
+            sliver: SliverToBoxAdapter(
+              child: _buildSectionTitle(context, 'الميزات الرئيسية'),
             ),
           ),
           
           // شبكة الفئات
           const CategoryGrid(),
           
-          // مساحة إضافية في الأسفل
-          SliverToBoxAdapter(
-            child: ThemeConstants.space8.h,
+          // مساحة إضافية
+          const SliverToBoxAdapter(
+            child: SizedBox(height: ThemeConstants.space6),
           ),
         ],
       ),
@@ -89,14 +106,14 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Container(
           width: 4,
-          height: 24,
+          height: 20,
           decoration: BoxDecoration(
             color: context.primaryColor,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
         
-        ThemeConstants.space3.w,
+        const SizedBox(width: ThemeConstants.space2),
         
         Text(
           title,
@@ -108,12 +125,9 @@ class _HomeScreenState extends State<HomeScreen> {
         
         const Spacer(),
         
-        // ✅ استخدام AppButton الموحد
         AppButton.text(
           text: 'عرض الكل',
-          onPressed: () {
-            // يمكن إضافة وظيفة "عرض الكل"
-          },
+          onPressed: () {},
           color: context.primaryColor,
         ),
       ],

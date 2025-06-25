@@ -1,4 +1,4 @@
-// lib/features/home/widgets/welcome_message.dart - مُحدث بالـ widgets الموحدة
+// lib/features/home/widgets/welcome_message.dart - محسن ومضغوط
 import 'package:flutter/material.dart';
 import '../../../app/themes/app_theme.dart';
 
@@ -24,34 +24,36 @@ class WelcomeMessage extends StatelessWidget {
     final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
     final dateStr = _getArabicDate(now);
     
-    // ✅ استخدام AppCard الموحد للترحيب
     return AppCard(
       style: CardStyle.gradient,
       primaryColor: context.primaryColor,
       gradientColors: context.getTimeBasedGradient(dateTime: now).colors
           .map((c) => c.withValues(alpha: 0.9)).toList(),
-      borderRadius: ThemeConstants.radius3xl,
-      padding: const EdgeInsets.all(ThemeConstants.space6),
+      borderRadius: ThemeConstants.radius2xl,
+      padding: const EdgeInsets.all(ThemeConstants.space5),
       showShadow: true,
-      // محتوى مخصص للترحيب
       child: Row(
         children: [
           // الأيقونة
           Container(
-            width: 80,
-            height: 80,
+            width: 70,
+            height: 70,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.white.withValues(alpha: 0.2),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.3),
+                width: 2,
+              ),
             ),
             child: Icon(
               icon,
               color: Colors.white,
-              size: ThemeConstants.icon2xl,
+              size: ThemeConstants.iconLg,
             ),
           ),
           
-          const SizedBox(width: ThemeConstants.space5),
+          const SizedBox(width: ThemeConstants.space4),
           
           // النصوص
           Expanded(
@@ -61,81 +63,62 @@ class WelcomeMessage extends StatelessWidget {
                 // التحية
                 Text(
                   greeting,
-                  style: context.headlineMedium?.copyWith(
+                  style: context.headlineSmall?.copyWith(
                     color: Colors.white,
                     fontWeight: ThemeConstants.bold,
-                    shadows: const [
-                      Shadow(
-                        color: Colors.black26,
-                        offset: Offset(0, 2),
-                        blurRadius: 4,
-                      ),
-                    ],
+                    height: 1.2,
                   ),
                 ),
                 
-                const SizedBox(height: ThemeConstants.space2),
+                const SizedBox(height: ThemeConstants.space1),
                 
                 // الرسالة
                 Text(
                   message,
-                  style: context.bodyLarge?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.95),
-                    height: 1.5,
-                    fontWeight: ThemeConstants.medium,
+                  style: context.bodyMedium?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    height: 1.4,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 
-                const SizedBox(height: ThemeConstants.space4),
+                const SizedBox(height: ThemeConstants.space3),
                 
-                // معلومات الوقت والتاريخ
+                // الوقت والتاريخ
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: ThemeConstants.space4,
-                    vertical: ThemeConstants.space2,
+                    horizontal: ThemeConstants.space3,
+                    vertical: ThemeConstants.space1,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.3),
-                      width: 1,
-                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // أيقونة الوقت
-                      Container(
-                        padding: const EdgeInsets.all(ThemeConstants.space1),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.access_time_rounded,
-                          color: Colors.white,
-                          size: ThemeConstants.iconSm,
-                        ),
+                      const Icon(
+                        Icons.access_time_rounded,
+                        color: Colors.white,
+                        size: 14,
                       ),
                       
-                      const SizedBox(width: ThemeConstants.space2),
+                      const SizedBox(width: ThemeConstants.space1),
                       
-                      // الوقت
                       Text(
                         timeStr,
-                        style: context.titleMedium?.copyWith(
+                        style: context.labelMedium?.copyWith(
                           color: Colors.white,
                           fontWeight: ThemeConstants.bold,
                         ),
                       ),
                       
-                      const SizedBox(width: ThemeConstants.space3),
+                      const SizedBox(width: ThemeConstants.space2),
                       
-                      // التاريخ
                       Text(
                         dateStr,
-                        style: context.labelMedium?.copyWith(
+                        style: context.labelSmall?.copyWith(
                           color: Colors.white.withValues(alpha: 0.9),
                         ),
                       ),
@@ -166,19 +149,19 @@ class WelcomeMessage extends StatelessWidget {
 
   String _getMessage(int hour) {
     if (hour < 5) {
-      return 'وقت مبارك للقيام والدعاء والاستغفار';
+      return 'وقت مبارك للقيام والدعاء';
     } else if (hour < 8) {
-      return 'ابدأ يومك بأذكار الصباح وصلاة الفجر';
+      return 'ابدأ يومك بأذكار الصباح';
     } else if (hour < 12) {
-      return 'وقت مناسب لقراءة القرآن والذكر';
+      return 'وقت مناسب لقراءة القرآن';
     } else if (hour < 15) {
-      return 'استمر في الذكر واغتنم هذا الوقت المبارك';
+      return 'استمر في الذكر والدعاء';
     } else if (hour < 18) {
-      return 'حان وقت أذكار المساء والاستغفار';
+      return 'حان وقت أذكار المساء';
     } else if (hour < 21) {
-      return 'وقت الدعاء والتسبيح والحمد';
+      return 'وقت الدعاء والتسبيح';
     } else {
-      return 'استعد للنوم بأذكار النوم والوتر';
+      return 'استعد بأذكار النوم';
     }
   }
 
