@@ -1,7 +1,8 @@
-// lib/features/prayer_times/widgets/home_prayer_times_card.dart - محسن ومضغوط
+// lib/features/prayer_times/widgets/home_prayer_times_card.dart - بطاقة مواقيت حديثة ومتجاوبة
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../services/prayer_times_service.dart';
@@ -16,10 +17,20 @@ class PrayerTimesCard extends StatefulWidget {
 
 class _PrayerTimesCardState extends State<PrayerTimesCard>
     with TickerProviderStateMixin {
+  
+  // Animation Controllers
   late AnimationController _progressController;
   late AnimationController _pulseController;
+  late AnimationController _shimmerController;
+  late AnimationController _fadeController;
+  
+  // Animations
   late Animation<double> _progressAnimation;
   late Animation<double> _pulseAnimation;
+  late Animation<double> _shimmerAnimation;
+  late Animation<double> _fadeAnimation;
+  
+  // Service
   late PrayerTimesService _prayerService;
 
   // State
@@ -33,17 +44,19 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
   // Subscriptions
   StreamSubscription<DailyPrayerTimes>? _timesSubscription;
   StreamSubscription<PrayerTime?>? _nextPrayerSubscription;
+  Timer? _clockTimer;
 
   @override
   void initState() {
     super.initState();
     _setupAnimations();
     _initializeService();
+    _startClockTimer();
   }
 
   void _setupAnimations() {
     _progressController = AnimationController(
-      duration: ThemeConstants.durationExtraSlow,
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
 
@@ -52,23 +65,56 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       vsync: this,
     )..repeat(reverse: true);
 
+    _shimmerController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat();
+
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
     _progressAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _progressController,
-      curve: ThemeConstants.curveSmooth,
+      curve: Curves.easeOutCubic,
     ));
 
     _pulseAnimation = Tween<double>(
-      begin: 0.0,
+      begin: 0.8,
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _pulseController,
       curve: Curves.easeInOut,
     ));
 
+    _shimmerAnimation = Tween<double>(
+      begin: -2.0,
+      end: 2.0,
+    ).animate(CurvedAnimation(
+      parent: _shimmerController,
+      curve: Curves.easeInOut,
+    ));
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    ));
+
     _progressController.forward();
+    _fadeController.forward();
+  }
+
+  void _startClockTimer() {
+    _clockTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) setState(() {});
+    });
   }
 
   void _initializeService() {
@@ -184,232 +230,355 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
   void dispose() {
     _progressController.dispose();
     _pulseController.dispose();
+    _shimmerController.dispose();
+    _fadeController.dispose();
     _timesSubscription?.cancel();
     _nextPrayerSubscription?.cancel();
+    _clockTimer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return _buildLoadingState();
-    }
-
-    if (_errorMessage != null && _dailyTimes == null) {
-      return _buildErrorState();
-    }
-
-    if (_dailyTimes == null) {
-      return _buildEmptyState();
-    }
-
-    final nextPrayer = _nextPrayer ?? _dailyTimes!.nextPrayer;
-    if (nextPrayer == null) {
-      return _buildEmptyState();
-    }
-
-    return AppCard(
-      type: CardType.normal,
-      style: CardStyle.gradient,
-      primaryColor: context.getPrayerColor(nextPrayer.nameAr),
-      gradientColors: [
-        context.getPrayerColor(nextPrayer.nameAr),
-        context.getPrayerColor(nextPrayer.nameAr).darken(0.2),
-      ],
-      onTap: _navigateToPrayerTimes,
-      borderRadius: ThemeConstants.radiusLg,
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: Column(
-        children: [
-          _buildMainContent(context, nextPrayer),
-          
-          const SizedBox(height: ThemeConstants.space3),
-          
-          _buildPrayerTimeline(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return AppCard(
-      type: CardType.normal,
-      style: CardStyle.normal,
-      borderRadius: ThemeConstants.radiusLg,
-      child: SizedBox(
-        height: 140,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AppLoading.circular(
-              size: LoadingSize.medium,
-              color: context.primaryColor,
-            ),
-            const SizedBox(height: ThemeConstants.space2),
-            Text(
-              'جاري تحميل المواقيت...',
-              style: context.bodySmall?.copyWith(
-                color: context.textSecondaryColor,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildErrorState() {
-    return AppCard.info(
-      title: _errorMessage ?? 'خطأ في تحميل المواقيت',
-      subtitle: 'اضغط للمحاولة مرة أخرى',
-      icon: Icons.error_outline,
-      iconColor: context.errorColor,
-      onTap: _updatePrayerTimes,
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return AppCard.info(
-      title: _isLoadingLocation 
-          ? 'جاري تحديد الموقع...'
-          : 'لم يتم تحديد الموقع',
-      subtitle: _isLoadingLocation
-          ? 'الرجاء الانتظار'
-          : 'اضغط لتحديد موقعك وعرض مواقيت الصلاة',
-      icon: _isLoadingLocation ? Icons.hourglass_empty : Icons.location_on,
-      iconColor: context.primaryColor,
-      onTap: _updatePrayerTimes,
-    );
-  }
-
-  Widget _buildMainContent(BuildContext context, PrayerTime nextPrayer) {
-    return Row(
-      children: [
-        // أيقونة المسجد
-        Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-          ),
-          child: const Icon(
-            Icons.mosque,
-            color: Colors.white,
-            size: 28,
-          ),
-        ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = constraints.maxWidth > 600;
         
-        const SizedBox(width: ThemeConstants.space3),
-        
-        // معلومات الموقع والصلاة
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'مواقيت الصلاة',
-                style: context.titleMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: ThemeConstants.bold,
-                  fontSize: 16,
-                ),
-              ),
-              
-              const SizedBox(height: 2),
-              
-              Text(
-                _location?.displayName ?? 'جاري تحديد الموقع...',
-                style: context.labelSmall?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.8),
-                  fontSize: 12,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-        
-        // معلومات الصلاة القادمة
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: ThemeConstants.space3,
-            vertical: ThemeConstants.space2,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
-              width: 1,
+        return FadeTransition(
+          opacity: _fadeAnimation,
+          child: Container(
+            constraints: BoxConstraints(
+              minHeight: isTablet ? 180 : 160,
+              maxHeight: isTablet ? 220 : 200,
             ),
-          ),
-          child: Column(
-            children: [
-              Text(
-                nextPrayer.nameAr,
-                style: context.labelLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: ThemeConstants.bold,
-                ),
-              ),
-              
-              const SizedBox(height: 2),
-              
-              AnimatedBuilder(
-                animation: _pulseAnimation,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: 1.0 + (_pulseAnimation.value * 0.02),
-                    child: Text(
-                      _formatTime(nextPrayer.time),
-                      style: context.labelMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: ThemeConstants.semiBold,
-                      ),
-                    ),
-                  );
-                },
-              ),
-              
-              _buildTimeRemaining(context, nextPrayer),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTimeRemaining(BuildContext context, PrayerTime nextPrayer) {
-    return StreamBuilder(
-      stream: Stream.periodic(const Duration(seconds: 1)),
-      builder: (context, snapshot) {
-        final remainingTime = nextPrayer.remainingTimeText;
-        
-        return Container(
-          margin: const EdgeInsets.only(top: 4),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 6,
-            vertical: 2,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Text(
-            remainingTime,
-            style: context.labelSmall?.copyWith(
-              color: Colors.white.withValues(alpha: 0.9),
-              fontSize: 9,
-            ),
+            child: _buildContent(context, isTablet),
           ),
         );
       },
     );
   }
 
-  Widget _buildPrayerTimeline(BuildContext context) {
+  Widget _buildContent(BuildContext context, bool isTablet) {
+    if (_isLoading) {
+      return _buildLoadingState(isTablet);
+    }
+
+    if (_errorMessage != null && _dailyTimes == null) {
+      return _buildErrorState(isTablet);
+    }
+
+    if (_dailyTimes == null) {
+      return _buildEmptyState(isTablet);
+    }
+
+    final nextPrayer = _nextPrayer ?? _dailyTimes!.nextPrayer;
+    if (nextPrayer == null) {
+      return _buildEmptyState(isTablet);
+    }
+
+    return _buildPrayerCard(context, nextPrayer, isTablet);
+  }
+
+  Widget _buildPrayerCard(BuildContext context, PrayerTime nextPrayer, bool isTablet) {
+    final prayerColor = context.getPrayerColor(nextPrayer.nameAr);
+    final gradientColors = [
+      prayerColor,
+      prayerColor.darken(0.3),
+    ];
+    
+    return GestureDetector(
+      onTap: _navigateToPrayerTimes,
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+          boxShadow: [
+            BoxShadow(
+              color: prayerColor.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+              spreadRadius: -5,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+          child: Stack(
+            children: [
+              // الخلفية المتدرجة
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: gradientColors.map((c) => 
+                      c.withValues(alpha: 0.95)
+                    ).toList(),
+                  ),
+                ),
+              ),
+              
+              // تأثير التلميع
+              AnimatedBuilder(
+                animation: _shimmerAnimation,
+                builder: (context, child) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.transparent,
+                          Colors.white.withValues(alpha: 0.1),
+                          Colors.transparent,
+                        ],
+                        stops: [
+                          (_shimmerAnimation.value - 0.3).clamp(0.0, 1.0),
+                          _shimmerAnimation.value.clamp(0.0, 1.0),
+                          (_shimmerAnimation.value + 0.3).clamp(0.0, 1.0),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              
+              // الطبقة الزجاجية
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
+                ),
+              ),
+              
+              // المحتوى الرئيسي
+              Padding(
+                padding: EdgeInsets.all(
+                  isTablet ? ThemeConstants.space5 : ThemeConstants.space4,
+                ),
+                child: Column(
+                  children: [
+                    _buildMainHeader(context, nextPrayer, isTablet),
+                    
+                    SizedBox(height: isTablet ? ThemeConstants.space4 : ThemeConstants.space3),
+                    
+                    _buildPrayerTimeline(context, isTablet),
+                  ],
+                ),
+              ),
+              
+              // عناصر زخرفية
+              _buildDecorativeElements(),
+              
+              // تأثير التفاعل
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _navigateToPrayerTimes,
+                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+                  splashColor: Colors.white.withValues(alpha: 0.1),
+                  highlightColor: Colors.white.withValues(alpha: 0.05),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMainHeader(BuildContext context, PrayerTime nextPrayer, bool isTablet) {
+    return Row(
+      children: [
+        // أيقونة المسجد المتحركة
+        AnimatedBuilder(
+          animation: _pulseAnimation,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _pulseAnimation.value,
+              child: Container(
+                width: isTablet ? 60 : 50,
+                height: isTablet ? 60 : 50,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.2),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.mosque_rounded,
+                  color: Colors.white,
+                  size: isTablet ? 30 : 26,
+                ),
+              ),
+            );
+          },
+        ),
+        
+        SizedBox(width: isTablet ? ThemeConstants.space4 : ThemeConstants.space3),
+        
+        // معلومات الموقع والصلاة
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: Text(
+                  'مواقيت الصلاة',
+                  style: (isTablet ? context.titleLarge : context.titleMedium)?.copyWith(
+                    color: Colors.white,
+                    fontWeight: ThemeConstants.bold,
+                    height: 1.1,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        offset: const Offset(0, 2),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 4),
+              
+              Row(
+                children: [
+                  Icon(
+                    Icons.location_on_rounded,
+                    color: Colors.white.withValues(alpha: 0.8),
+                    size: 14,
+                  ),
+                  
+                  const SizedBox(width: 4),
+                  
+                  Expanded(
+                    child: Text(
+                      _location?.displayName ?? 'جاري تحديد الموقع...',
+                      style: context.labelSmall?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: isTablet ? 13 : 12,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        
+        // معلومات الصلاة القادمة
+        _buildNextPrayerInfo(context, nextPrayer, isTablet),
+      ],
+    );
+  }
+
+  Widget _buildNextPrayerInfo(BuildContext context, PrayerTime nextPrayer, bool isTablet) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: isTablet ? ThemeConstants.space4 : ThemeConstants.space3,
+        vertical: isTablet ? ThemeConstants.space3 : ThemeConstants.space2,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                context.getPrayerIcon(nextPrayer.nameAr),
+                color: Colors.white,
+                size: isTablet ? 18 : 16,
+              ),
+              
+              SizedBox(width: isTablet ? 6 : 4),
+              
+              Text(
+                nextPrayer.nameAr,
+                style: (isTablet ? context.labelLarge : context.labelMedium)?.copyWith(
+                  color: Colors.white,
+                  fontWeight: ThemeConstants.bold,
+                ),
+              ),
+            ],
+          ),
+          
+          SizedBox(height: isTablet ? 6 : 4),
+          
+          Text(
+            _formatTime(nextPrayer.time),
+            style: (isTablet ? context.titleMedium : context.titleSmall)?.copyWith(
+              color: Colors.white,
+              fontWeight: ThemeConstants.bold,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+          
+          SizedBox(height: isTablet ? 4 : 2),
+          
+          _buildTimeRemaining(context, nextPrayer, isTablet),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeRemaining(BuildContext context, PrayerTime nextPrayer, bool isTablet) {
+    final remainingTime = nextPrayer.remainingTimeText;
+    
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: isTablet ? 8 : 6,
+        vertical: isTablet ? 3 : 2,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
+      ),
+      child: Text(
+        remainingTime,
+        style: context.labelSmall?.copyWith(
+          color: Colors.white.withValues(alpha: 0.9),
+          fontSize: isTablet ? 10 : 9,
+          fontWeight: ThemeConstants.medium,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPrayerTimeline(BuildContext context, bool isTablet) {
     if (_dailyTimes == null) return const SizedBox.shrink();
     
     final mainPrayers = _dailyTimes!.prayers.where((prayer) => 
@@ -419,38 +588,40 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     return AnimatedBuilder(
       animation: _progressAnimation,
       builder: (context, child) {
-        return SizedBox(
-          height: 40,
+        return Container(
+          height: isTablet ? 60 : 50,
+          padding: EdgeInsets.symmetric(horizontal: isTablet ? 8 : 4),
           child: Stack(
             children: [
               // خط التقدم الخلفي
               Positioned(
-                top: 12,
-                left: 12,
-                right: 12,
+                top: isTablet ? 16 : 14,
+                left: isTablet ? 16 : 12,
+                right: isTablet ? 16 : 12,
                 child: Container(
-                  height: 2,
+                  height: 3,
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(1),
+                    borderRadius: BorderRadius.circular(1.5),
                   ),
                 ),
               ),
               
               // خط التقدم النشط
               Positioned(
-                top: 12,
-                left: 12,
-                child: Container(
-                  width: _calculateProgressWidth(context, mainPrayers),
-                  height: 2,
+                top: isTablet ? 16 : 14,
+                left: isTablet ? 16 : 12,
+                child: AnimatedContainer(
+                  duration: ThemeConstants.durationNormal,
+                  width: _calculateProgressWidth(context, mainPrayers, isTablet),
+                  height: 3,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(1),
+                    borderRadius: BorderRadius.circular(1.5),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.white.withValues(alpha: 0.3),
-                        blurRadius: 2,
+                        color: Colors.white.withValues(alpha: 0.5),
+                        blurRadius: 4,
                         spreadRadius: 1,
                       ),
                     ],
@@ -462,7 +633,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: mainPrayers.map((prayer) => 
-                  _buildTimelinePoint(context, prayer)
+                  _buildTimelinePoint(context, prayer, isTablet)
                 ).toList(),
               ),
             ],
@@ -472,52 +643,166 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     );
   }
 
-  Widget _buildTimelinePoint(BuildContext context, PrayerTime prayer) {
+  Widget _buildTimelinePoint(BuildContext context, PrayerTime prayer, bool isTablet) {
     final isActive = prayer.isNext;
     final isPassed = prayer.isPassed;
+    final size = isTablet ? 18.0 : 16.0;
     
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         AnimatedContainer(
           duration: ThemeConstants.durationNormal,
-          width: isActive ? 16 : 12,
-          height: isActive ? 16 : 12,
+          width: isActive ? size + 4 : size,
+          height: isActive ? size + 4 : size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isPassed || isActive ? Colors.white : Colors.white.withValues(alpha: 0.4),
+            color: isPassed || isActive 
+                ? Colors.white 
+                : Colors.white.withValues(alpha: 0.4),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.6),
-              width: 1,
+              width: 2,
             ),
+            boxShadow: isActive ? [
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.4),
+                blurRadius: 8,
+                spreadRadius: 2,
+              ),
+            ] : null,
           ),
           child: Center(
             child: Icon(
-              isPassed && !isActive ? Icons.check : context.getPrayerIcon(prayer.nameAr),
-              color: isPassed || isActive ? context.getPrayerColor(prayer.nameAr) : Colors.white,
-              size: isActive ? 8 : 6,
+              isPassed && !isActive 
+                  ? Icons.check_rounded 
+                  : context.getPrayerIcon(prayer.nameAr),
+              color: isPassed || isActive 
+                  ? context.getPrayerColor(prayer.nameAr) 
+                  : Colors.white,
+              size: isActive ? (isTablet ? 12 : 10) : (isTablet ? 10 : 8),
             ),
           ),
         ),
         
-        const SizedBox(height: 4),
+        SizedBox(height: isTablet ? 6 : 4),
         
         Text(
           prayer.nameAr,
           style: context.labelSmall?.copyWith(
             color: Colors.white.withValues(alpha: isActive ? 1.0 : 0.7),
             fontWeight: isActive ? ThemeConstants.semiBold : ThemeConstants.regular,
-            fontSize: 8,
+            fontSize: isTablet ? 10 : 9,
           ),
         ),
         
         Text(
-          _formatTime(prayer.time),
+          _formatTimeShort(prayer.time),
           style: context.labelSmall?.copyWith(
             color: Colors.white.withValues(alpha: isActive ? 0.9 : 0.6),
-            fontSize: 7,
+            fontSize: isTablet ? 8 : 7,
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildDecorativeElements() {
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          // دائرة زخرفية علوية
+          Positioned(
+            top: -30,
+            right: -30,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.05),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  width: 1,
+                ),
+              ),
+            ),
+          ),
+          
+          // دائرة زخرفية سفلية
+          Positioned(
+            bottom: -40,
+            left: -40,
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.03),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  width: 1,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState(bool isTablet) {
+    return Container(
+      height: isTablet ? 180 : 160,
+      decoration: BoxDecoration(
+        color: context.cardColor,
+        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        border: Border.all(
+          color: context.dividerColor.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AppLoading.circular(
+            size: LoadingSize.medium,
+            color: context.primaryColor,
+          ),
+          SizedBox(height: isTablet ? ThemeConstants.space3 : ThemeConstants.space2),
+          Text(
+            'جاري تحميل المواقيت...',
+            style: context.bodyMedium?.copyWith(
+              color: context.textSecondaryColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(bool isTablet) {
+    return AppCard.info(
+      title: _errorMessage ?? 'خطأ في تحميل المواقيت',
+      subtitle: 'اضغط للمحاولة مرة أخرى',
+      icon: Icons.error_outline,
+      iconColor: context.errorColor,
+      onTap: _updatePrayerTimes,
+    );
+  }
+
+  Widget _buildEmptyState(bool isTablet) {
+    return AppCard.info(
+      title: _isLoadingLocation 
+          ? 'جاري تحديد الموقع...'
+          : 'لم يتم تحديد الموقع',
+      subtitle: _isLoadingLocation
+          ? 'الرجاء الانتظار'
+          : 'اضغط لتحديد موقعك وعرض مواقيت الصلاة',
+      icon: _isLoadingLocation ? Icons.hourglass_empty : Icons.location_on,
+      iconColor: context.primaryColor,
+      onTap: _updatePrayerTimes,
     );
   }
 
@@ -543,10 +828,18 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     return '$displayHour:$minute $period';
   }
 
-  double _calculateProgressWidth(BuildContext context, List<PrayerTime> prayers) {
+  String _formatTimeShort(DateTime time) {
+    final hour = time.hour;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+    
+    return '$displayHour:$minute';
+  }
+
+  double _calculateProgressWidth(BuildContext context, List<PrayerTime> prayers, bool isTablet) {
     if (prayers.isEmpty) return 0.0;
     
-    final screenWidth = MediaQuery.of(context).size.width - 80;
+    final containerWidth = MediaQuery.of(context).size.width - (isTablet ? 120 : 80);
     final now = DateTime.now();
     
     int currentPrayerIndex = 0;
@@ -563,7 +856,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     }
     
     if (prayers.every((prayer) => prayer.isPassed)) {
-      return screenWidth * _progressAnimation.value;
+      return containerWidth * _progressAnimation.value;
     }
     
     double progress;
@@ -583,7 +876,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       progress = currentPrayerIndex.toDouble();
     }
     
-    return (screenWidth / (prayers.length - 1)) * progress * _progressAnimation.value;
+    return (containerWidth / (prayers.length - 1)) * progress * _progressAnimation.value;
   }
 }
 
