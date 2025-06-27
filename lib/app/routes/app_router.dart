@@ -1,14 +1,13 @@
 // lib/app/routes/app_router.dart (مُصحح)
 import 'package:flutter/material.dart';
-import '../../app/themes/app_theme.dart';
+import '../../app/themes/app_theme.dart'; // ✅ استيراد النظام الموحد
 import '../../features/home/screens/home_screen.dart';
-
 import '../../features/prayer_times/screens/prayer_times_screen.dart';
 import '../../features/prayer_times/screens/prayer_settings_screen.dart';
 import '../../features/prayer_times/screens/prayer_notifications_settings_screen.dart';
 import '../../features/qibla/screens/qibla_screen.dart';
 import '../../features/athkar/screens/athkar_categories_screen.dart';
-import '../../features/athkar/screens/athkar_details_screen.dart'; // ✅ إزالة hide CustomAppBar
+import '../../features/athkar/screens/athkar_details_screen.dart';
 import '../../features/athkar/screens/notification_settings_screen.dart';
 import '../../features/tasbih/screens/tasbih_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
@@ -53,7 +52,7 @@ class AppRouter {
         return _slideRoute(const PrayerTimesScreen(), settings);
         
       case athkar:
-        return _slideRoute(AthkarCategoriesScreen(), settings);
+        return _slideRoute(const AthkarCategoriesScreen(), settings);
         
       case athkarDetails:
         final categoryId = settings.arguments as String?;
@@ -157,7 +156,6 @@ class AppRouter {
   // Screen Builders
   static Widget _buildComingSoonScreen(String title) {
     return Scaffold(
-      // ✅ استخدام CustomAppBar من app_theme.dart بدون تعارض
       appBar: CustomAppBar.simple(title: title),
       body: Center(
         child: Column(
@@ -176,29 +174,29 @@ class AppRouter {
                 color: ThemeConstants.primary,
               ),
             ),
-            ThemeConstants.space5.h,
+            const SizedBox(height: ThemeConstants.space5),
             Text(
               'قريباً',
-              style: AppTextStyles.h2.copyWith(
+              style: AppTextStyles.headlineMedium.copyWith(
                 color: ThemeConstants.primary,
                 fontWeight: ThemeConstants.bold,
               ),
             ),
-            ThemeConstants.space2.h,
+            const SizedBox(height: ThemeConstants.space2),
             Text(
               title,
-              style: AppTextStyles.h4.copyWith(
-                color: ThemeConstants.lightTextSecondary,
+              style: AppTextStyles.titleLarge.copyWith(
+                color: AppColors.textSecondary,
               ),
             ),
-            ThemeConstants.space1.h,
+            const SizedBox(height: ThemeConstants.space1),
             Text(
               'هذه الميزة قيد التطوير',
-              style: AppTextStyles.body1.copyWith(
-                color: ThemeConstants.lightTextHint,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textTertiary,
               ),
             ),
-            ThemeConstants.space6.h,
+            const SizedBox(height: ThemeConstants.space6),
             AppButton.outline(
               text: 'العودة',
               onPressed: () => Navigator.of(_navigatorKey.currentContext!).pop(),
@@ -229,47 +227,47 @@ class AppRouter {
                 color: ThemeConstants.error,
               ),
             ),
-            ThemeConstants.space5.h,
+            const SizedBox(height: ThemeConstants.space5),
             Text(
               '404',
-              style: AppTextStyles.h1.copyWith(
+              style: AppTextStyles.displayMedium.copyWith(
                 color: ThemeConstants.error,
                 fontWeight: ThemeConstants.bold,
               ),
             ),
-            ThemeConstants.space2.h,
-            const Text(
+            const SizedBox(height: ThemeConstants.space2),
+            Text(
               'الصفحة غير موجودة',
-              style: AppTextStyles.h4,
+              style: AppTextStyles.titleLarge,
             ),
-            ThemeConstants.space1.h,
+            const SizedBox(height: ThemeConstants.space1),
             Text(
               'لم نتمكن من العثور على الصفحة المطلوبة',
-              style: AppTextStyles.body1.copyWith(
-                color: ThemeConstants.lightTextSecondary,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
               ),
             ),
             if (routeName != null) ...[
-              ThemeConstants.space2.h,
+              const SizedBox(height: ThemeConstants.space2),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: ThemeConstants.space3,
                   vertical: ThemeConstants.space1,
                 ),
                 decoration: BoxDecoration(
-                  color: ThemeConstants.lightTextHint.withValues(alpha: 0.1),
+                  color: AppColors.textTertiary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
                 ),
                 child: Text(
                   routeName,
                   style: AppTextStyles.caption.copyWith(
-                    color: ThemeConstants.lightTextHint,
+                    color: AppColors.textTertiary,
                     fontFamily: 'monospace',
                   ),
                 ),
               ),
             ],
-            ThemeConstants.space6.h,
+            const SizedBox(height: ThemeConstants.space6),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -295,7 +293,6 @@ class AppRouter {
 
   static Widget _buildErrorScreen(String message) {
     return Scaffold(
-      // ✅ استخدام CustomAppBar من app_theme.dart بدون تعارض
       appBar: CustomAppBar.simple(title: 'خطأ'),
       body: Center(
         child: Column(
@@ -314,15 +311,15 @@ class AppRouter {
                 color: ThemeConstants.error,
               ),
             ),
-            ThemeConstants.space4.h,
+            const SizedBox(height: ThemeConstants.space4),
             Text(
               message,
-              style: AppTextStyles.h5.copyWith(
+              style: AppTextStyles.titleMedium.copyWith(
                 color: ThemeConstants.error,
               ),
               textAlign: TextAlign.center,
             ),
-            ThemeConstants.space6.h,
+            const SizedBox(height: ThemeConstants.space6),
             AppButton.outline(
               text: 'العودة',
               onPressed: () => Navigator.of(_navigatorKey.currentContext!).pop(),
