@@ -1,7 +1,8 @@
-// lib/features/qibla/screens/qibla_screen.dart - نسخة محسنة بالنظام الموحد
+// lib/features/qibla/screens/qibla_screen.dart - مع نمط Glassmorphism
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'dart:ui';
 
 import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
@@ -19,13 +20,18 @@ class QiblaScreen extends StatefulWidget {
 }
 
 class _QiblaScreenState extends State<QiblaScreen>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, TickerProviderStateMixin {
   late final QiblaService _qiblaService;
+  
+  // انيميشن التلميع للكارد الترحيبي
+  late AnimationController _shimmerController;
+  late Animation<double> _shimmerAnimation;
 
   @override
   void initState() {
     super.initState();
     _initializeService();
+    _setupShimmerAnimation();
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _updateQiblaData());
   }
@@ -36,6 +42,21 @@ class _QiblaScreenState extends State<QiblaScreen>
       storage: getIt<StorageService>(),
       permissionService: getIt<PermissionService>(),
     );
+  }
+
+  void _setupShimmerAnimation() {
+    _shimmerController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
+
+    _shimmerAnimation = Tween<double>(
+      begin: -2.0,
+      end: 2.0,
+    ).animate(CurvedAnimation(
+      parent: _shimmerController,
+      curve: Curves.easeInOut,
+    ));
   }
 
   @override
@@ -85,6 +106,7 @@ class _QiblaScreenState extends State<QiblaScreen>
 
   @override
   void dispose() {
+    _shimmerController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _qiblaService.dispose();
     super.dispose();
@@ -98,9 +120,9 @@ class _QiblaScreenState extends State<QiblaScreen>
         title: 'اتجاه القبلة',
         actions: [
           AppBarAction(
-            icon: Icons.info_outline,
-            onPressed: _showQiblaInfo,
-            tooltip: 'معلومات حول القبلة',
+            icon: Icons.help_outline,
+            onPressed: _showInstructions,
+            tooltip: 'التعليمات',
           ),
         ],
       ),
@@ -116,20 +138,18 @@ class _QiblaScreenState extends State<QiblaScreen>
                   child: _buildWelcomeCard(context),
                 ),
                 
-                ThemeConstants.space4.sliverBox,
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: ThemeConstants.space4),
+                ),
                 
                 // المحتوى الرئيسي
                 SliverToBoxAdapter(
                   child: _buildMainContent(service),
                 ),
                 
-                // معلومات القبلة
-                if (service.qiblaData != null)
-                  SliverToBoxAdapter(
-                    child: _buildQiblaInfoCard(service),
-                  ),
-                
-                ThemeConstants.space8.sliverBox,
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: ThemeConstants.space8),
+                ),
               ],
             );
           },
@@ -139,81 +159,151 @@ class _QiblaScreenState extends State<QiblaScreen>
   }
 
   Widget _buildWelcomeCard(BuildContext context) {
+    final qiblaColor = CategoryHelper.getCategoryColor(context, 'qibla');
+    
     return Container(
       margin: const EdgeInsets.all(ThemeConstants.space4),
-      padding: const EdgeInsets.all(ThemeConstants.space4),
+      height: 160,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-        gradient: CategoryHelper.getCategoryGradient(context, 'qibla'),
-        boxShadow: [
-          BoxShadow(
-            color: CategoryHelper.getCategoryColor(context, 'qibla').withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
       ),
-      child: Row(
-        children: [
-          // أيقونة القبلة
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
-                width: 2,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        child: Stack(
+          children: [
+            // الخلفية المتدرجة
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    qiblaColor,
+                    qiblaColor.darken(0.2),
+                  ].map((c) => c.withValues(alpha: 0.9)).toList(),
+                ),
               ),
             ),
-            child: Icon(
-              Icons.explore,
-              color: Colors.white,
-              size: 28,
-            ),
-          ),
-          
-          const SizedBox(width: ThemeConstants.space3),
-          
-          // النص
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'اتجاه القبلة',
-                  style: context.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: ThemeConstants.bold,
+            
+            // الطبقة الزجاجية
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    width: 1,
                   ),
                 ),
-                const SizedBox(height: ThemeConstants.space1),
-                Text(
-                  'توجه نحو الكعبة المشرفة',
-                  style: context.bodyMedium?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
+              ),
+            ),
+            
+            // المحتوى
+            Padding(
+              padding: const EdgeInsets.all(ThemeConstants.space5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // النصوص
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'توجه نحو الكعبة المشرفة',
+                        style: context.titleLarge?.copyWith(
+                          color: Colors.white,
+                          fontWeight: ThemeConstants.bold,
+                          fontSize: 20,
+                          height: 1.3,
+                          letterSpacing: 0.3,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.4),
+                              offset: const Offset(0, 2),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      
+                      const SizedBox(height: ThemeConstants.space3),
+                      
+                      // الآية القرآنية بتصميم مميز
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: ThemeConstants.space3,
+                          vertical: ThemeConstants.space2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          '"وَحَيْثُ مَا كُنتُمْ فَوَلُّوا وُجُوهَكُمْ شَطْرَهُ"',
+                          style: context.bodyMedium?.copyWith(
+                            color: Colors.white,
+                            fontSize: 14,
+                            height: 1.4,
+                            fontWeight: ThemeConstants.medium,
+                            fontFamily: ThemeConstants.fontFamilyQuran,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                offset: const Offset(0, 1),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          
-          // أيقونة البوصلة
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+            
+            // تأثير التلميع المتحرك
+            Positioned.fill(
+              child: AnimatedBuilder(
+                animation: _shimmerAnimation,
+                builder: (context, child) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.transparent,
+                          Colors.white.withValues(alpha: 0.2),
+                          Colors.transparent,
+                        ],
+                        stops: [
+                          (_shimmerAnimation.value - 0.3).clamp(0.0, 1.0),
+                          _shimmerAnimation.value.clamp(0.0, 1.0),
+                          (_shimmerAnimation.value + 0.3).clamp(0.0, 1.0),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
-            child: Icon(
-              Icons.navigation,
-              color: Colors.white,
-              size: 20,
-            ),
-          ),
-        ],
+            
+            // العناصر الزخرفية
+            _buildDecorativeElements(),
+          ],
+        ),
       ),
     );
   }
@@ -235,34 +325,17 @@ class _QiblaScreenState extends State<QiblaScreen>
   Widget _buildCompassView(QiblaService service) {
     return Column(
       children: [
-        // عنوان البوصلة باستخدام AppCard.info الموحد
-        AppCard.info(
-          title: 'البوصلة الذكية',
-          subtitle: 'حرك هاتفك لتحديد اتجاه القبلة',
-          icon: Icons.compass_calibration,
-          iconColor: CategoryHelper.getCategoryColor(context, 'qibla'),
-          trailing: !service.isCalibrated 
-            ? AppButton.outline(
-                text: 'معايرة',
-                onPressed: () => service.startCalibration(),
-                icon: Icons.compass_calibration,
-                color: context.warningColor,
-                size: ButtonSize.small,
-              )
-            : null,
-        ).padded(ThemeConstants.space4.horizontal),
-        
-        ThemeConstants.space4.h,
-        
-        // البوصلة
-        SizedBox(
-          height: 320,
-          child: QiblaCompass(
-            qiblaDirection: service.qiblaData!.qiblaDirection,
-            currentDirection: service.currentDirection,
-            accuracy: service.compassAccuracy,
-            isCalibrated: service.isCalibrated,
-            onCalibrate: () => service.startCalibration(),
+        // البوصلة في المنتصف
+        Center(
+          child: SizedBox(
+            height: 320,
+            child: QiblaCompass(
+              qiblaDirection: service.qiblaData!.qiblaDirection,
+              currentDirection: service.currentDirection,
+              accuracy: service.compassAccuracy,
+              isCalibrated: service.isCalibrated,
+              onCalibrate: () => service.startCalibration(),
+            ),
           ),
         ),
       ],
@@ -270,43 +343,37 @@ class _QiblaScreenState extends State<QiblaScreen>
   }
 
   Widget _buildLoadingState() {
-    return AppCard.completion(
+    return _buildSectionCard(
+      context: context,
       title: 'جاري تحديد موقعك...',
-      message: 'يرجى الانتظار قليلاً',
-      icon: Icons.location_searching,
+      subtitle: 'يرجى الانتظار قليلاً',
       primaryColor: CategoryHelper.getCategoryColor(context, 'qibla'),
-    ).padded(ThemeConstants.space4.horizontal);
+    );
   }
 
   Widget _buildErrorState(QiblaService service) {
-    return AppCard.completion(
+    return _buildSectionCard(
+      context: context,
       title: 'خطأ في التحميل',
-      message: service.errorMessage ?? 'فشل تحميل البيانات',
-      icon: Icons.error_outline,
+      subtitle: service.errorMessage ?? 'فشل تحميل البيانات',
       primaryColor: context.errorColor,
-      actions: [
-        CardAction(
-          icon: Icons.refresh,
-          label: 'المحاولة مرة أخرى',
-          onPressed: _updateQiblaData,
-          isPrimary: true,
-        ),
-      ],
-    ).padded(ThemeConstants.space4.horizontal);
+      onTap: _updateQiblaData,
+    );
   }
 
   Widget _buildNoCompassState(QiblaService service) {
     return Column(
       children: [
         // بطاقة تحذير
-        AppNoticeCard.warning(
+        _buildSectionCard(
+          context: context,
           title: 'البوصلة غير متوفرة',
-          message: 'جهازك لا يدعم البوصلة أو أنها معطلة حالياً',
-          margin: ThemeConstants.space4.horizontal,
+          subtitle: 'جهازك لا يدعم البوصلة أو أنها معطلة حالياً',
+          primaryColor: context.warningColor,
         ),
         
         if (service.qiblaData != null) ...[
-          ThemeConstants.space4.h,
+          const SizedBox(height: ThemeConstants.space4),
           _buildStaticQiblaInfo(service),
         ],
       ],
@@ -314,211 +381,293 @@ class _QiblaScreenState extends State<QiblaScreen>
   }
 
   Widget _buildStaticQiblaInfo(QiblaService service) {
-    return AppCard.stat(
+    return _buildSectionCard(
+      context: context,
       title: 'اتجاه القبلة من موقعك',
-      value: '${service.qiblaData!.qiblaDirection.toStringAsFixed(1)}°',
-      icon: Icons.navigation,
-      color: CategoryHelper.getCategoryColor(context, 'qibla'),
-    ).padded(ThemeConstants.space4.horizontal);
+      subtitle: '${service.qiblaData!.qiblaDirection.toStringAsFixed(1)}°',
+      primaryColor: CategoryHelper.getCategoryColor(context, 'qibla'),
+    );
   }
 
   Widget _buildInitialState() {
-    return AppCard.completion(
+    return _buildSectionCard(
+      context: context,
       title: 'حدد موقعك',
-      message: 'اضغط على زر التحديث لتحديد موقعك وعرض اتجاه القبلة',
-      icon: Icons.location_searching,
+      subtitle: 'اضغط هنا لتحديد موقعك وعرض اتجاه القبلة',
       primaryColor: CategoryHelper.getCategoryColor(context, 'qibla'),
-      actions: [
-        CardAction(
-          icon: Icons.my_location,
-          label: 'تحديد الموقع',
-          onPressed: _updateQiblaData,
-          isPrimary: true,
+      onTap: _updateQiblaData,
+    );
+  }
+
+  // دالة موحدة لإنشاء كاردات الأقسام
+  Widget _buildSectionCard({
+    required BuildContext context,
+    required String title,
+    required String subtitle,
+    required Color primaryColor,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+        height: 160,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+          child: Stack(
+            children: [
+              // الخلفية المتدرجة
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      primaryColor,
+                      primaryColor.darken(0.2),
+                    ].map((c) => c.withValues(alpha: 0.9)).toList(),
+                  ),
+                ),
+              ),
+              
+              // الطبقة الزجاجية
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
+                ),
+              ),
+              
+              // المحتوى
+              Padding(
+                padding: const EdgeInsets.all(ThemeConstants.space5),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // النصوص
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: context.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: ThemeConstants.bold,
+                            fontSize: 24,
+                            height: 1.2,
+                            letterSpacing: 0.3,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withValues(alpha: 0.4),
+                                offset: const Offset(0, 2),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        
+                        const SizedBox(height: ThemeConstants.space2),
+                        
+                        Text(
+                          subtitle,
+                          style: context.bodyMedium?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 13,
+                            height: 1.2,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                offset: const Offset(0, 1),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              
+              // طبقة التفاعل
+              if (onTap != null)
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: onTap,
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                    splashColor: Colors.white.withValues(alpha: 0.2),
+                    highlightColor: Colors.white.withValues(alpha: 0.1),
+                  ),
+                ),
+              
+              // العناصر الزخرفية
+              _buildDecorativeElements(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDecorativeElements() {
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          // دائرة زخرفية صغيرة
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
+            ),
+          ),
+          
+          // دائرة إضافية
+          Positioned(
+            bottom: 12,
+            left: 12,
+            child: Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showInstructions() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              Icons.help_outline,
+              color: CategoryHelper.getCategoryColor(context, 'qibla'),
+              size: 24,
+            ),
+            const SizedBox(width: 8),
+            const Text('تعليمات استخدام البوصلة'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildInstructionItem(
+              icon: Icons.my_location,
+              title: '1. تفعيل الموقع',
+              description: 'تأكد من تفعيل خدمة الموقع على هاتفك',
+            ),
+            const SizedBox(height: 16),
+            _buildInstructionItem(
+              icon: Icons.compass_calibration,
+              title: '2. معايرة البوصلة',
+              description: 'حرك هاتفك على شكل الرقم 8 لمعايرة البوصلة',
+            ),
+            const SizedBox(height: 16),
+            _buildInstructionItem(
+              icon: Icons.phone_android,
+              title: '3. وضع الهاتف',
+              description: 'امسك الهاتف بشكل مسطح أمامك',
+            ),
+            const SizedBox(height: 16),
+            _buildInstructionItem(
+              icon: Icons.navigation,
+              title: '4. اتباع الاتجاه',
+              description: 'اتبع السهم الأخضر للتوجه نحو القبلة',
+            ),
+          ],
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'فهمت',
+              style: TextStyle(
+                color: CategoryHelper.getCategoryColor(context, 'qibla'),
+                fontWeight: ThemeConstants.semiBold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInstructionItem({
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: CategoryHelper.getCategoryColor(context, 'qibla').withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+          ),
+          child: Icon(
+            icon,
+            color: CategoryHelper.getCategoryColor(context, 'qibla'),
+            size: 20,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: context.titleSmall?.copyWith(
+                  fontWeight: ThemeConstants.semiBold,
+                  color: context.textPrimaryColor,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: context.bodySmall?.copyWith(
+                  color: context.textSecondaryColor,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
-    ).padded(ThemeConstants.space4.horizontal);
-  }
-
-  Widget _buildQiblaInfoCard(QiblaService service) {
-    final qiblaData = service.qiblaData!;
-    
-    return Padding(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: Column(
-        children: [
-          // الكارد الأساسي
-          AppCard.info(
-            title: _getLocationName(qiblaData),
-            subtitle: 'موقعك الحالي',
-            icon: Icons.location_on,
-            iconColor: CategoryHelper.getCategoryColor(context, 'qibla'),
-            trailing: _buildAccuracyBadge(qiblaData),
-          ),
-          
-          const SizedBox(height: ThemeConstants.space3),
-          
-          // معلومات القبلة السريعة
-          Row(
-            children: [
-              Expanded(
-                child: _buildQuickInfoTile(
-                  context,
-                  icon: Icons.navigation,
-                  label: 'الاتجاه',
-                  value: '${qiblaData.qiblaDirection.toStringAsFixed(1)}°',
-                  subtitle: qiblaData.directionDescription,
-                ),
-              ),
-              const SizedBox(width: ThemeConstants.space3),
-              Expanded(
-                child: _buildQuickInfoTile(
-                  context,
-                  icon: Icons.straighten,
-                  label: 'المسافة',
-                  value: qiblaData.distanceDescription,
-                  subtitle: 'للكعبة المشرفة',
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickInfoTile(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required String value,
-    required String subtitle,
-  }) {
-    return AppCard(
-      type: CardType.stat,
-      style: CardStyle.glassmorphism,
-      primaryColor: CategoryHelper.getCategoryColor(context, 'qibla'),
-      padding: const EdgeInsets.all(ThemeConstants.space3),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                icon,
-                color: Colors.white.withValues(alpha: 0.9),
-                size: 16,
-              ),
-              const SizedBox(width: ThemeConstants.space1),
-              Text(
-                label,
-                style: context.labelMedium?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.8),
-                  fontWeight: ThemeConstants.medium,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: ThemeConstants.space1),
-          Text(
-            value,
-            style: context.titleMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: ThemeConstants.bold,
-              shadows: [
-                Shadow(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  offset: const Offset(0, 1),
-                  blurRadius: 2,
-                ),
-              ],
-            ),
-          ),
-          Text(
-            subtitle,
-            style: context.labelSmall?.copyWith(
-              color: Colors.white.withValues(alpha: 0.7),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-  String _getLocationName(dynamic qiblaData) {
-    if (qiblaData.cityName != null && qiblaData.countryName != null) {
-      return '${qiblaData.cityName}، ${qiblaData.countryName}';
-    } else if (qiblaData.cityName != null) {
-      return qiblaData.cityName!;
-    } else if (qiblaData.countryName != null) {
-      return qiblaData.countryName!;
-    } else {
-      return 'موقع غير محدد';
-    }
-  }
-
-
-
-  Widget _buildAccuracyBadge(dynamic qiblaData) {
-    Color color;
-    String text;
-    IconData icon;
-    
-    if (qiblaData.hasHighAccuracy) {
-      color = context.successColor;
-      text = 'دقيق';
-      icon = Icons.gps_fixed;
-    } else if (qiblaData.hasMediumAccuracy) {
-      color = context.warningColor;
-      text = 'متوسط';
-      icon = Icons.gps_not_fixed;
-    } else {
-      color = context.errorColor;
-      text = 'ضعيف';
-      icon = Icons.gps_off;
-    }
-    
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 6,
-      ),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-        border: Border.all(
-          color: color.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 12,
-            color: color,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            text,
-            style: context.labelSmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showQiblaInfo() {
-    AppInfoDialog.show(
-      context: context,
-      title: 'عن اتجاه القبلة',
-      content: 'القبلة هي الاتجاه الذي يتوجه إليه المسلمون في صلاتهم، وهي الكعبة المشرفة في مكة المكرمة.',
-      subtitle: 'قال الله تعالى: "وَحَيْثُ مَا كُنتُمْ فَوَلُّوا وُجُوهَكُمْ شَطْرَهُ"',
-      icon: Icons.mosque,
-      accentColor: CategoryHelper.getCategoryColor(context, 'qibla'),
     );
   }
 }
