@@ -1,6 +1,7 @@
-// lib/features/athkar/screens/athkar_categories_screen.dart - محدث
+// lib/features/athkar/screens/athkar_categories_screen.dart - محدث بنمط category_grid
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../app/routes/app_router.dart';
@@ -17,7 +18,8 @@ class AthkarCategoriesScreen extends StatefulWidget {
   State<AthkarCategoriesScreen> createState() => _AthkarCategoriesScreenState();
 }
 
-class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
+class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> 
+    with TickerProviderStateMixin {
   late final AthkarService _service;
   late final PermissionService _permissionService;
   late final StorageService _storage;
@@ -25,6 +27,14 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
   late Future<List<AthkarCategory>> _futureCategories;
   final Map<String, int> _progress = {};
   bool _notificationsEnabled = false;
+  
+  List<AnimationController>? _controllers;
+  List<Animation<double>>? _scaleAnimations;
+  List<Animation<double>>? _fadeAnimations;
+  
+  // انيميشن التلميع للكارد الترحيبي
+  late AnimationController _shimmerController;
+  late Animation<double> _shimmerAnimation;
 
   @override
   void initState() {
@@ -33,7 +43,23 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
     _storage = getIt<StorageService>();
     _permissionService = getIt<PermissionService>();
     
+    _setupShimmerAnimation();
     _initialize();
+  }
+
+  void _setupShimmerAnimation() {
+    _shimmerController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat();
+
+    _shimmerAnimation = Tween<double>(
+      begin: -2.0,
+      end: 2.0,
+    ).animate(CurvedAnimation(
+      parent: _shimmerController,
+      curve: Curves.easeInOut,
+    ));
   }
 
   @override
@@ -46,6 +72,62 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
     _futureCategories = _service.loadCategories();
     _checkNotificationPermission();
     _loadProgress();
+  }
+
+  void _setupAnimations(int itemCount) {
+    // تنظيف الانيميشن السابق
+    if (_controllers != null) {
+      for (var controller in _controllers!) {
+        controller.dispose();
+      }
+    }
+    
+    _controllers = List.generate(itemCount, (index) {
+      return AnimationController(
+        duration: Duration(milliseconds: 600 + (index * 100)),
+        vsync: this,
+      );
+    });
+
+    _scaleAnimations = _controllers!.map((controller) {
+      return Tween<double>(
+        begin: 0.0,
+        end: 1.0,
+      ).animate(CurvedAnimation(
+        parent: controller,
+        curve: Curves.elasticOut,
+      ));
+    }).toList();
+
+    _fadeAnimations = _controllers!.map((controller) {
+      return Tween<double>(
+        begin: 0.0,
+        end: 1.0,
+      ).animate(CurvedAnimation(
+        parent: controller,
+        curve: Curves.easeOut,
+      ));
+    }).toList();
+
+    // بدء الانيميشن تدريجياً
+    for (int i = 0; i < _controllers!.length; i++) {
+      Future.delayed(Duration(milliseconds: i * 150), () {
+        if (mounted && _controllers != null && i < _controllers!.length) {
+          _controllers![i].forward();
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    if (_controllers != null) {
+      for (var controller in _controllers!) {
+        controller.dispose();
+      }
+    }
+    super.dispose();
   }
 
   Future<void> _checkNotificationPermission() async {
@@ -139,71 +221,90 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
               child: SizedBox(height: ThemeConstants.space4),
             ),
                   
-                  // قائمة الفئات
-                  FutureBuilder<List<AthkarCategory>>(
-                    future: _futureCategories,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return SliverFillRemaining(
-                          child: AppLoading.page(
-                            message: 'جاري تحميل الأذكار...',
-                          ),
+            // قائمة الفئات
+            FutureBuilder<List<AthkarCategory>>(
+              future: _futureCategories,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return SliverFillRemaining(
+                    child: AppLoading.page(
+                      message: 'جاري تحميل الأذكار...',
+                    ),
+                  );
+                }
+                
+                if (snapshot.hasError) {
+                  return SliverFillRemaining(
+                    child: AppEmptyState.error(
+                      message: 'حدث خطأ في تحميل البيانات',
+                      onRetry: () {
+                        setState(() {
+                          _futureCategories = _service.loadCategories();
+                        });
+                      },
+                    ),
+                  );
+                }
+                
+                final categories = snapshot.data ?? [];
+                
+                if (categories.isEmpty) {
+                  return SliverFillRemaining(
+                    child: AppEmptyState.noData(
+                      message: 'لا توجد أذكار متاحة حالياً',
+                    ),
+                  );
+                }
+                
+                // إعداد الانيميشن عند تحميل البيانات
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted && (_controllers == null || _controllers!.length != categories.length)) {
+                    _setupAnimations(categories.length);
+                  }
+                });
+                
+                return SliverPadding(
+                  padding: const EdgeInsets.all(ThemeConstants.space4),
+                  sliver: SliverGrid(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: ThemeConstants.space3,
+                      crossAxisSpacing: ThemeConstants.space3,
+                      childAspectRatio: 0.95,
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final category = categories[index];
+                        final progress = _progress[category.id] ?? 0;
+                        
+                        // إذا لم يتم إعداد الانيميشن بعد، أرجع البطاقة بدون انيميشن
+                        if (_scaleAnimations == null || _fadeAnimations == null || 
+                            index >= _scaleAnimations!.length || index >= _fadeAnimations!.length) {
+                          return _buildCategoryCard(context, category, progress, index);
+                        }
+                        
+                        return AnimatedBuilder(
+                          animation: Listenable.merge([
+                            _scaleAnimations![index],
+                            _fadeAnimations![index],
+                          ]),
+                          builder: (context, child) {
+                            return FadeTransition(
+                              opacity: _fadeAnimations![index],
+                              child: ScaleTransition(
+                                scale: _scaleAnimations![index],
+                                child: _buildCategoryCard(context, category, progress, index),
+                              ),
+                            );
+                          },
                         );
-                      }
-                      
-                      if (snapshot.hasError) {
-                        return SliverFillRemaining(
-                          child: AppEmptyState.error(
-                            message: 'حدث خطأ في تحميل البيانات',
-                            onRetry: () {
-                              setState(() {
-                                _futureCategories = _service.loadCategories();
-                              });
-                            },
-                          ),
-                        );
-                      }
-                      
-                      final categories = snapshot.data ?? [];
-                      
-                      if (categories.isEmpty) {
-                        return SliverFillRemaining(
-                          child: AppEmptyState.noData(
-                            message: 'لا توجد أذكار متاحة حالياً',
-                          ),
-                        );
-                      }
-                      
-                      return SliverPadding(
-                        padding: const EdgeInsets.all(ThemeConstants.space4),
-                        sliver: SliverGrid(
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: ThemeConstants.space3,
-                            crossAxisSpacing: ThemeConstants.space3,
-                            childAspectRatio: 1.0, // تصغير حجم الفئات
-                          ),
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final category = categories[index];
-                              final progress = _progress[category.id] ?? 0;
-                              
-                              return AppCard(
-                                type: CardType.normal,
-                                style: CardStyle.gradient,
-                                primaryColor: ThemeConstants.success, // اللون الأخضر الموجود في النظام
-                                onTap: () => _openCategoryDetails(category),
-                                margin: EdgeInsets.zero,
-                                borderRadius: ThemeConstants.radius3xl,
-                                child: _buildCategoryContent(context, category, progress),
-                              );
-                            },
-                            childCount: categories.length,
-                          ),
-                        ),
-                      );
-                    },
+                      },
+                      childCount: categories.length,
+                    ),
                   ),
+                );
+              },
+            ),
             
             const SliverToBoxAdapter(
               child: SizedBox(height: ThemeConstants.space8),
@@ -217,117 +318,223 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> {
   Widget _buildWelcomeSection(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: AppCard(
-        type: CardType.info,
-        style: CardStyle.gradient,
-        content: 'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
-        subtitle: 'اقرأ الأذكار اليومية وحافظ على ذكر الله',
-        icon: ThemeConstants.iconAthkar,
-        primaryColor: context.primaryColor,
-        gradientColors: [
-          context.primaryColor.withValues(alpha: 0.9),
-          context.primaryLightColor.withValues(alpha: 0.7),
-        ],
-        padding: const EdgeInsets.all(ThemeConstants.space5),
-        borderRadius: ThemeConstants.radiusXl,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        child: Stack(
+          children: [
+            AppCard(
+              type: CardType.info,
+              style: CardStyle.gradient,
+              content: 'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
+              subtitle: 'اقرأ الأذكار اليومية وحافظ على ذكر الله',
+              icon: ThemeConstants.iconAthkar,
+              primaryColor: context.primaryColor,
+              gradientColors: [
+                context.primaryColor.withValues(alpha: 0.9),
+                context.primaryLightColor.withValues(alpha: 0.7),
+              ],
+              padding: const EdgeInsets.all(ThemeConstants.space5),
+              borderRadius: ThemeConstants.radiusXl,
+            ),
+            
+            // تأثير التلميع المتحرك من داخل الكارد
+            Positioned.fill(
+              child: AnimatedBuilder(
+                animation: _shimmerAnimation,
+                builder: (context, child) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.transparent,
+                          Colors.white.withValues(alpha: 0.2),
+                          Colors.transparent,
+                        ],
+                        stops: [
+                          (_shimmerAnimation.value - 0.3).clamp(0.0, 1.0),
+                          _shimmerAnimation.value.clamp(0.0, 1.0),
+                          (_shimmerAnimation.value + 0.3).clamp(0.0, 1.0),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildCategoryContent(BuildContext context, AthkarCategory category, int progress) {
+  Widget _buildCategoryCard(BuildContext context, AthkarCategory category, int progress, int index) {
+    final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
     final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
-    final isCompleted = progress >= 100;
+    final gradientColors = [
+      categoryColor,
+      categoryColor.darken(0.2),
+    ];
     
-    return Padding(
-      padding: const EdgeInsets.all(ThemeConstants.space4), // تقليل المساحة الداخلية
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // أيقونة أصغر
-          Container(
-            width: 60, // تصغير حجم الأيقونة
-            height: 60,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.25),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.4),
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Icon(
-              categoryIcon,
-              color: Colors.white,
-              size: 32, // تصغير حجم الأيقونة
-            ),
-          ),
-          
-          const SizedBox(height: ThemeConstants.space3),
-          
-          // عنوان أصغر
-          Text(
-            category.title,
-            style: context.titleMedium?.copyWith( // استخدام titleMedium بدلاً من titleLarge
-              color: Colors.white,
-              fontWeight: ThemeConstants.bold,
-              fontSize: 16, // تصغير حجم الخط
-              height: 1.3,
-              shadows: const [
-                Shadow(
-                  color: Colors.black26,
-                  offset: Offset(0, 1),
-                  blurRadius: 3,
-                ),
-              ],
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          
-          // مؤشر الإكمال إذا كانت مكتملة
-          if (isCompleted) ...[
-            const SizedBox(height: ThemeConstants.space2),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: ThemeConstants.space2,
-                vertical: ThemeConstants.space1,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.4),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.check_circle_rounded,
-                    color: Colors.white,
-                    size: 14, // تصغير الأيقونة
+    return GestureDetector(
+      onTap: () => _openCategoryDetails(category),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+          child: Stack(
+            children: [
+              // الخلفية المتدرجة
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: gradientColors.map((c) => 
+                      c.withValues(alpha: 0.9)
+                    ).toList(),
                   ),
-                  const SizedBox(width: ThemeConstants.space1),
-                  Text(
-                    'مكتمل',
-                    style: context.labelSmall?.copyWith( // استخدام labelSmall
-                      color: Colors.white,
-                      fontWeight: ThemeConstants.bold,
+                ),
+              ),
+              
+              // الطبقة الزجاجية
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1,
                     ),
                   ),
-                ],
+                ),
+              ),
+              
+              // المحتوى
+              Padding(
+                padding: const EdgeInsets.all(ThemeConstants.space5),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // الأيقونة
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.25),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.4),
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        categoryIcon,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    
+                    const Spacer(),
+                    
+                    // النصوص
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          category.title,
+                          style: context.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: ThemeConstants.bold,
+                            fontSize: 18,
+                            height: 1.2,
+                            letterSpacing: 0.3,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withValues(alpha: 0.4),
+                                offset: const Offset(0, 2),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: ThemeConstants.space3),
+                    
+                    // مؤشر الانتقال فقط
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: Colors.white,
+                            size: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              
+              // تأثير الهوفر للتفاعل
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _openCategoryDetails(category),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                  splashColor: Colors.white.withValues(alpha: 0.2),
+                  highlightColor: Colors.white.withValues(alpha: 0.1),
+                ),
+              ),
+              
+              // عناصر زخرفية
+              _buildDecorativeElements(categoryColor),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDecorativeElements(Color categoryColor) {
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          // دائرة زخرفية صغيرة
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.3),
               ),
             ),
-          ],
+          ),
         ],
       ),
     );
