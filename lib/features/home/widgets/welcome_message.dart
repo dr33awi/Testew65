@@ -1,4 +1,4 @@
-// lib/features/home/widgets/welcome_message.dart - رسالة ترحيب حديثة ومرنة
+// lib/features/home/widgets/welcome_message.dart - رسالة ترحيب مصغرة
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
@@ -68,22 +68,22 @@ class _WelcomeMessageState extends State<WelcomeMessage>
         return Container(
           width: double.infinity,
           constraints: const BoxConstraints(
-            minHeight: 140,
-            maxHeight: 180,
+            minHeight: 100, // تقليل من 140
+            maxHeight: 130, // تقليل من 180
           ),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg), // تقليل من radius2xl
             boxShadow: [
               BoxShadow(
-                color: gradientColors.first.withValues(alpha: 0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-                spreadRadius: -5,
+                color: gradientColors.first.withValues(alpha: 0.2), // تقليل الشفافية
+                blurRadius: 12, // تقليل من 20
+                offset: const Offset(0, 6), // تقليل من 10
+                spreadRadius: -3, // تقليل من -5
               ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
             child: Stack(
               children: [
                 // الخلفية المتدرجة
@@ -110,7 +110,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
                           end: Alignment.bottomRight,
                           colors: [
                             Colors.transparent,
-                            Colors.white.withValues(alpha: 0.1),
+                            Colors.white.withValues(alpha: 0.08), // تقليل الشفافية
                             Colors.transparent,
                           ],
                           stops: [
@@ -134,7 +134,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
                         color: Colors.white.withValues(alpha: 0.2),
                         width: 1,
                       ),
-                      borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+                      borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
                     ),
                   ),
                 ),
@@ -142,12 +142,12 @@ class _WelcomeMessageState extends State<WelcomeMessage>
                 // المحتوى الرئيسي
                 Padding(
                   padding: EdgeInsets.all(
-                    isTablet ? ThemeConstants.space6 : ThemeConstants.space4,
+                    isTablet ? ThemeConstants.space4 : ThemeConstants.space3, // تقليل المسافات
                   ),
                   child: _buildContent(context, now, greeting, message, icon, isTablet),
                 ),
                 
-                // نقاط زخرفية
+                // نقاط زخرفية مصغرة
                 _buildDecorativeElements(),
               ],
             ),
@@ -161,22 +161,22 @@ class _WelcomeMessageState extends State<WelcomeMessage>
                       String message, IconData icon, bool isTablet) {
     return Row(
       children: [
-        // الأيقونة المتحركة
+        // الأيقونة المتحركة مصغرة
         Container(
-          width: isTablet ? 80 : 60,
-          height: isTablet ? 80 : 60,
+          width: isTablet ? 60 : 45, // تقليل الحجم
+          height: isTablet ? 60 : 45,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.white.withValues(alpha: 0.2),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.4),
-              width: 2,
+              width: 1.5, // تقليل سمك الحدود
             ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
+                blurRadius: 6, // تقليل الظل
+                offset: const Offset(0, 3),
               ),
             ],
           ),
@@ -192,7 +192,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
                   child: Icon(
                     icon,
                     color: Colors.white,
-                    size: isTablet ? ThemeConstants.icon2xl : ThemeConstants.iconLg,
+                    size: isTablet ? ThemeConstants.iconLg : ThemeConstants.iconMd, // تقليل حجم الأيقونة
                   ),
                 ),
               );
@@ -200,7 +200,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
           ),
         ),
         
-        SizedBox(width: isTablet ? ThemeConstants.space5 : ThemeConstants.space4),
+        SizedBox(width: isTablet ? ThemeConstants.space4 : ThemeConstants.space3), // تقليل المسافة
         
         // النصوص
         Expanded(
@@ -214,36 +214,36 @@ class _WelcomeMessageState extends State<WelcomeMessage>
                 alignment: Alignment.centerRight,
                 child: Text(
                   greeting,
-                  style: (isTablet ? context.headlineLarge : context.headlineSmall)?.copyWith(
+                  style: (isTablet ? context.headlineMedium : context.titleLarge)?.copyWith( // تقليل حجم النص
                     color: Colors.white,
                     fontWeight: ThemeConstants.bold,
                     height: 1.1,
                     shadows: [
                       Shadow(
                         color: Colors.black.withValues(alpha: 0.3),
-                        offset: const Offset(0, 2),
-                        blurRadius: 4,
+                        offset: const Offset(0, 1), // تقليل الظل
+                        blurRadius: 3,
                       ),
                     ],
                   ),
                 ),
               ),
               
-              SizedBox(height: isTablet ? ThemeConstants.space2 : ThemeConstants.space1),
+              SizedBox(height: ThemeConstants.space1), // تقليل المسافة
               
               // الرسالة
               Text(
                 message,
-                style: (isTablet ? context.bodyLarge : context.bodyMedium)?.copyWith(
+                style: (isTablet ? context.bodyMedium : context.bodySmall)?.copyWith( // تقليل حجم النص
                   color: Colors.white.withValues(alpha: 0.9),
-                  height: 1.3,
+                  height: 1.2,
                   fontWeight: ThemeConstants.medium,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
               
-              SizedBox(height: isTablet ? ThemeConstants.space4 : ThemeConstants.space3),
+              SizedBox(height: isTablet ? ThemeConstants.space3 : ThemeConstants.space2), // تقليل المسافة
               
               // معلومات الوقت والتاريخ
               _buildTimeInfo(context, now, isTablet),
@@ -259,14 +259,14 @@ class _WelcomeMessageState extends State<WelcomeMessage>
     final dateStr = _getArabicDate(now);
     
     return Wrap(
-      spacing: ThemeConstants.space2,
+      spacing: ThemeConstants.space1, // تقليل المسافة
       runSpacing: ThemeConstants.space1,
       children: [
         // الوقت
         Container(
           padding: EdgeInsets.symmetric(
-            horizontal: isTablet ? ThemeConstants.space4 : ThemeConstants.space3,
-            vertical: isTablet ? ThemeConstants.space2 : ThemeConstants.space1,
+            horizontal: isTablet ? ThemeConstants.space3 : ThemeConstants.space2, // تقليل المسافات
+            vertical: isTablet ? ThemeConstants.space1 : ThemeConstants.space1,
           ),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.25),
@@ -282,14 +282,14 @@ class _WelcomeMessageState extends State<WelcomeMessage>
               Icon(
                 Icons.access_time_rounded,
                 color: Colors.white,
-                size: isTablet ? 16 : 14,
+                size: isTablet ? 14 : 12, // تقليل حجم الأيقونة
               ),
               
-              SizedBox(width: isTablet ? ThemeConstants.space2 : ThemeConstants.space1),
+              SizedBox(width: ThemeConstants.space1),
               
               Text(
                 timeStr,
-                style: (isTablet ? context.labelLarge : context.labelMedium)?.copyWith(
+                style: (isTablet ? context.labelMedium : context.labelSmall)?.copyWith( // تقليل حجم النص
                   color: Colors.white,
                   fontWeight: ThemeConstants.bold,
                   fontFeatures: const [FontFeature.tabularFigures()],
@@ -302,8 +302,8 @@ class _WelcomeMessageState extends State<WelcomeMessage>
         // التاريخ
         Container(
           padding: EdgeInsets.symmetric(
-            horizontal: isTablet ? ThemeConstants.space4 : ThemeConstants.space3,
-            vertical: isTablet ? ThemeConstants.space2 : ThemeConstants.space1,
+            horizontal: isTablet ? ThemeConstants.space3 : ThemeConstants.space2,
+            vertical: isTablet ? ThemeConstants.space1 : ThemeConstants.space1,
           ),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
@@ -319,15 +319,15 @@ class _WelcomeMessageState extends State<WelcomeMessage>
               Icon(
                 Icons.calendar_today_rounded,
                 color: Colors.white.withValues(alpha: 0.9),
-                size: isTablet ? 16 : 14,
+                size: isTablet ? 14 : 12,
               ),
               
-              SizedBox(width: isTablet ? ThemeConstants.space2 : ThemeConstants.space1),
+              SizedBox(width: ThemeConstants.space1),
               
               Flexible(
                 child: Text(
                   dateStr,
-                  style: (isTablet ? context.labelLarge : context.labelMedium)?.copyWith(
+                  style: (isTablet ? context.labelMedium : context.labelSmall)?.copyWith(
                     color: Colors.white.withValues(alpha: 0.9),
                     fontWeight: ThemeConstants.medium,
                   ),
@@ -345,36 +345,36 @@ class _WelcomeMessageState extends State<WelcomeMessage>
     return Positioned.fill(
       child: Stack(
         children: [
-          // دائرة زخرفية علوية يمين
+          // دائرة زخرفية علوية يمين مصغرة
           Positioned(
-            top: -20,
-            right: -20,
+            top: -15,
+            right: -15,
             child: Container(
-              width: 80,
-              height: 80,
+              width: 60, // تقليل الحجم
+              height: 60,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.1),
+                color: Colors.white.withValues(alpha: 0.08), // تقليل الشفافية
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withValues(alpha: 0.15),
                   width: 1,
                 ),
               ),
             ),
           ),
           
-          // دائرة زخرفية سفلية يسار
+          // دائرة زخرفية سفلية يسار مصغرة
           Positioned(
-            bottom: -30,
-            left: -30,
+            bottom: -20,
+            left: -20,
             child: Container(
-              width: 100,
-              height: 100,
+              width: 70, // تقليل الحجم
+              height: 70,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.05),
+                color: Colors.white.withValues(alpha: 0.04),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: Colors.white.withValues(alpha: 0.08),
                   width: 1,
                 ),
               ),
@@ -383,27 +383,27 @@ class _WelcomeMessageState extends State<WelcomeMessage>
           
           // نقاط صغيرة متناثرة
           Positioned(
-            top: 30,
-            left: 40,
+            top: 20,
+            left: 30,
             child: Container(
-              width: 4,
-              height: 4,
+              width: 3, // تقليل الحجم
+              height: 3,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.4),
+                color: Colors.white.withValues(alpha: 0.3),
               ),
             ),
           ),
           
           Positioned(
-            bottom: 50,
-            right: 60,
+            bottom: 35,
+            right: 45,
             child: Container(
-              width: 6,
-              height: 6,
+              width: 4,
+              height: 4,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.3),
+                color: Colors.white.withValues(alpha: 0.25),
               ),
             ),
           ),

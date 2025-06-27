@@ -39,7 +39,6 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
       duration: const Duration(seconds: 3),
       vsync: this,
     );
-    // لا نحتاج للـ shimmer animation الآن
   }
 
   Future<void> _loadQuotes() async {
@@ -266,8 +265,6 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
                     ),
                   ),
                   
-                  // تأثير التلميع المتحرك - تم إلغاؤه
-                  
                   // الطبقة الزجاجية
                   Container(
                     decoration: BoxDecoration(
@@ -287,10 +284,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
                     child: _buildQuoteContent(context, quote, isTablet),
                   ),
                   
-                  // العناصر الزخرفية
-                  _buildDecorativeElements(),
-                  
-                                            // تأثير الهوفر للتفاعل
+                  // تأثير الهوفر للتفاعل
                   Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -312,241 +306,116 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
   Widget _buildQuoteContent(BuildContext context, QuoteData quote, bool isTablet) {
     final isShortText = quote.content.length < 80;
     
-    return Row(
+    return Stack(
       children: [
-        // أيقونة النوع
-        Container(
-          width: isTablet ? 70 : 56,
-          height: isTablet ? 70 : 56,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withValues(alpha: 0.25),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.4),
-              width: 2,
+        // عنوان الفئة في الزاوية اليمنى العلوية
+        Positioned(
+          top: 0,
+          right: 0,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: ThemeConstants.space3,
+              vertical: ThemeConstants.space1,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.15),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.25),
+                width: 1,
               ),
-            ],
-          ),
-          child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0.0, end: 1.0),
-            duration: const Duration(milliseconds: 800),
-            curve: Curves.elasticOut,
-            builder: (context, value, child) {
-              return Transform.scale(
-                scale: value,
-                child: Transform.rotate(
-                  angle: value * 0.1,
-                  child: Icon(
-                    QuoteHelper.getQuoteIcon(quote.type),
-                    color: Colors.white,
-                    size: isTablet ? 32 : 26,
-                  ),
-                ),
-              );
-            },
+            ),
+            child: Text(
+              _getQuoteTitle(quote.type),
+              style: (isTablet ? context.labelLarge : context.labelMedium)?.copyWith(
+                color: Colors.white,
+                fontWeight: ThemeConstants.medium,
+                fontSize: isTablet ? 14 : 12,
+              ),
+            ),
           ),
         ),
         
-        SizedBox(width: isTablet ? ThemeConstants.space4 : ThemeConstants.space3),
-        
-        // محتوى النص
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // عنوان النوع
-              if (quote.theme != null) ...[
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: ThemeConstants.space3,
-                    vertical: ThemeConstants.space1,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    quote.theme!,
-                    style: (isTablet ? context.labelLarge : context.labelMedium)?.copyWith(
-                      color: Colors.white,
-                      fontWeight: ThemeConstants.bold,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
+        // المصدر في الزاوية اليسرى السفلية
+        Positioned(
+          bottom: 0,
+          left: 0,
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: isTablet ? ThemeConstants.space3 : ThemeConstants.space2,
+              vertical: isTablet ? ThemeConstants.space2 : ThemeConstants.space1,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.library_books_rounded,
+                  color: Colors.white.withValues(alpha: 0.9),
+                  size: isTablet ? 16 : 14,
                 ),
                 
-                SizedBox(height: isTablet ? ThemeConstants.space3 : ThemeConstants.space2),
-              ],
-              
-              // النص الرئيسي
-              Text(
-                quote.content,
-                style: (isTablet ? context.bodyLarge : context.bodyMedium)?.copyWith(
-                  color: Colors.white,
-                  height: 1.5,
-                  fontWeight: ThemeConstants.medium,
-                  fontSize: isShortText ? (isTablet ? 17 : 15) : (isTablet ? 15 : 13),
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      offset: const Offset(0, 1),
-                      blurRadius: 2,
-                    ),
-                  ],
-                ),
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-              ),
-              
-              SizedBox(height: isTablet ? ThemeConstants.space3 : ThemeConstants.space2),
-              
-              // المصدر
-              Row(
-                children: [
-                  Flexible(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isTablet ? ThemeConstants.space3 : ThemeConstants.space2,
-                        vertical: isTablet ? ThemeConstants.space2 : ThemeConstants.space1,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.library_books_rounded,
-                            color: Colors.white.withValues(alpha: 0.9),
-                            size: isTablet ? 16 : 14,
-                          ),
-                          
-                          SizedBox(width: isTablet ? ThemeConstants.space2 : ThemeConstants.space1),
-                          
-                          Flexible(
-                            child: Text(
-                              quote.source,
-                              style: (isTablet ? context.labelLarge : context.labelMedium)?.copyWith(
-                                color: Colors.white.withValues(alpha: 0.9),
-                                fontWeight: ThemeConstants.medium,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                SizedBox(width: isTablet ? ThemeConstants.space2 : ThemeConstants.space1),
+                
+                Text(
+                  quote.source,
+                  style: (isTablet ? context.labelLarge : context.labelMedium)?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontWeight: ThemeConstants.medium,
                   ),
-                  
-                  const SizedBox(width: ThemeConstants.space2),
-                  
-                  // زر التفاصيل
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                    ),
-                    child: Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: Colors.white,
-                      size: 14,
-                    ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+        
+        // النص الرئيسي في المنتصف مع خلفية شفافة
+        Center(
+          child: Container(
+            padding: EdgeInsets.all(isTablet ? ThemeConstants.space4 : ThemeConstants.space3),
+            margin: EdgeInsets.symmetric(
+              horizontal: isTablet ? ThemeConstants.space6 : ThemeConstants.space4,
+              vertical: isTablet ? ThemeConstants.space5 : ThemeConstants.space4,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              quote.content,
+              style: (isTablet ? context.headlineSmall : context.titleMedium)?.copyWith(
+                color: Colors.white,
+                height: 1.7,
+                fontWeight: ThemeConstants.semiBold,
+                fontSize: isShortText ? (isTablet ? 22 : 18) : (isTablet ? 20 : 16),
+                letterSpacing: 0.5,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    offset: const Offset(0, 2),
+                    blurRadius: 4,
                   ),
                 ],
               ),
-            ],
+              maxLines: 4,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+            ),
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildDecorativeElements() {
-    return Positioned.fill(
-      child: Stack(
-        children: [
-          // دائرة زخرفية علوية يمين
-          Positioned(
-            top: -15,
-            right: -15,
-            child: Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.08),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  width: 1,
-                ),
-              ),
-            ),
-          ),
-          
-          // دائرة زخرفية سفلية يسار
-          Positioned(
-            bottom: -20,
-            left: -20,
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.05),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  width: 1,
-                ),
-              ),
-            ),
-          ),
-          
-          // نقاط صغيرة متناثرة
-          Positioned(
-            top: 25,
-            left: 30,
-            child: Container(
-              width: 3,
-              height: 3,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.4),
-              ),
-            ),
-          ),
-          
-          Positioned(
-            bottom: 40,
-            right: 50,
-            child: Container(
-              width: 4,
-              height: 4,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.3),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -709,7 +578,7 @@ class _QuoteDetailsModal extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            QuoteHelper.getQuoteDetailTitle(quote.type),
+                            getTitle(quote.type),
                             style: context.headlineSmall?.copyWith(
                               fontWeight: ThemeConstants.bold,
                               color: Colors.white,

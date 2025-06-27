@@ -1,23 +1,12 @@
-// lib/features/home/widgets/simple_category_grid.dart - شبكة فئات بسيطة بدون Slivers
+// lib/features/home/widgets/simple_category_grid.dart - شبكة فئات بسيطة بدون Animations
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 
-class SimpleCategoryGrid extends StatefulWidget {
+class SimpleCategoryGrid extends StatelessWidget {
   const SimpleCategoryGrid({super.key});
 
-  @override
-  State<SimpleCategoryGrid> createState() => _SimpleCategoryGridState();
-}
-
-class _SimpleCategoryGridState extends State<SimpleCategoryGrid> 
-    with TickerProviderStateMixin {
-  
-  late List<AnimationController> _controllers;
-  late List<Animation<double>> _scaleAnimations;
-  late List<Animation<double>> _fadeAnimations;
-  
   static const List<CategoryItem> _categories = [
     CategoryItem(
       id: 'prayer_times',
@@ -57,64 +46,12 @@ class _SimpleCategoryGridState extends State<SimpleCategoryGrid>
     ),
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _setupAnimations();
-  }
-
-  void _setupAnimations() {
-    _controllers = List.generate(_categories.length, (index) {
-      return AnimationController(
-        duration: Duration(milliseconds: 600 + (index * 100)),
-        vsync: this,
-      );
-    });
-
-    _scaleAnimations = _controllers.map((controller) {
-      return Tween<double>(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(CurvedAnimation(
-        parent: controller,
-        curve: Curves.elasticOut,
-      ));
-    }).toList();
-
-    _fadeAnimations = _controllers.map((controller) {
-      return Tween<double>(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(CurvedAnimation(
-        parent: controller,
-        curve: Curves.easeOut,
-      ));
-    }).toList();
-
-    // بدء الانيميشن تدريجياً
-    for (int i = 0; i < _controllers.length; i++) {
-      Future.delayed(Duration(milliseconds: i * 150), () {
-        if (mounted) {
-          _controllers[i].forward();
-        }
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    for (var controller in _controllers) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
-
-  void _onCategoryTap(CategoryItem category) {
+  void _onCategoryTap(BuildContext context, CategoryItem category) {
     HapticFeedback.lightImpact();
     
     if (category.routeName != null) {
       Navigator.pushNamed(context, category.routeName!).catchError((error) {
-        if (mounted) {
+        if (context.mounted) {
           context.showWarningSnackBar('هذه الميزة قيد التطوير');
         }
         return null;
@@ -141,22 +78,7 @@ class _SimpleCategoryGridState extends State<SimpleCategoryGrid>
           itemCount: _categories.length,
           itemBuilder: (context, index) {
             final category = _categories[index];
-            
-            return AnimatedBuilder(
-              animation: Listenable.merge([
-                _scaleAnimations[index],
-                _fadeAnimations[index],
-              ]),
-              builder: (context, child) {
-                return FadeTransition(
-                  opacity: _fadeAnimations[index],
-                  child: ScaleTransition(
-                    scale: _scaleAnimations[index],
-                    child: _buildCategoryCard(context, category, index),
-                  ),
-                );
-              },
-            );
+            return _buildCategoryCard(context, category, constraints.maxWidth);
           },
         );
       },
@@ -175,7 +97,43 @@ class _SimpleCategoryGridState extends State<SimpleCategoryGrid>
     return 0.95;
   }
 
-  Widget _buildCategoryCard(BuildContext context, CategoryItem category, int index) {
+  // تحديد أحجام النصوص حسب عرض الشاشة
+  double _getTitleFontSize(double screenWidth) {
+    if (screenWidth > 900) return 20;
+    if (screenWidth > 600) return 18;
+    if (screenWidth > 400) return 16;
+    return 14;
+  }
+
+  double _getSubtitleFontSize(double screenWidth) {
+    if (screenWidth > 900) return 16;
+    if (screenWidth > 600) return 14;
+    if (screenWidth > 400) return 13;
+    return 12;
+  }
+
+  double _getIconSize(double screenWidth) {
+    if (screenWidth > 900) return 32;
+    if (screenWidth > 600) return 28;
+    if (screenWidth > 400) return 26;
+    return 24;
+  }
+
+  double _getIconContainerSize(double screenWidth) {
+    if (screenWidth > 900) return 64;
+    if (screenWidth > 600) return 56;
+    if (screenWidth > 400) return 52;
+    return 48;
+  }
+
+  EdgeInsets _getCardPadding(double screenWidth) {
+    if (screenWidth > 900) return const EdgeInsets.all(ThemeConstants.space6);
+    if (screenWidth > 600) return const EdgeInsets.all(ThemeConstants.space5);
+    if (screenWidth > 400) return const EdgeInsets.all(ThemeConstants.space4);
+    return const EdgeInsets.all(ThemeConstants.space3);
+  }
+
+  Widget _buildCategoryCard(BuildContext context, CategoryItem category, double screenWidth) {
     final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
     final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
     final gradientColors = [
@@ -184,7 +142,7 @@ class _SimpleCategoryGridState extends State<SimpleCategoryGrid>
     ];
     
     return GestureDetector(
-      onTap: () => _onCategoryTap(category),
+      onTap: () => _onCategoryTap(context, category),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
@@ -230,14 +188,14 @@ class _SimpleCategoryGridState extends State<SimpleCategoryGrid>
               
               // المحتوى
               Padding(
-                padding: const EdgeInsets.all(ThemeConstants.space5),
+                padding: _getCardPadding(screenWidth),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // الأيقونة
                     Container(
-                      width: 56,
-                      height: 56,
+                      width: _getIconContainerSize(screenWidth),
+                      height: _getIconContainerSize(screenWidth),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white.withValues(alpha: 0.25),
@@ -256,7 +214,7 @@ class _SimpleCategoryGridState extends State<SimpleCategoryGrid>
                       child: Icon(
                         categoryIcon,
                         color: Colors.white,
-                        size: 28,
+                        size: _getIconSize(screenWidth),
                       ),
                     ),
                     
@@ -271,7 +229,7 @@ class _SimpleCategoryGridState extends State<SimpleCategoryGrid>
                           style: context.titleLarge?.copyWith(
                             color: Colors.white,
                             fontWeight: ThemeConstants.bold,
-                            fontSize: 18,
+                            fontSize: _getTitleFontSize(screenWidth),
                             height: 1.2,
                             letterSpacing: 0.3,
                             shadows: [
@@ -286,14 +244,14 @@ class _SimpleCategoryGridState extends State<SimpleCategoryGrid>
                           overflow: TextOverflow.ellipsis,
                         ),
                         
-                        const SizedBox(height: 6),
+                        SizedBox(height: screenWidth > 400 ? 6 : 4),
                         
                         if (category.subtitle != null)
                           Text(
                             category.subtitle!,
                             style: context.bodyMedium?.copyWith(
                               color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 14,
+                              fontSize: _getSubtitleFontSize(screenWidth),
                               fontWeight: ThemeConstants.medium,
                               height: 1.4,
                               letterSpacing: 0.2,
@@ -311,14 +269,14 @@ class _SimpleCategoryGridState extends State<SimpleCategoryGrid>
                       ],
                     ),
                     
-                    const SizedBox(height: ThemeConstants.space3),
+                    SizedBox(height: screenWidth > 400 ? ThemeConstants.space3 : ThemeConstants.space2),
                     
                     // مؤشر الانتقال
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
-                          width: 24,
+                          width: screenWidth > 400 ? 24 : 20,
                           height: 3,
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.7),
@@ -327,7 +285,7 @@ class _SimpleCategoryGridState extends State<SimpleCategoryGrid>
                         ),
                         
                         Container(
-                          padding: const EdgeInsets.all(4),
+                          padding: EdgeInsets.all(screenWidth > 400 ? 4 : 3),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
@@ -335,7 +293,7 @@ class _SimpleCategoryGridState extends State<SimpleCategoryGrid>
                           child: Icon(
                             Icons.arrow_forward_ios_rounded,
                             color: Colors.white,
-                            size: 14,
+                            size: screenWidth > 400 ? 14 : 12,
                           ),
                         ),
                       ],
@@ -344,11 +302,11 @@ class _SimpleCategoryGridState extends State<SimpleCategoryGrid>
                 ),
               ),
               
-              // تأثير الهوفر للتفاعل
+              // تأثير الهوفر للتفaعل
               Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () => _onCategoryTap(category),
+                  onTap: () => _onCategoryTap(context, category),
                   borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
                   splashColor: Colors.white.withValues(alpha: 0.2),
                   highlightColor: Colors.white.withValues(alpha: 0.1),
@@ -356,7 +314,7 @@ class _SimpleCategoryGridState extends State<SimpleCategoryGrid>
               ),
               
               // عناصر زخرفية
-              _buildDecorativeElements(categoryColor),
+              _buildDecorativeElements(categoryColor, screenWidth),
             ],
           ),
         ),
@@ -364,7 +322,10 @@ class _SimpleCategoryGridState extends State<SimpleCategoryGrid>
     );
   }
 
-  Widget _buildDecorativeElements(Color categoryColor) {
+  Widget _buildDecorativeElements(Color categoryColor, double screenWidth) {
+    final decorativeSize = screenWidth > 400 ? 8.0 : 6.0;
+    final lineWidth = screenWidth > 400 ? 30.0 : 24.0;
+    
     return Positioned.fill(
       child: Stack(
         children: [
@@ -373,8 +334,8 @@ class _SimpleCategoryGridState extends State<SimpleCategoryGrid>
             top: 8,
             right: 8,
             child: Container(
-              width: 8,
-              height: 8,
+              width: decorativeSize,
+              height: decorativeSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white.withValues(alpha: 0.3),
@@ -387,7 +348,7 @@ class _SimpleCategoryGridState extends State<SimpleCategoryGrid>
             bottom: 12,
             left: 12,
             child: Container(
-              width: 30,
+              width: lineWidth,
               height: 2,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.2),
