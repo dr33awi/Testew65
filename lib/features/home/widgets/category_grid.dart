@@ -21,12 +21,6 @@ class SimpleCategoryGrid extends StatelessWidget {
       routeName: '/athkar',
     ),
     CategoryItem(
-      id: 'quran',
-      title: 'القرآن الكريم',
-      subtitle: 'تلاوة وحفظ',
-      routeName: '/quran',
-    ),
-    CategoryItem(
       id: 'qibla',
       title: 'اتجاه القبلة',
       subtitle: 'البوصلة الإسلامية',
@@ -37,12 +31,6 @@ class SimpleCategoryGrid extends StatelessWidget {
       title: 'المسبحة',
       subtitle: 'تسبيح رقمي',
       routeName: '/tasbih',
-    ),
-    CategoryItem(
-      id: 'dua',
-      title: 'الأدعية',
-      subtitle: 'أدعية مأثورة',
-      routeName: '/dua',
     ),
   ];
 
@@ -97,33 +85,33 @@ class SimpleCategoryGrid extends StatelessWidget {
     return 0.95;
   }
 
-  // تحديد أحجام النصوص حسب عرض الشاشة
+  // تحديد أحجام النصوص حسب عرض الشاشة - تم تكبير الأحجام
   double _getTitleFontSize(double screenWidth) {
-    if (screenWidth > 900) return 20;
-    if (screenWidth > 600) return 18;
-    if (screenWidth > 400) return 16;
-    return 14;
+    if (screenWidth > 900) return 24;
+    if (screenWidth > 600) return 22;
+    if (screenWidth > 400) return 20;
+    return 18;
   }
 
   double _getSubtitleFontSize(double screenWidth) {
-    if (screenWidth > 900) return 16;
-    if (screenWidth > 600) return 14;
-    if (screenWidth > 400) return 13;
-    return 12;
+    if (screenWidth > 900) return 18;
+    if (screenWidth > 600) return 16;
+    if (screenWidth > 400) return 15;
+    return 14;
   }
 
   double _getIconSize(double screenWidth) {
-    if (screenWidth > 900) return 32;
-    if (screenWidth > 600) return 28;
-    if (screenWidth > 400) return 26;
-    return 24;
+    if (screenWidth > 900) return 36;
+    if (screenWidth > 600) return 32;
+    if (screenWidth > 400) return 30;
+    return 28;
   }
 
   double _getIconContainerSize(double screenWidth) {
-    if (screenWidth > 900) return 64;
-    if (screenWidth > 600) return 56;
-    if (screenWidth > 400) return 52;
-    return 48;
+    if (screenWidth > 900) return 72;
+    if (screenWidth > 600) return 64;
+    if (screenWidth > 400) return 60;
+    return 56;
   }
 
   EdgeInsets _getCardPadding(double screenWidth) {
@@ -268,41 +256,15 @@ class SimpleCategoryGrid extends StatelessWidget {
                           ),
                       ],
                     ),
+    
+                    SizedBox(height: screenWidth > 400 ? ThemeConstants.space2 : ThemeConstants.space1),
                     
-                    SizedBox(height: screenWidth > 400 ? ThemeConstants.space3 : ThemeConstants.space2),
-                    
-                    // مؤشر الانتقال
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: screenWidth > 400 ? 24 : 20,
-                          height: 3,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.7),
-                            borderRadius: BorderRadius.circular(1.5),
-                          ),
-                        ),
-                        
-                        Container(
-                          padding: EdgeInsets.all(screenWidth > 400 ? 4 : 3),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            color: Colors.white,
-                            size: screenWidth > 400 ? 14 : 12,
-                          ),
-                        ),
-                      ],
-                    ),
+                    // إزالة مؤشر الانتقال
                   ],
                 ),
               ),
               
-              // تأثير الهوفر للتفaعل
+              // تأثير الهوفر للتفاعل
               Material(
                 color: Colors.transparent,
                 child: InkWell(
@@ -323,42 +285,8 @@ class SimpleCategoryGrid extends StatelessWidget {
   }
 
   Widget _buildDecorativeElements(Color categoryColor, double screenWidth) {
-    final decorativeSize = screenWidth > 400 ? 8.0 : 6.0;
-    final lineWidth = screenWidth > 400 ? 30.0 : 24.0;
-    
-    return Positioned.fill(
-      child: Stack(
-        children: [
-          // دائرة زخرفية صغيرة
-          Positioned(
-            top: 8,
-            right: 8,
-            child: Container(
-              width: decorativeSize,
-              height: decorativeSize,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.3),
-              ),
-            ),
-          ),
-          
-          // خط زخرفي
-          Positioned(
-            bottom: 12,
-            left: 12,
-            child: Container(
-              width: lineWidth,
-              height: 2,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(1),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    // إزالة العناصر الزخرفية (الدائرة والخط)
+    return const SizedBox.shrink();
   }
 }
 

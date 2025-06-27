@@ -130,25 +130,19 @@ class _QiblaScreenState extends State<QiblaScreen>
         value: _qiblaService,
         child: Consumer<QiblaService>(
           builder: (context, service, _) {
-            return CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                // بطاقة الترحيب
-                SliverToBoxAdapter(
+            return Stack(
+              children: [
+                // بطاقة الترحيب في الأعلى
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
                   child: _buildWelcomeCard(context),
                 ),
                 
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: ThemeConstants.space4),
-                ),
-                
-                // المحتوى الرئيسي
-                SliverToBoxAdapter(
+                // المحتوى الرئيسي في المنتصف
+                Center(
                   child: _buildMainContent(service),
-                ),
-                
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: ThemeConstants.space8),
                 ),
               ],
             );
@@ -163,7 +157,7 @@ class _QiblaScreenState extends State<QiblaScreen>
     
     return Container(
       margin: const EdgeInsets.all(ThemeConstants.space4),
-      height: 160,
+      height: 140,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
       ),
@@ -211,11 +205,11 @@ class _QiblaScreenState extends State<QiblaScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'توجه نحو الكعبة المشرفة',
+                        '"وَحَيْثُ مَا كُنتُمْ فَوَلُّوا وُجُوهَكُمْ شَطْرَهُ"',
                         style: context.titleLarge?.copyWith(
                           color: Colors.white,
                           fontWeight: ThemeConstants.bold,
-                          fontSize: 20,
+                          fontSize: 16,
                           height: 1.3,
                           letterSpacing: 0.3,
                           shadows: [
@@ -226,46 +220,28 @@ class _QiblaScreenState extends State<QiblaScreen>
                             ),
                           ],
                         ),
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       
-                      const SizedBox(height: ThemeConstants.space3),
+                      const SizedBox(height: ThemeConstants.space2),
                       
-                      // الآية القرآنية بتصميم مميز
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: ThemeConstants.space3,
-                          vertical: ThemeConstants.space2,
+                      Text(
+                        'توجه نحو الكعبة المشرفة واستقبل القبلة',
+                        style: context.bodyMedium?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontSize: 13,
+                          height: 1.2,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              offset: const Offset(0, 1),
+                              blurRadius: 2,
+                            ),
+                          ],
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          '"وَحَيْثُ مَا كُنتُمْ فَوَلُّوا وُجُوهَكُمْ شَطْرَهُ"',
-                          style: context.bodyMedium?.copyWith(
-                            color: Colors.white,
-                            fontSize: 14,
-                            height: 1.4,
-                            fontWeight: ThemeConstants.medium,
-                            fontFamily: ThemeConstants.fontFamilyQuran,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withValues(alpha: 0.3),
-                                offset: const Offset(0, 1),
-                                blurRadius: 2,
-                              ),
-                            ],
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -323,22 +299,16 @@ class _QiblaScreenState extends State<QiblaScreen>
   }
 
   Widget _buildCompassView(QiblaService service) {
-    return Column(
-      children: [
-        // البوصلة في المنتصف
-        Center(
-          child: SizedBox(
-            height: 320,
-            child: QiblaCompass(
-              qiblaDirection: service.qiblaData!.qiblaDirection,
-              currentDirection: service.currentDirection,
-              accuracy: service.compassAccuracy,
-              isCalibrated: service.isCalibrated,
-              onCalibrate: () => service.startCalibration(),
-            ),
-          ),
-        ),
-      ],
+    return Container(
+      width: 320,
+      height: 320,
+      child: QiblaCompass(
+        qiblaDirection: service.qiblaData!.qiblaDirection,
+        currentDirection: service.currentDirection,
+        accuracy: service.compassAccuracy,
+        isCalibrated: service.isCalibrated,
+        onCalibrate: () => service.startCalibration(),
+      ),
     );
   }
 
@@ -363,6 +333,7 @@ class _QiblaScreenState extends State<QiblaScreen>
 
   Widget _buildNoCompassState(QiblaService service) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         // بطاقة تحذير
         _buildSectionCard(
@@ -410,7 +381,7 @@ class _QiblaScreenState extends State<QiblaScreen>
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+        width: 320,
         height: 160,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
@@ -463,8 +434,8 @@ class _QiblaScreenState extends State<QiblaScreen>
                           style: context.titleLarge?.copyWith(
                             color: Colors.white,
                             fontWeight: ThemeConstants.bold,
-                            fontSize: 24,
-                            height: 1.2,
+                            fontSize: 16,
+                            height: 1.3,
                             letterSpacing: 0.3,
                             shadows: [
                               Shadow(
