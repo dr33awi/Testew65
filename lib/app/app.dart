@@ -1,20 +1,18 @@
-// lib/app/app.dart (مُصحح)
+// lib/app/app.dart - مُصحح للنظام المبسط
+import 'package:athkar_app/app/themes/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-// استيراد الثيمات
-import 'themes/app_theme.dart';
+// استيراد الثيم الجديد
 import '../core/constants/app_constants.dart';
 import 'routes/app_router.dart';
 import '../main.dart'; // لاستخدام NavigationService
 
 class AthkarApp extends StatelessWidget {
-  final bool isDarkMode;
   final String language;
   
   const AthkarApp({
     super.key,
-    this.isDarkMode = false,
     this.language = 'ar',
   });
 
@@ -22,9 +20,11 @@ class AthkarApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: AppConstants.appName,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      
+      // ✅ الثيم الداكن الوحيد
+      theme: AppTheme.theme,
+      themeMode: ThemeMode.dark,
+      
       locale: Locale(language),
       supportedLocales: const [
         Locale('ar'), // العربية
@@ -35,11 +35,15 @@ class AthkarApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      // ✅ استخدام NavigationService الموحد
+      
+      // استخدام NavigationService الموحد
       navigatorKey: NavigationService.navigatorKey,
-      // ✅ استخدام AppRouter للتوجيه
+      
+      // استخدام AppRouter للتوجيه
       initialRoute: AppRouter.initialRoute,
       onGenerateRoute: AppRouter.onGenerateRoute,
+      
+      debugShowCheckedModeBanner: false,
     );
   }
 }

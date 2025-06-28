@@ -1,515 +1,629 @@
-// lib/app/themes/app_theme.dart - عربي وداكن فقط
+// lib/theme/app_theme.dart - النظام المبسط الكامل مع الحفاظ على التصميم
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// استيراد جميع مكونات الثيم
-import 'core/app_colors.dart';
-import 'core/app_text_styles.dart';
-import 'core/app_theme_constants.dart';
-
-// إعادة تصدير المكونات للوصول السهل
-export 'core/app_colors.dart';
-export 'core/app_text_styles.dart';
-export 'core/app_theme_constants.dart';
-export 'core/app_extensions.dart';
-export 'core/theme_notifier.dart';
-export 'widgets/unified_widgets.dart';
-
-/// نظام الثيم الإسلامي - الوضع الداكن فقط
+/// نظام الثيم الإسلامي المبسط - داكن فقط
 class AppTheme {
   AppTheme._();
+
+  // ========== الألوان الأساسية ==========
   
-  // ========== الثيم الداكن الوحيد ==========
+  /// الألوان الإسلامية الأساسية
+  static const Color primary = Color(0xFF5D7052);        // أخضر زيتي أنيق
+  static const Color primaryLight = Color(0xFF7A8E6F);
+  static const Color primaryDark = Color(0xFF4A5A41);
   
-  /// الثيم الداكن الإسلامي
+  static const Color secondary = Color(0xFFB8860B);       // ذهبي دافئ
+  static const Color secondaryLight = Color(0xFFDAA520);
+  static const Color secondaryDark = Color(0xFF9A7209);
+  
+  static const Color accent = Color(0xFF8D5524);          // بني دافئ
+  static const Color tertiary = Color(0xFF4F5D6B);       // أزرق رمادي
+  
+  // ألوان الحالة
+  static const Color success = primary;
+  static const Color warning = secondary;
+  static const Color error = Color(0xFFD04848);
+  static const Color info = Color(0xFF4A86B8);
+  
+  // ألوان النصوص
+  static const Color textPrimary = Color(0xFFF5F5F0);
+  static const Color textSecondary = Color(0xFFE0E0D6);
+  static const Color textTertiary = Color(0xFFC4C4B8);
+  static const Color textHint = Color(0xFFA8A898);
+  static const Color textReligious = Color(0xFFF8F8F3);
+  
+  // ألوان الخلفيات
+  static const Color background = Color(0xFF1A1F1A);
+  static const Color surface = Color(0xFF232A23);
+  static const Color card = Color(0xFF2D352D);
+  
+  // ألوان الحدود
+  static const Color divider = Color(0xFF3A4239);
+  static const Color border = Color(0xFF4A524A);
+  
+  // ========== الخطوط العربية ==========
+  
+  static const String primaryFont = 'Tajawal';
+  static const String religiousFont = 'Amiri Quran';
+  static const String numbersFont = 'Cairo';
+  
+  // أوزان الخطوط
+  static const FontWeight light = FontWeight.w300;
+  static const FontWeight regular = FontWeight.w400;
+  static const FontWeight medium = FontWeight.w500;
+  static const FontWeight semiBold = FontWeight.w600;
+  static const FontWeight bold = FontWeight.w700;
+  
+  // ========== أنماط النصوص الأساسية ==========
+  
+  static const TextStyle displayLarge = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 48,
+    fontWeight: bold,
+    height: 1.2,
+    color: textPrimary,
+  );
+  
+  static const TextStyle displayMedium = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 36,
+    fontWeight: bold,
+    height: 1.2,
+    color: textPrimary,
+  );
+  
+  static const TextStyle headlineLarge = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 32,
+    fontWeight: bold,
+    height: 1.3,
+    color: textPrimary,
+  );
+  
+  static const TextStyle headlineMedium = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 24,
+    fontWeight: semiBold,
+    height: 1.4,
+    color: textPrimary,
+  );
+  
+  static const TextStyle titleLarge = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 20,
+    fontWeight: semiBold,
+    height: 1.4,
+    color: textPrimary,
+  );
+  
+  static const TextStyle titleMedium = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 18,
+    fontWeight: medium,
+    height: 1.4,
+    color: textPrimary,
+  );
+  
+  static const TextStyle bodyLarge = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 16,
+    fontWeight: regular,
+    height: 1.6,
+    color: textPrimary,
+  );
+  
+  static const TextStyle bodyMedium = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 14,
+    fontWeight: regular,
+    height: 1.5,
+    color: textPrimary,
+  );
+  
+  static const TextStyle bodySmall = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 12,
+    fontWeight: regular,
+    height: 1.4,
+    color: textSecondary,
+  );
+  
+  static const TextStyle labelMedium = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 12,
+    fontWeight: medium,
+    height: 1.3,
+    letterSpacing: 0.3,
+    color: textPrimary,
+  );
+  
+  static const TextStyle caption = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 12,
+    fontWeight: regular,
+    height: 1.4,
+    color: textTertiary,
+  );
+  
+  // النصوص الدينية
+  static const TextStyle quranStyle = TextStyle(
+    fontFamily: religiousFont,
+    fontSize: 18,
+    fontWeight: regular,
+    height: 2.0,
+    letterSpacing: 0.5,
+    color: textReligious,
+  );
+  
+  static const TextStyle dhikrStyle = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 16,
+    fontWeight: medium,
+    height: 1.7,
+    color: textReligious,
+  );
+  
+  static const TextStyle numbersStyle = TextStyle(
+    fontFamily: numbersFont,
+    fontSize: 20,
+    fontWeight: semiBold,
+    height: 1.2,
+    color: primary,
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+  
+  // ========== الثوابت التصميمية ==========
+  
+  // المسافات
+  static const double space1 = 4.0;
+  static const double space2 = 8.0;
+  static const double space3 = 12.0;
+  static const double space4 = 16.0;
+  static const double space5 = 20.0;
+  static const double space6 = 24.0;
+  static const double space8 = 32.0;
+  
+  // الحواف والانحناءات
+  static const double radiusXs = 2.0;
+  static const double radiusSm = 6.0;
+  static const double radiusMd = 10.0;
+  static const double radiusLg = 14.0;
+  static const double radiusXl = 18.0;
+  static const double radius2xl = 24.0;
+  static const double radiusFull = 1000.0;
+  
+  // أحجام الأيقونات
+  static const double iconSm = 16.0;
+  static const double iconMd = 22.0;
+  static const double iconLg = 28.0;
+  static const double iconXl = 36.0;
+  
+  // الارتفاعات والظلال
+  static const double elevationSm = 2.0;
+  static const double elevationMd = 6.0;
+  static const double elevationLg = 12.0;
+  
+  // أحجام الأزرار
+  static const double buttonHeight = 44.0;
+  static const double buttonHeightLarge = 52.0;
+  
+  // مدد الحركة
+  static const Duration durationFast = Duration(milliseconds: 200);
+  static const Duration durationNormal = Duration(milliseconds: 300);
+  static const Duration durationSlow = Duration(milliseconds: 500);
+  
+  // ========== الظلال ==========
+  
+  static List<BoxShadow> get shadowSm => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.08),
+      blurRadius: 4,
+      offset: const Offset(0, 2),
+    ),
+  ];
+  
+  static List<BoxShadow> get shadowMd => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.12),
+      blurRadius: 8,
+      offset: const Offset(0, 4),
+    ),
+  ];
+  
+  static List<BoxShadow> get shadowLg => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.16),
+      blurRadius: 16,
+      offset: const Offset(0, 8),
+    ),
+  ];
+  
+  // ظل خاص للبطاقات الإسلامية
+  static List<BoxShadow> get cardShadow => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.1),
+      blurRadius: 12,
+      offset: const Offset(0, 6),
+      spreadRadius: 1,
+    ),
+  ];
+  
+  // ========== التدرجات ==========
+  
+  static const LinearGradient primaryGradient = LinearGradient(
+    colors: [primary, primaryDark],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+  
+  static const LinearGradient secondaryGradient = LinearGradient(
+    colors: [secondary, secondaryDark],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+  
+  static const LinearGradient oliveGoldGradient = LinearGradient(
+    colors: [primary, secondary],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  
+  // ========== الثيم الرئيسي ==========
+  
   static ThemeData get theme => ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
     
     // الألوان الأساسية
-    primarySwatch: AppColors.primary.toMaterialColor(),
-    primaryColor: AppColors.primary,
+    primaryColor: primary,
     colorScheme: const ColorScheme.dark(
-      primary: AppColors.primary,
+      primary: primary,
       onPrimary: Colors.black,
-      secondary: AppColors.secondary,
+      secondary: secondary,
       onSecondary: Colors.black,
-      tertiary: AppColors.tertiary,
+      tertiary: tertiary,
       onTertiary: Colors.black,
-      surface: AppColors.surface,
-      onSurface: AppColors.textPrimary,
-      error: AppColors.error,
+      surface: surface,
+      onSurface: textPrimary,
+      error: error,
       onError: Colors.black,
-      outline: AppColors.outline,
-      shadow: Colors.black87,
-      surfaceVariant: AppColors.quranBackground,
+      outline: border,
     ),
     
-    // خلفية التطبيق
-    scaffoldBackgroundColor: AppColors.background,
+    scaffoldBackgroundColor: background,
     
     // ثيم النصوص
-    textTheme: _createTextTheme(),
+    textTheme: const TextTheme(
+      displayLarge: displayLarge,
+      displayMedium: displayMedium,
+      headlineLarge: headlineLarge,
+      headlineMedium: headlineMedium,
+      titleLarge: titleLarge,
+      titleMedium: titleMedium,
+      bodyLarge: bodyLarge,
+      bodyMedium: bodyMedium,
+      bodySmall: bodySmall,
+      labelMedium: labelMedium,
+    ),
     
     // ثيم الشريط العلوي
     appBarTheme: const AppBarTheme(
       elevation: 0,
-      scrolledUnderElevation: 0,
       backgroundColor: Colors.transparent,
-      foregroundColor: AppColors.textPrimary,
+      foregroundColor: textPrimary,
       titleTextStyle: TextStyle(
-        fontFamily: AppTextStyles.primaryFontFamily,
-        fontSize: AppTextStyles.size20,
-        fontWeight: AppTextStyles.semiBold,
-        color: AppColors.textPrimary,
+        fontFamily: primaryFont,
+        fontSize: 20,
+        fontWeight: semiBold,
+        color: textPrimary,
       ),
+      centerTitle: true,
       systemOverlayStyle: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
       ),
-      centerTitle: true,
     ),
     
-    // ثيم البطاقات
+    // ثيم البطاقات - المحافظة على التصميم الحالي
     cardTheme: CardThemeData(
-      color: AppColors.card,
-      elevation: AppThemeConstants.elevationSm,
+      color: card,
+      elevation: elevationSm,
       shadowColor: Colors.black.withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppThemeConstants.radiusLg),
+        borderRadius: BorderRadius.circular(radiusLg),
       ),
-      margin: const EdgeInsets.all(AppThemeConstants.space3),
+      margin: const EdgeInsets.all(space3),
     ),
     
-    // ثيم الأزرار
+    // ثيم الأزرار - نفس التصميم
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
+        backgroundColor: primary,
         foregroundColor: Colors.black,
-        elevation: AppThemeConstants.elevationSm,
-        shadowColor: AppColors.primary.withValues(alpha: 0.3),
+        elevation: elevationSm,
+        shadowColor: primary.withValues(alpha: 0.3),
         padding: const EdgeInsets.symmetric(
-          horizontal: AppThemeConstants.space5,
-          vertical: AppThemeConstants.space3,
+          horizontal: space5,
+          vertical: space3,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppThemeConstants.radiusMd),
+          borderRadius: BorderRadius.circular(radiusMd),
         ),
-        textStyle: AppTextStyles.button,
-        minimumSize: const Size(80, AppThemeConstants.buttonHeightMedium),
+        minimumSize: const Size(80, buttonHeight),
+        textStyle: const TextStyle(
+          fontFamily: primaryFont,
+          fontSize: 14,
+          fontWeight: semiBold,
+        ),
       ),
     ),
     
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: AppColors.primary,
+        foregroundColor: primary,
         padding: const EdgeInsets.symmetric(
-          horizontal: AppThemeConstants.space4,
-          vertical: AppThemeConstants.space2,
+          horizontal: space4,
+          vertical: space2,
         ),
-        textStyle: AppTextStyles.buttonSecondary,
+        textStyle: const TextStyle(
+          fontFamily: primaryFont,
+          fontSize: 14,
+          fontWeight: medium,
+        ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppThemeConstants.radiusSm),
+          borderRadius: BorderRadius.circular(radiusSm),
         ),
       ),
     ),
     
     // ثيم الأيقونات
     iconTheme: const IconThemeData(
-      color: AppColors.textSecondary,
-      size: AppThemeConstants.iconMd,
-    ),
-    primaryIconTheme: const IconThemeData(
-      color: Colors.black,
-      size: AppThemeConstants.iconMd,
+      color: textSecondary,
+      size: iconMd,
     ),
     
     // ثيم حقول الإدخال
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: AppColors.surface,
+      fillColor: surface,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppThemeConstants.radiusMd),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderRadius: BorderRadius.circular(radiusMd),
+        borderSide: const BorderSide(color: border),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppThemeConstants.radiusMd),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderRadius: BorderRadius.circular(radiusMd),
+        borderSide: const BorderSide(color: border),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppThemeConstants.radiusMd),
-        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+        borderRadius: BorderRadius.circular(radiusMd),
+        borderSide: const BorderSide(color: primary, width: 2),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppThemeConstants.radiusMd),
-        borderSide: const BorderSide(color: AppColors.error),
+        borderRadius: BorderRadius.circular(radiusMd),
+        borderSide: const BorderSide(color: error),
       ),
-      contentPadding: const EdgeInsets.all(AppThemeConstants.space4),
-      hintStyle: AppTextStyles.bodyMedium.copyWith(
-        color: AppColors.textHint,
-      ),
-      labelStyle: AppTextStyles.bodyMedium.copyWith(
-        color: AppColors.textSecondary,
-      ),
+      contentPadding: const EdgeInsets.all(space4),
+      hintStyle: bodyMedium.copyWith(color: textHint),
+      labelStyle: bodyMedium.copyWith(color: textSecondary),
     ),
     
     // ثيم الحوارات
     dialogTheme: DialogThemeData(
-      backgroundColor: AppColors.surface,
-      elevation: AppThemeConstants.elevationLg,
+      backgroundColor: surface,
+      elevation: elevationLg,
       shadowColor: Colors.black.withValues(alpha: 0.4),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppThemeConstants.radiusXl),
+        borderRadius: BorderRadius.circular(radiusXl),
       ),
-      titleTextStyle: AppTextStyles.titleLarge.copyWith(
-        color: AppColors.textPrimary,
-      ),
-      contentTextStyle: AppTextStyles.bodyMedium.copyWith(
-        color: AppColors.textPrimary,
-      ),
-      actionsPadding: const EdgeInsets.all(AppThemeConstants.space4),
+      titleTextStyle: titleLarge,
+      contentTextStyle: bodyMedium,
     ),
     
     // ثيم القوائم السفلية
-    bottomSheetTheme: BottomSheetThemeData(
-      backgroundColor: AppColors.surface,
-      elevation: AppThemeConstants.elevationLg,
-      shape: const RoundedRectangleBorder(
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: surface,
+      elevation: elevationLg,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppThemeConstants.radiusXl),
+          top: Radius.circular(radiusXl),
         ),
-      ),
-      constraints: const BoxConstraints(
-        maxHeight: AppThemeConstants.bottomSheetMaxHeight,
       ),
     ),
     
     // ثيم القوائم
     listTileTheme: const ListTileThemeData(
       contentPadding: EdgeInsets.symmetric(
-        horizontal: AppThemeConstants.space4,
-        vertical: AppThemeConstants.space2,
+        horizontal: space4,
+        vertical: space2,
       ),
       titleTextStyle: TextStyle(
-        fontFamily: AppTextStyles.primaryFontFamily,
-        fontSize: AppTextStyles.size16,
-        fontWeight: AppTextStyles.medium,
-        color: AppColors.textPrimary,
+        fontFamily: primaryFont,
+        fontSize: 16,
+        fontWeight: medium,
+        color: textPrimary,
       ),
       subtitleTextStyle: TextStyle(
-        fontFamily: AppTextStyles.primaryFontFamily,
-        fontSize: AppTextStyles.size14,
-        fontWeight: AppTextStyles.regular,
-        color: AppColors.textSecondary,
+        fontFamily: primaryFont,
+        fontSize: 14,
+        fontWeight: regular,
+        color: textSecondary,
       ),
-      iconColor: AppColors.textSecondary,
-      textColor: AppColors.textPrimary,
+      iconColor: textSecondary,
     ),
     
     // ثيم الفواصل
     dividerTheme: const DividerThemeData(
-      color: AppColors.divider,
-      thickness: AppThemeConstants.borderWidthThin,
-      space: AppThemeConstants.space4,
+      color: divider,
+      thickness: 0.5,
+      space: space4,
     ),
     
     // ثيم مؤشرات التقدم
     progressIndicatorTheme: const ProgressIndicatorThemeData(
-      color: AppColors.primary,
-      linearTrackColor: AppColors.divider,
-      circularTrackColor: AppColors.divider,
-    ),
-    
-    // ثيم المفاتيح
-    switchTheme: SwitchThemeData(
-      thumbColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return AppColors.primary;
-        }
-        return AppColors.textTertiary;
-      }),
-      trackColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return AppColors.primary.withValues(alpha: 0.5);
-        }
-        return AppColors.divider;
-      }),
-    ),
-    
-    // ثيم أزرار الراديو
-    radioTheme: RadioThemeData(
-      fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return AppColors.primary;
-        }
-        return AppColors.textTertiary;
-      }),
-    ),
-    
-    // ثيم صناديق الاختيار
-    checkboxTheme: CheckboxThemeData(
-      fillColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return AppColors.primary;
-        }
-        return Colors.transparent;
-      }),
-      checkColor: WidgetStateProperty.all(Colors.black),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppThemeConstants.radiusXs),
-      ),
-    ),
-    
-    // ثيم أشرطة التمرير
-    scrollbarTheme: ScrollbarThemeData(
-      thumbColor: WidgetStateProperty.all(AppColors.textTertiary.withValues(alpha: 0.6)),
-      trackColor: WidgetStateProperty.all(AppColors.divider),
-      radius: const Radius.circular(AppThemeConstants.radiusSm),
-      thickness: WidgetStateProperty.all(6.0),
-    ),
-    
-    // ثيم الشرائح
-    sliderTheme: SliderThemeData(
-      activeTrackColor: AppColors.primary,
-      inactiveTrackColor: AppColors.divider,
-      thumbColor: AppColors.primary,
-      overlayColor: AppColors.primary.withValues(alpha: 0.1),
-      valueIndicatorColor: AppColors.primary,
-      valueIndicatorTextStyle: AppTextStyles.caption.copyWith(color: Colors.black),
-    ),
-    
-    // ثيم شريط التنقل السفلي
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: AppColors.surface,
-      selectedItemColor: AppColors.primary,
-      unselectedItemColor: AppColors.textTertiary,
-      elevation: AppThemeConstants.elevationMd,
-      type: BottomNavigationBarType.fixed,
-      selectedLabelStyle: TextStyle(
-        fontFamily: AppTextStyles.primaryFontFamily,
-        fontSize: AppTextStyles.size12,
-        fontWeight: AppTextStyles.medium,
-      ),
-      unselectedLabelStyle: TextStyle(
-        fontFamily: AppTextStyles.primaryFontFamily,
-        fontSize: AppTextStyles.size12,
-        fontWeight: AppTextStyles.regular,
-      ),
-    ),
-    
-    // ثيم التابات
-    tabBarTheme: const TabBarThemeData(
-      labelColor: AppColors.primary,
-      unselectedLabelColor: AppColors.textSecondary,
-      indicator: UnderlineTabIndicator(
-        borderSide: BorderSide(color: AppColors.primary, width: 3),
-      ),
-      labelStyle: TextStyle(
-        fontFamily: AppTextStyles.primaryFontFamily,
-        fontSize: AppTextStyles.size14,
-        fontWeight: AppTextStyles.semiBold,
-      ),
-      unselectedLabelStyle: TextStyle(
-        fontFamily: AppTextStyles.primaryFontFamily,
-        fontSize: AppTextStyles.size14,
-        fontWeight: AppTextStyles.regular,
-      ),
+      color: primary,
+      linearTrackColor: divider,
+      circularTrackColor: divider,
     ),
     
     // ثيم الـ SnackBar
     snackBarTheme: SnackBarThemeData(
-      backgroundColor: AppColors.textPrimary,
-      contentTextStyle: AppTextStyles.bodyMedium.copyWith(color: Colors.black),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppThemeConstants.radiusMd),
+      backgroundColor: textPrimary,
+      contentTextStyle: bodyMedium.copyWith(color: Colors.black),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(radiusMd)),
       ),
       behavior: SnackBarBehavior.floating,
-      elevation: AppThemeConstants.elevationMd,
+      elevation: elevationMd,
     ),
     
     // ثيم الـ FloatingActionButton
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: AppColors.primary,
+      backgroundColor: primary,
       foregroundColor: Colors.black,
-      elevation: AppThemeConstants.elevationMd,
-      shape: CircleBorder(),
+      elevation: elevationMd,
     ),
   );
   
-  // ========== TextTheme Builder ==========
+  // ========== دوال مساعدة بسيطة ==========
   
-  static TextTheme _createTextTheme() {
-    return const TextTheme(
-      displayLarge: AppTextStyles.displayLarge,
-      displayMedium: AppTextStyles.displayMedium,
-      displaySmall: AppTextStyles.displaySmall,
-      headlineLarge: AppTextStyles.headlineLarge,
-      headlineMedium: AppTextStyles.headlineMedium,
-      headlineSmall: AppTextStyles.headlineSmall,
-      titleLarge: AppTextStyles.titleLarge,
-      titleMedium: AppTextStyles.titleMedium,
-      titleSmall: AppTextStyles.titleSmall,
-      bodyLarge: AppTextStyles.bodyLarge,
-      bodyMedium: AppTextStyles.bodyMedium,
-      bodySmall: AppTextStyles.bodySmall,
-      labelLarge: AppTextStyles.labelLarge,
-      labelMedium: AppTextStyles.labelMedium,
-      labelSmall: AppTextStyles.labelSmall,
-    );
+  /// ألوان الصلوات
+  static const Map<String, Color> prayerColors = {
+    'الفجر': Color(0xFF6B7BA8),
+    'الشروق': secondary,
+    'الظهر': Color(0xFFD08C47),
+    'العصر': accent,
+    'المغرب': Color(0xFF9B6B9B),
+    'العشاء': tertiary,
+  };
+  
+  /// ألوان الفئات
+  static const Map<String, Color> categoryColors = {
+    'اوقات_الصلاة': primary,
+    'الاذكار': accent,
+    'القبلة': tertiary,
+    'التسبيح': secondary,
+    'القران': Color(0xFF4A6B4A),
+    'الادعية': Color(0xFF8B7355),
+    'المفضلة': Color(0xFFCC8E35),
+    'الاعدادات': Color(0xFF6B7BA8),
+  };
+  
+  /// الحصول على لون الصلاة
+  static Color getPrayerColor(String prayerName) {
+    return prayerColors[prayerName] ?? primary;
   }
   
-  // ========== دوال مساعدة للثيم الإسلامي ==========
-  
-  /// الحصول على ثيم مخصص للمحتوى الديني
-  static ThemeData getReligiousTheme({
-    required BuildContext context,
-    required String contentType,
-  }) {
-    final baseTheme = theme;
-    final backgroundColor = AppColors.getReligiousBackground(contentType);
-    
-    return baseTheme.copyWith(
-      cardTheme: baseTheme.cardTheme.copyWith(
-        color: backgroundColor,
-      ),
-      textTheme: baseTheme.textTheme.copyWith(
-        bodyLarge: AppTextStyles.getReligiousTextStyle(contentType),
-        bodyMedium: AppTextStyles.getReligiousTextStyle(contentType),
-      ),
-    );
+  /// الحصول على لون الفئة
+  static Color getCategoryColor(String categoryId) {
+    return categoryColors[categoryId] ?? primary;
   }
   
-  /// الحصول على ثيم مخصص للصلوات
-  static ThemeData getPrayerTheme({
-    required BuildContext context,
-    required String prayerName,
-  }) {
-    final baseTheme = theme;
-    final prayerColor = AppColors.getPrayerColor(prayerName);
-    
-    return baseTheme.copyWith(
-      primaryColor: prayerColor,
-      colorScheme: baseTheme.colorScheme.copyWith(
-        primary: prayerColor,
-      ),
-      appBarTheme: baseTheme.appBarTheme.copyWith(
-        backgroundColor: prayerColor.withValues(alpha: 0.1),
-      ),
-    );
+  /// الحصول على خلفية مناسبة للمحتوى الديني
+  static Color getReligiousBackground(String type) {
+    switch (type) {
+      case 'قران':
+      case 'آية':
+        return const Color(0xFF1E2A1E);
+      case 'ذكر':
+      case 'اذكار':
+        return const Color(0xFF252E25);
+      case 'حديث':
+        return const Color(0xFF2A251E);
+      case 'دعاء':
+        return const Color(0xFF2D2419);
+      default:
+        return surface;
+    }
   }
   
-  /// الحصول على ثيم متجاوب حسب حجم الشاشة
-  static ThemeData getResponsiveTheme({
-    required BuildContext context,
-  }) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final baseTheme = theme;
-    
-    return baseTheme.copyWith(
-      textTheme: baseTheme.textTheme.copyWith(
-        bodyLarge: AppTextStyles.getResponsiveTextStyle(screenWidth, AppTextStyles.bodyLarge),
-        bodyMedium: AppTextStyles.getResponsiveTextStyle(screenWidth, AppTextStyles.bodyMedium),
-        titleLarge: AppTextStyles.getResponsiveTextStyle(screenWidth, AppTextStyles.titleLarge),
-        headlineMedium: AppTextStyles.getResponsiveTextStyle(screenWidth, AppTextStyles.headlineMedium),
-      ),
-      cardTheme: baseTheme.cardTheme.copyWith(
-        margin: EdgeInsets.all(AppThemeConstants.getResponsiveSpacing(screenWidth)),
-      ),
-    );
+  /// تفتيح اللون
+  static Color lighten(Color color, [double amount = 0.1]) {
+    final hsl = HSLColor.fromColor(color);
+    return hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0)).toColor();
+  }
+  
+  /// تغميق اللون
+  static Color darken(Color color, [double amount = 0.1]) {
+    final hsl = HSLColor.fromColor(color);
+    return hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0)).toColor();
   }
 }
 
-// ========== ثوابت سريعة للوصول ==========
+// ========== Extensions بسيطة ومفيدة ==========
 
-/// ثوابت سريعة للاستخدام في التطبيق
-class ThemeConstants {
-  ThemeConstants._();
+extension AppThemeExtensions on BuildContext {
+  /// الثيم الحالي
+  ThemeData get theme => Theme.of(this);
   
-  // ألوان سريعة
-  static const Color primary = AppColors.primary;
-  static const Color secondary = AppColors.secondary;
-  static const Color accent = AppColors.accent;
-  static const Color tertiary = AppColors.tertiary;
-  static const Color success = AppColors.success;
-  static const Color warning = AppColors.warning;
-  static const Color error = AppColors.error;
-  static const Color info = AppColors.info;
+  /// الألوان السريعة
+  Color get primaryColor => AppTheme.primary;
+  Color get secondaryColor => AppTheme.secondary;
+  Color get backgroundColor => AppTheme.background;
+  Color get surfaceColor => AppTheme.surface;
+  Color get cardColor => AppTheme.card;
   
-  // ألوان إسلامية سريعة
-  static const Color islamicGreen = AppColors.islamicGreen;
-  static const Color islamicGold = AppColors.islamicGold;
-  static const Color islamicBrown = AppColors.islamicBrown;
+  /// النصوص السريعة
+  TextStyle get headlineLarge => AppTheme.headlineLarge;
+  TextStyle get headlineMedium => AppTheme.headlineMedium;
+  TextStyle get titleLarge => AppTheme.titleLarge;
+  TextStyle get titleMedium => AppTheme.titleMedium;
+  TextStyle get bodyLarge => AppTheme.bodyLarge;
+  TextStyle get bodyMedium => AppTheme.bodyMedium;
+  TextStyle get bodySmall => AppTheme.bodySmall;
   
-  // مسافات سريعة
-  static const double space1 = AppThemeConstants.space1;
-  static const double space2 = AppThemeConstants.space2;
-  static const double space3 = AppThemeConstants.space3;
-  static const double space4 = AppThemeConstants.space4;
-  static const double space5 = AppThemeConstants.space5;
-  static const double space6 = AppThemeConstants.space6;
-  static const double space8 = AppThemeConstants.space8;
+  /// النصوص الدينية
+  TextStyle get quranStyle => AppTheme.quranStyle;
+  TextStyle get dhikrStyle => AppTheme.dhikrStyle;
+  TextStyle get numbersStyle => AppTheme.numbersStyle;
   
-  // أنصاف أقطار سريعة
-  static const double radiusSm = AppThemeConstants.radiusSm;
-  static const double radiusMd = AppThemeConstants.radiusMd;
-  static const double radiusLg = AppThemeConstants.radiusLg;
-  static const double radiusXl = AppThemeConstants.radiusXl;
-  static const double radius2xl = AppThemeConstants.radius2xl;
-  static const double radiusFull = AppThemeConstants.radiusFull;
+  /// معلومات الشاشة
+  Size get screenSize => MediaQuery.of(this).size;
+  double get screenWidth => screenSize.width;
+  double get screenHeight => screenSize.height;
   
-  // أيقونات سريعة
-  static const double iconSm = AppThemeConstants.iconSm;
-  static const double iconMd = AppThemeConstants.iconMd;
-  static const double iconLg = AppThemeConstants.iconLg;
-  static const double iconXl = AppThemeConstants.iconXl;
-  static const double icon2xl = AppThemeConstants.icon2xl;
+  /// التحقق من نوع الجهاز
+  bool get isMobile => screenWidth < 600;
+  bool get isTablet => screenWidth >= 600 && screenWidth < 1024;
+  bool get isDesktop => screenWidth >= 1024;
   
-  // أيقونات التطبيق المخصصة
-  static const IconData iconHome = AppThemeConstants.iconHome;
-  static const IconData iconSettings = AppThemeConstants.iconSettings;
-  static const IconData iconNotifications = AppThemeConstants.iconNotifications;
-  static const IconData iconPrayerTime = AppThemeConstants.iconPrayerTime;
-  static const IconData iconAthkar = AppThemeConstants.iconAthkar;
-  static const IconData iconQibla = AppThemeConstants.iconQibla;
-  static const IconData iconTasbih = AppThemeConstants.iconTasbih;
-  static const IconData iconQuran = AppThemeConstants.iconQuran;
-  static const IconData iconDua = AppThemeConstants.iconDua;
+  /// الحصول على لون الصلاة
+  Color getPrayerColor(String prayerName) => AppTheme.getPrayerColor(prayerName);
   
-  // أوزان الخطوط سريعة
-  static const FontWeight light = AppTextStyles.light;
-  static const FontWeight regular = AppTextStyles.regular;
-  static const FontWeight medium = AppTextStyles.medium;
-  static const FontWeight semiBold = AppTextStyles.semiBold;
-  static const FontWeight bold = AppTextStyles.bold;
+  /// الحصول على لون الفئة
+  Color getCategoryColor(String categoryId) => AppTheme.getCategoryColor(categoryId);
   
-  // مدد الحركة سريعة
-  static const Duration durationFast = AppThemeConstants.durationFast;
-  static const Duration durationNormal = AppThemeConstants.durationNormal;
-  static const Duration durationSlow = AppThemeConstants.durationSlow;
+  /// الحصول على خلفية دينية
+  Color getReligiousBackground(String type) => AppTheme.getReligiousBackground(type);
+}
+
+extension AppColorExtensions on Color {
+  /// تفتيح اللون
+  Color lighten([double amount = 0.1]) => AppTheme.lighten(this, amount);
   
-  // منحنيات الحركة سريعة
-  static const Curve curveSmooth = AppThemeConstants.curveSmooth;
-  static const Curve curveBounce = AppThemeConstants.curveBounce;
-  static const Curve curveElastic = AppThemeConstants.curveElastic;
-  static const Curve curveQuick = AppThemeConstants.curveQuick;
+  /// تغميق اللون
+  Color darken([double amount = 0.1]) => AppTheme.darken(this, amount);
   
-  // ارتفاعات سريعة
-  static const double elevationSm = AppThemeConstants.elevationSm;
-  static const double elevationMd = AppThemeConstants.elevationMd;
-  static const double elevationLg = AppThemeConstants.elevationLg;
+  /// مع شفافية
+  Color withAlpha(double alpha) => withValues(alpha: alpha);
+}
+
+extension AppSpacingExtensions on double {
+  /// تحويل إلى مساحة أفقية
+  Widget get w => SizedBox(width: this);
   
-  // ظلال سريعة
-  static List<BoxShadow> get shadowSm => AppThemeConstants.shadowSm;
-  static List<BoxShadow> get shadowMd => AppThemeConstants.shadowMd;
-  static List<BoxShadow> get shadowLg => AppThemeConstants.shadowLg;
-  static List<BoxShadow> get islamicCardShadow => AppThemeConstants.islamicCardShadow;
+  /// تحويل إلى مساحة عمودية
+  Widget get h => SizedBox(height: this);
   
-  // ألوان النصوص
-  static const Color textPrimary = AppColors.textPrimary;
-  static const Color textSecondary = AppColors.textSecondary;
-  static const Color textHint = AppColors.textHint;
+  /// تحويل إلى حشو شامل
+  EdgeInsets get padding => EdgeInsets.all(this);
   
-  // ألوان إضافية للنصوص الدينية
-  static const Color religiousText = AppColors.textReligious;
+  /// تحويل إلى حشو أفقي
+  EdgeInsets get paddingH => EdgeInsets.symmetric(horizontal: this);
+  
+  /// تحويل إلى حشو عمودي
+  EdgeInsets get paddingV => EdgeInsets.symmetric(vertical: this);
+  
+  /// تحويل إلى نصف قطر
+  BorderRadius get radius => BorderRadius.circular(this);
 }

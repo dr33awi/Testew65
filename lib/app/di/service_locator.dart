@@ -313,12 +313,12 @@ class ServiceLocator {
   /// التحقق من تهيئة جميع الخدمات المطلوبة للإعدادات
   static bool areSettingsServicesReady() {
     return getIt.isRegistered<StorageService>() &&
-           getIt.isRegistered<PermissionService>() &&
-           getIt.isRegistered<LoggerService>() &&
-           getIt.isRegistered<ThemeNotifier>() &&
-           getIt.isRegistered<BatteryService>() &&
-           getIt.isRegistered<PrayerTimesService>() &&
-           getIt.isRegistered<SettingsServicesManager>();
+          getIt.isRegistered<PermissionService>() &&
+          getIt.isRegistered<LoggerService>() &&
+          getIt.isRegistered<ThemeNotifier>() &&
+          getIt.isRegistered<BatteryService>() &&
+          getIt.isRegistered<PrayerTimesService>() &&
+          getIt.isRegistered<SettingsServicesManager>();
   }
 
   /// إعادة تعيين خدمة محددة

@@ -1,6 +1,8 @@
-// lib/app/routes/app_router.dart (مُصحح)
+// lib/app/routes/app_router.dart - مُصحح للنظام المبسط
+
 import 'package:flutter/material.dart';
-import '../../app/themes/app_theme.dart'; // ✅ استيراد النظام الموحد
+import 'package:athkar_app/app/themes/app_theme.dart';
+import 'package:athkar_app/app/themes/widgets/widgets.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/prayer_times/screens/prayer_times_screen.dart';
 import '../../features/prayer_times/screens/prayer_settings_screen.dart';
@@ -119,8 +121,8 @@ class AppRouter {
     return PageRouteBuilder<T>(
       settings: settings,
       pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionDuration: ThemeConstants.durationNormal,
-      reverseTransitionDuration: ThemeConstants.durationFast,
+      transitionDuration: AppTheme.durationNormal,
+      reverseTransitionDuration: AppTheme.durationFast,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         return FadeTransition(
           opacity: animation,
@@ -134,8 +136,8 @@ class AppRouter {
     return PageRouteBuilder<T>(
       settings: settings,
       pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionDuration: ThemeConstants.durationNormal,
-      reverseTransitionDuration: ThemeConstants.durationFast,
+      transitionDuration: AppTheme.durationNormal,
+      reverseTransitionDuration: AppTheme.durationFast,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(1.0, 0.0);
         const end = Offset.zero;
@@ -156,7 +158,7 @@ class AppRouter {
   // Screen Builders
   static Widget _buildComingSoonScreen(String title) {
     return Scaffold(
-      appBar: CustomAppBar.simple(title: title),
+      appBar: SimpleAppBar(title: title),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -165,38 +167,38 @@ class AppRouter {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: ThemeConstants.primary.withValues(alpha: 0.1),
+                color: AppTheme.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 _getIconForFeature(title),
                 size: 60,
-                color: ThemeConstants.primary,
+                color: AppTheme.primary,
               ),
             ),
-            const SizedBox(height: ThemeConstants.space5),
+            const SizedBox(height: AppTheme.space5),
             Text(
               'قريباً',
-              style: AppTextStyles.headlineMedium.copyWith(
-                color: ThemeConstants.primary,
-                fontWeight: ThemeConstants.bold,
+              style: AppTheme.headlineMedium.copyWith(
+                color: AppTheme.primary,
+                fontWeight: AppTheme.bold,
               ),
             ),
-            const SizedBox(height: ThemeConstants.space2),
+            const SizedBox(height: AppTheme.space2),
             Text(
               title,
-              style: AppTextStyles.titleLarge.copyWith(
-                color: AppColors.textSecondary,
+              style: AppTheme.titleLarge.copyWith(
+                color: AppTheme.textSecondary,
               ),
             ),
-            const SizedBox(height: ThemeConstants.space1),
+            const SizedBox(height: AppTheme.space1),
             Text(
               'هذه الميزة قيد التطوير',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textTertiary,
+              style: AppTheme.bodyMedium.copyWith(
+                color: AppTheme.textTertiary,
               ),
             ),
-            const SizedBox(height: ThemeConstants.space6),
+            const SizedBox(height: AppTheme.space6),
             AppButton.outline(
               text: 'العودة',
               onPressed: () => Navigator.of(_navigatorKey.currentContext!).pop(),
@@ -218,56 +220,56 @@ class AppRouter {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: ThemeConstants.error.withValues(alpha: 0.1),
+                color: AppTheme.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.error_outline,
                 size: 60,
-                color: ThemeConstants.error,
+                color: AppTheme.error,
               ),
             ),
-            const SizedBox(height: ThemeConstants.space5),
+            const SizedBox(height: AppTheme.space5),
             Text(
               '404',
-              style: AppTextStyles.displayMedium.copyWith(
-                color: ThemeConstants.error,
-                fontWeight: ThemeConstants.bold,
+              style: AppTheme.displayMedium.copyWith(
+                color: AppTheme.error,
+                fontWeight: AppTheme.bold,
               ),
             ),
-            const SizedBox(height: ThemeConstants.space2),
-            Text(
+            const SizedBox(height: AppTheme.space2),
+            const Text(
               'الصفحة غير موجودة',
-              style: AppTextStyles.titleLarge,
+              style: AppTheme.titleLarge,
             ),
-            const SizedBox(height: ThemeConstants.space1),
+            const SizedBox(height: AppTheme.space1),
             Text(
               'لم نتمكن من العثور على الصفحة المطلوبة',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+              style: AppTheme.bodyMedium.copyWith(
+                color: AppTheme.textSecondary,
               ),
             ),
             if (routeName != null) ...[
-              const SizedBox(height: ThemeConstants.space2),
+              const SizedBox(height: AppTheme.space2),
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: ThemeConstants.space3,
-                  vertical: ThemeConstants.space1,
+                  horizontal: AppTheme.space3,
+                  vertical: AppTheme.space1,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.textTertiary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                  color: AppTheme.textTertiary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                 ),
                 child: Text(
                   routeName,
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textTertiary,
+                  style: AppTheme.caption.copyWith(
+                    color: AppTheme.textTertiary,
                     fontFamily: 'monospace',
                   ),
                 ),
               ),
             ],
-            const SizedBox(height: ThemeConstants.space6),
+            const SizedBox(height: AppTheme.space6),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -276,7 +278,7 @@ class AppRouter {
                   onPressed: () => Navigator.of(_navigatorKey.currentContext!).pop(),
                   icon: Icons.arrow_back,
                 ),
-                const SizedBox(width: ThemeConstants.space3),
+                const SizedBox(width: AppTheme.space3),
                 AppButton.primary(
                   text: 'الرئيسية',
                   onPressed: () => Navigator.of(_navigatorKey.currentContext!)
@@ -293,7 +295,7 @@ class AppRouter {
 
   static Widget _buildErrorScreen(String message) {
     return Scaffold(
-      appBar: CustomAppBar.simple(title: 'خطأ'),
+      appBar: const SimpleAppBar(title: 'خطأ'),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -302,24 +304,24 @@ class AppRouter {
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: ThemeConstants.error.withValues(alpha: 0.1),
+                color: AppTheme.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.error_outline,
                 size: 50,
-                color: ThemeConstants.error,
+                color: AppTheme.error,
               ),
             ),
-            const SizedBox(height: ThemeConstants.space4),
+            const SizedBox(height: AppTheme.space4),
             Text(
               message,
-              style: AppTextStyles.titleMedium.copyWith(
-                color: ThemeConstants.error,
+              style: AppTheme.titleMedium.copyWith(
+                color: AppTheme.error,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: ThemeConstants.space6),
+            const SizedBox(height: AppTheme.space6),
             AppButton.outline(
               text: 'العودة',
               onPressed: () => Navigator.of(_navigatorKey.currentContext!).pop(),
