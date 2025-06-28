@@ -1,7 +1,9 @@
-// lib/features/settings/widgets/settings_tile.dart (مُنظف)
+// lib/features/settings/widgets/settings_tile.dart - مُحدث بالنظام الموحد
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+// ✅ استيراد النظام الموحد
 import '../../../app/themes/app_theme.dart';
 
 class SettingsTile extends StatelessWidget {
@@ -58,7 +60,7 @@ class SettingsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectiveIconColor = iconColor ?? context.primaryColor;
     final effectiveBackgroundColor = backgroundColor ?? Colors.transparent;
-    final effectivePadding = padding ?? const EdgeInsets.symmetric(
+    final effectivePadding = padding ?? EdgeInsets.symmetric(
       horizontal: ThemeConstants.space4,
       vertical: ThemeConstants.space4,
     );
@@ -119,7 +121,7 @@ class SettingsTile extends StatelessWidget {
             color: enabled 
                 ? iconColor.withValues(alpha: 0.1)
                 : context.textSecondaryColor.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+            borderRadius: ThemeConstants.radiusMd.radius,
           ),
           child: Icon(
             icon,
@@ -219,11 +221,11 @@ class SettingsBadge extends StatelessWidget {
     if (color != null) {
       badgeColor = color!;
     } else if (isError) {
-      badgeColor = ThemeConstants.error;
+      badgeColor = context.errorColor;
     } else if (isWarning) {
-      badgeColor = ThemeConstants.warning;
+      badgeColor = context.warningColor;
     } else if (isNew) {
-      badgeColor = ThemeConstants.success;
+      badgeColor = context.successColor;
     } else {
       badgeColor = context.primaryColor;
     }
@@ -378,33 +380,19 @@ class SettingsActionButton extends StatelessWidget {
     final effectiveColor = color ?? context.primaryColor;
 
     if (outlined) {
-      return OutlinedButton.icon(
+      return AppButton.outline(
+        text: text,
         onPressed: enabled ? onPressed : null,
-        icon: icon != null ? Icon(icon, size: 16) : const SizedBox(),
-        label: Text(text),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: effectiveColor,
-          side: BorderSide(color: effectiveColor),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-          ),
-        ),
+        icon: icon,
+        borderColor: effectiveColor,
       );
     }
 
-    return ElevatedButton.icon(
+    return AppButton.primary(
+      text: text,
       onPressed: enabled ? onPressed : null,
-      icon: icon != null ? Icon(icon, size: 16) : const SizedBox(),
-      label: Text(text),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: effectiveColor,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-        ),
-      ),
+      icon: icon,
+      backgroundColor: effectiveColor,
     );
   }
 }

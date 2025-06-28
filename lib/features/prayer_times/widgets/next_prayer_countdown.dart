@@ -1,7 +1,10 @@
-// lib/features/prayer_times/widgets/next_prayer_countdown.dart (محدث بالنظام الموحد)
+// lib/features/prayer_times/widgets/next_prayer_countdown.dart - مُحدث بالنظام الموحد
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
+// ✅ استيراد النظام الموحد
 import '../../../app/themes/app_theme.dart';
+
 import '../models/prayer_time_model.dart';
 
 class NextPrayerCountdown extends StatefulWidget {
@@ -24,13 +27,12 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
   Widget build(BuildContext context) {
     // استخدام AppCard من النظام الموحد مع تدرج الصلاة
     return AppCard(
-      type: CardType.normal,
       style: CardStyle.gradient,
-      primaryColor: context.getPrayerColor(widget.nextPrayer.type.name),
       gradientColors: [
         context.getPrayerColor(widget.nextPrayer.type.name),
         context.getPrayerColor(widget.nextPrayer.type.name).darken(0.2),
       ],
+      margin: ThemeConstants.space4.margin,
       child: _buildContent(context),
     );
   }
@@ -64,12 +66,12 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          padding: const EdgeInsets.all(ThemeConstants.space2),
+          padding: ThemeConstants.space2.padding,
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
             shape: BoxShape.circle,
           ),
-          child: const Icon(
+          child: Icon(
             Icons.access_time_filled,
             color: Colors.white,
             size: ThemeConstants.iconMd,
@@ -119,35 +121,67 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
               
               ThemeConstants.space1.h,
               
+              // وقت الصلاة
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: ThemeConstants.space3,
+                  vertical: ThemeConstants.space1,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: ThemeConstants.radiusFull.radius,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.schedule,
+                      color: Colors.white.withValues(alpha: 0.8),
+                      size: ThemeConstants.icon2xl,
+                    ),
+                    ThemeConstants.space1.w,
+                    Text(
+                      '${widget.nextPrayer.time.hour.toString().padLeft(2, '0')}:${widget.nextPrayer.time.minute.toString().padLeft(2, '0')}',
+                      style: context.labelLarge?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontWeight: ThemeConstants.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
               // الصلاة الحالية
-              if (widget.currentPrayer != null)
+              if (widget.currentPrayer != null) ...[
+                ThemeConstants.space1.h,
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: ThemeConstants.space3,
                     vertical: ThemeConstants.space1,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: ThemeConstants.radiusFull.radius,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         Icons.radio_button_checked,
-                        color: Colors.white.withValues(alpha: 0.8),
-                        size: ThemeConstants.iconXs,
+                        color: Colors.white.withValues(alpha: 0.7),
+                        size: ThemeConstants.icon2xl,
                       ),
                       ThemeConstants.space1.w,
                       Text(
                         'الحالية: ${widget.currentPrayer!.nameAr}',
                         style: context.labelMedium?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.8),
+                          color: Colors.white.withValues(alpha: 0.7),
                         ),
                       ),
                     ],
                   ),
                 ),
+              ],
             ],
           ),
         ),
@@ -176,10 +210,10 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
 
   Widget _buildCountdown(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
+      padding: ThemeConstants.space4.padding,
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        borderRadius: ThemeConstants.radiusXl.radius,
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.3),
           width: 1,
@@ -216,7 +250,7 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
           height: 60,
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+            borderRadius: ThemeConstants.radiusMd.radius,
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.3),
             ),
@@ -266,12 +300,28 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
                 color: Colors.white.withValues(alpha: 0.8),
               ),
             ),
-            Text(
-              '${(_calculateProgress() * 100).toInt()}%',
-              style: context.labelMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: ThemeConstants.semiBold,
-              ),
+            StreamBuilder(
+              stream: Stream.periodic(const Duration(seconds: 1)),
+              builder: (context, snapshot) {
+                final progress = _calculateProgress();
+                return Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: ThemeConstants.space2,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: ThemeConstants.radiusFull.radius,
+                  ),
+                  child: Text(
+                    '${(progress * 100).toInt()}%',
+                    style: context.labelMedium?.copyWith(
+                      color: Colors.white,
+                      fontWeight: ThemeConstants.semiBold,
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -298,7 +348,75 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
             ),
           ),
         ),
+        
+        ThemeConstants.space2.h,
+        
+        // معلومات إضافية
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _buildInfoChip(
+              context,
+              icon: Icons.access_time,
+              label: 'الوقت المتبقي',
+              value: _formatRemainingTime(),
+            ),
+            _buildInfoChip(
+              context,
+              icon: Icons.timeline,
+              label: 'المدة الإجمالية',
+              value: _formatTotalDuration(),
+            ),
+          ],
+        ),
       ],
+    );
+  }
+
+  Widget _buildInfoChip(BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: ThemeConstants.space2,
+        vertical: ThemeConstants.space1,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: ThemeConstants.radiusMd.radius,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: ThemeConstants.iconSm,
+            color: Colors.white.withValues(alpha: 0.8),
+          ),
+          ThemeConstants.space1.w,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: context.labelSmall?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.7),
+                  fontSize: 10,
+                ),
+              ),
+              Text(
+                value,
+                style: context.labelSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: ThemeConstants.semiBold,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -312,5 +430,31 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
     if (totalDuration.inSeconds == 0) return 0.0;
     
     return (elapsed.inSeconds / totalDuration.inSeconds).clamp(0.0, 1.0);
+  }
+
+  String _formatRemainingTime() {
+    final duration = widget.nextPrayer.remainingTime;
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes % 60;
+    
+    if (hours > 0) {
+      return '${hours}س ${minutes}د';
+    } else {
+      return '${minutes}د';
+    }
+  }
+
+  String _formatTotalDuration() {
+    if (widget.currentPrayer == null) return '-';
+    
+    final totalDuration = widget.nextPrayer.time.difference(widget.currentPrayer!.time);
+    final hours = totalDuration.inHours;
+    final minutes = totalDuration.inMinutes % 60;
+    
+    if (hours > 0) {
+      return '${hours}س ${minutes}د';
+    } else {
+      return '${minutes}د';
+    }
   }
 }

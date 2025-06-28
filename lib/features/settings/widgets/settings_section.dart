@@ -1,6 +1,8 @@
-// lib/features/settings/widgets/settings_section.dart (مُنظف)
+// lib/features/settings/widgets/settings_section.dart - مُحدث بالنظام الموحد
 
 import 'package:flutter/material.dart';
+
+// ✅ استيراد النظام الموحد
 import '../../../app/themes/app_theme.dart';
 
 class SettingsSection extends StatelessWidget {
@@ -43,7 +45,7 @@ class SettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveMargin = margin ?? const EdgeInsets.symmetric(
+    final effectiveMargin = margin ?? EdgeInsets.symmetric(
       horizontal: ThemeConstants.space4,
       vertical: ThemeConstants.space3,
     );
@@ -97,15 +99,15 @@ class SettingsSection extends StatelessWidget {
           topRight: Radius.circular(ThemeConstants.radiusXl),
         ),
         child: Container(
-          padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
+          padding: padding ?? ThemeConstants.space4.padding,
           child: Row(
             children: [
               if (icon != null) ...[
                 Container(
-                  padding: const EdgeInsets.all(ThemeConstants.space2),
+                  padding: ThemeConstants.space2.padding,
                   decoration: BoxDecoration(
                     color: effectiveIconColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                    borderRadius: ThemeConstants.radiusMd.radius,
                   ),
                   child: Icon(
                     icon,
@@ -312,7 +314,7 @@ class SettingsSectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final effectiveTitleColor = titleColor ?? context.primaryColor;
     final effectiveIconColor = iconColor ?? context.primaryColor;
-    final effectivePadding = padding ?? const EdgeInsets.symmetric(
+    final effectivePadding = padding ?? EdgeInsets.symmetric(
       horizontal: ThemeConstants.space4,
       vertical: ThemeConstants.space3,
     );
@@ -321,9 +323,9 @@ class SettingsSectionHeader extends StatelessWidget {
       padding: effectivePadding,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        borderRadius: ThemeConstants.radiusMd.radius,
         child: Padding(
-          padding: const EdgeInsets.all(ThemeConstants.space2),
+          padding: ThemeConstants.space2.padding,
           child: Row(
             children: [
               if (icon != null) ...[
