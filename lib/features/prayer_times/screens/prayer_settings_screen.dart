@@ -1,11 +1,10 @@
 // lib/features/prayer_times/screens/prayer_settings_screen.dart - مُحدث بالنظام الموحد
 
-import 'package:athkar_app/features/settings/widgets/settings_section.dart';
-import 'package:athkar_app/features/settings/widgets/settings_tile.dart';
 import 'package:flutter/material.dart';
 
 // ✅ استيراد النظام الموحد
-import '../../../app/themes/app_theme.dart';
+import 'package:athkar_app/app/themes/app_theme.dart';
+import 'package:athkar_app/app/themes/widgets/widgets.dart';
 
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
@@ -69,7 +68,13 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       
       if (!mounted) return;
       
-      context.showSuccessSnackBar('تم حفظ الإعدادات بنجاح');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('تم حفظ الإعدادات بنجاح'),
+          backgroundColor: AppTheme.primary,
+        ),
+      );
+      
       setState(() {
         _hasChanges = false;
       });
@@ -84,7 +89,12 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       
       if (!mounted) return;
       
-      context.showErrorSnackBar('فشل حفظ الإعدادات');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('فشل حفظ الإعدادات'),
+          backgroundColor: AppTheme.accent,
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -95,13 +105,13 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.backgroundColor,
-      appBar: CustomAppBar.simple(
+      backgroundColor: AppTheme.background,
+      appBar: SimpleAppBar(
         title: 'إعدادات مواقيت الصلاة',
         actions: [
           if (_hasChanges && !_isSaving)
-            AppBarAction(
-              icon: Icons.save,
+            IconButton(
+              icon: Icon(Icons.save, color: AppTheme.textSecondary),
               onPressed: _saveSettings,
               tooltip: 'حفظ التغييرات',
             ),
@@ -109,42 +119,46 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       ),
       body: _isLoading
           ? AppLoading.page(message: 'جاري تحميل الإعدادات...')
-          : CustomScrollView(
-              slivers: [
-                // إعدادات طريقة الحساب
-                SliverToBoxAdapter(
-                  child: _buildCalculationSection(),
-                ),
-                
-                // إعدادات المذهب
-                SliverToBoxAdapter(
-                  child: _buildJuristicSection(),
-                ),
-                
-                // تعديلات يدوية
-                SliverToBoxAdapter(
-                  child: _buildManualAdjustmentsSection(),
-                ),
-                
-                // زر الحفظ
-                SliverToBoxAdapter(
-                  child: _buildSaveButton(),
-                ),
-                
-                // مساحة في الأسفل
-                ThemeConstants.space8.sliverBox,
-              ],
+          : SingleChildScrollView(
+              padding: AppTheme.space4.padding,
+              child: Column(
+                children: [
+                  // إعدادات طريقة الحساب
+                  _buildCalculationSection(),
+                  
+                  AppTheme.space4.h,
+                  
+                  // إعدادات المذهب
+                  _buildJuristicSection(),
+                  
+                  AppTheme.space4.h,
+                  
+                  // تعديلات يدوية
+                  _buildManualAdjustmentsSection(),
+                  
+                  AppTheme.space6.h,
+                  
+                  // زر الحفظ
+                  _buildSaveButton(),
+                  
+                  AppTheme.space8.h,
+                ],
+              ),
             ),
     );
   }
 
   Widget _buildCalculationSection() {
-    return SettingsSection(
+    return AppCard(
       title: 'طريقة الحساب',
+      subtitle: 'اختر طريقة حساب مواقيت الصلاة',
       icon: Icons.calculate,
-      children: [
-        _buildCalculationMethodTile(),
-      ],
+      child: Column(
+        children: [
+          AppTheme.space4.h,
+          _buildCalculationMethodTile(),
+        ],
+      ),
     );
   }
 
@@ -162,15 +176,33 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       CalculationMethod.other: 'أخرى',
     };
     
-    return SettingsTile(
-      icon: Icons.calculate,
-      title: 'طريقة الحساب',
-      subtitle: methodNames[_calculationSettings.method] ?? '',
+    return ListTile(
+      leading: Container(
+        padding: AppTheme.space2.padding,
+        decoration: BoxDecoration(
+          color: AppTheme.primary.withValues(alpha: 0.1),
+          borderRadius: AppTheme.radiusMd.radius,
+        ),
+        child: Icon(
+          Icons.calculate,
+          color: AppTheme.primary,
+          size: 20,
+        ),
+      ),
+      title: Text(
+        'طريقة الحساب',
+        style: AppTheme.bodyMedium,
+      ),
+      subtitle: Text(
+        methodNames[_calculationSettings.method] ?? '',
+        style: AppTheme.bodySmall.copyWith(color: AppTheme.textSecondary),
+      ),
       trailing: Icon(
         Icons.chevron_right,
-        color: context.textSecondaryColor,
+        color: AppTheme.textSecondary,
       ),
       onTap: _showCalculationMethodDialog,
+      contentPadding: EdgeInsets.zero,
     );
   }
 
@@ -193,15 +225,23 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
   }
 
   Widget _buildJuristicSection() {
-    return SettingsSection(
+    return AppCard(
       title: 'المذهب الفقهي',
+      subtitle: 'اختر المذهب الفقهي لحساب وقت العصر',
       icon: Icons.school,
-      children: [
-        SettingsTile(
-          icon: Icons.radio_button_checked,
-          title: 'الجمهور',
-          subtitle: 'الشافعي، المالكي، الحنبلي',
-          trailing: Radio<AsrJuristic>(
+      child: Column(
+        children: [
+          AppTheme.space4.h,
+          
+          RadioListTile<AsrJuristic>(
+            title: Text(
+              'الجمهور',
+              style: AppTheme.bodyMedium,
+            ),
+            subtitle: Text(
+              'الشافعي، المالكي، الحنبلي',
+              style: AppTheme.bodySmall.copyWith(color: AppTheme.textSecondary),
+            ),
             value: AsrJuristic.standard,
             groupValue: _calculationSettings.asrJuristic,
             onChanged: (value) {
@@ -214,22 +254,19 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
                 });
               }
             },
-            activeColor: context.primaryColor,
+            activeColor: AppTheme.primary,
+            contentPadding: EdgeInsets.zero,
           ),
-          onTap: () {
-            setState(() {
-              _calculationSettings = _calculationSettings.copyWith(
-                asrJuristic: AsrJuristic.standard,
-              );
-              _markAsChanged();
-            });
-          },
-        ),
-        SettingsTile(
-          icon: Icons.radio_button_unchecked,
-          title: 'الحنفي',
-          subtitle: 'المذهب الحنفي',
-          trailing: Radio<AsrJuristic>(
+          
+          RadioListTile<AsrJuristic>(
+            title: Text(
+              'الحنفي',
+              style: AppTheme.bodyMedium,
+            ),
+            subtitle: Text(
+              'المذهب الحنفي',
+              style: AppTheme.bodySmall.copyWith(color: AppTheme.textSecondary),
+            ),
             value: AsrJuristic.hanafi,
             groupValue: _calculationSettings.asrJuristic,
             onChanged: (value) {
@@ -242,76 +279,138 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
                 });
               }
             },
-            activeColor: context.primaryColor,
+            activeColor: AppTheme.primary,
+            contentPadding: EdgeInsets.zero,
           ),
-          onTap: () {
-            setState(() {
-              _calculationSettings = _calculationSettings.copyWith(
-                asrJuristic: AsrJuristic.hanafi,
-              );
-              _markAsChanged();
-            });
-          },
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildManualAdjustmentsSection() {
-    return SettingsSection(
+    return AppCard(
       title: 'تعديلات يدوية',
+      subtitle: 'تعديل أوقات الصلاة بالدقائق (-30 إلى +30)',
       icon: Icons.tune,
-      subtitle: 'تعديل أوقات الصلاة بالدقائق',
-      children: [
-        _buildAdjustmentTile('الفجر', 'fajr'),
-        _buildAdjustmentTile('الشروق', 'sunrise'),
-        _buildAdjustmentTile('الظهر', 'dhuhr'),
-        _buildAdjustmentTile('العصر', 'asr'),
-        _buildAdjustmentTile('المغرب', 'maghrib'),
-        _buildAdjustmentTile('العشاء', 'isha'),
-      ],
+      child: Column(
+        children: [
+          AppTheme.space4.h,
+          
+          _buildAdjustmentTile('الفجر', 'fajr'),
+          _buildAdjustmentTile('الشروق', 'sunrise'),
+          _buildAdjustmentTile('الظهر', 'dhuhr'),
+          _buildAdjustmentTile('العصر', 'asr'),
+          _buildAdjustmentTile('المغرب', 'maghrib'),
+          _buildAdjustmentTile('العشاء', 'isha'),
+        ],
+      ),
     );
   }
 
   Widget _buildAdjustmentTile(String name, String key) {
     final adjustment = _calculationSettings.manualAdjustments[key] ?? 0;
     
-    return SettingsTile(
-      icon: context.getPrayerIcon(key),
-      title: name,
-      subtitle: adjustment != 0 ? 'تعديل: ${adjustment > 0 ? '+' : ''}$adjustment دقيقة' : 'بدون تعديل',
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
+    return Container(
+      margin: EdgeInsets.only(bottom: AppTheme.space2),
+      padding: AppTheme.space3.padding,
+      decoration: BoxDecoration(
+        color: AppTheme.surface,
+        borderRadius: AppTheme.radiusMd.radius,
+        border: Border.all(
+          color: AppTheme.textSecondary.withOpacity(0.1),
+        ),
+      ),
+      child: Row(
         children: [
-          AppButton.text(
-            text: '',
-            icon: Icons.remove_circle_outline,
-            onPressed: () => _updateAdjustment(key, adjustment - 1),
-            textColor: context.primaryColor,
-          ),
           Container(
-            width: 50,
-            child: Text(
-              adjustment > 0 ? '+$adjustment' : adjustment.toString(),
-              textAlign: TextAlign.center,
-              style: context.titleMedium?.copyWith(
-                fontWeight: ThemeConstants.semiBold,
-                color: adjustment == 0 
-                    ? context.textSecondaryColor 
-                    : context.primaryColor,
-              ),
+            padding: AppTheme.space2.padding,
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withValues(alpha: 0.1),
+              borderRadius: AppTheme.radiusSm.radius,
+            ),
+            child: Icon(
+              _getPrayerIcon(key),
+              color: AppTheme.primary,
+              size: 20,
             ),
           ),
-          AppButton.text(
-            text: '',
-            icon: Icons.add_circle_outline,
-            onPressed: () => _updateAdjustment(key, adjustment + 1),
-            textColor: context.primaryColor,
+          
+          AppTheme.space3.w,
+          
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: AppTheme.bodyMedium,
+                ),
+                Text(
+                  adjustment != 0 
+                      ? 'تعديل: ${adjustment > 0 ? '+' : ''}$adjustment دقيقة' 
+                      : 'بدون تعديل',
+                  style: AppTheme.bodySmall.copyWith(
+                    color: adjustment == 0 
+                        ? AppTheme.textSecondary 
+                        : AppTheme.primary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.remove_circle_outline),
+                onPressed: () => _updateAdjustment(key, adjustment - 1),
+                iconSize: 20,
+                color: AppTheme.primary,
+              ),
+              Container(
+                width: 50,
+                child: Text(
+                  adjustment > 0 ? '+$adjustment' : adjustment.toString(),
+                  textAlign: TextAlign.center,
+                  style: AppTheme.bodyMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: adjustment == 0 
+                        ? AppTheme.textSecondary 
+                        : AppTheme.primary,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.add_circle_outline),
+                onPressed: () => _updateAdjustment(key, adjustment + 1),
+                iconSize: 20,
+                color: AppTheme.primary,
+              ),
+            ],
           ),
         ],
       ),
-      onTap: () => _showAdjustmentDialog(name, key, adjustment),
     );
+  }
+
+  IconData _getPrayerIcon(String prayerKey) {
+    switch (prayerKey) {
+      case 'fajr':
+        return Icons.dark_mode;
+      case 'sunrise':
+        return Icons.wb_sunny;
+      case 'dhuhr':
+        return Icons.light_mode;
+      case 'asr':
+        return Icons.wb_cloudy;
+      case 'maghrib':
+        return Icons.wb_twilight;
+      case 'isha':
+        return Icons.bedtime;
+      default:
+        return Icons.access_time;
+    }
   }
 
   void _updateAdjustment(String key, int value) {
@@ -328,97 +427,13 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
     });
   }
 
-  void _showAdjustmentDialog(String prayerName, String key, int currentValue) {
-    int newValue = currentValue;
-    
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text('تعديل وقت $prayerName'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'تعديل الوقت بالدقائق',
-                style: context.bodyMedium?.copyWith(
-                  color: context.textSecondaryColor,
-                ),
-              ),
-              ThemeConstants.space4.h,
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  AppButton.outline(
-                    text: '',
-                    icon: Icons.remove,
-                    onPressed: () {
-                      setState(() {
-                        newValue = (newValue - 1).clamp(-30, 30);
-                      });
-                    },
-                  ),
-                  ThemeConstants.space4.w,
-                  Container(
-                    width: 80,
-                    child: Text(
-                      newValue > 0 ? '+$newValue' : newValue.toString(),
-                      textAlign: TextAlign.center,
-                      style: context.headlineSmall?.copyWith(
-                        fontWeight: ThemeConstants.bold,
-                        color: context.primaryColor,
-                      ),
-                    ),
-                  ),
-                  ThemeConstants.space4.w,
-                  AppButton.outline(
-                    text: '',
-                    icon: Icons.add,
-                    onPressed: () {
-                      setState(() {
-                        newValue = (newValue + 1).clamp(-30, 30);
-                      });
-                    },
-                  ),
-                ],
-              ),
-              ThemeConstants.space3.h,
-              Text(
-                'النطاق: -30 إلى +30 دقيقة',
-                style: context.bodySmall?.copyWith(
-                  color: context.textSecondaryColor,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            AppButton.outline(
-              text: 'إلغاء',
-              onPressed: () => Navigator.pop(context),
-            ),
-            AppButton.primary(
-              text: 'حفظ',
-              onPressed: () {
-                _updateAdjustment(key, newValue);
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildSaveButton() {
-    return Padding(
-      padding: ThemeConstants.space4.padding,
-      child: AppButton.primary(
-        text: 'حفظ الإعدادات',
-        onPressed: _isSaving || !_hasChanges ? null : _saveSettings,
-        isLoading: _isSaving,
-        isFullWidth: true,
-        icon: Icons.save,
-      ),
+    return AppButton.primary(
+      text: 'حفظ الإعدادات',
+      icon: Icons.save,
+      onPressed: _isSaving || !_hasChanges ? null : _saveSettings,
+      isLoading: _isSaving,
+      isFullWidth: true,
     );
   }
 }
@@ -449,22 +464,23 @@ class CalculationMethodDialog extends StatelessWidget {
     ];
     
     return Dialog(
+      backgroundColor: AppTheme.card,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        borderRadius: AppTheme.radiusXl.radius,
       ),
       child: Container(
-        constraints: BoxConstraints(maxHeight: context.screenHeight * 0.8),
+        constraints: const BoxConstraints(maxHeight: 600),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // العنوان
             Container(
-              padding: ThemeConstants.space4.padding,
+              padding: AppTheme.space4.padding,
               decoration: BoxDecoration(
-                gradient: context.primaryGradient,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(ThemeConstants.radiusXl),
-                  topRight: Radius.circular(ThemeConstants.radiusXl),
+                gradient: AppTheme.primaryGradient,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(AppTheme.radiusXl),
+                  topRight: Radius.circular(AppTheme.radiusXl),
                 ),
               ),
               child: Row(
@@ -472,15 +488,15 @@ class CalculationMethodDialog extends StatelessWidget {
                   const Icon(
                     Icons.calculate,
                     color: Colors.white,
-                    size: ThemeConstants.iconLg,
+                    size: 24,
                   ),
-                  ThemeConstants.space3.w,
+                  AppTheme.space3.w,
                   Expanded(
                     child: Text(
                       'اختر طريقة الحساب',
-                      style: context.titleLarge?.copyWith(
+                      style: AppTheme.titleLarge.copyWith(
                         color: Colors.white,
-                        fontWeight: ThemeConstants.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -497,11 +513,11 @@ class CalculationMethodDialog extends StatelessWidget {
                     return Container(
                       decoration: BoxDecoration(
                         color: isSelected 
-                            ? context.primaryColor.withValues(alpha: 0.1)
+                            ? AppTheme.primary.withValues(alpha: 0.1)
                             : null,
                         border: Border(
                           bottom: BorderSide(
-                            color: context.dividerColor,
+                            color: AppTheme.textSecondary.withValues(alpha: 0.1),
                             width: 0.5,
                           ),
                         ),
@@ -509,16 +525,16 @@ class CalculationMethodDialog extends StatelessWidget {
                       child: RadioListTile<CalculationMethod>(
                         title: Text(
                           method.$2,
-                          style: context.titleSmall?.copyWith(
+                          style: AppTheme.bodyMedium.copyWith(
                             fontWeight: isSelected 
-                                ? ThemeConstants.semiBold 
-                                : ThemeConstants.medium,
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                         ),
                         subtitle: Text(
                           method.$3,
-                          style: context.bodySmall?.copyWith(
-                            color: context.textSecondaryColor,
+                          style: AppTheme.bodySmall.copyWith(
+                            color: AppTheme.textSecondary,
                           ),
                         ),
                         value: method.$1,
@@ -528,8 +544,8 @@ class CalculationMethodDialog extends StatelessWidget {
                             onMethodSelected(value);
                           }
                         },
-                        activeColor: context.primaryColor,
-                        contentPadding: ThemeConstants.space4.paddingH,
+                        activeColor: AppTheme.primary,
+                        contentPadding: AppTheme.space3.paddingH,
                       ),
                     );
                   }).toList(),
@@ -537,18 +553,13 @@ class CalculationMethodDialog extends StatelessWidget {
               ),
             ),
             
-            // أزرار التحكم
+            // زر الإلغاء
             Padding(
-              padding: ThemeConstants.space4.padding,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: AppButton.outline(
-                      text: 'إلغاء',
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ),
-                ],
+              padding: AppTheme.space4.padding,
+              child: AppButton.outline(
+                text: 'إلغاء',
+                onPressed: () => Navigator.pop(context),
+                isFullWidth: true,
               ),
             ),
           ],

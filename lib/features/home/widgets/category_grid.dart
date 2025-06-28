@@ -1,8 +1,11 @@
-// lib/features/home/widgets/simple_category_grid.dart - شبكة فئات بسيطة بدون Animations
+// lib/features/home/widgets/category_grid.dart - محدث بالنظام الموحد الإسلامي
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-import '../../../app/themes/app_theme.dart';
+
+// ✅ استيراد النظام الموحد الإسلامي - إجباري
+import 'package:athkar_app/app/themes/app_theme.dart';
+import 'package:athkar_app/app/themes/widgets/widgets.dart';
 
 class SimpleCategoryGrid extends StatelessWidget {
   const SimpleCategoryGrid({super.key});
@@ -40,7 +43,7 @@ class SimpleCategoryGrid extends StatelessWidget {
     if (category.routeName != null) {
       Navigator.pushNamed(context, category.routeName!).catchError((error) {
         if (context.mounted) {
-          context.showWarningSnackBar('هذه الميزة قيد التطوير');
+          _showWarningSnackBar(context, 'هذه الميزة قيد التطوير');
         }
         return null;
       });
@@ -59,8 +62,8 @@ class SimpleCategoryGrid extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
-            mainAxisSpacing: ThemeConstants.space3,
-            crossAxisSpacing: ThemeConstants.space3,
+            mainAxisSpacing: AppTheme.space3,
+            crossAxisSpacing: AppTheme.space3,
             childAspectRatio: childAspectRatio,
           ),
           itemCount: _categories.length,
@@ -85,7 +88,7 @@ class SimpleCategoryGrid extends StatelessWidget {
     return 0.95;
   }
 
-  // تحديد أحجام النصوص حسب عرض الشاشة - تم تكبير الأحجام
+  // تحديد أحجام النصوص حسب عرض الشاشة
   double _getTitleFontSize(double screenWidth) {
     if (screenWidth > 900) return 24;
     if (screenWidth > 600) return 22;
@@ -115,25 +118,21 @@ class SimpleCategoryGrid extends StatelessWidget {
   }
 
   EdgeInsets _getCardPadding(double screenWidth) {
-    if (screenWidth > 900) return const EdgeInsets.all(ThemeConstants.space6);
-    if (screenWidth > 600) return const EdgeInsets.all(ThemeConstants.space5);
-    if (screenWidth > 400) return const EdgeInsets.all(ThemeConstants.space4);
-    return const EdgeInsets.all(ThemeConstants.space3);
+    if (screenWidth > 900) return AppTheme.space6.padding;
+    if (screenWidth > 600) return AppTheme.space5.padding;
+    if (screenWidth > 400) return AppTheme.space4.padding;
+    return AppTheme.space3.padding;
   }
 
   Widget _buildCategoryCard(BuildContext context, CategoryItem category, double screenWidth) {
-    final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
-    final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
-    final gradientColors = [
-      categoryColor,
-      categoryColor.darken(0.2),
-    ];
+    final categoryColor = AppTheme.getCategoryColor(category.id);
+    final categoryIcon = _getCategoryIcon(category.id);
     
-    return GestureDetector(
+    return AnimatedPress(
       onTap: () => _onCategoryTap(context, category),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+          borderRadius: AppTheme.radiusLg.radius,
           boxShadow: [
             BoxShadow(
               color: categoryColor.withValues(alpha: 0.3),
@@ -144,7 +143,7 @@ class SimpleCategoryGrid extends StatelessWidget {
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+          borderRadius: AppTheme.radiusLg.radius,
           child: Stack(
             children: [
               // الخلفية المتدرجة
@@ -153,9 +152,10 @@ class SimpleCategoryGrid extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: gradientColors.map((c) => 
-                      c.withValues(alpha: 0.9)
-                    ).toList(),
+                    colors: [
+                      categoryColor.withValues(alpha: 0.9),
+                      categoryColor.darken(0.2).withValues(alpha: 0.9),
+                    ],
                   ),
                 ),
               ),
@@ -214,9 +214,9 @@ class SimpleCategoryGrid extends StatelessWidget {
                       children: [
                         Text(
                           category.title,
-                          style: context.titleLarge?.copyWith(
+                          style: AppTheme.titleLarge.copyWith(
                             color: Colors.white,
-                            fontWeight: ThemeConstants.bold,
+                            fontWeight: AppTheme.bold,
                             fontSize: _getTitleFontSize(screenWidth),
                             height: 1.2,
                             letterSpacing: 0.3,
@@ -237,10 +237,10 @@ class SimpleCategoryGrid extends StatelessWidget {
                         if (category.subtitle != null)
                           Text(
                             category.subtitle!,
-                            style: context.bodyMedium?.copyWith(
+                            style: AppTheme.bodyMedium.copyWith(
                               color: Colors.white.withValues(alpha: 0.9),
                               fontSize: _getSubtitleFontSize(screenWidth),
-                              fontWeight: ThemeConstants.medium,
+                              fontWeight: AppTheme.medium,
                               height: 1.4,
                               letterSpacing: 0.2,
                               shadows: [
@@ -257,26 +257,10 @@ class SimpleCategoryGrid extends StatelessWidget {
                       ],
                     ),
     
-                    SizedBox(height: screenWidth > 400 ? ThemeConstants.space2 : ThemeConstants.space1),
-                    
-                    // إزالة مؤشر الانتقال
+                    SizedBox(height: screenWidth > 400 ? AppTheme.space2 : AppTheme.space1),
                   ],
                 ),
               ),
-              
-              // تأثير الهوفر للتفاعل
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => _onCategoryTap(context, category),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-                  splashColor: Colors.white.withValues(alpha: 0.2),
-                  highlightColor: Colors.white.withValues(alpha: 0.1),
-                ),
-              ),
-              
-              // عناصر زخرفية
-              _buildDecorativeElements(categoryColor, screenWidth),
             ],
           ),
         ),
@@ -284,9 +268,35 @@ class SimpleCategoryGrid extends StatelessWidget {
     );
   }
 
-  Widget _buildDecorativeElements(Color categoryColor, double screenWidth) {
-    // إزالة العناصر الزخرفية (الدائرة والخط)
-    return const SizedBox.shrink();
+  // ✅ دالة مساعدة للحصول على أيقونة الفئة
+  IconData _getCategoryIcon(String categoryId) {
+    switch (categoryId) {
+      case 'prayer_times':
+        return Icons.access_time;
+      case 'athkar':
+        return Icons.auto_awesome;
+      case 'qibla':
+        return Icons.explore;
+      case 'tasbih':
+        return Icons.favorite;
+      default:
+        return Icons.apps;
+    }
+  }
+
+  // ✅ دالة مساعدة لإظهار رسالة تحذير
+  void _showWarningSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.warning,
+        duration: AppTheme.durationNormal,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppTheme.radiusMd.radius,
+        ),
+      ),
+    );
   }
 }
 

@@ -1,7 +1,9 @@
-// lib/features/home/widgets/welcome_message.dart - رسالة ترحيب مصغرة
+// lib/features/home/widgets/welcome_message.dart - محدث بالنظام الموحد الإسلامي
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import '../../../app/themes/app_theme.dart';
+
+// ✅ استيراد النظام الموحد الإسلامي - إجباري
+import 'package:athkar_app/app/themes/app_theme.dart';
 
 class WelcomeMessage extends StatefulWidget {
   const WelcomeMessage({super.key});
@@ -33,7 +35,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
 
   void _setupShimmerAnimation() {
     _shimmerController = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: AppTheme.durationSlow,
       vsync: this,
     )..repeat();
 
@@ -59,7 +61,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
     final greeting = _getGreeting(hour);
     final message = _getMessage(hour);
     final icon = _getGreetingIcon(hour);
-    final gradientColors = context.getTimeBasedGradient(dateTime: now).colors;
+    final gradientColors = _getTimeBasedGradient(now);
     
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -68,22 +70,22 @@ class _WelcomeMessageState extends State<WelcomeMessage>
         return Container(
           width: double.infinity,
           constraints: const BoxConstraints(
-            minHeight: 100, // تقليل من 140
-            maxHeight: 130, // تقليل من 180
+            minHeight: 100,
+            maxHeight: 130,
           ),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg), // تقليل من radius2xl
+            borderRadius: AppTheme.radiusLg.radius,
             boxShadow: [
               BoxShadow(
-                color: gradientColors.first.withValues(alpha: 0.2), // تقليل الشفافية
-                blurRadius: 12, // تقليل من 20
-                offset: const Offset(0, 6), // تقليل من 10
-                spreadRadius: -3, // تقليل من -5
+                color: gradientColors.first.withValues(alpha: 0.2),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+                spreadRadius: -3,
               ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+            borderRadius: AppTheme.radiusLg.radius,
             child: Stack(
               children: [
                 // الخلفية المتدرجة
@@ -110,7 +112,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
                           end: Alignment.bottomRight,
                           colors: [
                             Colors.transparent,
-                            Colors.white.withValues(alpha: 0.08), // تقليل الشفافية
+                            Colors.white.withValues(alpha: 0.08),
                             Colors.transparent,
                           ],
                           stops: [
@@ -134,7 +136,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
                         color: Colors.white.withValues(alpha: 0.2),
                         width: 1,
                       ),
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                      borderRadius: AppTheme.radiusLg.radius,
                     ),
                   ),
                 ),
@@ -142,7 +144,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
                 // المحتوى الرئيسي
                 Padding(
                   padding: EdgeInsets.all(
-                    isTablet ? ThemeConstants.space4 : ThemeConstants.space3, // تقليل المسافات
+                    isTablet ? AppTheme.space4 : AppTheme.space3,
                   ),
                   child: _buildContent(context, now, greeting, message, icon, isTablet),
                 ),
@@ -163,26 +165,26 @@ class _WelcomeMessageState extends State<WelcomeMessage>
       children: [
         // الأيقونة المتحركة مصغرة
         Container(
-          width: isTablet ? 60 : 45, // تقليل الحجم
+          width: isTablet ? 60 : 45,
           height: isTablet ? 60 : 45,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.white.withValues(alpha: 0.2),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.4),
-              width: 1.5, // تقليل سمك الحدود
+              width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 6, // تقليل الظل
+                blurRadius: 6,
                 offset: const Offset(0, 3),
               ),
             ],
           ),
           child: TweenAnimationBuilder<double>(
             tween: Tween(begin: 0.0, end: 1.0),
-            duration: const Duration(milliseconds: 800),
+            duration: AppTheme.durationSlow,
             curve: Curves.elasticOut,
             builder: (context, value, child) {
               return Transform.scale(
@@ -192,7 +194,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
                   child: Icon(
                     icon,
                     color: Colors.white,
-                    size: isTablet ? ThemeConstants.iconLg : ThemeConstants.iconMd, // تقليل حجم الأيقونة
+                    size: isTablet ? AppTheme.iconLg : AppTheme.iconMd,
                   ),
                 ),
               );
@@ -200,7 +202,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
           ),
         ),
         
-        SizedBox(width: isTablet ? ThemeConstants.space4 : ThemeConstants.space3), // تقليل المسافة
+        SizedBox(width: isTablet ? AppTheme.space4 : AppTheme.space3),
         
         // النصوص
         Expanded(
@@ -214,14 +216,14 @@ class _WelcomeMessageState extends State<WelcomeMessage>
                 alignment: Alignment.centerRight,
                 child: Text(
                   greeting,
-                  style: (isTablet ? context.headlineMedium : context.titleLarge)?.copyWith( // تقليل حجم النص
+                  style: (isTablet ? AppTheme.headlineMedium : AppTheme.titleLarge).copyWith(
                     color: Colors.white,
-                    fontWeight: ThemeConstants.bold,
+                    fontWeight: AppTheme.bold,
                     height: 1.1,
                     shadows: [
                       Shadow(
                         color: Colors.black.withValues(alpha: 0.3),
-                        offset: const Offset(0, 1), // تقليل الظل
+                        offset: const Offset(0, 1),
                         blurRadius: 3,
                       ),
                     ],
@@ -229,21 +231,21 @@ class _WelcomeMessageState extends State<WelcomeMessage>
                 ),
               ),
               
-              SizedBox(height: ThemeConstants.space1), // تقليل المسافة
+              AppTheme.space1.h,
               
               // الرسالة
               Text(
                 message,
-                style: (isTablet ? context.bodyMedium : context.bodySmall)?.copyWith( // تقليل حجم النص
+                style: (isTablet ? AppTheme.bodyMedium : AppTheme.bodySmall).copyWith(
                   color: Colors.white.withValues(alpha: 0.9),
                   height: 1.2,
-                  fontWeight: ThemeConstants.medium,
+                  fontWeight: AppTheme.medium,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
               
-              SizedBox(height: isTablet ? ThemeConstants.space3 : ThemeConstants.space2), // تقليل المسافة
+              SizedBox(height: isTablet ? AppTheme.space3 : AppTheme.space2),
               
               // معلومات الوقت والتاريخ
               _buildTimeInfo(context, now, isTablet),
@@ -259,18 +261,18 @@ class _WelcomeMessageState extends State<WelcomeMessage>
     final dateStr = _getArabicDate(now);
     
     return Wrap(
-      spacing: ThemeConstants.space1, // تقليل المسافة
-      runSpacing: ThemeConstants.space1,
+      spacing: AppTheme.space1,
+      runSpacing: AppTheme.space1,
       children: [
         // الوقت
         Container(
           padding: EdgeInsets.symmetric(
-            horizontal: isTablet ? ThemeConstants.space3 : ThemeConstants.space2, // تقليل المسافات
-            vertical: isTablet ? ThemeConstants.space1 : ThemeConstants.space1,
+            horizontal: isTablet ? AppTheme.space3 : AppTheme.space2,
+            vertical: AppTheme.space1,
           ),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.25),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+            borderRadius: AppTheme.radiusFull.radius,
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.3),
               width: 1,
@@ -282,17 +284,17 @@ class _WelcomeMessageState extends State<WelcomeMessage>
               Icon(
                 Icons.access_time_rounded,
                 color: Colors.white,
-                size: isTablet ? 14 : 12, // تقليل حجم الأيقونة
+                size: isTablet ? 14 : 12,
               ),
               
-              SizedBox(width: ThemeConstants.space1),
+              AppTheme.space1.w,
               
               Text(
                 timeStr,
-                style: (isTablet ? context.labelMedium : context.labelSmall)?.copyWith( // تقليل حجم النص
+                style: AppTheme.numbersStyle.copyWith(
                   color: Colors.white,
-                  fontWeight: ThemeConstants.bold,
-                  fontFeatures: const [FontFeature.tabularFigures()],
+                  fontWeight: AppTheme.bold,
+                  fontSize: isTablet ? 14 : 12,
                 ),
               ),
             ],
@@ -302,12 +304,12 @@ class _WelcomeMessageState extends State<WelcomeMessage>
         // التاريخ
         Container(
           padding: EdgeInsets.symmetric(
-            horizontal: isTablet ? ThemeConstants.space3 : ThemeConstants.space2,
-            vertical: isTablet ? ThemeConstants.space1 : ThemeConstants.space1,
+            horizontal: isTablet ? AppTheme.space3 : AppTheme.space2,
+            vertical: AppTheme.space1,
           ),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+            borderRadius: AppTheme.radiusFull.radius,
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.2),
               width: 1,
@@ -322,14 +324,15 @@ class _WelcomeMessageState extends State<WelcomeMessage>
                 size: isTablet ? 14 : 12,
               ),
               
-              SizedBox(width: ThemeConstants.space1),
+              AppTheme.space1.w,
               
               Flexible(
                 child: Text(
                   dateStr,
-                  style: (isTablet ? context.labelMedium : context.labelSmall)?.copyWith(
+                  style: AppTheme.labelMedium.copyWith(
                     color: Colors.white.withValues(alpha: 0.9),
-                    fontWeight: ThemeConstants.medium,
+                    fontWeight: AppTheme.medium,
+                    fontSize: isTablet ? 14 : 12,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -350,11 +353,11 @@ class _WelcomeMessageState extends State<WelcomeMessage>
             top: -15,
             right: -15,
             child: Container(
-              width: 60, // تقليل الحجم
+              width: 60,
               height: 60,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.08), // تقليل الشفافية
+                color: Colors.white.withValues(alpha: 0.08),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.15),
                   width: 1,
@@ -368,7 +371,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
             bottom: -20,
             left: -20,
             child: Container(
-              width: 70, // تقليل الحجم
+              width: 70,
               height: 70,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
@@ -386,7 +389,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
             top: 20,
             left: 30,
             child: Container(
-              width: 3, // تقليل الحجم
+              width: 3,
               height: 3,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
@@ -412,6 +415,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
     );
   }
 
+  // ✅ دوال مساعدة للرسائل والألوان
   String _getGreeting(int hour) {
     if (hour < 5) {
       return 'ليلة مباركة';
@@ -463,6 +467,31 @@ class _WelcomeMessageState extends State<WelcomeMessage>
       return Icons.wb_twilight;
     } else {
       return Icons.nights_stay;
+    }
+  }
+
+  // ✅ دالة للحصول على التدرج اللوني حسب الوقت
+  List<Color> _getTimeBasedGradient(DateTime dateTime) {
+    final hour = dateTime.hour;
+    
+    if (hour >= 5 && hour < 7) {
+      // الفجر - أخضر فاتح
+      return [AppTheme.primary.lighten(0.1), AppTheme.primary];
+    } else if (hour >= 7 && hour < 12) {
+      // الصباح - أخضر زيتوني
+      return [AppTheme.primary, AppTheme.primaryDark];
+    } else if (hour >= 12 && hour < 15) {
+      // الظهر - ذهبي
+      return [AppTheme.secondary, AppTheme.secondaryDark];
+    } else if (hour >= 15 && hour < 18) {
+      // العصر - بني دافئ
+      return [AppTheme.accent, AppTheme.accent.darken(0.2)];
+    } else if (hour >= 18 && hour < 20) {
+      // المغرب - أزرق رمادي
+      return [AppTheme.tertiary, AppTheme.tertiary.darken(0.2)];
+    } else {
+      // الليل والعشاء - أخضر داكن
+      return [AppTheme.primaryDark, AppTheme.primary.darken(0.3)];
     }
   }
 }

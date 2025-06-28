@@ -1,10 +1,11 @@
-// lib/features/athkar/screens/notification_settings_screen.dart - مُحدث بالنظام الموحد
+// lib/features/athkar/screens/notification_settings_screen.dart - محدث بالنظام الموحد الإسلامي
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// ✅ استيراد النظام الموحد
-import '../../../app/themes/app_theme.dart';
+// ✅ استيراد النظام الموحد الإسلامي - إجباري
+import 'package:athkar_app/app/themes/app_theme.dart';
+import 'package:athkar_app/app/themes/widgets/widgets.dart';
 
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
@@ -64,11 +65,11 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       
       for (final category in allCategories) {
         _originalTimes[category.id] = category.notifyTime ?? 
-            CategoryHelper.getDefaultReminderTime(category.id);
+            _getDefaultReminderTime(category.id);
         
         bool shouldEnable = enabledIds.contains(category.id);
         
-        if (isFirstLaunch && CategoryHelper.shouldAutoEnable(category.id)) {
+        if (isFirstLaunch && _shouldAutoEnable(category.id)) {
           shouldEnable = true;
           autoEnabledIds.add(category.id);
         }
@@ -129,13 +130,13 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       setState(() => _hasPermission = granted);
       if (granted) {
         await _scheduleEnabledNotifications();
-        context.showSuccessSnackBar('تم تفعيل الإشعارات بنجاح');
+        _showSuccessSnackBar('تم تفعيل الإشعارات بنجاح');
       } else {
-        context.showErrorSnackBar('فشل في تفعيل الإشعارات');
+        _showErrorSnackBar('فشل في تفعيل الإشعارات');
       }
     } catch (e) {
       _logger.error(message: 'فشل طلب إذن الإشعارات - $e');
-      context.showErrorSnackBar('فشل في طلب إذن الإشعارات');
+      _showErrorSnackBar('فشل في طلب إذن الإشعارات');
     }
   }
 
@@ -205,7 +206,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       }
     } catch (e) {
       _logger.error(message: 'فشل حفظ التغييرات - $e');
-      context.showErrorSnackBar('فشل في حفظ التغييرات');
+      _showErrorSnackBar('فشل في حفظ التغييرات');
     } finally {
       if (mounted) {
         setState(() => _saving = false);
@@ -224,7 +225,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: context.primaryColor,
+              primary: AppTheme.primary,
             ),
           ),
           child: child!,
@@ -243,8 +244,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
   Future<void> _enableAllReminders() async {
     HapticFeedback.mediumImpact();
     
-    final shouldEnable = await AppInfoDialog.showConfirmation(
-      context: context,
+    final shouldEnable = await _showConfirmationDialog(
       title: 'تفعيل جميع التذكيرات',
       content: 'هل تريد تفعيل تذكيرات جميع فئات الأذكار بالأوقات الحالية؟',
       confirmText: 'تفعيل الكل',
@@ -258,20 +258,19 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
         }
       });
       await _saveChanges();
-      context.showSuccessSnackBar('تم تفعيل جميع التذكيرات');
+      _showSuccessSnackBar('تم تفعيل جميع التذكيرات');
     }
   }
 
   Future<void> _disableAllReminders() async {
     HapticFeedback.mediumImpact();
     
-    final shouldDisable = await AppInfoDialog.showConfirmation(
-      context: context,
+    final shouldDisable = await _showConfirmationDialog(
       title: 'إيقاف جميع التذكيرات',
       content: 'هل تريد إيقاف جميع تذكيرات الأذكار؟',
       confirmText: 'إيقاف الكل',
       cancelText: 'إلغاء',
-      confirmColor: context.errorColor,
+      isDestructive: true,
     );
     
     if (shouldDisable == true) {
@@ -281,22 +280,21 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
         }
       });
       await _saveChanges();
-      context.showSuccessSnackBar('تم إيقاف جميع التذكيرات');
+      _showSuccessSnackBar('تم إيقاف جميع التذكيرات');
     }
   }
-
-
 
   void _showOptionsMenu() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppTheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-          top: Radius.circular(ThemeConstants.radiusXl),
+          top: Radius.circular(AppTheme.radiusXl),
         ),
       ),
       builder: (context) => Container(
-        padding: ThemeConstants.space4.padding,
+        padding: AppTheme.space4.padding,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -304,33 +302,33 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: context.dividerColor,
+                color: AppTheme.divider,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            ThemeConstants.space4.h,
+            AppTheme.space4.h,
             Text(
               'خيارات التذكيرات',
-              style: context.titleLarge?.copyWith(
-                fontWeight: ThemeConstants.bold,
+              style: AppTheme.titleLarge.copyWith(
+                fontWeight: AppTheme.bold,
               ),
             ),
-            ThemeConstants.space4.h,
+            AppTheme.space4.h,
             ListTile(
               leading: Container(
-                padding: ThemeConstants.space2.padding,
+                padding: AppTheme.space2.padding,
                 decoration: BoxDecoration(
-                  color: context.successColor.withValues(alpha: 0.1),
-                  borderRadius: ThemeConstants.radiusMd.radius,
+                  color: AppTheme.success.withValues(alpha: 0.1),
+                  borderRadius: AppTheme.radiusMd.radius,
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.notifications_active,
-                  color: context.successColor,
+                  color: AppTheme.success,
                   size: 20,
                 ),
               ),
-              title: Text('تفعيل الكل'),
-              subtitle: Text('تفعيل جميع تذكيرات الأذكار'),
+              title: const Text('تفعيل الكل'),
+              subtitle: const Text('تفعيل جميع تذكيرات الأذكار'),
               onTap: () {
                 Navigator.pop(context);
                 _enableAllReminders();
@@ -338,28 +336,51 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
             ),
             ListTile(
               leading: Container(
-                padding: ThemeConstants.space2.padding,
+                padding: AppTheme.space2.padding,
                 decoration: BoxDecoration(
-                  color: context.errorColor.withValues(alpha: 0.1),
-                  borderRadius: ThemeConstants.radiusMd.radius,
+                  color: AppTheme.error.withValues(alpha: 0.1),
+                  borderRadius: AppTheme.radiusMd.radius,
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.notifications_off,
-                  color: context.errorColor,
+                  color: AppTheme.error,
                   size: 20,
                 ),
               ),
-              title: Text('إيقاف الكل'),
-              subtitle: Text('إيقاف جميع تذكيرات الأذكار'),
+              title: const Text('إيقاف الكل'),
+              subtitle: const Text('إيقاف جميع تذكيرات الأذكار'),
               onTap: () {
                 Navigator.pop(context);
                 _disableAllReminders();
               },
             ),
-            ThemeConstants.space2.h,
+            AppTheme.space2.h,
           ],
         ),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      // ✅ استخدام SimpleAppBar الموحد
+      appBar: SimpleAppBar(
+        title: 'إعدادات التذكيرات',
+        actions: [
+          if (_hasPermission && (_categories?.isNotEmpty ?? false))
+            IconButton(
+              icon: Icon(
+                Icons.more_vert,
+                color: AppTheme.textSecondary,
+              ),
+              onPressed: _showOptionsMenu,
+              tooltip: 'خيارات إضافية',
+            ),
+        ],
+      ),
+      body: _buildBody(),
     );
   }
 
@@ -379,15 +400,15 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
 
     return RefreshIndicator(
       onRefresh: _loadData,
-      color: context.primaryColor,
+      color: AppTheme.primary,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: ThemeConstants.space4.padding,
+        padding: AppTheme.space4.padding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildPermissionNotice(),
-            ThemeConstants.space6.h,
+            AppTheme.space6.h,
             
             if (_hasPermission) ...[
               if (categories.isEmpty)
@@ -396,23 +417,23 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
                 )
               else ...[
                 _buildQuickStats(categories),
-                ThemeConstants.space4.h,
+                AppTheme.space4.h,
                 
                 Text(
                   'جميع فئات الأذكار (${categories.length})',
-                  style: context.titleMedium?.copyWith(
-                    fontWeight: ThemeConstants.bold,
+                  style: AppTheme.titleMedium.copyWith(
+                    fontWeight: AppTheme.bold,
                   ),
                 ),
-                ThemeConstants.space2.h,
+                AppTheme.space2.h,
                 
                 Text(
                   'يمكنك تفعيل التذكيرات لأي فئة وتخصيص أوقاتها',
-                  style: context.bodySmall?.copyWith(
-                    color: context.textSecondaryColor,
+                  style: AppTheme.bodySmall.copyWith(
+                    color: AppTheme.textSecondary,
                   ),
                 ),
-                ThemeConstants.space4.h,
+                AppTheme.space4.h,
                 
                 ...categories.map((category) => _buildCategoryCard(category)),
               ],
@@ -426,42 +447,39 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
 
   Widget _buildPermissionNotice() {
     return AppCard(
-      style: CardStyle.gradient,
-      gradientColors: [
-        _hasPermission ? context.successColor : context.warningColor,
-        (_hasPermission ? context.successColor : context.warningColor).darken(0.2),
-      ],
+      useGradient: true,
+      color: _hasPermission ? AppTheme.success : AppTheme.warning,
       child: Row(
         children: [
           Container(
-            padding: ThemeConstants.space3.padding,
+            padding: AppTheme.space3.padding,
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: ThemeConstants.radiusMd.radius,
+              borderRadius: AppTheme.radiusMd.radius,
             ),
             child: Icon(
               _hasPermission ? Icons.notifications_active : Icons.notifications_off,
               color: Colors.white,
-              size: ThemeConstants.iconLg,
+              size: AppTheme.iconLg,
             ),
           ),
-          ThemeConstants.space3.w,
+          AppTheme.space3.w,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   _hasPermission ? 'الإشعارات مفعلة' : 'الإشعارات معطلة',
-                  style: context.titleMedium?.copyWith(
+                  style: AppTheme.titleMedium.copyWith(
                     color: Colors.white,
-                    fontWeight: ThemeConstants.bold,
+                    fontWeight: AppTheme.bold,
                   ),
                 ),
                 Text(
                   _hasPermission 
                       ? 'يمكنك الآن تخصيص تذكيرات الأذكار'
                       : 'قم بتفعيل الإشعارات لتلقي التذكيرات',
-                  style: context.bodySmall?.copyWith(
+                  style: AppTheme.bodySmall.copyWith(
                     color: Colors.white.withValues(alpha: 0.9),
                   ),
                 ),
@@ -469,7 +487,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
             ),
           ),
           if (!_hasPermission) ...[
-            ThemeConstants.space3.w,
+            AppTheme.space3.w,
             AppButton.outline(
               text: 'تفعيل',
               onPressed: _requestPermission,
@@ -483,31 +501,30 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
 
   Widget _buildPermissionWarning() {
     return AppCard(
-      style: CardStyle.glassmorphism,
       child: Column(
         children: [
           Icon(
             Icons.notifications_off_outlined,
             size: 64,
-            color: context.warningColor,
+            color: AppTheme.warning,
           ),
-          ThemeConstants.space3.h,
+          AppTheme.space3.h,
           Text(
             'الإشعارات مطلوبة',
-            style: context.titleLarge?.copyWith(
-              fontWeight: ThemeConstants.bold,
-              color: context.warningColor,
+            style: AppTheme.titleLarge.copyWith(
+              fontWeight: AppTheme.bold,
+              color: AppTheme.warning,
             ),
           ),
-          ThemeConstants.space2.h,
+          AppTheme.space2.h,
           Text(
             'يجب تفعيل الإشعارات أولاً لتتمكن من إعداد تذكيرات الأذكار لجميع الفئات',
-            style: context.bodyMedium?.copyWith(
-              color: context.textSecondaryColor,
+            style: AppTheme.bodyMedium.copyWith(
+              color: AppTheme.textSecondary,
             ),
             textAlign: TextAlign.center,
           ),
-          ThemeConstants.space5.h,
+          AppTheme.space5.h,
           AppButton.primary(
             text: 'تفعيل الإشعارات الآن',
             onPressed: _requestPermission,
@@ -530,25 +547,25 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
             title: 'مفعلة',
             value: '$enabledCount',
             icon: Icons.notifications_active,
-            color: context.successColor,
+            color: AppTheme.success,
           ),
         ),
-        ThemeConstants.space3.w,
+        AppTheme.space3.w,
         Expanded(
           child: AppCard.stat(
             title: 'معطلة',
             value: '$disabledCount',
             icon: Icons.notifications_off,
-            color: context.textSecondaryColor,
+            color: AppTheme.textSecondary,
           ),
         ),
-        ThemeConstants.space3.w,
+        AppTheme.space3.w,
         Expanded(
           child: AppCard.stat(
             title: 'الكل',
             value: '${categories.length}',
             icon: Icons.format_list_numbered,
-            color: context.primaryColor,
+            color: AppTheme.primary,
           ),
         ),
       ],
@@ -558,24 +575,21 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
   Widget _buildCategoryCard(AthkarCategory category) {
     final isEnabled = _enabled[category.id] ?? false;
     final currentTime = _customTimes[category.id] ?? 
-        CategoryHelper.getDefaultReminderTime(category.id);
+        _getDefaultReminderTime(category.id);
     final originalTime = _originalTimes[category.id];
     final hasCustomTime = originalTime != null && currentTime != originalTime;
     
-    final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
-    final categoryDescription = CategoryHelper.getCategoryDescription(category.id);
-    final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
+    final categoryIcon = _getCategoryIcon(category.id);
+    final categoryDescription = _getCategoryDescription(category.id);
+    final categoryColor = AppTheme.getCategoryColor(category.id);
 
     return Padding(
-      padding: EdgeInsets.only(bottom: ThemeConstants.space3),
+      padding: EdgeInsets.only(bottom: AppTheme.space3),
       child: AnimatedPress(
         onTap: isEnabled ? () => _selectTime(category.id, currentTime) : () {},
         child: AppCard(
-          style: CardStyle.gradient,
-          gradientColors: [
-            categoryColor,
-            categoryColor.darken(0.2),
-          ],
+          useGradient: true,
+          color: categoryColor,
           margin: EdgeInsets.zero,
           child: Row(
             children: [
@@ -594,11 +608,11 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
                 child: Icon(
                   categoryIcon,
                   color: Colors.white,
-                  size: ThemeConstants.iconLg,
+                  size: AppTheme.iconLg,
                 ),
               ),
               
-              ThemeConstants.space3.w,
+              AppTheme.space3.w,
               
               // النص والمعلومات
               Expanded(
@@ -607,9 +621,9 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
                   children: [
                     Text(
                       category.title,
-                      style: context.titleMedium?.copyWith(
+                      style: AppTheme.titleMedium.copyWith(
                         color: Colors.white,
-                        fontWeight: ThemeConstants.bold,
+                        fontWeight: AppTheme.bold,
                         shadows: const [
                           Shadow(
                             color: Colors.black26,
@@ -620,10 +634,10 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
                       ),
                     ),
                     if (categoryDescription.isNotEmpty) ...[
-                      ThemeConstants.space1.h,
+                      AppTheme.space1.h,
                       Text(
                         categoryDescription,
-                        style: context.bodySmall?.copyWith(
+                        style: AppTheme.bodySmall.copyWith(
                           color: Colors.white.withValues(alpha: 0.8),
                         ),
                         maxLines: 1,
@@ -631,15 +645,15 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
                       ),
                     ],
                     if (isEnabled) ...[
-                      ThemeConstants.space1.h,
+                      AppTheme.space1.h,
                       Container(
                         padding: EdgeInsets.symmetric(
-                          horizontal: ThemeConstants.space2,
+                          horizontal: AppTheme.space2,
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: ThemeConstants.radiusMd.radius,
+                          borderRadius: AppTheme.radiusMd.radius,
                           border: Border.all(
                             color: Colors.white.withValues(alpha: 0.3),
                             width: 1,
@@ -656,11 +670,11 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
                             const SizedBox(width: 4),
                             Text(
                               currentTime.format(context),
-                              style: context.labelSmall?.copyWith(
+                              style: AppTheme.labelMedium.copyWith(
                                 color: Colors.white,
                                 fontWeight: hasCustomTime 
-                                    ? ThemeConstants.bold 
-                                    : ThemeConstants.regular,
+                                    ? AppTheme.bold 
+                                    : AppTheme.regular,
                               ),
                             ),
                             if (hasCustomTime) ...[
@@ -687,8 +701,8 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
                     : null,
                 activeColor: Colors.white,
                 activeTrackColor: Colors.white.withValues(alpha: 0.3),
-                inactiveThumbColor: context.textSecondaryColor,
-                inactiveTrackColor: context.dividerColor,
+                inactiveThumbColor: AppTheme.textSecondary,
+                inactiveTrackColor: AppTheme.divider,
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ],
@@ -697,10 +711,152 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       ),
     );
   }
-  
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
+
+  // ✅ دوال مساعدة محلية للفئات
+  IconData _getCategoryIcon(String categoryId) {
+    switch (categoryId) {
+      case 'اوقات_الصلاة':
+        return Icons.access_time;
+      case 'الاذكار':
+        return Icons.auto_awesome;
+      case 'القبلة':
+        return Icons.explore;
+      case 'التسبيح':
+        return Icons.favorite;
+      case 'القران':
+        return Icons.menu_book;
+      case 'الادعية':
+        return Icons.volunteer_activism;
+      case 'المفضلة':
+        return Icons.bookmark;
+      case 'الاعدادات':
+        return Icons.settings;
+      default:
+        return Icons.auto_awesome;
+    }
+  }
+
+  String _getCategoryDescription(String categoryId) {
+    switch (categoryId) {
+      case 'اوقات_الصلاة':
+        return 'أذكار ما بعد الصلاة';
+      case 'الاذكار':
+        return 'أذكار الصباح والمساء';
+      case 'القبلة':
+        return 'تذكيرات اتجاه القبلة';
+      case 'التسبيح':
+        return 'التسبيح والتهليل';
+      case 'القران':
+        return 'تذكيرات قراءة القرآن';
+      case 'الادعية':
+        return 'الأدعية المأثورة';
+      case 'المفضلة':
+        return 'أذكارك المفضلة';
+      default:
+        return '';
+    }
+  }
+
+  TimeOfDay _getDefaultReminderTime(String categoryId) {
+    switch (categoryId) {
+      case 'اوقات_الصلاة':
+        return const TimeOfDay(hour: 6, minute: 0); // الفجر
+      case 'الاذكار':
+        return const TimeOfDay(hour: 7, minute: 0); // الصباح
+      case 'القبلة':
+        return const TimeOfDay(hour: 12, minute: 0); // الظهر
+      case 'التسبيح':
+        return const TimeOfDay(hour: 20, minute: 0); // المساء
+      case 'القران':
+        return const TimeOfDay(hour: 21, minute: 0); // بعد المغرب
+      case 'الادعية':
+        return const TimeOfDay(hour: 22, minute: 0); // الليل
+      case 'المفضلة':
+        return const TimeOfDay(hour: 8, minute: 0); // الصباح
+      default:
+        return const TimeOfDay(hour: 8, minute: 0);
+    }
+  }
+
+  bool _shouldAutoEnable(String categoryId) {
+    switch (categoryId) {
+      case 'اوقات_الصلاة':
+      case 'الاذكار':
+        return true; // الفئات الأساسية تُفعل تلقائياً
+      default:
+        return false;
+    }
+  }
+
+  // ✅ دوال الحوارات والرسائل
+  Future<bool?> _showConfirmationDialog({
+    required String title,
+    required String content,
+    required String confirmText,
+    required String cancelText,
+    bool isDestructive = false,
+  }) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppTheme.radiusXl.radius,
+        ),
+        title: Text(
+          title,
+          style: AppTheme.titleLarge.copyWith(
+            fontWeight: AppTheme.bold,
+          ),
+        ),
+        content: Text(
+          content,
+          style: AppTheme.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              cancelText,
+              style: AppTheme.bodyMedium.copyWith(
+                color: AppTheme.textSecondary,
+              ),
+            ),
+          ),
+          AppButton.primary(
+            text: confirmText,
+            onPressed: () => Navigator.of(context).pop(true),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.success,
+        duration: AppTheme.durationNormal,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppTheme.radiusMd.radius,
+        ),
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.error,
+        duration: AppTheme.durationNormal,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppTheme.radiusMd.radius,
+        ),
+      ),
+    );
   }
 }
