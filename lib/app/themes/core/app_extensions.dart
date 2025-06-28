@@ -1,8 +1,9 @@
-// lib/app/themes/core/app_extensions.dart - عربي وداكن فقط
+// lib/app/themes/core/app_extensions.dart - عربي وداكن فقط مع نظام الأيقونات المحدث
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_text_styles.dart';
 import 'app_theme_constants.dart';
+import 'app_icon_system.dart'; // النظام الجديد
 
 /// Extensions للوصول السهل للثيم والألوان
 extension ThemeExtensions on BuildContext {
@@ -15,13 +16,13 @@ extension ThemeExtensions on BuildContext {
   bool get isDarkMode => true;
   bool get isLightMode => false;
   
-  // ========== الألوان ==========
+  // ========== الألوان المحدثة ==========
   
-  /// الألوان الأساسية
-  Color get primaryColor => AppColors.primary;
-  Color get secondaryColor => AppColors.secondary;
-  Color get accentColor => AppColors.accent;
-  Color get tertiaryColor => AppColors.tertiary;
+  /// الألوان الأساسية الجديدة (أخضر زيتي وذهبي)
+  Color get primaryColor => AppColors.primary;           // #5D7052
+  Color get secondaryColor => AppColors.secondary;       // #B8860B
+  Color get accentColor => AppColors.accent;             // #8D5524
+  Color get tertiaryColor => AppColors.tertiary;         // #4F5D6B
   
   /// ألوان الحالة
   Color get successColor => AppColors.success;
@@ -53,16 +54,36 @@ extension ThemeExtensions on BuildContext {
     return AppColors.getCategoryColor(categoryId);
   }
   
-  // ========== التدرجات ==========
+  /// الحصول على لون المناسبة
+  Color getOccasionColor(String occasion) {
+    return AppColors.getOccasionColor(occasion);
+  }
+  
+  /// الحصول على لون الوقت
+  Color getTimeColor(String timeOfDay) {
+    return AppColors.getTimeColor(timeOfDay);
+  }
+  
+  // ========== التدرجات المحدثة ==========
   
   LinearGradient get primaryGradient => AppColors.primaryGradient;
   LinearGradient get secondaryGradient => AppColors.secondaryGradient;
   LinearGradient get accentGradient => AppColors.accentGradient;
   LinearGradient get tertiaryGradient => AppColors.tertiaryGradient;
   
+  /// التدرجات الجديدة
+  LinearGradient get oliveGoldGradient => AppColors.oliveGoldGradient;
+  LinearGradient get warmEveningGradient => AppColors.warmEveningGradient;
+  LinearGradient get calmDawnGradient => AppColors.calmDawnGradient;
+  
   /// تدرج حسب الوقت
   LinearGradient getTimeBasedGradient({DateTime? dateTime}) {
     return AppColors.getTimeBasedGradient(dateTime: dateTime);
+  }
+  
+  /// الحصول على تدرج للمحتوى الديني
+  LinearGradient getReligiousGradient(String type) {
+    return AppColors.getReligiousGradient(type);
   }
   
   // ========== أنماط النصوص ==========
@@ -118,55 +139,178 @@ extension ThemeExtensions on BuildContext {
   }
 }
 
-/// Extensions للأيقونات المخصصة
+/// Extensions للأيقونات المحدثة مع النظام الجديد
 extension IconExtensions on BuildContext {
   
-  /// الحصول على أيقونة الصلاة
-  IconData getPrayerIcon(String prayerName) {
-    switch (prayerName) {
-      case 'الفجر':
-        return Icons.wb_twilight_rounded;
-      case 'الظهر':
-        return Icons.wb_sunny_rounded;
-      case 'العصر':
-        return Icons.wb_cloudy_rounded;
-      case 'المغرب':
-        return Icons.wb_twilight_rounded;
-      case 'العشاء':
-        return Icons.nights_stay_rounded;
-      case 'الشروق':
-        return Icons.flare_rounded;
-      default:
-        return Icons.mosque_rounded;
-    }
+  // ========== الأيقونات الأساسية ==========
+  
+  /// الحصول على أيقونة معيارية
+  IconData getIcon(String iconKey) {
+    return AppIconSystem.getIcon(iconKey);
   }
   
-  /// الحصول على أيقونة الفئة
-  IconData getCategoryIcon(String categoryId) {
-    switch (categoryId) {
-      case 'اوقات_الصلاة':
-        return Icons.mosque_rounded;
-      case 'الاذكار':
-        return Icons.menu_book_rounded;
-      case 'القبلة':
-        return Icons.explore_rounded;
-      case 'التسبيح':
-        return Icons.touch_app_rounded;
-      case 'القران':
-        return Icons.book_rounded;
-      case 'الادعية':
-        return Icons.favorite_rounded;
-      case 'المفضلة':
-        return Icons.bookmark_rounded;
-      case 'الاعدادات':
-        return Icons.settings_rounded;
-      default:
-        return Icons.circle_rounded;
-    }
+  /// الحصول على لون الأيقونة حسب السياق
+  Color getIconColor(IconContext context) {
+    return AppIconSystem.getIconColor(context);
+  }
+  
+  /// إنشاء أيقونة مع سياق
+  Widget iconWithContext(String iconKey, IconContext context, {double? size}) {
+    final icon = AppIconSystem.getIcon(iconKey);
+    final color = AppIconSystem.getIconColor(context);
+    return Icon(icon, color: color, size: size ?? AppThemeConstants.iconMd);
+  }
+  
+  // ========== أيقونات الصلوات المحدثة ==========
+  
+  /// الحصول على أيقونة الصلاة مع اللون الجديد
+  Widget prayerIcon(String prayerName, {double? size}) {
+    final iconInfo = AppIconSystem.getPrayerIcon(prayerName);
+    return iconInfo.toWidget(customSize: size);
+  }
+  
+  /// الحصول على أيقونة الصلاة فقط
+  IconData getPrayerIconData(String prayerName) {
+    return AppIconSystem.getPrayerIcon(prayerName).icon;
+  }
+  
+  /// الحصول على لون الصلاة
+  Color getPrayerIconColor(String prayerName) {
+    return AppIconSystem.getPrayerIcon(prayerName).color;
+  }
+  
+  // ========== أيقونات الفئات المحدثة ==========
+  
+  /// الحصول على أيقونة الفئة مع اللون الجديد
+  Widget categoryIcon(String categoryId, {double? size}) {
+    final iconInfo = AppIconSystem.getCategoryIcon(categoryId);
+    return iconInfo.toWidget(customSize: size);
+  }
+  
+  /// الحصول على أيقونة الفئة فقط
+  IconData getCategoryIconData(String categoryId) {
+    return AppIconSystem.getCategoryIcon(categoryId).icon;
+  }
+  
+  /// الحصول على لون الفئة
+  Color getCategoryIconColor(String categoryId) {
+    return AppIconSystem.getCategoryIcon(categoryId).color;
+  }
+  
+  // ========== أيقونات الحالة ==========
+  
+  /// الحصول على أيقونة الحالة
+  Widget statusIcon(StatusType status, {double? size}) {
+    final iconInfo = AppIconSystem.getStatusIcon(status);
+    return iconInfo.toWidget(customSize: size);
+  }
+  
+  /// الحصول على أيقونة النجاح
+  Widget successIcon({double? size}) => statusIcon(StatusType.success, size: size);
+  
+  /// الحصول على أيقونة التحذير
+  Widget warningIcon({double? size}) => statusIcon(StatusType.warning, size: size);
+  
+  /// الحصول على أيقونة الخطأ
+  Widget errorIcon({double? size}) => statusIcon(StatusType.error, size: size);
+  
+  /// الحصول على أيقونة المعلومات
+  Widget infoIcon({double? size}) => statusIcon(StatusType.info, size: size);
+  
+  /// الحصول على أيقونة التحميل
+  Widget loadingIcon({double? size}) => statusIcon(StatusType.loading, size: size);
+  
+  /// الحصول على أيقونة الإكمال
+  Widget completedIcon({double? size}) => statusIcon(StatusType.completed, size: size);
+  
+  // ========== أيقونات الأوقات ==========
+  
+  /// الحصول على أيقونة الوقت
+  Widget timeIcon(String timeOfDay, {double? size}) {
+    final iconInfo = AppIconSystem.getTimeIcon(timeOfDay);
+    return iconInfo.toWidget(customSize: size);
+  }
+  
+  // ========== أيقونات متحركة ==========
+  
+  /// الحصول على أيقونة التحميل المتحركة
+  Widget getLoadingIcon({Color? color, double? size}) {
+    return AppIconSystem.getLoadingIcon(color: color, size: size);
+  }
+  
+  /// الحصول على أيقونة نابضة
+  Widget getPulsingIcon({
+    required IconData icon,
+    Color? color,
+    double? size,
+    Duration duration = const Duration(seconds: 1),
+  }) {
+    return AppIconSystem.getPulsingIcon(
+      icon: icon,
+      color: color,
+      size: size,
+      duration: duration,
+    );
+  }
+  
+  // ========== أيقونات مخصصة للتطبيق الإسلامي ==========
+  
+  /// أيقونة المسجد
+  Widget mosqueIcon({Color? color, double? size}) {
+    return Icon(
+      Icons.mosque_rounded,
+      color: color ?? primaryColor,
+      size: size ?? AppThemeConstants.iconLg,
+    );
+  }
+  
+  /// أيقونة القرآن
+  Widget quranIcon({Color? color, double? size}) {
+    return Icon(
+      Icons.book_rounded,
+      color: color ?? getCategoryColor('القران'),
+      size: size ?? AppThemeConstants.iconLg,
+    );
+  }
+  
+  /// أيقونة الأذكار
+  Widget dhikrIcon({Color? color, double? size}) {
+    return Icon(
+      Icons.menu_book_rounded,
+      color: color ?? getCategoryColor('الاذكار'),
+      size: size ?? AppThemeConstants.iconLg,
+    );
+  }
+  
+  /// أيقونة القبلة
+  Widget qiblaIcon({Color? color, double? size}) {
+    return Icon(
+      Icons.explore_rounded,
+      color: color ?? getCategoryColor('القبلة'),
+      size: size ?? AppThemeConstants.iconLg,
+    );
+  }
+  
+  /// أيقونة التسبيح
+  Widget tasbihIcon({Color? color, double? size}) {
+    return Icon(
+      Icons.touch_app_rounded,
+      color: color ?? getCategoryColor('التسبيح'),
+      size: size ?? AppThemeConstants.iconLg,
+    );
+  }
+  
+  /// أيقونة الأدعية
+  Widget duaIcon({Color? color, double? size}) {
+    return Icon(
+      Icons.favorite_border_rounded,
+      color: color ?? getCategoryColor('الادعية'),
+      size: size ?? AppThemeConstants.iconLg,
+    );
   }
 }
 
-/// Extensions للإشعارات والرسائل
+/// Extensions للإشعارات والرسائل (بدون تغيير)
 extension SnackBarExtensions on BuildContext {
   
   /// إظهار رسالة نجاح
@@ -206,7 +350,7 @@ extension SnackBarExtensions on BuildContext {
   }
 }
 
-/// نظام الإشعارات الموحد
+/// نظام الإشعارات الموحد المحدث
 class AppSnackBar {
   AppSnackBar._();
   
@@ -315,7 +459,7 @@ class AppSnackBar {
   }
 }
 
-/// نظام الحوارات الموحد
+/// نظام الحوارات الموحد (بدون تغيير كبير)
 class AppInfoDialog {
   AppInfoDialog._();
   
@@ -443,7 +587,7 @@ class DialogAction {
   });
 }
 
-/// مساعدين للفئات والصلوات
+/// مساعدين للفئات والصلوات المحدثة
 class CategoryHelper {
   CategoryHelper._();
   
@@ -452,28 +596,9 @@ class CategoryHelper {
     return context.getCategoryColor(categoryId);
   }
   
-  /// الحصول على أيقونة الفئة
-  static IconData getCategoryIcon(String categoryId) {
-    switch (categoryId) {
-      case 'اوقات_الصلاة':
-        return Icons.mosque_rounded;
-      case 'الاذكار':
-        return Icons.menu_book_rounded;
-      case 'القبلة':
-        return Icons.explore_rounded;
-      case 'التسبيح':
-        return Icons.touch_app_rounded;
-      case 'القران':
-        return Icons.book_rounded;
-      case 'الادعية':
-        return Icons.favorite_rounded;
-      case 'المفضلة':
-        return Icons.bookmark_rounded;
-      case 'الاعدادات':
-        return Icons.settings_rounded;
-      default:
-        return Icons.circle_rounded;
-    }
+  /// الحصول على أيقونة الفئة مع النظام الجديد
+  static IconInfo getCategoryIcon(String categoryId) {
+    return AppIconSystem.getCategoryIcon(categoryId);
   }
   
   /// الحصول على وصف الفئة
@@ -520,32 +645,32 @@ class CategoryHelper {
   }
 }
 
-/// مساعدين للاقتباسات
+/// مساعدين للاقتباسات المحدثة
 class QuoteHelper {
   QuoteHelper._();
   
-  /// الحصول على ألوان الاقتباس
+  /// الحصول على ألوان الاقتباس مع الألوان الجديدة
   static List<Color> getQuoteColors(BuildContext context, String type) {
     switch (type) {
       case 'آية':
         return [
-          context.primaryColor,
+          context.primaryColor,           // أخضر زيتي
           context.primaryColor.darken(0.2),
         ];
       case 'حديث':
         return [
-          context.accentColor,
+          context.accentColor,            // بني دافئ
           context.accentColor.darken(0.2),
         ];
       case 'دعاء':
         return [
-          context.tertiaryColor,
-          context.tertiaryColor.darken(0.2),
+          context.secondaryColor,         // ذهبي دافئ
+          context.secondaryColor.darken(0.2),
         ];
       default:
         return [
-          context.secondaryColor,
-          context.secondaryColor.darken(0.2),
+          context.tertiaryColor,          // أزرق رمادي
+          context.tertiaryColor.darken(0.2),
         ];
     }
   }
@@ -556,7 +681,7 @@ class QuoteHelper {
   }
 }
 
-/// مساعدين للحركة
+/// مساعدين للحركة (بدون تغيير)
 class AppAnimations {
   AppAnimations._();
   
