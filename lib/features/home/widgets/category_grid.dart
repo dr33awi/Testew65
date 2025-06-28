@@ -1,9 +1,7 @@
-// lib/features/home/widgets/category_grid.dart - محدث بالنظام الموحد
+// lib/features/home/widgets/simple_category_grid.dart - شبكة فئات بسيطة بدون Animations
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-
-// ✅ استيراد النظام الموحد
 import '../../../app/themes/app_theme.dart';
 
 class SimpleCategoryGrid extends StatelessWidget {
@@ -11,25 +9,25 @@ class SimpleCategoryGrid extends StatelessWidget {
 
   static const List<CategoryItem> _categories = [
     CategoryItem(
-      id: 'اوقات_الصلاة',
+      id: 'prayer_times',
       title: 'مواقيت الصلاة',
       subtitle: 'أوقات الصلوات الخمس',
       routeName: '/prayer-times',
     ),
     CategoryItem(
-      id: 'الاذكار',
+      id: 'athkar',
       title: 'الأذكار',
       subtitle: 'أذكار الصباح والمساء',
       routeName: '/athkar',
     ),
     CategoryItem(
-      id: 'القبلة',
+      id: 'qibla',
       title: 'اتجاه القبلة',
       subtitle: 'البوصلة الإسلامية',
       routeName: '/qibla',
     ),
     CategoryItem(
-      id: 'التسبيح',
+      id: 'tasbih',
       title: 'المسبحة',
       subtitle: 'تسبيح رقمي',
       routeName: '/tasbih',
@@ -42,15 +40,7 @@ class SimpleCategoryGrid extends StatelessWidget {
     if (category.routeName != null) {
       Navigator.pushNamed(context, category.routeName!).catchError((error) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('هذه الميزة قيد التطوير'),
-              backgroundColor: AppTheme.warning,
-              shape: RoundedRectangleBorder(
-                borderRadius: AppTheme.radiusMd.radius,
-              ),
-            ),
-          );
+          context.showWarningSnackBar('هذه الميزة قيد التطوير');
         }
         return null;
       });
@@ -69,8 +59,8 @@ class SimpleCategoryGrid extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
-            mainAxisSpacing: AppTheme.space3,
-            crossAxisSpacing: AppTheme.space3,
+            mainAxisSpacing: ThemeConstants.space3,
+            crossAxisSpacing: ThemeConstants.space3,
             childAspectRatio: childAspectRatio,
           ),
           itemCount: _categories.length,
@@ -95,7 +85,7 @@ class SimpleCategoryGrid extends StatelessWidget {
     return 0.95;
   }
 
-  // تحديد أحجام النصوص حسب عرض الشاشة
+  // تحديد أحجام النصوص حسب عرض الشاشة - تم تكبير الأحجام
   double _getTitleFontSize(double screenWidth) {
     if (screenWidth > 900) return 24;
     if (screenWidth > 600) return 22;
@@ -125,21 +115,25 @@ class SimpleCategoryGrid extends StatelessWidget {
   }
 
   EdgeInsets _getCardPadding(double screenWidth) {
-    if (screenWidth > 900) return AppTheme.space6.padding;
-    if (screenWidth > 600) return AppTheme.space5.padding;
-    if (screenWidth > 400) return AppTheme.space4.padding;
-    return AppTheme.space3.padding;
+    if (screenWidth > 900) return const EdgeInsets.all(ThemeConstants.space6);
+    if (screenWidth > 600) return const EdgeInsets.all(ThemeConstants.space5);
+    if (screenWidth > 400) return const EdgeInsets.all(ThemeConstants.space4);
+    return const EdgeInsets.all(ThemeConstants.space3);
   }
 
   Widget _buildCategoryCard(BuildContext context, CategoryItem category, double screenWidth) {
-    final categoryColor = context.getCategoryColor(category.id);
-    final categoryIcon = _getCategoryIcon(category.id);
+    final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
+    final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
+    final gradientColors = [
+      categoryColor,
+      categoryColor.darken(0.2),
+    ];
     
     return GestureDetector(
       onTap: () => _onCategoryTap(context, category),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: AppTheme.radiusLg.radius,
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
           boxShadow: [
             BoxShadow(
               color: categoryColor.withValues(alpha: 0.3),
@@ -150,7 +144,7 @@ class SimpleCategoryGrid extends StatelessWidget {
           ],
         ),
         child: ClipRRect(
-          borderRadius: AppTheme.radiusLg.radius,
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
           child: Stack(
             children: [
               // الخلفية المتدرجة
@@ -159,10 +153,9 @@ class SimpleCategoryGrid extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      categoryColor,
-                      categoryColor.darken(0.2),
-                    ].map((c) => c.withValues(alpha: 0.9)).toList(),
+                    colors: gradientColors.map((c) => 
+                      c.withValues(alpha: 0.9)
+                    ).toList(),
                   ),
                 ),
               ),
@@ -221,9 +214,9 @@ class SimpleCategoryGrid extends StatelessWidget {
                       children: [
                         Text(
                           category.title,
-                          style: context.titleLarge.copyWith(
+                          style: context.titleLarge?.copyWith(
                             color: Colors.white,
-                            fontWeight: AppTheme.bold,
+                            fontWeight: ThemeConstants.bold,
                             fontSize: _getTitleFontSize(screenWidth),
                             height: 1.2,
                             letterSpacing: 0.3,
@@ -244,10 +237,10 @@ class SimpleCategoryGrid extends StatelessWidget {
                         if (category.subtitle != null)
                           Text(
                             category.subtitle!,
-                            style: context.bodyMedium.copyWith(
+                            style: context.bodyMedium?.copyWith(
                               color: Colors.white.withValues(alpha: 0.9),
                               fontSize: _getSubtitleFontSize(screenWidth),
-                              fontWeight: AppTheme.medium,
+                              fontWeight: ThemeConstants.medium,
                               height: 1.4,
                               letterSpacing: 0.2,
                               shadows: [
@@ -263,8 +256,10 @@ class SimpleCategoryGrid extends StatelessWidget {
                           ),
                       ],
                     ),
-
-                    SizedBox(height: screenWidth > 400 ? AppTheme.space2 : AppTheme.space1),
+    
+                    SizedBox(height: screenWidth > 400 ? ThemeConstants.space2 : ThemeConstants.space1),
+                    
+                    // إزالة مؤشر الانتقال
                   ],
                 ),
               ),
@@ -274,11 +269,14 @@ class SimpleCategoryGrid extends StatelessWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () => _onCategoryTap(context, category),
-                  borderRadius: AppTheme.radiusLg.radius,
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
                   splashColor: Colors.white.withValues(alpha: 0.2),
                   highlightColor: Colors.white.withValues(alpha: 0.1),
                 ),
               ),
+              
+              // عناصر زخرفية
+              _buildDecorativeElements(categoryColor, screenWidth),
             ],
           ),
         ),
@@ -286,19 +284,9 @@ class SimpleCategoryGrid extends StatelessWidget {
     );
   }
 
-  IconData _getCategoryIcon(String categoryId) {
-    switch (categoryId) {
-      case 'اوقات_الصلاة':
-        return Icons.access_time;
-      case 'الاذكار':
-        return Icons.auto_stories;
-      case 'القبلة':
-        return Icons.explore;
-      case 'التسبيح':
-        return Icons.auto_awesome;
-      default:
-        return Icons.apps;
-    }
+  Widget _buildDecorativeElements(Color categoryColor, double screenWidth) {
+    // إزالة العناصر الزخرفية (الدائرة والخط)
+    return const SizedBox.shrink();
   }
 }
 

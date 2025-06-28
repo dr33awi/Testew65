@@ -1,12 +1,7 @@
-// lib/features/athkar/screens/athkar_details_screen.dart - محدث بالنظام الموحد
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
-
-// ✅ استيراد النظام الموحد
 import '../../../app/themes/app_theme.dart';
-import 'package:athkar_app/app/themes/widgets/widgets.dart';
-
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
 import '../../../core/infrastructure/services/utils/extensions/string_extensions.dart';
@@ -47,7 +42,7 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
     _storage = getIt<StorageService>();
     _animationController = AnimationController(
       vsync: this,
-      duration: AppTheme.durationNormal,
+      duration: ThemeConstants.durationNormal,
     );
     WidgetsBinding.instance.addObserver(this);
     _load();
@@ -247,8 +242,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     if (_category == null) {
       return Scaffold(
         backgroundColor: context.backgroundColor,
-        // ✅ استخدام SimpleAppBar الموحد
-        appBar: SimpleAppBar(title: 'الأذكار'),
+        appBar: CustomAppBar.simple(title: 'الأذكار'),
         body: AppEmptyState.error(
           message: 'تعذر تحميل الأذكار المطلوبة',
           onRetry: _load,
@@ -268,15 +262,18 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
       },
       child: Scaffold(
         backgroundColor: context.backgroundColor,
-        // ✅ استخدام SimpleAppBar الموحد
-        appBar: SimpleAppBar(
+        // ✅ استخدام CustomAppBar الموحد
+        appBar: CustomAppBar(
           title: category.title,
+          leading: AppBackButton(
+            onPressed: () async {
+              await _resetAndReload();
+              Navigator.of(context).pop();
+            },
+          ),
           actions: [
-            IconButton(
-              icon: Icon(
-                Icons.notifications_outlined,
-                color: context.primaryColor,
-              ),
+            AppBarAction(
+              icon: Icons.notifications_outlined,
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -286,52 +283,51 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
               tooltip: 'إعدادات الإشعارات',
             ),
           ],
-        ),
-        body: Column(
-          children: [
-            // شريط التقدم
-            Container(
-              padding: AppTheme.space4.padding,
+          // إضافة شريط التقدم كـ bottom
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(80),
+            child: Container(
+              padding: const EdgeInsets.all(ThemeConstants.space4),
               child: Column(
                 children: [
                   Row(
                     children: [
                       Text(
                         '$remainingAthkar متبقي',
-                        style: context.bodyMedium.copyWith(
+                        style: context.bodyMedium?.copyWith(
                           color: remainingAthkar > 0 
                               ? context.textSecondaryColor 
-                              : AppTheme.success,
+                              : ThemeConstants.success,
                           fontWeight: remainingAthkar == 0 
-                              ? AppTheme.bold 
-                              : AppTheme.regular,
+                              ? ThemeConstants.bold 
+                              : ThemeConstants.regular,
                         ),
                       ),
                       if (completedAthkar > 0) ...[
                         Text(
                           ' • ',
-                          style: context.bodySmall.copyWith(
+                          style: context.bodySmall?.copyWith(
                             color: context.textSecondaryColor,
                           ),
                         ),
                         const Icon(
                           Icons.check_circle,
                           size: 16,
-                          color: AppTheme.success,
+                          color: ThemeConstants.success,
                         ),
-                        AppTheme.space1.w,
+                        ThemeConstants.space1.w,
                         Text(
                           '$completedAthkar مكتمل',
-                          style: context.bodyMedium.copyWith(
-                            color: AppTheme.success,
-                            fontWeight: AppTheme.medium,
+                          style: context.bodyMedium?.copyWith(
+                            color: ThemeConstants.success,
+                            fontWeight: ThemeConstants.medium,
                           ),
                         ),
                       ],
                     ],
                   ),
                   
-                  AppTheme.space3.h,
+                  ThemeConstants.space3.h,
                   
                   // شريط التقدم
                   if (totalAthkar > 0)
@@ -351,8 +347,8 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                           backgroundColor: Colors.transparent,
                           valueColor: AlwaysStoppedAnimation<Color>(
                             completedAthkar == totalAthkar 
-                                ? AppTheme.success 
-                                : AppTheme.success,
+                                ? ThemeConstants.success 
+                                : ThemeConstants.success, // استخدام اللون الأخضر الموحد
                           ),
                         ),
                       ),
@@ -360,10 +356,9 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                 ],
               ),
             ),
-            
-            Expanded(child: _buildContent(category)),
-          ],
+          ),
         ),
+        body: _buildContent(category),
       ),
     );
   }
@@ -373,11 +368,10 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
       onRefresh: () async {
         await _resetAndReload();
       },
-      color: context.primaryColor,
       child: _visibleItems.isEmpty 
           ? _buildEmptyState()
           : ListView.builder(
-              padding: AppTheme.space4.padding,
+              padding: const EdgeInsets.all(ThemeConstants.space4),
               itemCount: _visibleItems.length,
               itemBuilder: (context, index) {
                 final item = _visibleItems[index];
@@ -387,98 +381,61 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                 final originalIndex = category.athkar.indexOf(item);
                 final number = originalIndex + 1;
                   
-                return Padding(
-                  padding: EdgeInsets.only(
-                    bottom: index < _visibleItems.length - 1
-                        ? AppTheme.space4
-                        : 0,
-                  ),
-                  // ✅ استخدام AppCard.athkar الموحد
-                  child: AppCard.athkar(
-                    content: item.text,
-                    source: item.source,
-                    fadl: item.fadl,
-                    currentCount: currentCount,
-                    totalCount: item.count,
-                    primaryColor: context.getCategoryColor('الاذكار'),
-                    onTap: () => _onItemTap(item),
-                    actions: [
-                      CardAction(
-                        icon: Icons.favorite_outline,
-                        label: 'مفضلة',
-                        onPressed: () => _toggleFavorite(item),
-                      ),
-                      CardAction(
-                        icon: Icons.share_rounded,
-                        label: 'مشاركة',
-                        onPressed: () => _shareItem(item),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: index < _visibleItems.length - 1
+                          ? ThemeConstants.space4
+                          : 0,
+                    ),
+                    // ✅ استخدام AppCard.athkar بدون تكرار الأزرار
+                    child: AppCard.athkar(
+                      content: item.text,
+                      source: item.source,
+                      fadl: item.fadl,
+                      currentCount: currentCount,
+                      totalCount: item.count,
+                      primaryColor: ThemeConstants.success,
+                      onTap: () => _onItemTap(item),
+                      actions: [
+                        CardAction(
+                          icon: Icons.favorite_outline,
+                          label: 'مفضلة',
+                          onPressed: () => _toggleFavorite(item),
+                        ),
+                        CardAction(
+                          icon: Icons.share_rounded,
+                          label: 'مشاركة',
+                          onPressed: () => _shareItem(item),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
     );
   }
 
   Widget _buildEmptyState() {
-    // ✅ استخدام AppCard للحالة المكتملة
+    // ✅ استخدام AppCard للحالة المكتملة بدون زر المشاركة
     return Center(
-      child: Padding(
-        padding: AppTheme.space6.padding,
-        child: AppCard(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: AppTheme.success.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.check_circle_rounded,
-                  size: 40,
-                  color: AppTheme.success,
-                ),
-              ),
-              
-              AppTheme.space4.h,
-              
-              Text(
-                'أكملت جميع الأذكار! 🎉',
-                style: context.titleLarge.copyWith(
-                  fontWeight: AppTheme.bold,
-                  color: AppTheme.success,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              
-              AppTheme.space2.h,
-              
-              Text(
-                'بارك الله فيك\nجعلها الله في ميزان حسناتك',
-                style: context.bodyMedium.copyWith(
-                  color: context.textSecondaryColor,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              
-              AppTheme.space6.h,
-              
-              AppButton.outline(
-                text: 'إعادة القراءة',
-                onPressed: _rereadAthkar,
-                icon: Icons.refresh_rounded,
-              ),
-            ],
+      child: AppCard.completion(
+        title: 'أكملت جميع الأذكار! 🎉',
+        message: 'بارك الله فيك',
+        subMessage: 'جعلها الله في ميزان حسناتك',
+        icon: Icons.check_circle_rounded,
+        primaryColor: ThemeConstants.success,
+        actions: [
+          CardAction(
+            icon: Icons.refresh_rounded,
+            label: 'إعادة القراءة',
+            onPressed: _rereadAthkar,
+            isPrimary: false, // جعل الزر شفاف بدلاً من primary
           ),
-        ),
+          // إزالة زر المشاركة
+        ],
       ),
     );
   }
-
   void _toggleFavorite(AthkarItem item) {
     HapticFeedback.lightImpact();
     
@@ -489,11 +446,11 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('تمت إضافة الذكر للمفضلة'),
-        backgroundColor: AppTheme.success,
+        backgroundColor: ThemeConstants.success,
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: AppTheme.radiusMd.radius,
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
       ),
     );
