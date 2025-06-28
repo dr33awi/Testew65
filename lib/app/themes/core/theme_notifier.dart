@@ -1,112 +1,57 @@
-// lib/app/themes/core/theme_notifier.dart (محسن)
+// lib/app/themes/core/theme_notifier.dart - عربي وداكن فقط
 import 'package:flutter/material.dart';
 import 'package:athkar_app/core/infrastructure/services/storage/storage_service.dart';
 
-/// مدير حالة الثيم الإسلامي المحسن
+/// مدير حالة الثيم الإسلامي - عربي وداكن فقط
 class ThemeNotifier extends ChangeNotifier {
   final StorageService _storage;
   
-  static const String _themeKey = 'app_theme_mode';
-  static const String _languageKey = 'app_language';
-  static const String _autoThemeKey = 'app_auto_theme';    // جديد
-  static const String _prayerThemeKey = 'app_prayer_theme'; // جديد
+  static const String _autoThemeKey = 'app_auto_theme';
+  static const String _prayerThemeKey = 'app_prayer_theme';
+  static const String _currentPrayerKey = 'app_current_prayer';
   
-  bool _isDarkMode = false;
-  String _language = 'ar';
-  bool _autoThemeEnabled = false;        // جديد - ثيم تلقائي
-  bool _prayerBasedTheme = false;        // جديد - ثيم حسب الصلاة
-  String _currentPrayer = 'general';     // جديد - الصلاة الحالية
+  bool _autoThemeEnabled = false;        // ثيم تلقائي حسب الوقت
+  bool _prayerBasedTheme = false;        // ثيم حسب الصلاة
+  String _currentPrayer = 'عام';         // الصلاة الحالية
   
   ThemeNotifier(this._storage) {
     _loadThemeSettings();
-    _setupAutoTheme(); // جديد
+    _setupAutoTheme();
   }
   
-  // ========== Getters المحسنة ==========
+  // ========== Getters ==========
   
-  bool get isDarkMode => _isDarkMode;
-  bool get isLightMode => !_isDarkMode;
-  String get language => _language;
-  bool get autoThemeEnabled => _autoThemeEnabled;        // جديد
-  bool get prayerBasedTheme => _prayerBasedTheme;        // جديد
-  String get currentPrayer => _currentPrayer;           // جديد
+  /// الثيم دائماً داكن
+  bool get isDarkMode => true;
+  bool get isLightMode => false;
   
-  ThemeMode get themeMode => _isDarkMode ? ThemeMode.dark : ThemeMode.light;
+  /// اللغة دائماً عربية
+  String get language => 'ar';
   
-  // ========== إدارة الثيم المحسنة ==========
+  bool get autoThemeEnabled => _autoThemeEnabled;
+  bool get prayerBasedTheme => _prayerBasedTheme;
+  String get currentPrayer => _currentPrayer;
   
-  /// تحميل إعدادات الثيم المحفوظة (محسن)
+  /// الثيم دائماً داكن
+  ThemeMode get themeMode => ThemeMode.dark;
+  
+  // ========== إدارة الثيم ==========
+  
+  /// تحميل إعدادات الثيم المحفوظة
   Future<void> _loadThemeSettings() async {
     try {
-      _isDarkMode = _storage.getBool(_themeKey) ?? false;
-      _language = _storage.getString(_languageKey) ?? 'ar';
-      _autoThemeEnabled = _storage.getBool(_autoThemeKey) ?? false;     // جديد
-      _prayerBasedTheme = _storage.getBool(_prayerThemeKey) ?? false;   // جديد
-      
-      // تطبيق الثيم التلقائي إذا كان مفعلاً
-      if (_autoThemeEnabled) {
-        _applyAutoTheme(notify: false);
-      }
+      _autoThemeEnabled = _storage.getBool(_autoThemeKey) ?? false;
+      _prayerBasedTheme = _storage.getBool(_prayerThemeKey) ?? false;
+      _currentPrayer = _storage.getString(_currentPrayerKey) ?? 'عام';
       
       notifyListeners();
-      debugPrint('ThemeNotifier: تم تحميل الإعدادات - داكن: $_isDarkMode، لغة: $_language، تلقائي: $_autoThemeEnabled');
+      debugPrint('ThemeNotifier: تم تحميل الإعدادات - تلقائي: $_autoThemeEnabled، حسب الصلاة: $_prayerBasedTheme');
     } catch (e) {
       debugPrint('خطأ في تحميل إعدادات الثيم: $e');
     }
   }
   
-  /// تبديل الثيم بين الفاتح والداكن (محسن)
-  Future<void> toggleTheme() async {
-    try {
-      // إيقاف الثيم التلقائي عند التبديل اليدوي
-      if (_autoThemeEnabled) {
-        await setAutoTheme(false);
-      }
-      
-      _isDarkMode = !_isDarkMode;
-      await _storage.setBool(_themeKey, _isDarkMode);
-      notifyListeners();
-      
-      debugPrint('ThemeNotifier: تم تغيير الثيم إلى: ${_isDarkMode ? "داكن" : "فاتح"}');
-    } catch (e) {
-      debugPrint('خطأ في تبديل الثيم: $e');
-      // الإرجاع للحالة السابقة في حالة الخطأ
-      _isDarkMode = !_isDarkMode;
-    }
-  }
-  
-  /// تعيين الثيم مباشرة (محسن)
-  Future<void> setThemeMode(ThemeMode mode) async {
-    try {
-      final isDark = mode == ThemeMode.dark;
-      if (_isDarkMode != isDark) {
-        // إيقاف الثيم التلقائي عند التعيين اليدوي
-        if (_autoThemeEnabled) {
-          await setAutoTheme(false);
-        }
-        
-        _isDarkMode = isDark;
-        await _storage.setBool(_themeKey, _isDarkMode);
-        notifyListeners();
-        
-        debugPrint('ThemeNotifier: تم تعيين الثيم إلى: ${_isDarkMode ? "داكن" : "فاتح"}');
-      }
-    } catch (e) {
-      debugPrint('خطأ في تعيين الثيم: $e');
-    }
-  }
-  
-  /// تعيين الثيم الفاتح
-  Future<void> setLightTheme() async {
-    await setThemeMode(ThemeMode.light);
-  }
-  
-  /// تعيين الثيم الداكن
-  Future<void> setDarkTheme() async {
-    await setThemeMode(ThemeMode.dark);
-  }
-  
-  // ========== الثيم التلقائي (جديد) ==========
+  // ========== الثيم التلقائي ==========
   
   /// تفعيل/إلغاء الثيم التلقائي
   Future<void> setAutoTheme(bool enabled) async {
@@ -127,23 +72,19 @@ class ThemeNotifier extends ChangeNotifier {
     }
   }
   
-  /// تطبيق الثيم التلقائي حسب الوقت
+  /// تطبيق الثيم التلقائي حسب الوقت (للتأثيرات البصرية فقط)
   void _applyAutoTheme({bool notify = true}) {
     if (!_autoThemeEnabled) return;
     
     final hour = DateTime.now().hour;
-    final shouldBeDark = hour < 6 || hour >= 19; // داكن من 7 مساءً إلى 6 صباحاً
     
-    if (_isDarkMode != shouldBeDark) {
-      _isDarkMode = shouldBeDark;
-      _storage.setBool(_themeKey, _isDarkMode); // حفظ بدون await للأداء
-      
-      if (notify) {
-        notifyListeners();
-      }
-      
-      debugPrint('ThemeNotifier: تم تطبيق الثيم التلقائي - ${_isDarkMode ? "داكن" : "فاتح"}');
+    // يمكن استخدام هذا لتغيير شدة الألوان أو التأثيرات البصرية
+    // بدلاً من تغيير الثيم من فاتح إلى داكن
+    if (notify) {
+      notifyListeners();
     }
+    
+    debugPrint('ThemeNotifier: تم تطبيق التأثيرات التلقائية للساعة: $hour');
   }
   
   /// إعداد مراقب الثيم التلقائي
@@ -156,7 +97,7 @@ class ThemeNotifier extends ChangeNotifier {
     });
   }
   
-  // ========== الثيم حسب الصلاة (جديد) ==========
+  // ========== الثيم حسب الصلاة ==========
   
   /// تفعيل/إلغاء الثيم حسب الصلاة
   Future<void> setPrayerBasedTheme(bool enabled) async {
@@ -174,77 +115,41 @@ class ThemeNotifier extends ChangeNotifier {
   }
   
   /// تحديث الصلاة الحالية
-  void updateCurrentPrayer(String prayerName) {
-    if (_currentPrayer != prayerName) {
-      _currentPrayer = prayerName;
-      
-      if (_prayerBasedTheme) {
-        notifyListeners();
-      }
-      
-      debugPrint('ThemeNotifier: تم تحديث الصلاة الحالية إلى: $prayerName');
-    }
-  }
-  
-  // ========== إدارة اللغة المحسنة ==========
-  
-  /// تغيير اللغة (محسن)
-  Future<void> setLanguage(String newLanguage) async {
+  Future<void> updateCurrentPrayer(String prayerName) async {
     try {
-      if (['ar', 'en'].contains(newLanguage) && _language != newLanguage) {
-        _language = newLanguage;
-        await _storage.setString(_languageKey, _language);
-        notifyListeners();
+      if (_currentPrayer != prayerName) {
+        _currentPrayer = prayerName;
+        await _storage.setString(_currentPrayerKey, _currentPrayer);
         
-        debugPrint('ThemeNotifier: تم تغيير اللغة إلى: $newLanguage');
+        if (_prayerBasedTheme) {
+          notifyListeners();
+        }
+        
+        debugPrint('ThemeNotifier: تم تحديث الصلاة الحالية إلى: $prayerName');
       }
     } catch (e) {
-      debugPrint('خطأ في تغيير اللغة: $e');
+      debugPrint('خطأ في تحديث الصلاة الحالية: $e');
     }
   }
   
-  /// تبديل اللغة بين العربية والإنجليزية
-  Future<void> toggleLanguage() async {
-    final newLanguage = _language == 'ar' ? 'en' : 'ar';
-    await setLanguage(newLanguage);
-  }
-  
-  // ========== دوال مساعدة جديدة ==========
-  
-  /// التحقق من إمكانية تطبيق الثيم التلقائي
-  bool get canApplyAutoTheme {
-    final hour = DateTime.now().hour;
-    final shouldBeDark = hour < 6 || hour >= 19;
-    return _isDarkMode != shouldBeDark;
-  }
+  // ========== دوال مساعدة ==========
   
   /// الحصول على معلومات الثيم الحالي
   Map<String, dynamic> get themeInfo => {
-    'isDarkMode': _isDarkMode,
-    'language': _language,
+    'isDarkMode': true,
+    'language': 'ar',
     'autoThemeEnabled': _autoThemeEnabled,
     'prayerBasedTheme': _prayerBasedTheme,
     'currentPrayer': _currentPrayer,
-    'canApplyAutoTheme': canApplyAutoTheme,
   };
   
-  /// الحصول على وقت التبديل التالي للثيم التلقائي
-  DateTime? get nextThemeSwitch {
+  /// الحصول على وقت التحديث التالي للثيم التلقائي
+  DateTime? get nextThemeUpdate {
     if (!_autoThemeEnabled) return null;
     
     final now = DateTime.now();
-    final hour = now.hour;
-    
-    if (hour < 6) {
-      // التبديل للفاتح في الساعة 6 صباحاً
-      return DateTime(now.year, now.month, now.day, 6);
-    } else if (hour < 19) {
-      // التبديل للداكن في الساعة 7 مساءً
-      return DateTime(now.year, now.month, now.day, 19);
-    } else {
-      // التبديل للفاتح في اليوم التالي الساعة 6 صباحاً
-      return DateTime(now.year, now.month, now.day + 1, 6);
-    }
+    // التحديث كل ساعة
+    return DateTime(now.year, now.month, now.day, now.hour + 1);
   }
   
   /// إعادة تطبيق الثيم بناءً على الإعدادات الحالية
@@ -261,21 +166,18 @@ class ThemeNotifier extends ChangeNotifier {
     }
   }
   
-  // ========== دوال الأدوات المحسنة ==========
+  // ========== دوال الأدوات ==========
   
-  /// إعادة تعيين الإعدادات للافتراضي (محسن)
+  /// إعادة تعيين الإعدادات للافتراضي
   Future<void> resetToDefaults() async {
     try {
-      _isDarkMode = false;
-      _language = 'ar';
       _autoThemeEnabled = false;
       _prayerBasedTheme = false;
-      _currentPrayer = 'general';
+      _currentPrayer = 'عام';
       
-      await _storage.setBool(_themeKey, _isDarkMode);
-      await _storage.setString(_languageKey, _language);
       await _storage.setBool(_autoThemeKey, _autoThemeEnabled);
       await _storage.setBool(_prayerThemeKey, _prayerBasedTheme);
+      await _storage.setString(_currentPrayerKey, _currentPrayer);
       
       notifyListeners();
       debugPrint('ThemeNotifier: تم إعادة تعيين جميع إعدادات الثيم للافتراضي');
@@ -287,35 +189,100 @@ class ThemeNotifier extends ChangeNotifier {
   /// نسخ الإعدادات الحالية
   Map<String, dynamic> exportSettings() {
     return {
-      'isDarkMode': _isDarkMode,
-      'language': _language,
       'autoThemeEnabled': _autoThemeEnabled,
       'prayerBasedTheme': _prayerBasedTheme,
       'currentPrayer': _currentPrayer,
-      'version': '1.0', // لضمان التوافق المستقبلي
+      'version': '1.0',
     };
   }
   
   /// استيراد إعدادات محفوظة
   Future<void> importSettings(Map<String, dynamic> settings) async {
     try {
-      _isDarkMode = settings['isDarkMode'] ?? false;
-      _language = settings['language'] ?? 'ar';
       _autoThemeEnabled = settings['autoThemeEnabled'] ?? false;
       _prayerBasedTheme = settings['prayerBasedTheme'] ?? false;
-      _currentPrayer = settings['currentPrayer'] ?? 'general';
+      _currentPrayer = settings['currentPrayer'] ?? 'عام';
       
       // حفظ الإعدادات الجديدة
-      await _storage.setBool(_themeKey, _isDarkMode);
-      await _storage.setString(_languageKey, _language);
       await _storage.setBool(_autoThemeKey, _autoThemeEnabled);
       await _storage.setBool(_prayerThemeKey, _prayerBasedTheme);
+      await _storage.setString(_currentPrayerKey, _currentPrayer);
       
       notifyListeners();
       debugPrint('ThemeNotifier: تم استيراد الإعدادات بنجاح');
     } catch (e) {
       debugPrint('خطأ في استيراد الإعدادات: $e');
     }
+  }
+  
+  /// الحصول على شدة اللون حسب الوقت (للتأثيرات البصرية)
+  double get timeBasedIntensity {
+    final hour = DateTime.now().hour;
+    
+    if (hour >= 6 && hour < 12) {
+      return 0.8; // صباح - شدة متوسطة
+    } else if (hour >= 12 && hour < 18) {
+      return 1.0; // نهار - شدة عالية
+    } else if (hour >= 18 && hour < 22) {
+      return 0.6; // مساء - شدة منخفضة
+    } else {
+      return 0.4; // ليل - شدة منخفضة جداً
+    }
+  }
+  
+  /// الحصول على نوع التأثير البصري حسب الوقت
+  String get currentTimeEffect {
+    final hour = DateTime.now().hour;
+    
+    if (hour >= 5 && hour < 7) {
+      return 'فجر'; // تأثيرات الفجر
+    } else if (hour >= 7 && hour < 12) {
+      return 'صباح'; // تأثيرات الصباح
+    } else if (hour >= 12 && hour < 15) {
+      return 'ظهر'; // تأثيرات الظهر
+    } else if (hour >= 15 && hour < 18) {
+      return 'عصر'; // تأثيرات العصر
+    } else if (hour >= 18 && hour < 20) {
+      return 'مغرب'; // تأثيرات المغرب
+    } else {
+      return 'ليل'; // تأثيرات الليل
+    }
+  }
+  
+  // ========== دوال الصلوات ==========
+  
+  /// قائمة الصلوات المتاحة
+  static const List<String> availablePrayers = [
+    'عام',
+    'الفجر',
+    'الشروق',
+    'الظهر',
+    'العصر',
+    'المغرب',
+    'العشاء',
+  ];
+  
+  /// التحقق من صحة اسم الصلاة
+  bool isValidPrayerName(String prayerName) {
+    return availablePrayers.contains(prayerName);
+  }
+  
+  /// الحصول على الصلاة التالية
+  String getNextPrayer() {
+    final currentIndex = availablePrayers.indexOf(_currentPrayer);
+    if (currentIndex == -1 || currentIndex == availablePrayers.length - 1) {
+      return availablePrayers[1]; // الفجر
+    }
+    return availablePrayers[currentIndex + 1];
+  }
+  
+  /// الحصول على الصلاة السابقة
+  String getPreviousPrayer() {
+    final currentIndex = availablePrayers.indexOf(_currentPrayer);
+    if (currentIndex <= 1) {
+      return availablePrayers.last; // العشاء
+    }
+    return availablePrayers[currentIndex - 1];
   }
   
   // ========== التنظيف ==========
@@ -327,25 +294,27 @@ class ThemeNotifier extends ChangeNotifier {
   }
 }
 
-/// Extension methods لسهولة الاستخدام (جديدة)
+/// Extension methods لسهولة الاستخدام
 extension ThemeNotifierExtensions on ThemeNotifier {
-  /// التحقق من كون الوقت الحالي مناسب للثيم الداكن
-  bool get isNightTime {
+  /// التحقق من كون الوقت الحالي مناسب للتأثيرات الهادئة
+  bool get isQuietTime {
     final hour = DateTime.now().hour;
-    return hour < 6 || hour >= 19;
+    return hour < 6 || hour >= 22;
   }
   
-  /// التحقق من كون الوقت الحالي مناسب للثيم الفاتح  
-  bool get isDayTime => !isNightTime;
+  /// التحقق من كون الوقت الحالي وقت نشاط
+  bool get isActiveTime => !isQuietTime;
   
   /// الحصول على اسم الثيم الحالي
   String get currentThemeName {
-    if (autoThemeEnabled) {
-      return 'تلقائي (${isDarkMode ? "داكن" : "فاتح"})';
+    if (autoThemeEnabled && prayerBasedTheme) {
+      return 'تلقائي + $currentPrayer';
+    } else if (autoThemeEnabled) {
+      return 'تلقائي ($currentTimeEffect)';
     } else if (prayerBasedTheme) {
-      return 'حسب الصلاة ($currentPrayer)';
+      return 'ثيم $currentPrayer';
     } else {
-      return isDarkMode ? 'داكن' : 'فاتح';
+      return 'ثيم داكن ثابت';
     }
   }
   
@@ -355,12 +324,33 @@ extension ThemeNotifierExtensions on ThemeNotifier {
     
     if (autoThemeEnabled) features.add('تلقائي');
     if (prayerBasedTheme) features.add('حسب الصلاة');
-    if (language == 'en') features.add('إنجليزي');
     
     if (features.isEmpty) {
-      return isDarkMode ? 'ثيم داكن' : 'ثيم فاتح';
+      return 'ثيم داكن ثابت';
     } else {
-      return '${isDarkMode ? "داكن" : "فاتح"} - ${features.join("، ")}';
+      return 'ثيم داكن - ${features.join("، ")}';
     }
+  }
+  
+  /// الحصول على درجة السطوع المناسبة للوقت الحالي
+  double get currentBrightness {
+    if (!autoThemeEnabled) return 1.0;
+    
+    final hour = DateTime.now().hour;
+    
+    if (hour >= 22 || hour < 6) {
+      return 0.3; // ليل - سطوع منخفض جداً
+    } else if (hour >= 6 && hour < 8) {
+      return 0.5; // فجر وصباح مبكر - سطوع منخفض
+    } else if (hour >= 8 && hour < 18) {
+      return 0.8; // نهار - سطوع متوسط
+    } else {
+      return 0.6; // مساء - سطوع منخفض نوعاً ما
+    }
+  }
+  
+  /// تحديد ما إذا كان يجب استخدام تأثيرات بصرية متقدمة
+  bool get shouldUseAdvancedEffects {
+    return autoThemeEnabled || prayerBasedTheme;
   }
 }

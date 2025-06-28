@@ -1,111 +1,94 @@
-// lib/app/themes/core/app_colors.dart (محسن)
+// lib/app/themes/core/app_colors.dart - عربي وداكن فقط
 import 'package:flutter/material.dart';
 
-/// نظام الألوان الإسلامي المحسن - مع الحفاظ على الأسماء الأصلية
+/// نظام الألوان الإسلامي - الوضع الداكن فقط
 class AppColors {
   AppColors._();
   
-  // ========== الألوان الأساسية المحسنة ==========
+  // ========== الألوان الأساسية الإسلامية ==========
   
-  /// اللون الأساسي - الأخضر الإسلامي التقليدي (محسن)
-  static const Color primary = Color(0xFF059669);      // تم تحسينه من 0xFF0D7377
-  static const Color primaryLight = Color(0xFF10B981); // محسن للوضوح
-  static const Color primaryDark = Color(0xFF047857);  // أغمق قليلاً
+  /// اللون الأساسي - الأخضر الإسلامي التقليدي
+  static const Color primary = Color(0xFF10B981);
+  static const Color primaryLight = Color(0xFF34D399);
+  static const Color primaryDark = Color(0xFF059669);
   
-  /// اللون الثانوي - الذهبي الإسلامي (محسن)
-  static const Color secondary = Color(0xFFD97706);     // تم تحسينه من 0xFFFFB74D
-  static const Color secondaryLight = Color(0xFFF59E0B);
-  static const Color secondaryDark = Color(0xFFB45309);
+  /// اللون الثانوي - الذهبي الإسلامي
+  static const Color secondary = Color(0xFFF59E0B);
+  static const Color secondaryLight = Color(0xFFFBBF24);
+  static const Color secondaryDark = Color(0xFFD97706);
   
-  /// اللون المساعد - البنفسجي الهادئ (كما هو)
-  static const Color accent = Color(0xFF6366F1);
-  static const Color accentLight = Color(0xFF818CF8);
-  static const Color accentDark = Color(0xFF4338CA);
+  /// اللون المساعد - البنفسجي الهادئ
+  static const Color accent = Color(0xFF8B5CF6);
+  static const Color accentLight = Color(0xFFA78BFA);
+  static const Color accentDark = Color(0xFF7C3AED);
   
-  /// لون إضافي جديد - البني الدافئ الإسلامي
-  static const Color tertiary = Color(0xFF92400E);
-  static const Color tertiaryLight = Color(0xFFA16207);
-  static const Color tertiaryDark = Color(0xFF78350F);
+  /// لون إضافي - البني الدافئ الإسلامي
+  static const Color tertiary = Color(0xFFA16207);
+  static const Color tertiaryLight = Color(0xFFCA8A04);
+  static const Color tertiaryDark = Color(0xFF92400E);
   
-  // ========== ألوان الحالة المحسنة ==========
+  // ========== ألوان الحالة ==========
   
-  static const Color success = Color(0xFF059669);    // استخدام الأخضر الإسلامي
-  static const Color warning = Color(0xFFD97706);    // استخدام الذهبي
-  static const Color error = Color(0xFFDC2626);      // أحمر محسن
-  static const Color info = Color(0xFF2563EB);       // كما هو
+  static const Color success = Color(0xFF10B981);    // أخضر إسلامي
+  static const Color warning = Color(0xFFF59E0B);    // ذهبي
+  static const Color error = Color(0xFFEF4444);
+  static const Color info = Color(0xFF3B82F6);
   
-  // ========== النصوص المحسنة للقراءة ==========
+  // ========== النصوص للوضع الداكن فقط ==========
   
-  /// النصوص العادية
-  static const Color textPrimary = Color(0xFF1F2937);
-  static const Color textSecondary = Color(0xFF4B5563);   // محسن للوضوح
-  static const Color textTertiary = Color(0xFF6B7280);    // محسن
-  static const Color textHint = Color(0xFF9CA3AF);
-  static const Color textDisabled = Color(0xFFD1D5DB);
+  static const Color textPrimary = Color(0xFFF9FAFB);
+  static const Color textSecondary = Color(0xFFD1D5DB);
+  static const Color textTertiary = Color(0xFF9CA3AF);
+  static const Color textHint = Color(0xFF6B7280);
+  static const Color textDisabled = Color(0xFF4B5563);
   
-  /// نصوص خاصة للمحتوى الديني (جديد)
-  static const Color textReligious = Color(0xFF111827);   // أغمق للنصوص المقدسة
-  static const Color textArabic = Color(0xFF1F2937);      // للنصوص العربية
+  /// نصوص خاصة للمحتوى الديني
+  static const Color textReligious = Color(0xFFFFFFFF);   // أبيض للنصوص المقدسة
+  static const Color textArabic = Color(0xFFF9FAFB);      // للنصوص العربية
   
-  /// النصوص للوضع الداكن (محسنة)
-  static const Color textPrimaryDark = Color(0xFFF9FAFB);
-  static const Color textSecondaryDark = Color(0xFFD1D5DB);
-  static const Color textTertiaryDark = Color(0xFF9CA3AF);
-  static const Color textHintDark = Color(0xFF6B7280);
-  static const Color textDisabledDark = Color(0xFF4B5563);
-  static const Color textReligiousDark = Color(0xFFFFFFFF); // أبيض للنصوص المقدسة
+  // ========== الخلفيات الداكنة فقط ==========
   
-  // ========== الخلفيات المحسنة ==========
+  static const Color background = Color(0xFF111827);
+  static const Color surface = Color(0xFF1F2937);
+  static const Color card = Color(0xFF374151);
   
-  /// الوضع الفاتح
-  static const Color backgroundLight = Color(0xFFFAFAFA);
-  static const Color surfaceLight = Color(0xFFFFFFFF);
-  static const Color cardLight = Color(0xFFFFFFFF);
-  
-  /// الوضع الداكن (ألوان دافئة إسلامية)
-  static const Color backgroundDark = Color(0xFF1A1F2E);   // أزرق داكن دافئ
-  static const Color surfaceDark = Color(0xFF242937);      // محسن للعيون
-  static const Color cardDark = Color(0xFF2D3347);         // متباين أكثر
-  
-  /// خلفيات خاصة للمحتوى الديني (جديد)
-  static const Color quranBackground = Color(0xFFFEF3C7);  // كريمي للقرآن
-  static const Color dhikrBackground = Color(0xFFD1FAE5);  // أخضر فاتح للأذكار
+  /// خلفيات خاصة للمحتوى الديني
+  static const Color quranBackground = Color(0xFF1E3A2E);    // أخضر داكن للقرآن
+  static const Color dhikrBackground = Color(0xFF1A2E1A);    // أخضر داكن أغمق للأذكار
+  static const Color hadithBackground = Color(0xFF2D1B69);   // بنفسجي داكن للأحاديث
+  static const Color duaBackground = Color(0xFF92400E);      // بني داكن للأدعية
   
   // ========== الحدود والفواصل ==========
   
-  static const Color divider = Color(0xFFE5E7EB);
-  static const Color border = Color(0xFFD1D5DB);
+  static const Color divider = Color(0xFF4B5563);
+  static const Color border = Color(0xFF6B7280);
   static const Color outline = Color(0xFF9CA3AF);
   
-  static const Color dividerDark = Color(0xFF374151);
-  static const Color borderDark = Color(0xFF4B5563);
-  static const Color outlineDark = Color(0xFF6B7280);
-  
-  // ========== ألوان الصلوات المحسنة ==========
+  // ========== ألوان الصلوات ==========
   
   static const Map<String, Color> prayerColors = {
-    'fajr': Color(0xFF6366F1),      // بنفسجي للفجر
-    'sunrise': Color(0xFFF59E0B),   // ذهبي للشروق
-    'dhuhr': Color(0xFFEF4444),     // أحمر للظهر (حرارة الشمس)
-    'asr': Color(0xFFD97706),       // برتقالي للعصر
-    'maghrib': Color(0xFFEC4899),   // وردي للمغرب
-    'isha': Color(0xFF4338CA),      // بنفسجي داكن للعشاء
+    'الفجر': Color(0xFF8B5CF6),        // بنفسجي للفجر
+    'الشروق': Color(0xFFF59E0B),       // ذهبي للشروق
+    'الظهر': Color(0xFFEF4444),        // أحمر للظهر (حرارة الشمس)
+    'العصر': Color(0xFFF97316),        // برتقالي للعصر
+    'المغرب': Color(0xFFEC4899),       // وردي للمغرب
+    'العشاء': Color(0xFF6366F1),       // بنفسجي داكن للعشاء
   };
   
-  // ========== ألوان الفئات المحسنة ==========
+  // ========== ألوان الفئات ==========
   
   static const Map<String, Color> categoryColors = {
-    'prayer_times': primary,
-    'athkar': accent,
-    'qibla': tertiary,
-    'tasbih': success,
-    'quran': secondary,
-    'dua': warning,
-    'favorites': error,
-    'settings': info,
+    'اوقات_الصلاة': primary,
+    'الاذكار': accent,
+    'القبلة': tertiary,
+    'التسبيح': success,
+    'القران': secondary,
+    'الادعية': warning,
+    'المفضلة': error,
+    'الاعدادات': info,
   };
   
-  // ========== التدرجات المحسنة والمبسطة ==========
+  // ========== التدرجات ==========
   
   static const LinearGradient primaryGradient = LinearGradient(
     colors: [primary, primaryDark],
@@ -131,14 +114,13 @@ class AppColors {
     end: Alignment.bottomCenter,
   );
   
-  // ========== تدرجات الأوقات المبسطة ==========
+  // ========== تدرجات الأوقات ==========
   
-  /// تدرج حسب وقت اليوم (مبسط ومحسن)
+  /// تدرج حسب وقت اليوم
   static LinearGradient getTimeBasedGradient({DateTime? dateTime}) {
     final now = dateTime ?? DateTime.now();
     final hour = now.hour;
     
-    // مبسط جداً: 3 أوقات فقط
     if (hour >= 6 && hour < 12) {
       // الصباح - ذهبي
       return secondaryGradient;
@@ -151,11 +133,11 @@ class AppColors {
     }
   }
   
-  // ========== دوال مساعدة محسنة ==========
+  // ========== دوال مساعدة ==========
   
   /// الحصول على لون الصلاة
   static Color getPrayerColor(String prayerName) {
-    return prayerColors[prayerName.toLowerCase()] ?? primary;
+    return prayerColors[prayerName] ?? primary;
   }
   
   /// الحصول على لون الفئة
@@ -165,30 +147,29 @@ class AppColors {
   
   /// الحصول على لون النص المناسب للخلفية
   static Color getTextColorForBackground(Color backgroundColor) {
-    // حساب السطوع
     final luminance = backgroundColor.computeLuminance();
-    return luminance > 0.5 ? textPrimary : textPrimaryDark;
+    return luminance > 0.3 ? Color(0xFF111827) : textPrimary;
   }
   
   /// الحصول على خلفية مناسبة للمحتوى الديني
-  static Color getReligiousBackground(String type, {bool isDark = false}) {
-    if (isDark) {
-      return surfaceDark;
-    }
-    
-    switch (type.toLowerCase()) {
-      case 'quran':
-      case 'ayah':
+  static Color getReligiousBackground(String type) {
+    switch (type) {
+      case 'قران':
+      case 'آية':
         return quranBackground;
-      case 'dhikr':
-      case 'adhkar':
+      case 'ذكر':
+      case 'اذكار':
         return dhikrBackground;
+      case 'حديث':
+        return hadithBackground;
+      case 'دعاء':
+        return duaBackground;
       default:
-        return surfaceLight;
+        return surface;
     }
   }
   
-  // ========== دوال التعديل المبسطة ==========
+  // ========== دوال التعديل ==========
   
   static Color lighten(Color color, [double amount = 0.1]) {
     final hsl = HSLColor.fromColor(color);
@@ -204,18 +185,17 @@ class AppColors {
     return color.withValues(alpha: opacity);
   }
   
-  // ========== ألوان سريعة للاستخدام المباشر ==========
+  // ========== ألوان سريعة ==========
   
-  /// للاستخدام السريع في الواجهات
   static const Color islamicGreen = primary;
   static const Color islamicGold = secondary;
   static const Color islamicBrown = tertiary;
-  static const Color prayerNext = Color(0xFF10B981);    // للصلاة القادمة
-  static const Color dhikrComplete = Color(0xFF059669); // للأذكار المكتملة
-  static const Color qiblaDirection = Color(0xFFD97706); // لاتجاه القبلة
+  static const Color prayerNext = Color(0xFF22C55E);        // للصلاة القادمة
+  static const Color dhikrComplete = Color(0xFF10B981);     // للأذكار المكتملة
+  static const Color qiblaDirection = Color(0xFFF59E0B);    // لاتجاه القبلة
 }
 
-/// Extension methods للألوان (محسنة ومبسطة)
+/// Extension methods للألوان
 extension ColorExtensions on Color {
   /// تفتيح اللون
   Color lighten([double amount = 0.1]) => AppColors.lighten(this, amount);
@@ -223,7 +203,7 @@ extension ColorExtensions on Color {
   /// تغميق اللون
   Color darken([double amount = 0.1]) => AppColors.darken(this, amount);
   
-  /// تحويل إلى MaterialColor (محسن)
+  /// تحويل إلى MaterialColor
   MaterialColor toMaterialColor() {
     final Map<int, Color> swatch = {};
     final base = HSLColor.fromColor(this);
@@ -232,7 +212,7 @@ extension ColorExtensions on Color {
       final lightness = (0.9 - (i * 0.1)).clamp(0.0, 1.0);
       swatch[i * 100] = base.withLightness(lightness).toColor();
     }
-    swatch[500] = this; // اللون الأساسي
+    swatch[500] = this;
     
     return MaterialColor(red << 16 | green << 8 | blue, swatch);
   }
@@ -242,5 +222,5 @@ extension ColorExtensions on Color {
   bool get isDark => !isLight;
   
   /// الحصول على لون النص المناسب
-  Color get contrastingTextColor => isLight ? AppColors.textPrimary : AppColors.textPrimaryDark;
+  Color get contrastingTextColor => isLight ? Color(0xFF111827) : AppColors.textPrimary;
 }

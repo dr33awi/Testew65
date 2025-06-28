@@ -1,4 +1,4 @@
-// lib/app/themes/widgets/unified_widgets.dart
+// lib/app/themes/widgets/unified_widgets.dart - عربي وداكن فقط
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../core/app_colors.dart';
@@ -157,12 +157,12 @@ class AppCard extends StatelessWidget {
         
       case CardStyle.normal:
         return BoxDecoration(
-          color: Theme.of(context).cardColor,
+          color: AppColors.card,
           borderRadius: BorderRadius.circular(
             borderRadius ?? AppThemeConstants.radiusLg,
           ),
           border: Border.all(
-            color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
+            color: AppColors.divider.withValues(alpha: 0.3),
             width: 1,
           ),
           boxShadow: AppThemeConstants.shadowSm,
@@ -620,7 +620,7 @@ class AppButton extends StatelessWidget {
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor ?? AppColors.primary,
-          foregroundColor: foregroundColor ?? Colors.white,
+          foregroundColor: foregroundColor ?? Colors.black,
           shape: RoundedRectangleBorder(
             borderRadius: borderRadius ?? 
                 BorderRadius.circular(AppThemeConstants.radiusMd),
@@ -637,7 +637,7 @@ class AppButton extends StatelessWidget {
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    foregroundColor ?? Colors.white,
+                    foregroundColor ?? Colors.black,
                   ),
                 ),
               )
@@ -671,7 +671,7 @@ class _PrimaryButton extends AppButton {
     super.isFullWidth,
   }) : super(
     backgroundColor: backgroundColor ?? AppColors.primary,
-    foregroundColor: Colors.white,
+    foregroundColor: Colors.black,
   );
 }
 
@@ -684,7 +684,7 @@ class _SecondaryButton extends AppButton {
     super.isFullWidth,
   }) : super(
     backgroundColor: AppColors.secondary,
-    foregroundColor: Colors.white,
+    foregroundColor: Colors.black,
   );
 }
 
@@ -833,7 +833,7 @@ class CardAction extends StatelessWidget {
                 icon,
                 size: AppThemeConstants.iconSm,
                 color: isPrimary 
-                    ? Colors.white 
+                    ? Colors.black
                     : color ?? AppColors.textSecondary,
               ),
               const SizedBox(width: AppThemeConstants.space1),
@@ -841,7 +841,7 @@ class CardAction extends StatelessWidget {
                 label,
                 style: AppTextStyles.labelSmall.copyWith(
                   color: isPrimary 
-                      ? Colors.white 
+                      ? Colors.black
                       : color ?? AppColors.textSecondary,
                   fontWeight: isPrimary 
                       ? AppTextStyles.semiBold 
@@ -908,12 +908,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: leading,
       actions: actions?.map((action) => action).toList(),
       bottom: bottom,
-      systemOverlayStyle: SystemUiOverlayStyle(
+      systemOverlayStyle: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: 
-            Theme.of(context).brightness == Brightness.dark 
-                ? Brightness.light 
-                : Brightness.dark,
+        statusBarIconBrightness: Brightness.light,
       ),
     );
   }
@@ -1006,7 +1003,7 @@ class AppLoading extends StatelessWidget {
     Color? color,
   }) {
     return AppLoading(
-      message: message,
+      message: message ?? 'جاري التحميل...',
       size: LoadingSize.large,
       color: color,
     );
@@ -1105,7 +1102,7 @@ class AppEmptyState extends StatelessWidget {
       message: message,
       icon: Icons.inbox_outlined,
       iconColor: AppColors.textTertiary,
-      actionText: actionText,
+      actionText: actionText ?? 'إعادة المحاولة',
       onAction: onAction,
     );
   }

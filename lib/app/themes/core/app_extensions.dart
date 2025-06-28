@@ -1,4 +1,4 @@
-// lib/app/themes/core/app_extensions.dart
+// lib/app/themes/core/app_extensions.dart - عربي وداكن فقط
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_text_styles.dart';
@@ -11,8 +11,9 @@ extension ThemeExtensions on BuildContext {
   
   ThemeData get theme => Theme.of(this);
   
-  bool get isDarkMode => theme.brightness == Brightness.dark;
-  bool get isLightMode => !isDarkMode;
+  /// الثيم دائماً داكن
+  bool get isDarkMode => true;
+  bool get isLightMode => false;
   
   // ========== الألوان ==========
   
@@ -29,34 +30,18 @@ extension ThemeExtensions on BuildContext {
   Color get infoColor => AppColors.info;
   
   /// ألوان النصوص
-  Color get textPrimaryColor => isDarkMode 
-      ? AppColors.textPrimaryDark 
-      : AppColors.textPrimary;
-  Color get textSecondaryColor => isDarkMode 
-      ? AppColors.textSecondaryDark 
-      : AppColors.textSecondary;
-  Color get textTertiaryColor => isDarkMode 
-      ? AppColors.textTertiaryDark 
-      : AppColors.textTertiary;
+  Color get textPrimaryColor => AppColors.textPrimary;
+  Color get textSecondaryColor => AppColors.textSecondary;
+  Color get textTertiaryColor => AppColors.textTertiary;
   
   /// ألوان الخلفيات
-  Color get backgroundColor => isDarkMode 
-      ? AppColors.backgroundDark 
-      : AppColors.backgroundLight;
-  Color get surfaceColor => isDarkMode 
-      ? AppColors.surfaceDark 
-      : AppColors.surfaceLight;
-  Color get cardColor => isDarkMode 
-      ? AppColors.cardDark 
-      : AppColors.cardLight;
+  Color get backgroundColor => AppColors.background;
+  Color get surfaceColor => AppColors.surface;
+  Color get cardColor => AppColors.card;
   
   /// ألوان الحدود
-  Color get dividerColor => isDarkMode 
-      ? AppColors.dividerDark 
-      : AppColors.divider;
-  Color get borderColor => isDarkMode 
-      ? AppColors.borderDark 
-      : AppColors.border;
+  Color get dividerColor => AppColors.divider;
+  Color get borderColor => AppColors.border;
   
   /// الحصول على لون الصلاة
   Color getPrayerColor(String prayerName) {
@@ -74,10 +59,6 @@ extension ThemeExtensions on BuildContext {
   LinearGradient get secondaryGradient => AppColors.secondaryGradient;
   LinearGradient get accentGradient => AppColors.accentGradient;
   LinearGradient get tertiaryGradient => AppColors.tertiaryGradient;
-  LinearGradient get successGradient => AppColors.successGradient;
-  LinearGradient get warningGradient => AppColors.warningGradient;
-  LinearGradient get errorGradient => AppColors.errorGradient;
-  LinearGradient get infoGradient => AppColors.infoGradient;
   
   /// تدرج حسب الوقت
   LinearGradient getTimeBasedGradient({DateTime? dateTime}) {
@@ -142,23 +123,17 @@ extension IconExtensions on BuildContext {
   
   /// الحصول على أيقونة الصلاة
   IconData getPrayerIcon(String prayerName) {
-    switch (prayerName.toLowerCase()) {
-      case 'fajr':
+    switch (prayerName) {
       case 'الفجر':
         return Icons.wb_twilight_rounded;
-      case 'dhuhr':
       case 'الظهر':
         return Icons.wb_sunny_rounded;
-      case 'asr':
       case 'العصر':
         return Icons.wb_cloudy_rounded;
-      case 'maghrib':
       case 'المغرب':
         return Icons.wb_twilight_rounded;
-      case 'isha':
       case 'العشاء':
         return Icons.nights_stay_rounded;
-      case 'sunrise':
       case 'الشروق':
         return Icons.flare_rounded;
       default:
@@ -169,21 +144,21 @@ extension IconExtensions on BuildContext {
   /// الحصول على أيقونة الفئة
   IconData getCategoryIcon(String categoryId) {
     switch (categoryId) {
-      case 'prayer_times':
+      case 'اوقات_الصلاة':
         return Icons.mosque_rounded;
-      case 'athkar':
+      case 'الاذكار':
         return Icons.menu_book_rounded;
-      case 'qibla':
+      case 'القبلة':
         return Icons.explore_rounded;
-      case 'tasbih':
+      case 'التسبيح':
         return Icons.touch_app_rounded;
-      case 'quran':
+      case 'القران':
         return Icons.book_rounded;
-      case 'dua':
+      case 'الادعية':
         return Icons.favorite_rounded;
-      case 'favorites':
+      case 'المفضلة':
         return Icons.bookmark_rounded;
-      case 'settings':
+      case 'الاعدادات':
         return Icons.settings_rounded;
       default:
         return Icons.circle_rounded;
@@ -378,7 +353,7 @@ class AppInfoDialog {
             ),
             child: Text(
               confirmText,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.black),
             ),
           ),
         ],
@@ -427,7 +402,7 @@ class AppInfoDialog {
                   ),
                   child: Text(
                     action.label,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.black),
                   ),
                 )
               : TextButton(
@@ -480,21 +455,21 @@ class CategoryHelper {
   /// الحصول على أيقونة الفئة
   static IconData getCategoryIcon(String categoryId) {
     switch (categoryId) {
-      case 'prayer_times':
+      case 'اوقات_الصلاة':
         return Icons.mosque_rounded;
-      case 'athkar':
+      case 'الاذكار':
         return Icons.menu_book_rounded;
-      case 'qibla':
+      case 'القبلة':
         return Icons.explore_rounded;
-      case 'tasbih':
+      case 'التسبيح':
         return Icons.touch_app_rounded;
-      case 'quran':
+      case 'القران':
         return Icons.book_rounded;
-      case 'dua':
+      case 'الادعية':
         return Icons.favorite_rounded;
-      case 'favorites':
+      case 'المفضلة':
         return Icons.bookmark_rounded;
-      case 'settings':
+      case 'الاعدادات':
         return Icons.settings_rounded;
       default:
         return Icons.circle_rounded;
@@ -504,21 +479,21 @@ class CategoryHelper {
   /// الحصول على وصف الفئة
   static String getCategoryDescription(String categoryId) {
     switch (categoryId) {
-      case 'prayer_times':
+      case 'اوقات_الصلاة':
         return 'أوقات الصلوات الخمس';
-      case 'athkar':
+      case 'الاذكار':
         return 'أذكار الصباح والمساء';
-      case 'qibla':
+      case 'القبلة':
         return 'البوصلة الإسلامية';
-      case 'tasbih':
+      case 'التسبيح':
         return 'تسبيح رقمي';
-      case 'quran':
+      case 'القران':
         return 'القرآن الكريم';
-      case 'dua':
+      case 'الادعية':
         return 'الأدعية المأثورة';
-      case 'favorites':
+      case 'المفضلة':
         return 'المحفوظات المفضلة';
-      case 'settings':
+      case 'الاعدادات':
         return 'إعدادات التطبيق';
       default:
         return '';
@@ -528,11 +503,11 @@ class CategoryHelper {
   /// الحصول على الوقت الافتراضي للتذكير
   static TimeOfDay getDefaultReminderTime(String categoryId) {
     switch (categoryId) {
-      case 'morning':
+      case 'صباح':
         return const TimeOfDay(hour: 7, minute: 0);
-      case 'evening':
+      case 'مساء':
         return const TimeOfDay(hour: 18, minute: 0);
-      case 'night':
+      case 'ليل':
         return const TimeOfDay(hour: 21, minute: 0);
       default:
         return const TimeOfDay(hour: 8, minute: 0);
@@ -541,7 +516,7 @@ class CategoryHelper {
   
   /// هل يجب تفعيل التذكير تلقائياً
   static bool shouldAutoEnable(String categoryId) {
-    return ['morning', 'evening'].contains(categoryId);
+    return ['صباح', 'مساء'].contains(categoryId);
   }
 }
 
@@ -552,17 +527,17 @@ class QuoteHelper {
   /// الحصول على ألوان الاقتباس
   static List<Color> getQuoteColors(BuildContext context, String type) {
     switch (type) {
-      case 'verse':
+      case 'آية':
         return [
           context.primaryColor,
           context.primaryColor.darken(0.2),
         ];
-      case 'hadith':
+      case 'حديث':
         return [
           context.accentColor,
           context.accentColor.darken(0.2),
         ];
-      case 'dua':
+      case 'دعاء':
         return [
           context.tertiaryColor,
           context.tertiaryColor.darken(0.2),

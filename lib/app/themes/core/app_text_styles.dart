@@ -1,23 +1,23 @@
-// lib/app/themes/core/app_text_styles.dart (محسن)
+// lib/app/themes/core/app_text_styles.dart - عربي فقط
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
-/// نظام الخطوط الإسلامي المحسن - مع الحفاظ على الأسماء الأصلية
+/// نظام الخطوط الإسلامي العربي
 class AppTextStyles {
   AppTextStyles._();
   
-  // ========== الخطوط المحسنة ==========
+  // ========== الخطوط العربية ==========
   
-  /// خط النص الأساسي (محسن للعربية)
-  static const String primaryFontFamily = 'Tajawal';    // محسن من Cairo
+  /// خط النص الأساسي العربي
+  static const String primaryFontFamily = 'Tajawal';
   
-  /// خط النص الثانوي (للنصوص الدينية)
-  static const String secondaryFontFamily = 'Amiri Quran'; // محسن من Amiri
+  /// خط النصوص الدينية
+  static const String secondaryFontFamily = 'Amiri Quran';
   
-  /// خط الأرقام (للعدادات والأوقات)
-  static const String numbersFontFamily = 'Cairo';      // مناسب للأرقام
+  /// خط الأرقام والعدادات
+  static const String numbersFontFamily = 'Cairo';
   
-  // ========== أوزان الخطوط (كما هي) ==========
+  // ========== أوزان الخطوط ==========
   
   static const FontWeight thin = FontWeight.w100;
   static const FontWeight extraLight = FontWeight.w200;
@@ -29,7 +29,7 @@ class AppTextStyles {
   static const FontWeight extraBold = FontWeight.w800;
   static const FontWeight black = FontWeight.w900;
   
-  // ========== أحجام الخطوط المحسنة ==========
+  // ========== أحجام الخطوط المحسنة للعربية ==========
   
   static const double size10 = 10.0;
   static const double size12 = 12.0;
@@ -48,104 +48,104 @@ class AppTextStyles {
   // ========== ارتفاع الأسطر المحسن للعربية ==========
   
   static const double lineHeightTight = 1.2;    // للعناوين
-  static const double lineHeightNormal = 1.5;   // محسن للعربية (كان 1.4)
-  static const double lineHeightRelaxed = 1.7;  // محسن للنصوص الطويلة
+  static const double lineHeightNormal = 1.5;   // للنصوص العادية
+  static const double lineHeightRelaxed = 1.7;  // للنصوص الطويلة
   static const double lineHeightLoose = 2.0;    // للنصوص الدينية
   
-  // ========== تباعد الأحرف ==========
+  // ========== تباعد الأحرف المحسن للعربية ==========
   
-  static const double letterSpacingTight = -0.3;   // محسن
+  static const double letterSpacingTight = -0.3;
   static const double letterSpacingNormal = 0.0;
-  static const double letterSpacingWide = 0.3;     // محسن للعربية
-  static const double letterSpacingWider = 0.6;    // محسن
+  static const double letterSpacingWide = 0.3;
+  static const double letterSpacingWider = 0.6;
   
-  // ========== العناوين الرئيسية المحسنة ==========
+  // ========== العناوين الرئيسية ==========
   
-  /// عنوان كبير جداً (محسن)
+  /// عنوان كبير جداً
   static const TextStyle displayLarge = TextStyle(
     fontFamily: primaryFontFamily,
-    fontSize: size60,        // مصغر قليلاً من 72
+    fontSize: size60,
     fontWeight: bold,
     height: lineHeightTight,
     letterSpacing: letterSpacingTight,
     color: AppColors.textPrimary,
   );
   
-  /// عنوان كبير (محسن)
+  /// عنوان كبير
   static const TextStyle displayMedium = TextStyle(
     fontFamily: primaryFontFamily,
-    fontSize: size48,        // مصغر قليلاً من 60
+    fontSize: size48,
     fontWeight: bold,
     height: lineHeightTight,
     letterSpacing: letterSpacingTight,
     color: AppColors.textPrimary,
   );
   
-  /// عنوان متوسط (محسن)
+  /// عنوان متوسط
   static const TextStyle displaySmall = TextStyle(
     fontFamily: primaryFontFamily,
-    fontSize: size36,        // مصغر قليلاً من 48
+    fontSize: size36,
     fontWeight: semiBold,
     height: lineHeightNormal,
     letterSpacing: letterSpacingNormal,
     color: AppColors.textPrimary,
   );
   
-  // ========== العناوين الفرعية المحسنة ==========
+  // ========== العناوين الفرعية ==========
   
-  /// عنوان رئيسي للشاشات (محسن)
+  /// عنوان رئيسي للشاشات
   static const TextStyle headlineLarge = TextStyle(
     fontFamily: primaryFontFamily,
-    fontSize: size32,        // مصغر من 36
+    fontSize: size32,
     fontWeight: bold,
     height: lineHeightNormal,
     letterSpacing: letterSpacingNormal,
     color: AppColors.textPrimary,
   );
   
-  /// عنوان فرعي كبير (محسن)
+  /// عنوان فرعي كبير
   static const TextStyle headlineMedium = TextStyle(
     fontFamily: primaryFontFamily,
-    fontSize: size24,        // مناسب للعربية
+    fontSize: size24,
     fontWeight: semiBold,
     height: lineHeightNormal,
     letterSpacing: letterSpacingNormal,
     color: AppColors.textPrimary,
   );
   
-  /// عنوان فرعي صغير (محسن)
+  /// عنوان فرعي صغير
   static const TextStyle headlineSmall = TextStyle(
     fontFamily: primaryFontFamily,
-    fontSize: size20,        // مصغر من 28
+    fontSize: size20,
     fontWeight: semiBold,
     height: lineHeightNormal,
     letterSpacing: letterSpacingNormal,
     color: AppColors.textPrimary,
   );
   
-  // ========== عناوين الأقسام المحسنة ==========
+  // ========== عناوين الأقسام ==========
   
-  /// عنوان قسم كبير (محسن)
+  /// عنوان قسم كبير
   static const TextStyle titleLarge = TextStyle(
     fontFamily: primaryFontFamily,
-    fontSize: size20,        // مناسب للعربية
+    fontSize: size20,
     fontWeight: semiBold,
     height: lineHeightNormal,
     letterSpacing: letterSpacingNormal,
     color: AppColors.textPrimary,
   );
   
-  /// عنوان قسم متوسط (محسن)
+  /// عنوان قسم متوسط
   static const TextStyle titleMedium = TextStyle(
     fontFamily: primaryFontFamily,
-    fontSize: size18,        // محسن
+    fontSize: size18,
     fontWeight: medium,
     height: lineHeightNormal,
     letterSpacing: letterSpacingNormal,
     color: AppColors.textPrimary,
   );
   
-  /// عنوان قسم صغير (محسن)
+  /// عنوان قسم صغير
   static const TextStyle titleSmall = TextStyle(
     fontFamily: primaryFontFamily,
     fontSize: size16,
@@ -155,29 +155,29 @@ class AppTextStyles {
     color: AppColors.textPrimary,
   );
   
-  // ========== النصوص الأساسية المحسنة ==========
+  // ========== النصوص الأساسية ==========
   
-  /// نص كبير (محسن للعربية)
+  /// نص كبير
   static const TextStyle bodyLarge = TextStyle(
     fontFamily: primaryFontFamily,
-    fontSize: size16,        // مناسب للقراءة
+    fontSize: size16,
     fontWeight: regular,
-    height: lineHeightRelaxed, // محسن للعربية
+    height: lineHeightRelaxed,
     letterSpacing: letterSpacingNormal,
     color: AppColors.textPrimary,
   );
   
-  /// نص متوسط (النص الأساسي - محسن)
+  /// نص متوسط (النص الأساسي)
   static const TextStyle bodyMedium = TextStyle(
     fontFamily: primaryFontFamily,
     fontSize: size14,
     fontWeight: regular,
-    height: lineHeightNormal,  // محسن للعربية
+    height: lineHeightNormal,
     letterSpacing: letterSpacingNormal,
     color: AppColors.textPrimary,
   );
   
-  /// نص صغير (محسن)
+  /// نص صغير
   static const TextStyle bodySmall = TextStyle(
     fontFamily: primaryFontFamily,
     fontSize: size12,
@@ -187,9 +187,9 @@ class AppTextStyles {
     color: AppColors.textSecondary,
   );
   
-  // ========== النصوص الإضافية المحسنة ==========
+  // ========== النصوص الإضافية ==========
   
-  /// تسمية كبيرة (محسن)
+  /// تسمية كبيرة
   static const TextStyle labelLarge = TextStyle(
     fontFamily: primaryFontFamily,
     fontSize: size14,
@@ -199,7 +199,7 @@ class AppTextStyles {
     color: AppColors.textPrimary,
   );
   
-  /// تسمية متوسطة (محسن)
+  /// تسمية متوسطة
   static const TextStyle labelMedium = TextStyle(
     fontFamily: primaryFontFamily,
     fontSize: size12,
@@ -209,7 +209,7 @@ class AppTextStyles {
     color: AppColors.textPrimary,
   );
   
-  /// تسمية صغيرة (محسن)
+  /// تسمية صغيرة
   static const TextStyle labelSmall = TextStyle(
     fontFamily: primaryFontFamily,
     fontSize: size10,
@@ -219,9 +219,9 @@ class AppTextStyles {
     color: AppColors.textSecondary,
   );
   
-  // ========== النصوص التفسيرية المحسنة ==========
+  // ========== النصوص التفسيرية ==========
   
-  /// نص تفسيري (محسن)
+  /// نص تفسيري
   static const TextStyle caption = TextStyle(
     fontFamily: primaryFontFamily,
     fontSize: size12,
@@ -231,7 +231,7 @@ class AppTextStyles {
     color: AppColors.textTertiary,
   );
   
-  /// نص صغير جداً (محسن)
+  /// نص صغير جداً
   static const TextStyle overline = TextStyle(
     fontFamily: primaryFontFamily,
     fontSize: size10,
@@ -241,19 +241,19 @@ class AppTextStyles {
     color: AppColors.textTertiary,
   );
   
-  // ========== النصوص الدينية المتخصصة (جديدة ومحسنة) ==========
+  // ========== النصوص الدينية المتخصصة ==========
   
-  /// نص الآيات القرآنية (محسن للوضوح)
+  /// نص الآيات القرآنية
   static const TextStyle islamic = TextStyle(
     fontFamily: secondaryFontFamily,
-    fontSize: size18,        // محسن للقراءة
+    fontSize: size18,
     fontWeight: regular,
-    height: lineHeightLoose, // مسافة أكبر للوضوح
-    letterSpacing: letterSpacingWide, // تباعد مناسب للعربية
+    height: lineHeightLoose,
+    letterSpacing: letterSpacingWide,
     color: AppColors.textReligious,
   );
   
-  /// نص الأحاديث الشريفة (جديد)
+  /// نص الأحاديث الشريفة
   static const TextStyle hadith = TextStyle(
     fontFamily: primaryFontFamily,
     fontSize: size16,
@@ -264,7 +264,7 @@ class AppTextStyles {
     fontStyle: FontStyle.italic,
   );
   
-  /// نص الأذكار (جديد)
+  /// نص الأذكار
   static const TextStyle dhikr = TextStyle(
     fontFamily: primaryFontFamily,
     fontSize: size16,
@@ -274,10 +274,20 @@ class AppTextStyles {
     color: AppColors.textReligious,
   );
   
-  /// نص للأرقام والأوقات (محسن)
+  /// نص الأدعية
+  static const TextStyle dua = TextStyle(
+    fontFamily: primaryFontFamily,
+    fontSize: size16,
+    fontWeight: medium,
+    height: lineHeightRelaxed,
+    letterSpacing: letterSpacingNormal,
+    color: AppColors.textReligious,
+  );
+  
+  /// نص للأرقام والأوقات
   static const TextStyle numbers = TextStyle(
     fontFamily: numbersFontFamily,
-    fontSize: size20,        // مناسب للقراءة
+    fontSize: size20,
     fontWeight: semiBold,
     height: lineHeightNormal,
     letterSpacing: letterSpacingNormal,
@@ -285,10 +295,10 @@ class AppTextStyles {
     fontFeatures: [FontFeature.tabularFigures()],
   );
   
-  /// نص للعدادات الكبيرة (محسن)
+  /// نص للعدادات الكبيرة
   static const TextStyle counter = TextStyle(
     fontFamily: numbersFontFamily,
-    fontSize: size36,        // مصغر قليلاً من 48
+    fontSize: size36,
     fontWeight: bold,
     height: lineHeightTight,
     letterSpacing: letterSpacingTight,
@@ -296,7 +306,7 @@ class AppTextStyles {
     fontFeatures: [FontFeature.tabularFigures()],
   );
   
-  /// نص أوقات الصلاة (جديد)
+  /// نص أوقات الصلاة
   static const TextStyle prayerTime = TextStyle(
     fontFamily: numbersFontFamily,
     fontSize: size24,
@@ -307,19 +317,19 @@ class AppTextStyles {
     fontFeatures: [FontFeature.tabularFigures()],
   );
   
-  // ========== أنماط الأزرار المحسنة ==========
+  // ========== أنماط الأزرار ==========
   
-  /// نص الأزرار الأساسية (محسن)
+  /// نص الأزرار الأساسية
   static const TextStyle button = TextStyle(
     fontFamily: primaryFontFamily,
-    fontSize: size14,        // محسن للعربية
+    fontSize: size14,
     fontWeight: semiBold,
     height: lineHeightNormal,
     letterSpacing: letterSpacingWide,
-    color: Colors.white,
+    color: Colors.black,
   );
   
-  /// نص الأزرار الثانوية (محسن)
+  /// نص الأزرار الثانوية
   static const TextStyle buttonSecondary = TextStyle(
     fontFamily: primaryFontFamily,
     fontSize: size14,
@@ -329,20 +339,20 @@ class AppTextStyles {
     color: AppColors.primary,
   );
   
-  /// نص الأزرار الصغيرة (محسن)
+  /// نص الأزرار الصغيرة
   static const TextStyle buttonSmall = TextStyle(
     fontFamily: primaryFontFamily,
     fontSize: size12,
     fontWeight: medium,
     height: lineHeightNormal,
     letterSpacing: letterSpacingWider,
-    color: Colors.white,
+    color: Colors.black,
   );
   
-  // ========== دوال الإنشاء المحسنة ==========
+  // ========== دوال الإنشاء ==========
   
-  /// إنشاء TextTheme للوضع الفاتح (محسن)
-  static TextTheme get lightTextTheme => const TextTheme(
+  /// إنشاء TextTheme
+  static TextTheme get textTheme => const TextTheme(
     displayLarge: displayLarge,
     displayMedium: displayMedium,
     displaySmall: displaySmall,
@@ -360,58 +370,34 @@ class AppTextStyles {
     labelSmall: labelSmall,
   );
   
-  /// إنشاء TextTheme للوضع الداكن (محسن)
-  static TextTheme get darkTextTheme => lightTextTheme.copyWith(
-    displayLarge: displayLarge.copyWith(color: AppColors.textPrimaryDark),
-    displayMedium: displayMedium.copyWith(color: AppColors.textPrimaryDark),
-    displaySmall: displaySmall.copyWith(color: AppColors.textPrimaryDark),
-    headlineLarge: headlineLarge.copyWith(color: AppColors.textPrimaryDark),
-    headlineMedium: headlineMedium.copyWith(color: AppColors.textPrimaryDark),
-    headlineSmall: headlineSmall.copyWith(color: AppColors.textPrimaryDark),
-    titleLarge: titleLarge.copyWith(color: AppColors.textPrimaryDark),
-    titleMedium: titleMedium.copyWith(color: AppColors.textPrimaryDark),
-    titleSmall: titleSmall.copyWith(color: AppColors.textPrimaryDark),
-    bodyLarge: bodyLarge.copyWith(color: AppColors.textPrimaryDark),
-    bodyMedium: bodyMedium.copyWith(color: AppColors.textPrimaryDark),
-    bodySmall: bodySmall.copyWith(color: AppColors.textSecondaryDark),
-    labelLarge: labelLarge.copyWith(color: AppColors.textPrimaryDark),
-    labelMedium: labelMedium.copyWith(color: AppColors.textPrimaryDark),
-    labelSmall: labelSmall.copyWith(color: AppColors.textSecondaryDark),
-  );
-  
-  // ========== دوال مساعدة للنصوص العربية (جديدة) ==========
+  // ========== دوال مساعدة للنصوص العربية ==========
   
   /// الحصول على نمط النص المناسب للمحتوى الديني
-  static TextStyle getReligiousTextStyle(String type, {bool isDark = false}) {
-    final baseColor = isDark ? AppColors.textReligiousDark : AppColors.textReligious;
-    
-    switch (type.toLowerCase()) {
-      case 'quran':
-      case 'ayah':
-        return islamic.copyWith(color: baseColor);
-      case 'hadith':
-        return hadith.copyWith(color: baseColor);
-      case 'dhikr':
-      case 'adhkar':
-        return dhikr.copyWith(color: baseColor);
-      case 'dua':
-        return bodyLarge.copyWith(
-          color: baseColor,
-          height: lineHeightRelaxed,
-        );
+  static TextStyle getReligiousTextStyle(String type) {
+    switch (type) {
+      case 'قران':
+      case 'آية':
+        return islamic;
+      case 'حديث':
+        return hadith;
+      case 'ذكر':
+      case 'اذكار':
+        return dhikr;
+      case 'دعاء':
+        return dua;
       default:
-        return bodyMedium.copyWith(color: baseColor);
+        return bodyMedium;
     }
   }
   
   /// الحصول على نمط العداد المناسب
   static TextStyle getCounterStyle(int value) {
     if (value >= 1000) {
-      return counter.copyWith(fontSize: size28); // أصغر للأرقام الكبيرة
+      return counter.copyWith(fontSize: size28);
     } else if (value >= 100) {
       return counter.copyWith(fontSize: size32);
     } else {
-      return counter; // الحجم الكامل للأرقام الصغيرة
+      return counter;
     }
   }
   
@@ -431,7 +417,7 @@ class AppTextStyles {
   }
 }
 
-/// Extension methods لأنماط النصوص (محسنة ومبسطة)
+/// Extension methods لأنماط النصوص
 extension TextStyleExtensions on TextStyle {
   // ========== أوزان الخطوط ==========
   
@@ -461,7 +447,7 @@ extension TextStyleExtensions on TextStyle {
   TextStyle withOpacity(double opacity) => 
       copyWith(color: color?.withValues(alpha: opacity));
   
-  /// تطبيق الظلال (مبسط)
+  /// تطبيق الظلال
   TextStyle withShadow({
     Color shadowColor = Colors.black,
     double opacity = 0.3,
@@ -492,13 +478,13 @@ extension TextStyleExtensions on TextStyle {
     fontFeatures: const [FontFeature.tabularFigures()],
   );
   
-  /// نمط للنصوص العربية (جديد)
+  /// نمط للنصوص العربية
   TextStyle get arabic => copyWith(
     height: AppTextStyles.lineHeightRelaxed,
     letterSpacing: AppTextStyles.letterSpacingNormal,
   );
   
-  /// نمط للعناوين المهمة (جديد)
+  /// نمط للعناوين المهمة
   TextStyle get important => copyWith(
     fontWeight: AppTextStyles.bold,
     color: AppColors.primary,
