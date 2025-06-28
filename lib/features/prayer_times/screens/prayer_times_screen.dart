@@ -1,13 +1,10 @@
-// lib/features/prayer_times/screens/prayer_times_screen.dart - مُحدث بالنظام الموحد
+// lib/features/prayer_times/screens/prayer_times_screen.dart (محدث بالنظام الموحد)
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
-
-// ✅ استيراد النظام الموحد
-import 'package:athkar_app/app/themes/app_theme.dart';
-import 'package:athkar_app/app/themes/widgets/widgets.dart';
-
+import 'dart:ui';
+import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
 import '../services/prayer_times_service.dart';
@@ -135,13 +132,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
         setState(() {
           _isRetryingLocation = false;
         });
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('تم تحديث الموقع بنجاح'),
-            backgroundColor: AppTheme.primary,
-          ),
-        );
       }
     } catch (e) {
       _logger.error(
@@ -156,15 +146,13 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
           _isRetryingLocation = false;
         });
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('لم نتمكن من تحديد موقعك. يرجى التحقق من إعدادات الموقع.'),
-            backgroundColor: AppTheme.accent,
-            action: SnackBarAction(
-              label: 'حاول مجدداً',
-              onPressed: _requestLocation,
-              textColor: Colors.white,
-            ),
+        // استخدام النظام الموحد للإشعارات
+        AppSnackBar.showError(
+          context: context,
+          message: 'لم نتمكن من تحديد موقعك. يرجى التحقق من إعدادات الموقع.',
+          action: SnackBarAction(
+            label: 'حاول مجدداً',
+            onPressed: _requestLocation,
           ),
         );
       }
@@ -182,198 +170,251 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: SimpleAppBar(
+      backgroundColor: context.backgroundColor,
+      appBar: CustomAppBar(
         title: 'مواقيت الصلاة',
+        backgroundColor: context.backgroundColor,
+        foregroundColor: context.textPrimaryColor,
         actions: [
           // زر تحديث الموقع
-          if (_isRetryingLocation)
-            Container(
-              padding: AppTheme.space2.padding,
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primary),
-                ),
-              ),
-            )
-          else
-            IconButton(
-              icon: Icon(Icons.my_location, color: AppTheme.textSecondary),
-              onPressed: _requestLocation,
-              tooltip: 'تحديث الموقع',
-            ),
+          IconButton(
+            onPressed: _isRetryingLocation ? null : _requestLocation,
+            icon: _isRetryingLocation 
+                ? SizedBox(
+                    width: 20, 
+                    height: 20, 
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(context.primaryColor),
+                    ),
+                  )
+                : Icon(
+                    Icons.my_location,
+                    color: context.primaryColor,
+                  ),
+            tooltip: 'تحديث الموقع',
+          ),
           
           // زر إعدادات الإشعارات
           IconButton(
-            icon: Icon(Icons.notifications_outlined, color: AppTheme.textSecondary),
             onPressed: () {
               HapticFeedback.lightImpact();
               Navigator.pushNamed(context, '/prayer-notifications-settings');
             },
+            icon: Icon(
+              ThemeConstants.iconNotifications,
+              color: context.primaryColor,
+            ),
             tooltip: 'إعدادات الإشعارات',
           ),
           
           // زر الإعدادات
           IconButton(
-            icon: Icon(Icons.settings_outlined, color: AppTheme.textSecondary),
             onPressed: () {
               HapticFeedback.lightImpact();
               Navigator.pushNamed(context, '/prayer-settings');
             },
+            icon: Icon(
+              ThemeConstants.iconSettings,
+              color: context.primaryColor,
+            ),
             tooltip: 'الإعدادات',
           ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: _loadPrayerTimes,
-        color: AppTheme.primary,
-        child: SingleChildScrollView(
+        child: CustomScrollView(
           controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: _buildContent(),
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // معلومات الموقع
+            if (_dailyTimes?.location != null)
+              SliverToBoxAdapter(
+                child: LocationHeader(
+                  location: _dailyTimes!.location,
+                  onTap: _requestLocation,
+                ),
+              ),
+            
+            // المحتوى الرئيسي
+            if (_isLoading && _dailyTimes == null)
+              _buildLoadingState()
+            else if (_errorMessage != null && _dailyTimes == null)
+              _buildErrorState()
+            else if (_dailyTimes != null)
+              ..._buildContent()
+            else
+              _buildEmptyState(),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildContent() {
-    if (_isLoading && _dailyTimes == null) {
-      return SizedBox(
-        height: MediaQuery.of(context).size.height - 200,
-        child: AppLoading.page(message: 'جاري تحميل مواقيت الصلاة...'),
-      );
-    }
-    
-    if (_errorMessage != null && _dailyTimes == null) {
-      return SizedBox(
-        height: MediaQuery.of(context).size.height - 200,
-        child: AppEmptyState.error(
-          message: _errorMessage ?? 'حدث خطأ في تحميل المواقيت',
-          onRetry: _loadPrayerTimes,
-        ),
-      );
-    }
-    
-    if (_dailyTimes == null) {
-      return SizedBox(
-        height: MediaQuery.of(context).size.height - 200,
-        child: AppEmptyState.noData(
-          message: 'لم يتم تحديد الموقع\nنحتاج لتحديد موقعك لعرض مواقيت الصلاة الصحيحة',
-          onRetry: _loadPrayerTimes,
-        ),
-      );
-    }
-    
-    return Column(
-      children: [
-        // معلومات الموقع
-        if (_dailyTimes?.location != null)
-          LocationHeader(
-            location: _dailyTimes!.location,
-            onTap: _requestLocation,
+  Widget _buildLocationInfo() {
+    return AppCard(
+      type: CardType.info,
+      style: CardStyle.glassmorphism,
+      primaryColor: context.primaryColor,
+      margin: const EdgeInsets.all(ThemeConstants.space4),
+      child: Row(
+        children: [
+          // أيقونة الموقع
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space2),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+            ),
+            child: Icon(
+              Icons.location_on,
+              color: Colors.white,
+              size: ThemeConstants.iconMd,
+            ),
           ),
-        
-        // العد التنازلي للصلاة التالية
-        if (_nextPrayer != null)
-          NextPrayerCountdown(
-            nextPrayer: _nextPrayer!,
-            currentPrayer: _dailyTimes!.currentPrayer,
+          
+          ThemeConstants.space3.w,
+          
+          // معلومات الموقع
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'الموقع الحالي',
+                  style: context.labelMedium?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontWeight: ThemeConstants.medium,
+                  ),
+                ),
+                
+                ThemeConstants.space1.h,
+                
+                Text(
+                  _dailyTimes?.location.cityName ?? 'غير محدد',
+                  style: context.titleMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: ThemeConstants.semiBold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                
+                if (_dailyTimes?.location.countryName != null)
+                  Text(
+                    _dailyTimes!.location.countryName!,
+                    style: context.bodySmall?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
+                  ),
+              ],
+            ),
           ),
-        
-        // عنوان قائمة الصلوات
-        _buildPrayerListHeader(),
-        
-        // قائمة الصلوات
-        Padding(
-          padding: AppTheme.space4.paddingH,
-          child: Column(
-            children: [
-              ..._dailyTimes!.prayers
-                  .where((prayer) => prayer.type != PrayerType.sunrise)
-                  .map((prayer) => AnimatedPress(
-                        onTap: () => _togglePrayerNotification(prayer, true),
-                        child: PrayerTimeCard(
-                          prayer: prayer,
-                          forceColored: true,
-                          onNotificationToggle: (enabled) {
-                            _togglePrayerNotification(prayer, enabled);
-                          },
-                        ),
-                      )),
-            ],
-          ),
-        ),
-        
-        AppTheme.space8.h,
-      ],
+          
+          // حالة التحديث
+          if (_isRetryingLocation)
+            Container(
+              padding: const EdgeInsets.all(ThemeConstants.space2),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
-  Widget _buildPrayerListHeader() {
-    return Padding(
-      padding: AppTheme.space4.padding,
-      child: AppCard(
-        child: Row(
-          children: [
-            Container(
-              padding: AppTheme.space3.padding,
-              decoration: BoxDecoration(
-                color: AppTheme.primary.withOpacity(0.1),
-                borderRadius: AppTheme.radiusMd.radius,
-              ),
-              child: Icon(
-                Icons.mosque,
-                color: AppTheme.primary,
-                size: 24,
-              ),
-            ),
-            
-            AppTheme.space3.w,
-            
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'جدول الصلوات اليوم',
-                    style: AppTheme.titleMedium,
-                  ),
-                  Text(
-                    '${_dailyTimes!.prayers.where((p) => p.type != PrayerType.sunrise).length} صلوات',
-                    style: AppTheme.bodySmall.copyWith(
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.space3,
-                vertical: AppTheme.space1,
-              ),
-              decoration: BoxDecoration(
-                color: AppTheme.primary.withValues(alpha: 0.1),
-                borderRadius: AppTheme.radiusFull.radius,
-                border: Border.all(
-                  color: AppTheme.primary.withValues(alpha: 0.3),
-                  width: 1,
-                ),
-              ),
-              child: Text(
-                DateTime.now().day.toString(),
-                style: AppTheme.bodyMedium.copyWith(
-                  color: AppTheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
+  List<Widget> _buildContent() {
+    return [
+      // العد التنازلي للصلاة التالية
+      if (_nextPrayer != null)
+        SliverToBoxAdapter(
+          child: NextPrayerCountdown(
+            nextPrayer: _nextPrayer!,
+            currentPrayer: _dailyTimes!.currentPrayer,
+          ),
         ),
+      
+      // قائمة الصلوات مباشرة
+      SliverPadding(
+        padding: const EdgeInsets.all(ThemeConstants.space4),
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              final prayers = _dailyTimes!.prayers.where((prayer) => 
+                prayer.type != PrayerType.sunrise
+              ).toList();
+              
+              if (index >= prayers.length) return null;
+              
+              final prayer = prayers[index];
+              
+              return PrayerTimeCard(
+                prayer: prayer,
+                forceColored: true,
+                onNotificationToggle: (enabled) {
+                  _togglePrayerNotification(prayer, enabled);
+                },
+              );
+            },
+            childCount: _dailyTimes!.prayers.where((prayer) => 
+              prayer.type != PrayerType.sunrise
+            ).length,
+          ),
+        ),
+      ),
+      
+      // مساحة في الأسفل
+      ThemeConstants.space8.sliverBox,
+    ];
+  }
+
+  Widget _buildPrayerListHeader() {
+    return AppCard(
+      type: CardType.info,
+      style: CardStyle.glassmorphism,
+      primaryColor: context.primaryColor,
+      margin: const EdgeInsets.all(ThemeConstants.space4),
+      icon: ThemeConstants.iconPrayerTime,
+      title: 'جدول الصلوات اليوم',
+      subtitle: '${_dailyTimes!.prayers.where((p) => p.type != PrayerType.sunrise).length} صلوات',
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return SliverFillRemaining(
+      child: AppLoading.page(message: 'جاري تحميل مواقيت الصلاة...'),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return SliverFillRemaining(
+      child: AppEmptyState.error(
+        message: _errorMessage ?? 'حدث خطأ في تحميل المواقيت',
+        onRetry: _loadPrayerTimes,
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return SliverFillRemaining(
+      child: AppEmptyState.custom(
+        title: 'لم يتم تحديد الموقع',
+        message: 'نحتاج لتحديد موقعك لعرض مواقيت الصلاة الصحيحة',
+        icon: Icons.my_location,
+        actionText: 'تحديد الموقع',
+        onAction: _loadPrayerTimes,
+        iconColor: context.primaryColor,
       ),
     );
   }
@@ -389,15 +430,12 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
       settings.copyWith(enabledPrayers: updatedPrayers),
     );
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          enabled 
-              ? 'تم تفعيل تنبيه ${prayer.nameAr}'
-              : 'تم إيقاف تنبيه ${prayer.nameAr}',
-        ),
-        backgroundColor: AppTheme.primary,
-      ),
+    // استخدام النظام الموحد للإشعارات
+    AppSnackBar.showSuccess(
+      context: context,
+      message: enabled 
+          ? 'تم تفعيل تنبيه ${prayer.nameAr}'
+          : 'تم إيقاف تنبيه ${prayer.nameAr}',
     );
   }
 }

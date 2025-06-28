@@ -1,7 +1,8 @@
-// lib/features/prayer_times/utils/prayer_helpers.dart - مُحدث للنظام الجديد
+// lib/features/prayer_times/utils/prayer_helpers.dart
 
-import 'package:athkar_app/app/themes/app_theme.dart';
+import 'package:athkar_app/app/themes/core/theme_extensions.dart';
 import 'package:flutter/material.dart';
+import '../../../app/themes/theme_constants.dart';
 import '../models/prayer_time_model.dart';
 
 /// أدوات مساعدة لمواقيت الصلاة مع تحسينات الأداء
@@ -74,47 +75,25 @@ class PrayerHelpers {
     return result;
   }
   
-  /// الحصول على لون الصلاة من النظام الجديد
+  /// الحصول على لون الصلاة من الثوابت
   static Color getPrayerColor(PrayerType type) {
-    return AppTheme.getPrayerColor(getPrayerNameAr(type));
+    return ThemeConstants.getPrayerColor(type.name);
   }
   
-  /// الحصول على أيقونة الصلاة 
+  /// الحصول على أيقونة الصلاة من الثوابت
   static IconData getPrayerIcon(PrayerType type) {
-    switch (type) {
-      case PrayerType.fajr:
-        return Icons.wb_twilight_rounded;
-      case PrayerType.sunrise:
-        return Icons.flare_rounded;
-      case PrayerType.dhuhr:
-        return Icons.wb_sunny_rounded;
-      case PrayerType.asr:
-        return Icons.wb_cloudy_rounded;
-      case PrayerType.maghrib:
-        return Icons.wb_twilight_rounded;
-      case PrayerType.isha:
-        return Icons.nights_stay_rounded;
-      case PrayerType.midnight:
-        return Icons.bedtime_rounded;
-      case PrayerType.lastThird:
-        return Icons.schedule_rounded;
-    }
+    return ThemeConstants.getPrayerIcon(type.name);
   }
   
   /// الحصول على تدرج لون الصلاة
   static List<Color> getPrayerGradient(PrayerType type) {
     final baseColor = getPrayerColor(type);
-    return [baseColor, AppTheme.darken(baseColor, 0.2)];
+    return [baseColor, baseColor.darken(0.2)];
   }
   
-  /// الحصول على تدرج خطي للصلاة
+  /// الحصول على تدرج من ThemeConstants
   static LinearGradient getPrayerLinearGradient(PrayerType type) {
-    final colors = getPrayerGradient(type);
-    return LinearGradient(
-      colors: colors,
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-    );
+    return ThemeConstants.prayerGradient(type.name);
   }
   
   /// تحديد إذا كان الوقت في النهار
@@ -347,97 +326,5 @@ class PrayerHelpers {
            prayer.time.isBefore(DateTime(2100)) &&
            prayer.nameAr.isNotEmpty &&
            prayer.nameEn.isNotEmpty;
-  }
-  
-  /// دالة لإنشاء بطاقة صلاة موحدة (للاستخدام في الشاشات)
-  static Widget createPrayerCard({
-    required PrayerType type,
-    required DateTime time,
-    required bool isNext,
-    required VoidCallback onTap,
-    bool showProgress = false,
-    double? progress,
-  }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: AppTheme.space2),
-      decoration: BoxDecoration(
-        gradient: getPrayerLinearGradient(type),
-        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        boxShadow: AppTheme.shadowSm,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-          child: Padding(
-            padding: const EdgeInsets.all(AppTheme.space4),
-            child: Row(
-              children: [
-                // أيقونة الصلاة
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    getPrayerIcon(type),
-                    color: Colors.white,
-                    size: AppTheme.iconLg,
-                  ),
-                ),
-                
-                const SizedBox(width: AppTheme.space3),
-                
-                // معلومات الصلاة
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        getPrayerNameAr(type),
-                        style: AppTheme.titleMedium.copyWith(
-                          color: Colors.white,
-                          fontWeight: AppTheme.bold,
-                        ),
-                      ),
-                      Text(
-                        formatPrayerTime(time),
-                        style: AppTheme.numbersStyle.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // مؤشر الصلاة القادمة
-                if (isNext)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppTheme.space2,
-                      vertical: AppTheme.space1,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(AppTheme.radiusFull),
-                    ),
-                    child: Text(
-                      'القادمة',
-                      style: AppTheme.caption.copyWith(
-                        color: Colors.white,
-                        fontWeight: AppTheme.bold,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

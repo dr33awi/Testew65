@@ -1,15 +1,10 @@
-// lib/features/prayer_times/widgets/location_header.dart - مُحدث بالنظام الموحد
-
+// lib/features/prayer_times/widgets/location_header.dart (محدث ومبسط)
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-// ✅ استيراد النظام الموحد
-import 'package:athkar_app/app/themes/app_theme.dart';
-import 'package:athkar_app/app/themes/widgets/widgets.dart';
-
+import '../../../app/themes/app_theme.dart';
 import '../models/prayer_time_model.dart';
 
-class LocationHeader extends StatelessWidget {
+class LocationHeader extends StatefulWidget {
   final PrayerLocation location;
   final VoidCallback onTap;
 
@@ -20,109 +15,98 @@ class LocationHeader extends StatelessWidget {
   });
 
   @override
+  State<LocationHeader> createState() => _LocationHeaderState();
+}
+
+class _LocationHeaderState extends State<LocationHeader> {
+
+  @override
   Widget build(BuildContext context) {
     // استخدام AppCard من النظام الموحد مع تصميم مبسط
-    return AnimatedPress(
+    return AppCard(
+      type: CardType.info,
+      style: CardStyle.gradient,
+      primaryColor: context.primaryColor,
       onTap: () {
         HapticFeedback.lightImpact();
-        onTap();
+        widget.onTap();
       },
-      child: Container(
-        margin: EdgeInsets.all(AppTheme.space4),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppTheme.primary, AppTheme.primary.withValues(alpha: 0.8)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.primary.withValues(alpha: 0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(AppTheme.space4),
-          child: _buildContent(),
-        ),
-      ),
+      padding: const EdgeInsets.all(ThemeConstants.space4), // تقليل الحشو
+      child: _buildContent(context),
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(BuildContext context) {
     return Row(
       children: [
-        // أيقونة الموقع
+        // أيقونة الموقع مصغرة
         Container(
-          width: 50,
-          height: 50,
+          width: 50, // مصغرة من 70
+          height: 50, // مصغرة من 70
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha: 0.2),
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.white.withOpacity(0.3),
+              color: Colors.white.withValues(alpha: 0.3),
               width: 2,
             ),
           ),
           child: const Icon(
             Icons.location_on,
             color: Colors.white,
-            size: 24,
+            size: 24, // مصغرة من 32
           ),
         ),
         
-        AppTheme.space3.w,
+        ThemeConstants.space3.w,
         
-        // معلومات الموقع
+        // معلومات الموقع مبسطة
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: MainAxisSize.min, // تقليل الارتفاع
             children: [
               // العنوان
               Text(
                 'موقعك الحالي',
-                style: AppTheme.bodyMedium.copyWith(
+                style: context.labelMedium?.copyWith(
                   color: Colors.white.withValues(alpha: 0.8),
-                  fontWeight: FontWeight.w500,
+                  fontWeight: ThemeConstants.medium,
                 ),
               ),
               
-              AppTheme.space1.h,
+              ThemeConstants.space1.h,
               
-              // اسم المدينة والدولة
+              // اسم المدينة والدولة في سطر واحد
               Row(
                 children: [
                   Expanded(
                     child: Text(
-                      location.cityName ?? 'غير محدد',
-                      style: AppTheme.titleMedium.copyWith(
+                      widget.location.cityName ?? 'غير محدد',
+                      style: context.titleMedium?.copyWith(
                         color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: ThemeConstants.bold,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (location.countryName != null) ...[
-                    AppTheme.space2.w,
+                  if (widget.location.countryName != null) ...[
+                    ThemeConstants.space2.w,
                     Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: AppTheme.space2,
-                        vertical: AppTheme.space1,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: ThemeConstants.space2,
+                        vertical: ThemeConstants.space1,
                       ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                        borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
                       ),
                       child: Text(
-                        location.countryName!,
-                        style: AppTheme.bodySmall.copyWith(
+                        widget.location.countryName!,
+                        style: context.labelSmall?.copyWith(
                           color: Colors.white.withValues(alpha: 0.9),
-                          fontWeight: FontWeight.w600,
+                          fontWeight: ThemeConstants.semiBold,
                         ),
                       ),
                     ),
@@ -133,17 +117,17 @@ class LocationHeader extends StatelessWidget {
           ),
         ),
         
-        AppTheme.space3.w,
+        ThemeConstants.space3.w,
         
-        // زر التحديث
+        // زر التحديث مصغر
         AnimatedPress(
           onTap: () {
             HapticFeedback.lightImpact();
-            onTap();
+            widget.onTap();
           },
           child: Container(
-            width: 40,
-            height: 40,
+            width: 40, // مصغر من أكبر
+            height: 40, // مصغر من أكبر
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
@@ -155,10 +139,11 @@ class LocationHeader extends StatelessWidget {
             child: const Icon(
               Icons.refresh,
               color: Colors.white,
-              size: 20,
+              size: 20, // مصغر من 24
             ),
           ),
         ),
       ],
     );
   }
+}
