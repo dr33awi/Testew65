@@ -1,4 +1,4 @@
-// lib/features/daily_quote/widgets/daily_quotes_card.dart - محسن ومطابق لنظام welcome_message
+// lib/features/daily_quote/widgets/daily_quotes_card.dart - محسن باستخدام النظام الموحد
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -151,6 +151,12 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
   }
 
   Widget _buildLoadingState() {
+    // ✅ استخدام نظام الألوان الموحد
+    final gradientColors = [
+      context.primaryColor.withValues(alpha: 0.8),
+      context.primaryColor.darken(0.2).withValues(alpha: 0.8),
+    ];
+    
     return SizedBox(
       height: 200,
       child: Container(
@@ -176,10 +182,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      context.primaryColor.withValues(alpha: 0.8),
-                      context.primaryColor.darken(0.2).withValues(alpha: 0.8),
-                    ],
+                    colors: gradientColors,
                   ),
                 ),
               ),
@@ -227,6 +230,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
   }
 
   Widget _buildQuoteCard(QuoteData quote) {
+    // ✅ استخدام QuoteHelper الموحد
     final gradientColors = QuoteHelper.getQuoteColors(context, quote.type);
     
     return LayoutBuilder(
@@ -326,9 +330,11 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
               ),
             ),
             child: Text(
-              _getQuoteTitle(quote.type),
+              // ✅ استخدام QuoteHelper للعنوان
+              QuoteHelper.getQuoteTitle(quote.type),
               style: (isTablet ? context.labelLarge : context.labelMedium)?.copyWith(
-                color: Colors.white,
+                // ✅ استخدام QuoteHelper للألوان
+                color: QuoteHelper.getQuoteTextColor(context, quote.type),
                 fontWeight: ThemeConstants.medium,
                 fontSize: isTablet ? 14 : 12,
               ),
@@ -346,10 +352,10 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
               vertical: isTablet ? ThemeConstants.space2 : ThemeConstants.space1,
             ),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: QuoteHelper.getQuoteOverlayColor(context, quote.type),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: QuoteHelper.getQuoteBorderColor(context, quote.type),
                 width: 1,
               ),
             ),
@@ -358,7 +364,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
               children: [
                 Icon(
                   Icons.library_books_rounded,
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: QuoteHelper.getQuoteSecondaryTextColor(context, quote.type),
                   size: isTablet ? 16 : 14,
                 ),
                 
@@ -367,7 +373,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
                 Text(
                   quote.source,
                   style: (isTablet ? context.labelLarge : context.labelMedium)?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
+                    color: QuoteHelper.getQuoteSecondaryTextColor(context, quote.type),
                     fontWeight: ThemeConstants.medium,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -386,21 +392,22 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
               vertical: isTablet ? ThemeConstants.space5 : ThemeConstants.space4,
             ),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: QuoteHelper.getQuoteOverlayColor(context, quote.type),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: QuoteHelper.getQuoteBorderColor(context, quote.type),
                 width: 1,
               ),
             ),
             child: Text(
               quote.content,
               style: (isTablet ? context.headlineSmall : context.titleMedium)?.copyWith(
-                color: Colors.white,
+                color: QuoteHelper.getQuoteTextColor(context, quote.type),
                 height: 1.7,
                 fontWeight: ThemeConstants.semiBold,
                 fontSize: isShortText ? (isTablet ? 22 : 18) : (isTablet ? 20 : 16),
                 letterSpacing: 0.5,
+                // ✅ استخدام EnhancedCategoryHelper للظلال
                 shadows: [
                   Shadow(
                     color: Colors.black.withValues(alpha: 0.4),
@@ -426,7 +433,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
         final isActive = index == _currentPage;
         final color = isActive 
             ? QuoteHelper.getQuotePrimaryColor(context, quotes[_currentPage].type)
-            : context.textSecondaryColor.withValues(alpha: 0.3);
+            : QuoteHelper.getQuoteOverlayColor(context, quotes[_currentPage].type);
             
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
@@ -449,19 +456,6 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
     );
   }
 
-  String _getQuoteTitle(String type) {
-    switch (type) {
-      case 'verse':
-        return 'آية اليوم';
-      case 'hadith':
-        return 'حديث اليوم';
-      case 'dua':
-        return 'دعاء اليوم';
-      default:
-        return 'اقتباس اليوم';
-    }
-  }
-
   void _showQuoteDetails(QuoteData quote) {
     HapticFeedback.lightImpact();
     
@@ -469,7 +463,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _QuoteDetailsModal(quote: quote, getTitle: _getQuoteTitle),
+      builder: (context) => _QuoteDetailsModal(quote: quote),
     );
   }
 }
@@ -490,9 +484,8 @@ class QuoteData {
 
 class _QuoteDetailsModal extends StatelessWidget {
   final QuoteData quote;
-  final String Function(String) getTitle;
 
-  const _QuoteDetailsModal({required this.quote, required this.getTitle});
+  const _QuoteDetailsModal({required this.quote});
 
   @override
   Widget build(BuildContext context) {
@@ -578,10 +571,11 @@ class _QuoteDetailsModal extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            getTitle(quote.type),
+                            // ✅ استخدام QuoteHelper للعنوان
+                            QuoteHelper.getQuoteTitle(quote.type),
                             style: context.headlineSmall?.copyWith(
                               fontWeight: ThemeConstants.bold,
-                              color: Colors.white,
+                              color: QuoteHelper.getQuoteTextColor(context, quote.type),
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -606,7 +600,7 @@ class _QuoteDetailsModal extends StatelessWidget {
                             style: context.bodyLarge?.copyWith(
                               height: 1.8,
                               fontSize: 17,
-                              color: Colors.white,
+                              color: QuoteHelper.getQuoteTextColor(context, quote.type),
                               fontWeight: ThemeConstants.medium,
                             ),
                             textAlign: TextAlign.center,
@@ -632,7 +626,7 @@ class _QuoteDetailsModal extends StatelessWidget {
                           child: Text(
                             quote.source,
                             style: context.titleSmall?.copyWith(
-                              color: Colors.white,
+                              color: QuoteHelper.getQuoteTextColor(context, quote.type),
                               fontWeight: ThemeConstants.semiBold,
                             ),
                             textAlign: TextAlign.center,
@@ -714,7 +708,7 @@ class _QuoteDetailsModal extends StatelessWidget {
                 style: context.titleSmall?.copyWith(
                   color: isPrimary 
                       ? QuoteHelper.getQuotePrimaryColor(context, quote.type)
-                      : Colors.white,
+                      : QuoteHelper.getQuoteTextColor(context, quote.type),
                   fontWeight: ThemeConstants.bold,
                 ),
               ),
@@ -730,7 +724,11 @@ class _QuoteDetailsModal extends StatelessWidget {
     Clipboard.setData(ClipboardData(text: fullText));
     
     if (context.mounted) {
-      context.showSuccessSnackBar('تم نسخ النص بنجاح');
+      // ✅ استخدام النظام الموحد
+      AppSnackBar.showSuccess(
+        context: context,
+        message: 'تم نسخ النص بنجاح',
+      );
       Navigator.of(context).pop();
     }
     
@@ -739,10 +737,11 @@ class _QuoteDetailsModal extends StatelessWidget {
 
   void _shareQuote(BuildContext context) async {
     try {
-      final shareText = '${quote.content}\n\n${quote.source}\n\nمن تطبيق ${getTitle(quote.type)}';
+      // ✅ استخدام QuoteHelper للعنوان
+      final shareText = '${quote.content}\n\n${quote.source}\n\nمن تطبيق ${QuoteHelper.getQuoteTitle(quote.type)}';
       await Share.share(
         shareText,
-        subject: getTitle(quote.type),
+        subject: QuoteHelper.getQuoteTitle(quote.type),
       );
       HapticFeedback.lightImpact();
       
@@ -751,7 +750,11 @@ class _QuoteDetailsModal extends StatelessWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        context.showErrorSnackBar('فشل في مشاركة النص');
+        // ✅ استخدام النظام الموحد للأخطاء
+        AppSnackBar.showError(
+          context: context,
+          message: 'فشل في مشاركة النص',
+        );
       }
     }
   }

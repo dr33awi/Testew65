@@ -1,4 +1,4 @@
-// lib/app/themes/theme_constants.dart
+// lib/app/themes/theme_constants.dart - مُحدث مع خلفية التطبيق المناسبة
 import 'package:flutter/material.dart';
 
 /// كل ثوابت الثيم في ملف واحد
@@ -31,23 +31,33 @@ class ThemeConstants {
   static const Color info = Color(0xFF6B8E9F); // أزرق رمادي
   static const Color infoLight = Color(0xFF8FA9B8); // أزرق رمادي فاتح للمعلومات
 
-  // ===== ألوان الوضع الفاتح =====
-  static const Color lightBackground = Color(0xFFFAFAF8); // خلفية دافئة
-  static const Color lightSurface = Color(0xFFF5F5F0); // سطح دافئ
+  // ===== خلفيات التطبيق المحدثة =====
+  
+  // خلفية التطبيق الرئيسية - لون دافئ وهادئ يتناسب مع الهوية
+  static const Color appBackground = Color(0xFFF8F6F0); // بيج فاتح دافئ
+  static const Color appBackgroundSecondary = Color(0xFFF2F0E8); // بيج أغمق قليلاً
+  
+  // خلفيات الوضع الليلي الدافئة
+  static const Color darkAppBackground = Color(0xFF1C1F1B); // خلفية ليلية دافئة
+  static const Color darkAppBackgroundSecondary = Color(0xFF252A24); // خلفية ليلية ثانوية
+  
+  // ===== ألوان الوضع الفاتح - محدثة =====
+  static const Color lightBackground = appBackground; // استخدام خلفية التطبيق الجديدة
+  static const Color lightSurface = Color(0xFFF5F3EB); // سطح دافئ متناسق
   static const Color lightCard = Color(0xFFFFFFFF); // بطاقات بيضاء
   static const Color lightDivider = Color(0xFFE0DDD4); // فواصل دافئة
   static const Color lightTextPrimary = Color(0xFF2D2D2D); // نص أساسي
   static const Color lightTextSecondary = Color(0xFF5F5F5F); // نص ثانوي
   static const Color lightTextHint = Color(0xFF8F8F8F); // نص تلميحي
 
-  // ===== ألوان الوضع الداكن =====
-  static const Color darkBackground = Color(0xFF1A1F1A); // خلفية داكنة دافئة
-  static const Color darkSurface = Color(0xFF242B24); // سطح داكن
-  static const Color darkCard = Color(0xFF2D352D); // بطاقات داكنة
-  static const Color darkDivider = Color(0xFF3A453A); // فواصل داكنة
-  static const Color darkTextPrimary = Color(0xFFF5F5F0); // نص فاتح
-  static const Color darkTextSecondary = Color(0xFFBDBDB0); // نص ثانوي
-  static const Color darkTextHint = Color(0xFF8A8A80); // نص تلميحي
+  // ===== ألوان الوضع الداكن - محدثة ودافئة =====
+  static const Color darkBackground = Color(0xFF1C1F1B); // خلفية داكنة دافئة بلمسة خضراء
+  static const Color darkSurface = Color(0xFF252A24); // سطح داكن دافئ
+  static const Color darkCard = Color(0xFF2E342D); // بطاقات داكنة دافئة
+  static const Color darkDivider = Color(0xFF3C453B); // فواصل داكنة مع دفء
+  static const Color darkTextPrimary = Color(0xFFF7F5F0); // نص فاتح دافئ
+  static const Color darkTextSecondary = Color(0xFFC0BDB0); // نص ثانوي دافئ
+  static const Color darkTextHint = Color(0xFF8D8A80); // نص تلميحي دافئ
 
   // ===== ألوان خاصة بالميزات =====
   static const Color athkarBackground = Color(0xFFF0F4EC); // خلفية الأذكار
@@ -180,7 +190,7 @@ class ThemeConstants {
   static const Curve curveOvershoot = Curves.easeOutBack;
   static const Curve curveAnticipate = Curves.easeInBack;
 
-  // ===== التدرجات اللونية الأساسية =====
+  // ===== التدرجات اللونية المحدثة =====
   static const LinearGradient primaryGradient = LinearGradient(
     colors: [primaryLight, primary],
     begin: Alignment.topLeft,
@@ -193,27 +203,61 @@ class ThemeConstants {
     end: Alignment.bottomRight,
   );
 
-  // تحديث التدرج البني ليكون أكثر تناسقاً
   static const LinearGradient tertiaryGradient = LinearGradient(
     colors: [tertiaryLight, tertiary],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  // تدرجات خاصة بالخلفيات
+  // تدرجات خاصة بالخلفيات - محدثة مع خلفية التطبيق الجديدة
   static const LinearGradient backgroundGradient = LinearGradient(
     colors: [
-      Color(0xFFFAFAF8),
-      Color(0xFFF5F5F0),
+      appBackground,
+      appBackgroundSecondary,
     ],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
   );
 
+  // تدرج خلفية ليلية محدث ودافئ
   static const LinearGradient darkBackgroundGradient = LinearGradient(
     colors: [
-      Color(0xFF1A1F1A),
-      Color(0xFF242B24),
+      Color(0xFF1C1F1B), // الخلفية الداكنة الجديدة
+      Color(0xFF252A24), // السطح الداكن الجديد
+      Color(0xFF2E342D), // لون البطاقات الداكن
+    ],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    stops: [0.0, 0.6, 1.0],
+  );
+
+  // تدرج خلفية ناعم لصفحات خاصة
+  static const LinearGradient softBackgroundGradient = LinearGradient(
+    colors: [
+      Color(0xFFFBF9F3), // أفتح
+      appBackground,     // الأساسي
+      appBackgroundSecondary, // أغمق قليلاً
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    stops: [0.0, 0.5, 1.0],
+  );
+
+  // تدرج خلفية للأذكار
+  static const LinearGradient athkarBackgroundGradient = LinearGradient(
+    colors: [
+      Color(0xFFF5F3EB),
+      athkarBackground,
+    ],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  // تدرج خلفية الأذكار للوضع الليلي
+  static const LinearGradient darkAthkarBackgroundGradient = LinearGradient(
+    colors: [
+      Color(0xFF252A24), // سطح داكن دافئ
+      Color(0xFF2E342D), // بطاقات داكنة دافئة
     ],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
@@ -238,7 +282,6 @@ class ThemeConstants {
     end: Alignment.bottomRight,
   );
 
-  // التدرج البني المحدث والموحد
   static const LinearGradient maghribGradient = LinearGradient(
     colors: [Color(0xFFA68B5B), Color(0xFF8B6F47)], // بني دافئ متدرج
     begin: Alignment.topLeft,
@@ -251,7 +294,6 @@ class ThemeConstants {
     end: Alignment.bottomRight,
   );
 
-  // تدرج إضافي للشروق
   static const LinearGradient sunriseGradient = LinearGradient(
     colors: [Color(0xFFE8C899), Color(0xFFDAA520)], // ذهبي فاتح
     begin: Alignment.topLeft,
@@ -337,13 +379,25 @@ class ThemeConstants {
   static const int defaultMinBatteryLevel = 15;
   static const int criticalBatteryLevel = 5;
 
-  // ===== دوال مساعدة =====
+  // ===== دوال مساعدة محدثة =====
+  
+  /// الحصول على خلفية التطبيق الرئيسية
+  static Color getAppBackground(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? darkAppBackground  // الخلفية الليلية الدافئة الجديدة
+        : appBackground; // استخدام خلفية التطبيق الجديدة
+  }
+
+  /// الحصول على خلفية التطبيق الثانوية
+  static Color getAppBackgroundSecondary(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? darkAppBackgroundSecondary // الخلفية الليلية الثانوية الجديدة
+        : appBackgroundSecondary;
+  }
   
   /// الحصول على اللون حسب الثيم
   static Color background(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark
-        ? darkBackground
-        : lightBackground;
+    return getAppBackground(context);
   }
 
   static Color surface(BuildContext context) {
@@ -376,6 +430,39 @@ class ThemeConstants {
         : lightDivider;
   }
 
+  /// الحصول على تدرج خلفية الأذكار حسب الوضع
+  static LinearGradient getAthkarBackgroundGradient(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? darkAthkarBackgroundGradient
+        : athkarBackgroundGradient;
+  }
+
+  /// الحصول على تدرج خلفية التطبيق
+  static LinearGradient getAppBackgroundGradient(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? darkBackgroundGradient
+        : backgroundGradient;
+  }
+
+  /// الحصول على تدرج ناعم للخلفية
+  static LinearGradient getSoftBackgroundGradient(BuildContext context) {
+    if (Theme.of(context).brightness == Brightness.dark) {
+      // تدرج ليلي ناعم ودافئ
+      return const LinearGradient(
+        colors: [
+          Color(0xFF1C1F1B), // الأساسي
+          Color(0xFF252A24), // متوسط
+          Color(0xFF2E342D), // أغمق
+          Color(0xFF363D35), // الأغمق للعمق
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        stops: [0.0, 0.3, 0.7, 1.0],
+      );
+    }
+    return softBackgroundGradient;
+  }
+
   /// الحصول على تدرج حسب وقت الصلاة - محدث
   static LinearGradient prayerGradient(String prayerName) {
     switch (prayerName.toLowerCase()) {
@@ -390,7 +477,7 @@ class ThemeConstants {
         return asrGradient;
       case 'maghrib':
       case 'المغرب':
-        return maghribGradient; // التدرج البني الموحد
+        return maghribGradient;
       case 'isha':
       case 'العشاء':
         return ishaGradient;
@@ -407,24 +494,24 @@ class ThemeConstants {
     switch (name.toLowerCase()) {
       case 'fajr':
       case 'الفجر':
-        return const Color(0xFF5D7052); // أخضر زيتي
+        return const Color(0xFF5D7052);
       case 'dhuhr':
       case 'الظهر':
-        return const Color(0xFFB8860B); // ذهبي
+        return const Color(0xFFB8860B);
       case 'asr':
       case 'العصر':
-        return const Color(0xFF7A8B6F); // أخضر زيتي فاتح
+        return const Color(0xFF7A8B6F);
       case 'maghrib':
       case 'المغرب':
-        return tertiary; // البني الموحد
+        return tertiary;
       case 'isha':
       case 'العشاء':
-        return const Color(0xFF3A453A); // داكن أنيق
+        return const Color(0xFF3A453A);
       case 'sunrise':
       case 'الشروق':
-        return const Color(0xFFDAA520); // ذهبي فاتح
+        return const Color(0xFFDAA520);
       default:
-        return primary; // اللون الأساسي
+        return primary;
     }
   }
 
@@ -501,7 +588,7 @@ class ThemeConstants {
     } else if (hour < 17) {
       return asrGradient;
     } else if (hour < 20) {
-      return maghribGradient; // التدرج البني الموحد
+      return maghribGradient;
     } else {
       return ishaGradient;
     }

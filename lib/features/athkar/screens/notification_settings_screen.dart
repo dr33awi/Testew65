@@ -1,4 +1,4 @@
-// lib/features/athkar/screens/notification_settings_screen.dart - مُحسّن ومختصر
+// lib/features/athkar/screens/notification_settings_screen.dart - محسن ومُطبق النظام الموحد
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/di/service_locator.dart';
@@ -125,9 +125,19 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       setState(() => _hasPermission = granted);
       if (granted) {
         await _scheduleEnabledNotifications();
+        // ✅ استخدام النظام الموحد للـ SnackBar
+        AppSnackBar.showSuccess(
+          context: context,
+          message: 'تم تفعيل الإشعارات بنجاح',
+        );
       }
     } catch (e) {
       _logger.error(message: 'فشل طلب إذن الإشعارات - $e');
+      // ✅ استخدام النظام الموحد للأخطاء
+      AppSnackBar.showError(
+        context: context,
+        message: 'فشل في تفعيل الإشعارات',
+      );
     }
   }
 
@@ -197,6 +207,11 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       }
     } catch (e) {
       _logger.error(message: 'فشل حفظ التغييرات - $e');
+      // ✅ استخدام النظام الموحد للأخطاء
+      AppSnackBar.showError(
+        context: context,
+        message: 'فشل في حفظ التغييرات',
+      );
     } finally {
       if (mounted) {
         setState(() => _saving = false);
@@ -239,6 +254,11 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
         }
       });
       await _saveChanges();
+      // ✅ استخدام النظام الموحد
+      AppSnackBar.showSuccess(
+        context: context,
+        message: 'تم تفعيل جميع التذكيرات',
+      );
     }
   }
 
@@ -260,6 +280,11 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
         }
       });
       await _saveChanges();
+      // ✅ استخدام النظام الموحد
+      AppSnackBar.showSuccess(
+        context: context,
+        message: 'تم إيقاف جميع التذكيرات',
+      );
     }
   }
 
@@ -376,7 +401,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     return AppCard(
       type: CardType.normal,
       style: CardStyle.gradient,
-      primaryColor: _hasPermission ? ThemeConstants.success : context.warningColor,
+      primaryColor: _hasPermission ? ThemeConstants.success : ThemeConstants.warning,
       icon: _hasPermission ? Icons.notifications_active : Icons.notifications_off,
       title: _hasPermission ? 'الإشعارات مفعلة' : 'الإشعارات معطلة',
       content: _hasPermission 

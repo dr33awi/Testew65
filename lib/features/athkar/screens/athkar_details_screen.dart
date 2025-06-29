@@ -228,6 +228,93 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     await Share.share(text);
   }
 
+  void _toggleFavorite(AthkarItem item) {
+    HapticFeedback.lightImpact();
+    
+    // يمكن إضافة منطق حفظ/إزالة من المفضلة هنا
+    // مثلاً: حفظ معرف الذكر في قائمة المفضلة في التخزين المحلي
+    
+    // إظهار رسالة للمستخدم باستخدام النظام الموحد
+    AppSnackBar.showSuccess(
+      context: context,
+      message: 'تمت إضافة الذكر للمفضلة',
+    );
+  }
+
+  // ✅ Widget منفصل لشريط التقدم المحسن
+  Widget _buildProgressHeader(AthkarCategory category) {
+    final totalAthkar = category.athkar.length;
+    final completedAthkar = _completedItems.length;
+    final remainingAthkar = totalAthkar - completedAthkar;
+    
+    return AppCard(
+      type: CardType.info,
+      style: CardStyle.gradient,
+      primaryColor: ThemeConstants.success,
+      margin: const EdgeInsets.all(ThemeConstants.space4),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Text(
+                '$remainingAthkar متبقي',
+                style: context.bodyMedium?.copyWith(
+                  color: remainingAthkar > 0 
+                      ? Colors.white.withValues(alpha: 0.9)
+                      : Colors.white,
+                  fontWeight: remainingAthkar == 0 
+                      ? ThemeConstants.bold 
+                      : ThemeConstants.regular,
+                ),
+              ),
+              if (completedAthkar > 0) ...[
+                Text(
+                  ' • ',
+                  style: context.bodySmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
+                ),
+                const Icon(
+                  Icons.check_circle,
+                  size: 16,
+                  color: Colors.white,
+                ),
+                ThemeConstants.space1.w,
+                Text(
+                  '$completedAthkar مكتمل',
+                  style: context.bodyMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: ThemeConstants.medium,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          
+          ThemeConstants.space3.h,
+          
+          // شريط التقدم
+          if (totalAthkar > 0)
+            Container(
+              height: 8,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: completedAthkar / totalAthkar,
+                  backgroundColor: Colors.transparent,
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -251,9 +338,6 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     }
 
     final category = _category!;
-    final totalAthkar = category.athkar.length;
-    final completedAthkar = _completedItems.length;
-    final remainingAthkar = totalAthkar - completedAthkar;
     
     return WillPopScope(
       onWillPop: () async {
@@ -262,15 +346,9 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
       },
       child: Scaffold(
         backgroundColor: context.backgroundColor,
-        // ✅ استخدام CustomAppBar الموحد
-        appBar: CustomAppBar(
+        // ✅ استخدام CustomAppBar المبسط
+        appBar: CustomAppBar.simple(
           title: category.title,
-          leading: AppBackButton(
-            onPressed: () async {
-              await _resetAndReload();
-              Navigator.of(context).pop();
-            },
-          ),
           actions: [
             AppBarAction(
               icon: Icons.notifications_outlined,
@@ -283,80 +361,6 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
               tooltip: 'إعدادات الإشعارات',
             ),
           ],
-          // إضافة شريط التقدم كـ bottom
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(80),
-            child: Container(
-              padding: const EdgeInsets.all(ThemeConstants.space4),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        '$remainingAthkar متبقي',
-                        style: context.bodyMedium?.copyWith(
-                          color: remainingAthkar > 0 
-                              ? context.textSecondaryColor 
-                              : ThemeConstants.success,
-                          fontWeight: remainingAthkar == 0 
-                              ? ThemeConstants.bold 
-                              : ThemeConstants.regular,
-                        ),
-                      ),
-                      if (completedAthkar > 0) ...[
-                        Text(
-                          ' • ',
-                          style: context.bodySmall?.copyWith(
-                            color: context.textSecondaryColor,
-                          ),
-                        ),
-                        const Icon(
-                          Icons.check_circle,
-                          size: 16,
-                          color: ThemeConstants.success,
-                        ),
-                        ThemeConstants.space1.w,
-                        Text(
-                          '$completedAthkar مكتمل',
-                          style: context.bodyMedium?.copyWith(
-                            color: ThemeConstants.success,
-                            fontWeight: ThemeConstants.medium,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  
-                  ThemeConstants.space3.h,
-                  
-                  // شريط التقدم
-                  if (totalAthkar > 0)
-                    Container(
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: context.cardColor,
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(
-                          color: context.dividerColor.withValues(alpha: 0.2),
-                        ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: completedAthkar / totalAthkar,
-                          backgroundColor: Colors.transparent,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            completedAthkar == totalAthkar 
-                                ? ThemeConstants.success 
-                                : ThemeConstants.success, // استخدام اللون الأخضر الموحد
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
         ),
         body: _buildContent(category),
       ),
@@ -368,55 +372,65 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
       onRefresh: () async {
         await _resetAndReload();
       },
-      child: _visibleItems.isEmpty 
-          ? _buildEmptyState()
-          : ListView.builder(
-              padding: const EdgeInsets.all(ThemeConstants.space4),
-              itemCount: _visibleItems.length,
-              itemBuilder: (context, index) {
-                final item = _visibleItems[index];
-                final currentCount = _counts[item.id] ?? 0;
-                final isCompleted = _completedItems.contains(item.id);
-                
-                final originalIndex = category.athkar.indexOf(item);
-                final number = originalIndex + 1;
-                  
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      bottom: index < _visibleItems.length - 1
-                          ? ThemeConstants.space4
-                          : 0,
+      child: Column(
+        children: [
+          // ✅ شريط التقدم كـ Widget منفصل
+          _buildProgressHeader(category),
+          
+          // المحتوى الرئيسي
+          Expanded(
+            child: _visibleItems.isEmpty 
+                ? _buildEmptyState()
+                : ListView.builder(
+                    padding: const EdgeInsets.all(ThemeConstants.space4),
+                    itemCount: _visibleItems.length,
+                    itemBuilder: (context, index) {
+                      final item = _visibleItems[index];
+                      final currentCount = _counts[item.id] ?? 0;
+                      final isCompleted = _completedItems.contains(item.id);
+                      
+                      final originalIndex = category.athkar.indexOf(item);
+                      final number = originalIndex + 1;
+                        
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            bottom: index < _visibleItems.length - 1
+                                ? ThemeConstants.space4
+                                : 0,
+                          ),
+                          // ✅ استخدام AppCard.athkar الموحد
+                          child: AppCard.athkar(
+                            content: item.text,
+                            source: item.source,
+                            fadl: item.fadl,
+                            currentCount: currentCount,
+                            totalCount: item.count,
+                            primaryColor: ThemeConstants.success,
+                            onTap: () => _onItemTap(item),
+                            actions: [
+                              CardAction(
+                                icon: Icons.favorite_outline,
+                                label: 'مفضلة',
+                                onPressed: () => _toggleFavorite(item),
+                              ),
+                              CardAction(
+                                icon: Icons.share_rounded,
+                                label: 'مشاركة',
+                                onPressed: () => _shareItem(item),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
-                    // ✅ استخدام AppCard.athkar بدون تكرار الأزرار
-                    child: AppCard.athkar(
-                      content: item.text,
-                      source: item.source,
-                      fadl: item.fadl,
-                      currentCount: currentCount,
-                      totalCount: item.count,
-                      primaryColor: ThemeConstants.success,
-                      onTap: () => _onItemTap(item),
-                      actions: [
-                        CardAction(
-                          icon: Icons.favorite_outline,
-                          label: 'مفضلة',
-                          onPressed: () => _toggleFavorite(item),
-                        ),
-                        CardAction(
-                          icon: Icons.share_rounded,
-                          label: 'مشاركة',
-                          onPressed: () => _shareItem(item),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildEmptyState() {
-    // ✅ استخدام AppCard للحالة المكتملة بدون زر المشاركة
+    // ✅ استخدام AppCard للحالة المكتملة
     return Center(
       child: AppCard.completion(
         title: 'أكملت جميع الأذكار! 🎉',
@@ -429,29 +443,9 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
             icon: Icons.refresh_rounded,
             label: 'إعادة القراءة',
             onPressed: _rereadAthkar,
-            isPrimary: false, // جعل الزر شفاف بدلاً من primary
+            isPrimary: false,
           ),
-          // إزالة زر المشاركة
         ],
-      ),
-    );
-  }
-  void _toggleFavorite(AthkarItem item) {
-    HapticFeedback.lightImpact();
-    
-    // يمكن إضافة منطق حفظ/إزالة من المفضلة هنا
-    // مثلاً: حفظ معرف الذكر في قائمة المفضلة في التخزين المحلي
-    
-    // إظهار رسالة للمستخدم
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('تمت إضافة الذكر للمفضلة'),
-        backgroundColor: ThemeConstants.success,
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-        ),
       ),
     );
   }
