@@ -1,6 +1,6 @@
 // lib/features/athkar/models/athkar_model.dart
 import 'package:flutter/material.dart';
-import '../utils/category_utils.dart';
+import '../../../app/themes/utils/category_utils.dart';
 
 /// نموذج الذكر الفردي
 class AthkarItem {

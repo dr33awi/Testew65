@@ -1,4 +1,4 @@
-// lib/theme/app_theme.dart - النظام المبسط الكامل مع الحفاظ على التصميم
+// lib/app/themes/app_theme.dart - النظام المبسط الكامل مع الحفاظ على التصميم
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -626,4 +626,112 @@ extension AppSpacingExtensions on double {
   
   /// تحويل إلى نصف قطر
   BorderRadius get radius => BorderRadius.circular(this);
+}
+
+// ========== دوال مساعدة للكروت ==========
+
+/// أدوات مساعدة للكروت الموحدة
+class CardHelper {
+  CardHelper._();
+  
+  /// تزيين الكرت الأساسي الموحد
+  static BoxDecoration getCardDecoration({
+    Color? color,
+    bool useGradient = false,
+    List<Color>? gradientColors,
+    double borderRadius = AppTheme.radiusLg,
+  }) {
+    if (useGradient) {
+      return BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradientColors ?? [
+            color ?? AppTheme.primary,
+            (color ?? AppTheme.primary).darken(0.2),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(borderRadius),
+        boxShadow: AppTheme.shadowMd,
+      );
+    }
+    
+    return BoxDecoration(
+      color: AppTheme.card,
+      borderRadius: BorderRadius.circular(borderRadius),
+      border: Border.all(
+        color: AppTheme.divider.withValues(alpha: 0.3),
+        width: 1,
+      ),
+      boxShadow: AppTheme.shadowSm,
+    );
+  }
+  
+  /// التحقق من نوع النص للخط المناسب
+  static TextStyle getTextStyle(String type, {TextStyle? baseStyle}) {
+    switch (type.toLowerCase()) {
+      case 'quran':
+      case 'قران':
+      case 'آية':
+        return AppTheme.quranStyle;
+      case 'dhikr':
+      case 'ذكر':
+      case 'اذكار':
+        return AppTheme.dhikrStyle;
+      case 'numbers':
+      case 'ارقام':
+      case 'عدد':
+        return AppTheme.numbersStyle;
+      default:
+        return baseStyle ?? AppTheme.bodyMedium;
+    }
+  }
+  
+  /// الحصول على أيقونة مناسبة للصلوات
+  static IconData getPrayerIcon(String prayer) {
+    switch (prayer.toLowerCase()) {
+      case 'الفجر':
+      case 'fajr':
+        return Icons.wb_twilight;
+      case 'الشروق':
+      case 'sunrise':
+        return Icons.wb_sunny;
+      case 'الظهر':
+      case 'dhuhr':
+        return Icons.light_mode;
+      case 'العصر':
+      case 'asr':
+        return Icons.wb_cloudy;
+      case 'المغرب':
+      case 'maghrib':
+        return Icons.wb_incandescent;
+      case 'العشاء':
+      case 'isha':
+        return Icons.nightlight_round;
+      default:
+        return Icons.access_time;
+    }
+  }
+  
+  /// تنسيق الأرقام الكبيرة
+  static String formatLargeNumber(int number) {
+    if (number >= 1000000) {
+      return '${(number / 1000000).toStringAsFixed(1)}م';
+    } else if (number >= 1000) {
+      return '${(number / 1000).toStringAsFixed(1)}ك';
+    }
+    return number.toString();
+  }
+  
+  /// تنسيق المدة الزمنية
+  static String formatDuration(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes % 60;
+    
+    if (hours > 0) {
+      return '$hoursس $minutesد';
+    } else {
+      return '$minutesد';
+    }
+  }
 }

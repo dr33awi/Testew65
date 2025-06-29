@@ -1,11 +1,11 @@
-// lib/theme/widgets.dart - المكونات الموحدة المبسطة والمُصححة
+// lib/app/themes/widgets/widgets.dart - المكونات الموحدة المحدثة
 import 'package:athkar_app/app/themes/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// ==================== البطاقة الموحدة ====================
+// ==================== البطاقة الموحدة المحدثة ====================
 
-/// بطاقة موحدة مع الحفاظ على التصميم الحالي
+/// بطاقة موحدة مع تطبيق الهوية البصرية الكاملة
 class AppCard extends StatelessWidget {
   final Widget? child;
   final String? title;
@@ -109,21 +109,23 @@ class AppCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // النص الرئيسي مع نفس التصميم
+          // النص الرئيسي مع نفس التصميم الموحد
           Container(
             width: double.infinity,
             padding: AppTheme.space4.padding,
-            decoration: BoxDecoration(
+            decoration: CardHelper.getCardDecoration(
               color: primaryColor.withValues(alpha: 0.1),
-              borderRadius: AppTheme.radiusMd.radius,
+              borderRadius: AppTheme.radiusMd,
+            ).copyWith(
               border: Border.all(
                 color: primaryColor.withValues(alpha: 0.2),
                 width: 1,
               ),
+              boxShadow: [], // إزالة الظل من الحاوية الداخلية
             ),
             child: Text(
               content,
-              style: AppTheme.quranStyle.copyWith(height: 1.8),
+              style: CardHelper.getTextStyle('quran').copyWith(height: 1.8),
               textAlign: TextAlign.center,
             ),
           ),
@@ -217,39 +219,15 @@ class AppCard extends StatelessWidget {
           onTap: onTap,
           borderRadius: AppTheme.radiusLg.radius,
           child: Container(
-            decoration: _buildDecoration(),
+            decoration: CardHelper.getCardDecoration(
+              color: color,
+              useGradient: useGradient,
+            ),
             padding: padding ?? AppTheme.space4.padding,
             child: child ?? _buildDefaultContent(),
           ),
         ),
       ),
-    );
-  }
-
-  BoxDecoration _buildDecoration() {
-    if (useGradient) {
-      return BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            color ?? AppTheme.primary,
-            (color ?? AppTheme.primary).darken(0.2),
-          ],
-        ),
-        borderRadius: AppTheme.radiusLg.radius,
-        boxShadow: AppTheme.shadowMd,
-      );
-    }
-    
-    return BoxDecoration(
-      color: AppTheme.card,
-      borderRadius: AppTheme.radiusLg.radius,
-      border: Border.all(
-        color: AppTheme.divider.withValues(alpha: 0.3),
-        width: 1,
-      ),
-      boxShadow: AppTheme.shadowSm,
     );
   }
 
@@ -625,18 +603,20 @@ class CardAction extends StatelessWidget {
                     ? Colors.black
                     : color ?? AppTheme.textSecondary,
               ),
-              AppTheme.space1.w,
-              Text(
-                label,
-                style: AppTheme.labelMedium.copyWith(
-                  color: isPrimary 
-                      ? Colors.black
-                      : color ?? AppTheme.textSecondary,
-                  fontWeight: isPrimary 
-                      ? AppTheme.semiBold 
-                      : AppTheme.medium,
+              if (label.isNotEmpty) ...[
+                AppTheme.space1.w,
+                Text(
+                  label,
+                  style: AppTheme.labelMedium.copyWith(
+                    color: isPrimary 
+                        ? Colors.black
+                        : color ?? AppTheme.textSecondary,
+                    fontWeight: isPrimary 
+                        ? AppTheme.semiBold 
+                        : AppTheme.medium,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),
