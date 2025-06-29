@@ -1,12 +1,12 @@
-// lib/app/themes/widgets/extended_cards.dart - الكروت المتقدمة
+// lib/app/themes/widgets/extended_cards.dart - البطاقات المتخصصة فقط منظّفة
 import 'package:athkar_app/app/themes/app_theme.dart';
 import 'package:athkar_app/app/themes/widgets/widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// ==================== كروت أوقات الصلاة ====================
+// ==================== كروت أوقات الصلاة المتخصصة ====================
 
-/// كرت أوقات الصلاة
+/// كرت أوقات الصلاة المتقدم
 class PrayerTimesCard extends StatelessWidget {
   final Map<String, String> prayerTimes;
   final String? currentPrayer;
@@ -48,7 +48,7 @@ class PrayerTimesCard extends StatelessWidget {
                     vertical: AppTheme.space1,
                   ),
                   decoration: BoxDecoration(
-                    color: context.getPrayerColor(currentPrayer!),
+                    color: AppTheme.getPrayerColor(currentPrayer!),
                     borderRadius: AppTheme.radiusFull.radius,
                   ),
                   child: Text(
@@ -84,7 +84,7 @@ class PrayerTimesCard extends StatelessWidget {
                   ),
                   AppTheme.space1.h,
                   Text(
-                    CardHelper.formatDuration(timeToNext!),
+                    AppTheme.formatDuration(timeToNext!),
                     style: AppTheme.headlineMedium.copyWith(
                       color: Colors.white,
                       fontWeight: AppTheme.bold,
@@ -122,7 +122,7 @@ class PrayerTimesCard extends StatelessWidget {
                 height: 6,
                 decoration: BoxDecoration(
                   color: isCurrent 
-                      ? context.getPrayerColor(prayer)
+                      ? AppTheme.getPrayerColor(prayer)
                       : AppTheme.textTertiary,
                   shape: BoxShape.circle,
                 ),
@@ -132,7 +132,7 @@ class PrayerTimesCard extends StatelessWidget {
                 prayer,
                 style: AppTheme.bodyLarge.copyWith(
                   fontWeight: isCurrent ? AppTheme.semiBold : AppTheme.regular,
-                  color: isCurrent ? context.getPrayerColor(prayer) : null,
+                  color: isCurrent ? AppTheme.getPrayerColor(prayer) : null,
                 ),
               ),
             ],
@@ -142,7 +142,7 @@ class PrayerTimesCard extends StatelessWidget {
             style: AppTheme.bodyLarge.copyWith(
               fontFamily: AppTheme.numbersFont,
               fontWeight: isCurrent ? AppTheme.bold : AppTheme.medium,
-              color: isCurrent ? context.getPrayerColor(prayer) : AppTheme.textSecondary,
+              color: isCurrent ? AppTheme.getPrayerColor(prayer) : AppTheme.textSecondary,
             ),
           ),
         ],
@@ -151,71 +151,79 @@ class PrayerTimesCard extends StatelessWidget {
   }
 }
 
-/// كرت صلاة واحدة مبسط
-class SinglePrayerCard extends StatelessWidget {
+/// كرت الصلاة التالية المتقدم
+class NextPrayerCard extends StatelessWidget {
   final String prayerName;
   final String time;
-  final bool isCurrent;
-  final bool isNext;
+  final Duration? remainingTime;
   final VoidCallback? onTap;
 
-  const SinglePrayerCard({
+  const NextPrayerCard({
     super.key,
     required this.prayerName,
     required this.time,
-    this.isCurrent = false,
-    this.isNext = false,
+    this.remainingTime,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final prayerColor = context.getPrayerColor(prayerName);
-    
     return AppCard(
-      useGradient: isCurrent,
-      color: isCurrent ? prayerColor : null,
+      useGradient: true,
+      color: AppTheme.getPrayerColor(prayerName),
       onTap: onTap,
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            CardHelper.getPrayerIcon(prayerName),
-            size: AppTheme.iconLg,
-            color: isCurrent ? Colors.white : prayerColor,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                AppTheme.getPrayerIcon(prayerName),
+                color: Colors.white,
+                size: AppTheme.iconMd,
+              ),
+              AppTheme.space2.w,
+              Text(
+                'الصلاة التالية',
+                style: AppTheme.bodyMedium.copyWith(
+                  color: Colors.white,
+                  fontWeight: AppTheme.medium,
+                ),
+              ),
+            ],
           ),
-          AppTheme.space2.h,
+          AppTheme.space3.h,
           Text(
             prayerName,
-            style: AppTheme.titleMedium.copyWith(
-              color: isCurrent ? Colors.white : null,
-              fontWeight: AppTheme.semiBold,
+            style: AppTheme.headlineMedium.copyWith(
+              color: Colors.white,
+              fontWeight: AppTheme.bold,
             ),
           ),
           AppTheme.space1.h,
           Text(
             time,
-            style: AppTheme.bodyLarge.copyWith(
+            style: AppTheme.titleLarge.copyWith(
+              color: Colors.white,
               fontFamily: AppTheme.numbersFont,
-              fontWeight: AppTheme.bold,
-              color: isCurrent ? Colors.white : prayerColor,
+              fontWeight: AppTheme.semiBold,
             ),
           ),
-          if (isNext) ...[
-            AppTheme.space1.h,
+          if (remainingTime != null) ...[
+            AppTheme.space2.h,
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.space2,
-                vertical: 2,
+                horizontal: AppTheme.space3,
+                vertical: AppTheme.space1,
               ),
               decoration: BoxDecoration(
-                color: (isCurrent ? Colors.white : prayerColor).withValues(alpha: 0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: AppTheme.radiusFull.radius,
               ),
               child: Text(
-                'التالية',
-                style: AppTheme.caption.copyWith(
-                  color: isCurrent ? Colors.white : prayerColor,
+                'بعد ${AppTheme.formatDuration(remainingTime!)}',
+                style: AppTheme.bodySmall.copyWith(
+                  color: Colors.white,
                   fontWeight: AppTheme.medium,
                 ),
               ),
@@ -227,9 +235,88 @@ class SinglePrayerCard extends StatelessWidget {
   }
 }
 
+/// كرت إحصائيات الصلوات
+class PrayerStatsCard extends StatelessWidget {
+  final int completedToday;
+  final int totalDaily;
+  final int streak;
+  final VoidCallback? onTap;
+
+  const PrayerStatsCard({
+    super.key,
+    required this.completedToday,
+    required this.totalDaily,
+    required this.streak,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final completionRate = totalDaily > 0 ? completedToday / totalDaily : 0.0;
+    
+    return AppCard(
+      useGradient: true,
+      color: AppTheme.primary,
+      onTap: onTap,
+      child: Column(
+        children: [
+          Text(
+            'إحصائيات الصلوات',
+            style: AppTheme.titleMedium.copyWith(
+              color: Colors.white,
+              fontWeight: AppTheme.semiBold,
+            ),
+          ),
+          AppTheme.space3.h,
+          
+          // شريط التقدم
+          LinearProgressIndicator(
+            value: completionRate,
+            backgroundColor: Colors.white.withValues(alpha: 0.3),
+            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+            minHeight: 6,
+          ),
+          AppTheme.space3.h,
+          
+          // الإحصائيات
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildStat('اليوم', '$completedToday/$totalDaily'),
+              _buildStat('النسبة', '${(completionRate * 100).toInt()}%'),
+              _buildStat('المواظبة', '$streak يوم'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStat(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: AppTheme.titleMedium.copyWith(
+            color: Colors.white,
+            fontWeight: AppTheme.bold,
+            fontFamily: AppTheme.numbersFont,
+          ),
+        ),
+        Text(
+          label,
+          style: AppTheme.caption.copyWith(
+            color: Colors.white.withValues(alpha: 0.9),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 // ==================== كروت معلومات القبلة ====================
 
-/// كرت معلومات القبلة
+/// كرت معلومات القبلة المتقدم
 class QiblaInfoCard extends StatelessWidget {
   final double qiblaDirection;
   final String? locationName;
@@ -442,239 +529,6 @@ class SimpleQiblaCard extends StatelessWidget {
   }
 }
 
-// ==================== كروت الإعدادات ====================
-
-/// كرت إعداد واحد
-class SettingCard extends StatelessWidget {
-  final String title;
-  final String? subtitle;
-  final IconData icon;
-  final Widget? trailing;
-  final VoidCallback? onTap;
-  final Color? color;
-  final bool showArrow;
-
-  const SettingCard({
-    super.key,
-    required this.title,
-    this.subtitle,
-    required this.icon,
-    this.trailing,
-    this.onTap,
-    this.color,
-    this.showArrow = true,
-  });
-
-  // Factory للإعدادات المختلفة
-  factory SettingCard.toggle({
-    Key? key,
-    required String title,
-    String? subtitle,
-    required IconData icon,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-    Color? color,
-  }) {
-    return SettingCard(
-      key: key,
-      title: title,
-      subtitle: subtitle,
-      icon: icon,
-      color: color,
-      showArrow: false,
-      trailing: Switch(
-        value: value,
-        onChanged: onChanged,
-        activeColor: color ?? AppTheme.primary,
-      ),
-      onTap: () => onChanged(!value),
-    );
-  }
-
-  factory SettingCard.navigation({
-    Key? key,
-    required String title,
-    String? subtitle,
-    required IconData icon,
-    required VoidCallback onTap,
-    Color? color,
-    String? badge,
-  }) {
-    return SettingCard(
-      key: key,
-      title: title,
-      subtitle: subtitle,
-      icon: icon,
-      color: color,
-      onTap: onTap,
-      trailing: badge != null 
-          ? Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.space2,
-                vertical: 2,
-              ),
-              decoration: BoxDecoration(
-                color: AppTheme.error,
-                borderRadius: AppTheme.radiusFull.radius,
-              ),
-              child: Text(
-                badge,
-                style: AppTheme.caption.copyWith(
-                  color: Colors.white,
-                  fontWeight: AppTheme.medium,
-                ),
-              ),
-            )
-          : null,
-    );
-  }
-
-  factory SettingCard.info({
-    Key? key,
-    required String title,
-    required String value,
-    required IconData icon,
-    Color? color,
-  }) {
-    return SettingCard(
-      key: key,
-      title: title,
-      icon: icon,
-      color: color,
-      showArrow: false,
-      trailing: Text(
-        value,
-        style: AppTheme.bodyMedium.copyWith(
-          color: AppTheme.textSecondary,
-          fontFamily: AppTheme.numbersFont,
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      onTap: onTap,
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppTheme.space4,
-        vertical: AppTheme.space1,
-      ),
-      child: Row(
-        children: [
-          // الأيقونة
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: (color ?? AppTheme.primary).withValues(alpha: 0.1),
-              borderRadius: AppTheme.radiusMd.radius,
-            ),
-            child: Icon(
-              icon,
-              color: color ?? AppTheme.primary,
-              size: AppTheme.iconMd,
-            ),
-          ),
-          
-          AppTheme.space3.w,
-          
-          // النص
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTheme.bodyLarge.copyWith(
-                    fontWeight: AppTheme.medium,
-                  ),
-                ),
-                if (subtitle != null) ...[
-                  AppTheme.space1.h,
-                  Text(
-                    subtitle!,
-                    style: AppTheme.bodySmall.copyWith(
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          
-          // العنصر الجانبي
-          if (trailing != null) ...[
-            AppTheme.space2.w,
-            trailing!,
-          ] else if (showArrow) ...[
-            AppTheme.space2.w,
-            const Icon(
-              Icons.chevron_right,
-              color: AppTheme.textTertiary,
-              size: AppTheme.iconMd,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-/// كرت مجموعة الإعدادات
-class SettingsGroupCard extends StatelessWidget {
-  final String title;
-  final List<Widget> children;
-  final IconData? icon;
-
-  const SettingsGroupCard({
-    super.key,
-    required this.title,
-    required this.children,
-    this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // عنوان المجموعة
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.space4,
-            vertical: AppTheme.space2,
-          ),
-          child: Row(
-            children: [
-              if (icon != null) ...[
-                Icon(
-                  icon!,
-                  size: AppTheme.iconSm,
-                  color: AppTheme.textSecondary,
-                ),
-                AppTheme.space2.w,
-              ],
-              Text(
-                title.toUpperCase(),
-                style: AppTheme.labelMedium.copyWith(
-                  color: AppTheme.textSecondary,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-        
-        // عناصر المجموعة
-        ...children,
-        
-        AppTheme.space3.h,
-      ],
-    );
-  }
-}
-
 // ==================== كروت الإحصائيات المتقدمة ====================
 
 /// كرت إحصائية التسبيح
@@ -732,7 +586,7 @@ class TasbihStatCard extends StatelessWidget {
                 height: 40,
                 color: Colors.white.withValues(alpha: 0.3),
               ),
-              _buildStat('المجموع', CardHelper.formatLargeNumber(totalCount)),
+              _buildStat('المجموع', AppTheme.formatLargeNumber(totalCount)),
               Container(
                 width: 1,
                 height: 40,
@@ -963,9 +817,9 @@ class StreakStatCard extends StatelessWidget {
   }
 }
 
-// ==================== كروت الأذكار المتقدمة ====================
+// ==================== كرت ذكر متقدم مع Animation ====================
 
-/// كرت ذكر متقدم
+/// كرت ذكر متقدم مع تأثيرات بصرية
 class AdvancedAthkarCard extends StatefulWidget {
   final String content;
   final String? source;
@@ -1031,15 +885,19 @@ class _AdvancedAthkarCardState extends State<AdvancedAthkarCard>
 
   @override
   Widget build(BuildContext context) {
-    final progress = widget.currentCount / widget.totalCount;
-    
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {
         return Transform.scale(
           scale: _scaleAnimation.value,
-          child: AppCard(
-            color: widget.primaryColor,
+          child: AppCard.athkar(
+            content: widget.content,
+            source: widget.source,
+            fadl: widget.fadl,
+            currentCount: widget.currentCount,
+            totalCount: widget.totalCount,
+            primaryColor: widget.primaryColor,
+            isCompleted: widget.isCompleted,
             onTap: () {
               HapticFeedback.lightImpact();
               _animationController.forward().then((_) {
@@ -1047,220 +905,42 @@ class _AdvancedAthkarCardState extends State<AdvancedAthkarCard>
               });
               widget.onTap();
             },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // النص الرئيسي
-                Container(
-                  width: double.infinity,
-                  padding: AppTheme.space4.padding,
-                  decoration: BoxDecoration(
-                    color: widget.isCompleted
-                        ? widget.primaryColor.withValues(alpha: 0.2)
-                        : widget.primaryColor.withValues(alpha: 0.1),
-                    borderRadius: AppTheme.radiusMd.radius,
-                    border: Border.all(
-                      color: widget.isCompleted
-                          ? widget.primaryColor.withValues(alpha: 0.4)
-                          : widget.primaryColor.withValues(alpha: 0.2),
-                      width: widget.isCompleted ? 2 : 1,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        widget.content,
-                        style: AppTheme.quranStyle.copyWith(
-                          height: 1.8,
-                          color: widget.isCompleted
-                              ? widget.primaryColor
-                              : AppTheme.textReligious,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      
-                      if (widget.isCompleted) ...[
-                        AppTheme.space2.h,
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.check_circle,
-                              color: widget.primaryColor,
-                              size: AppTheme.iconSm,
-                            ),
-                            AppTheme.space1.w,
-                            Text(
-                              'مكتمل',
-                              style: AppTheme.caption.copyWith(
-                                color: widget.primaryColor,
-                                fontWeight: AppTheme.medium,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ],
-                  ),
+            actions: [
+              if (widget.onFavorite != null)
+                CardAction(
+                  icon: widget.isFavorite ? Icons.favorite : Icons.favorite_border,
+                  label: '',
+                  onPressed: widget.onFavorite!,
+                  color: widget.isFavorite ? AppTheme.error : AppTheme.textSecondary,
                 ),
-                
-                AppTheme.space3.h,
-                
-                // المعلومات الإضافية
-                if (widget.source != null) ...[
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.library_books,
-                        size: AppTheme.iconSm,
-                        color: widget.primaryColor,
-                      ),
-                      AppTheme.space2.w,
-                      Expanded(
-                        child: Text(
-                          'المصدر: ${widget.source}',
-                          style: AppTheme.bodySmall,
-                        ),
-                      ),
-                    ],
-                  ),
-                  AppTheme.space1.h,
-                ],
-                
-                if (widget.fadl != null) ...[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(
-                        Icons.star,
-                        size: AppTheme.iconSm,
-                        color: AppTheme.warning,
-                      ),
-                      AppTheme.space2.w,
-                      Expanded(
-                        child: Text(
-                          'الفضل: ${widget.fadl}',
-                          style: AppTheme.bodySmall,
-                        ),
-                      ),
-                    ],
-                  ),
-                  AppTheme.space2.h,
-                ],
-                
-                // شريط التقدم
-                if (!widget.isCompleted) ...[
-                  Container(
-                    width: double.infinity,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: widget.primaryColor.withValues(alpha: 0.2),
-                      borderRadius: AppTheme.radiusFull.radius,
-                    ),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: progress,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: widget.primaryColor,
-                          borderRadius: AppTheme.radiusFull.radius,
-                        ),
-                      ),
-                    ),
-                  ),
-                  AppTheme.space2.h,
-                ],
-                
-                // العداد والإجراءات
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // العداد
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppTheme.space3,
-                        vertical: AppTheme.space1,
-                      ),
-                      decoration: BoxDecoration(
-                        color: widget.isCompleted
-                            ? AppTheme.success
-                            : widget.primaryColor,
-                        borderRadius: AppTheme.radiusFull.radius,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (widget.isCompleted)
-                            const Icon(
-                              Icons.check,
-                              size: 14,
-                              color: Colors.white,
-                            )
-                          else ...[
-                            Text(
-                              '${widget.currentCount}',
-                              style: AppTheme.labelMedium.copyWith(
-                                color: Colors.white,
-                                fontWeight: AppTheme.bold,
-                                fontFamily: AppTheme.numbersFont,
-                              ),
-                            ),
-                            Text(
-                              ' / ${widget.totalCount}',
-                              style: AppTheme.labelMedium.copyWith(
-                                color: Colors.white.withValues(alpha: 0.8),
-                                fontFamily: AppTheme.numbersFont,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    
-                    // الإجراءات
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (widget.onFavorite != null)
-                          CardAction(
-                            icon: widget.isFavorite ? Icons.favorite : Icons.favorite_border,
-                            label: '',
-                            onPressed: widget.onFavorite!,
-                            color: widget.isFavorite ? AppTheme.error : AppTheme.textSecondary,
-                          ),
-                        
-                        if (widget.onShare != null)
-                          CardAction(
-                            icon: Icons.share,
-                            label: '',
-                            onPressed: widget.onShare!,
-                            color: AppTheme.textSecondary,
-                          ),
-                        
-                        if (widget.onCopy != null)
-                          CardAction(
-                            icon: Icons.copy,
-                            label: '',
-                            onPressed: () {
-                              HapticFeedback.selectionClick();
-                              widget.onCopy!();
-                            },
-                            color: AppTheme.textSecondary,
-                          ),
-                        
-                        if (widget.isCompleted && widget.onReset != null)
-                          CardAction(
-                            icon: Icons.refresh,
-                            label: '',
-                            onPressed: widget.onReset!,
-                            color: AppTheme.textSecondary,
-                          ),
-                      ],
-                    ),
-                  ],
+              
+              if (widget.onShare != null)
+                CardAction(
+                  icon: Icons.share,
+                  label: '',
+                  onPressed: widget.onShare!,
+                  color: AppTheme.textSecondary,
                 ),
-              ],
-            ),
+              
+              if (widget.onCopy != null)
+                CardAction(
+                  icon: Icons.copy,
+                  label: '',
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    widget.onCopy!();
+                  },
+                  color: AppTheme.textSecondary,
+                ),
+              
+              if (widget.isCompleted && widget.onReset != null)
+                CardAction(
+                  icon: Icons.refresh,
+                  label: '',
+                  onPressed: widget.onReset!,
+                  color: AppTheme.textSecondary,
+                ),
+            ],
           ),
         );
       },

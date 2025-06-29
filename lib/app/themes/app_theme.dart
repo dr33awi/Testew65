@@ -1,61 +1,55 @@
-// lib/app/themes/app_theme.dart - النظام المبسط الكامل مع الحفاظ على التصميم
+// lib/app/themes/app_theme.dart - النواة المركزية المحسنة مع دمج جميع الدوال المساعدة
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// نظام الثيم الإسلامي المبسط - داكن فقط
+/// نظام الثيم الإسلامي المركزي - يحتوي على كل شيء
 class AppTheme {
   AppTheme._();
 
   // ========== الألوان الأساسية ==========
   
-  /// الألوان الإسلامية الأساسية
-  static const Color primary = Color(0xFF5D7052);        // أخضر زيتي أنيق
+  static const Color primary = Color(0xFF5D7052);
   static const Color primaryLight = Color(0xFF7A8E6F);
   static const Color primaryDark = Color(0xFF4A5A41);
   
-  static const Color secondary = Color(0xFFB8860B);       // ذهبي دافئ
+  static const Color secondary = Color(0xFFB8860B);
   static const Color secondaryLight = Color(0xFFDAA520);
   static const Color secondaryDark = Color(0xFF9A7209);
   
-  static const Color accent = Color(0xFF8D5524);          // بني دافئ
-  static const Color tertiary = Color(0xFF4F5D6B);       // أزرق رمادي
+  static const Color accent = Color(0xFF8D5524);
+  static const Color tertiary = Color(0xFF4F5D6B);
   
-  // ألوان الحالة
   static const Color success = primary;
   static const Color warning = secondary;
   static const Color error = Color(0xFFD04848);
   static const Color info = Color(0xFF4A86B8);
   
-  // ألوان النصوص
   static const Color textPrimary = Color(0xFFF5F5F0);
   static const Color textSecondary = Color(0xFFE0E0D6);
   static const Color textTertiary = Color(0xFFC4C4B8);
   static const Color textHint = Color(0xFFA8A898);
   static const Color textReligious = Color(0xFFF8F8F3);
   
-  // ألوان الخلفيات
   static const Color background = Color(0xFF1A1F1A);
   static const Color surface = Color(0xFF232A23);
   static const Color card = Color(0xFF2D352D);
   
-  // ألوان الحدود
   static const Color divider = Color(0xFF3A4239);
   static const Color border = Color(0xFF4A524A);
-  
-  // ========== الخطوط العربية ==========
+
+  // ========== الخطوط ==========
   
   static const String primaryFont = 'Tajawal';
   static const String religiousFont = 'Amiri Quran';
   static const String numbersFont = 'Cairo';
   
-  // أوزان الخطوط
   static const FontWeight light = FontWeight.w300;
   static const FontWeight regular = FontWeight.w400;
   static const FontWeight medium = FontWeight.w500;
   static const FontWeight semiBold = FontWeight.w600;
   static const FontWeight bold = FontWeight.w700;
-  
-  // ========== أنماط النصوص الأساسية ==========
+
+  // ========== أنماط النصوص ==========
   
   static const TextStyle displayLarge = TextStyle(
     fontFamily: primaryFont,
@@ -89,7 +83,6 @@ class AppTheme {
     color: textPrimary,
   );
 
-  // ✅ إضافة headlineSmall المفقود
   static const TextStyle headlineSmall = TextStyle(
     fontFamily: primaryFont,
     fontSize: 28,
@@ -147,7 +140,6 @@ class AppTheme {
     color: textPrimary,
   );
 
-  // ✅ إضافة labelSmall المفقود
   static const TextStyle labelSmall = TextStyle(
     fontFamily: primaryFont,
     fontSize: 11,
@@ -165,7 +157,6 @@ class AppTheme {
     color: textTertiary,
   );
   
-  // النصوص الدينية
   static const TextStyle quranStyle = TextStyle(
     fontFamily: religiousFont,
     fontSize: 18,
@@ -191,10 +182,9 @@ class AppTheme {
     color: primary,
     fontFeatures: [FontFeature.tabularFigures()],
   );
-  
+
   // ========== الثوابت التصميمية ==========
   
-  // المسافات
   static const double space1 = 4.0;
   static const double space2 = 8.0;
   static const double space3 = 12.0;
@@ -203,7 +193,6 @@ class AppTheme {
   static const double space6 = 24.0;
   static const double space8 = 32.0;
   
-  // الحواف والانحناءات
   static const double radiusXs = 2.0;
   static const double radiusSm = 6.0;
   static const double radiusMd = 10.0;
@@ -212,26 +201,22 @@ class AppTheme {
   static const double radius2xl = 24.0;
   static const double radiusFull = 1000.0;
   
-  // أحجام الأيقونات
   static const double iconSm = 16.0;
   static const double iconMd = 22.0;
   static const double iconLg = 28.0;
   static const double iconXl = 36.0;
   
-  // الارتفاعات والظلال
   static const double elevationSm = 2.0;
   static const double elevationMd = 6.0;
   static const double elevationLg = 12.0;
   
-  // أحجام الأزرار
   static const double buttonHeight = 44.0;
   static const double buttonHeightLarge = 52.0;
   
-  // مدد الحركة
   static const Duration durationFast = Duration(milliseconds: 200);
   static const Duration durationNormal = Duration(milliseconds: 300);
   static const Duration durationSlow = Duration(milliseconds: 500);
-  
+
   // ========== الظلال ==========
   
   static List<BoxShadow> get shadowSm => [
@@ -258,7 +243,6 @@ class AppTheme {
     ),
   ];
   
-  // ظل خاص للبطاقات الإسلامية
   static List<BoxShadow> get cardShadow => [
     BoxShadow(
       color: Colors.black.withValues(alpha: 0.1),
@@ -267,7 +251,7 @@ class AppTheme {
       spreadRadius: 1,
     ),
   ];
-  
+
   // ========== التدرجات ==========
   
   static const LinearGradient primaryGradient = LinearGradient(
@@ -287,14 +271,292 @@ class AppTheme {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+
+  // ========== البيانات المركزية ==========
   
+  /// ألوان الصلوات - مركزية
+  static const Map<String, Color> prayerColors = {
+    'الفجر': Color(0xFF6B7BA8),
+    'الشروق': secondary,
+    'الظهر': Color(0xFFD08C47),
+    'العصر': accent,
+    'المغرب': Color(0xFF9B6B9B),
+    'العشاء': tertiary,
+  };
+  
+  /// ألوان الفئات - مركزية
+  static const Map<String, Color> categoryColors = {
+    'morning': primary,
+    'الصباح': primary,
+    'evening': accent,
+    'المساء': accent,
+    'sleep': tertiary,
+    'النوم': tertiary,
+    'prayer': primary,
+    'الصلاة': primary,
+    'eating': secondary,
+    'الطعام': secondary,
+    'travel': info,
+    'السفر': info,
+    'quran': Color(0xFF4A6B4A),
+    'القرآن': Color(0xFF4A6B4A),
+    'tasbih': secondary,
+    'التسبيح': secondary,
+    'dua': Color(0xFF8B7355),
+    'الدعاء': Color(0xFF8B7355),
+    'general': primary,
+    'عامة': primary,
+    'اوقات_الصلاة': primary,
+    'الاذكار': accent,
+    'القبلة': tertiary,
+    'قبلة': tertiary,
+    'تسبيح': secondary,
+    'القران': Color(0xFF4A6B4A),
+    'الادعية': Color(0xFF8B7355),
+    'المفضلة': Color(0xFFCC8E35),
+    'الاعدادات': Color(0xFF6B7BA8),
+  };
+
+  /// أيقونات الصلوات - مركزية
+  static const Map<String, IconData> prayerIcons = {
+    'الفجر': Icons.wb_twilight,
+    'fajr': Icons.wb_twilight,
+    'الشروق': Icons.wb_sunny,
+    'sunrise': Icons.wb_sunny,
+    'الظهر': Icons.light_mode,
+    'dhuhr': Icons.light_mode,
+    'العصر': Icons.wb_cloudy,
+    'asr': Icons.wb_cloudy,
+    'المغرب': Icons.wb_incandescent,
+    'maghrib': Icons.wb_incandescent,
+    'العشاء': Icons.nightlight_round,
+    'isha': Icons.nightlight_round,
+  };
+
+  /// أيقونات الفئات - مركزية
+  static const Map<String, IconData> categoryIcons = {
+    'morning': Icons.wb_sunny,
+    'الصباح': Icons.wb_sunny,
+    'evening': Icons.wb_incandescent,
+    'المساء': Icons.wb_incandescent,
+    'sleep': Icons.nightlight_round,
+    'النوم': Icons.nightlight_round,
+    'prayer': Icons.mosque,
+    'الصلاة': Icons.mosque,
+    'eating': Icons.restaurant,
+    'الطعام': Icons.restaurant,
+    'travel': Icons.flight,
+    'السفر': Icons.flight,
+    'quran': Icons.menu_book,
+    'القرآن': Icons.menu_book,
+    'tasbih': Icons.fingerprint,
+    'التسبيح': Icons.fingerprint,
+    'dua': Icons.volunteer_activism,
+    'الدعاء': Icons.volunteer_activism,
+    'general': Icons.book,
+    'عامة': Icons.book,
+  };
+
+  /// أولويات الصلوات - مركزية
+  static const Map<String, int> prayerPriorities = {
+    'الفجر': 1,
+    'fajr': 1,
+    'الشروق': 2,
+    'sunrise': 2,
+    'الظهر': 3,
+    'dhuhr': 3,
+    'العصر': 4,
+    'asr': 4,
+    'المغرب': 5,
+    'maghrib': 5,
+    'العشاء': 6,
+    'isha': 6,
+  };
+
+  /// أولويات الفئات - مركزية
+  static const Map<String, int> categoryPriorities = {
+    'morning': 1,
+    'الصباح': 1,
+    'evening': 2,
+    'المساء': 2,
+    'prayer': 3,
+    'الصلاة': 3,
+    'sleep': 4,
+    'النوم': 4,
+    'eating': 5,
+    'الطعام': 5,
+    'quran': 6,
+    'القرآن': 6,
+    'tasbih': 7,
+    'التسبيح': 7,
+    'dua': 8,
+    'الدعاء': 8,
+    'general': 99,
+    'عامة': 99,
+  };
+
+  // ========== الدوال المساعدة المدمجة ==========
+  
+  /// الحصول على لون الصلاة
+  static Color getPrayerColor(String prayerName) {
+    return prayerColors[prayerName] ?? primary;
+  }
+  
+  /// الحصول على لون الفئة
+  static Color getCategoryColor(String categoryId) {
+    return categoryColors[categoryId] ?? primary;
+  }
+
+  /// الحصول على أيقونة الصلاة
+  static IconData getPrayerIcon(String prayerName) {
+    return prayerIcons[prayerName.toLowerCase()] ?? Icons.access_time;
+  }
+
+  /// الحصول على أيقونة الفئة
+  static IconData getCategoryIcon(String categoryId) {
+    return categoryIcons[categoryId.toLowerCase()] ?? Icons.book;
+  }
+
+  /// الحصول على أولوية الصلاة
+  static int getPrayerPriority(String prayerName) {
+    return prayerPriorities[prayerName.toLowerCase()] ?? 99;
+  }
+
+  /// الحصول على أولوية الفئة
+  static int getCategoryPriority(String categoryId) {
+    return categoryPriorities[categoryId.toLowerCase()] ?? 99;
+  }
+
+  /// تنسيق الأرقام الكبيرة - مدمج
+  static String formatLargeNumber(num number) {
+    if (number >= 1000000) {
+      return '${(number / 1000000).toStringAsFixed(1)}م';
+    } else if (number >= 1000) {
+      return '${(number / 1000).toStringAsFixed(1)}ك';
+    }
+    return number.toString();
+  }
+
+  /// تنسيق المدة الزمنية - مدمج
+  static String formatDuration(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes % 60;
+    
+    if (hours > 0) {
+      return '${hours}س ${minutes}د';
+    } else {
+      return '${minutes}د';
+    }
+  }
+
+  /// تنسيق وقت الصلاة - مدمج
+  static String formatPrayerTime(DateTime time, {bool use24Hour = false}) {
+    if (use24Hour) {
+      return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+    } else {
+      final hour = time.hour;
+      final minute = time.minute.toString().padLeft(2, '0');
+      final period = hour >= 12 ? 'م' : 'ص';
+      final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+      return '$displayHour:$minute $period';
+    }
+  }
+
+  /// ترتيب القوائم بناءً على الأولوية - عام ومفيد
+  static List<T> sortByPriority<T>(
+    List<T> items,
+    int Function(T) getPriorityFunction,
+  ) {
+    final sortedList = List<T>.from(items);
+    sortedList.sort((a, b) => getPriorityFunction(a).compareTo(getPriorityFunction(b)));
+    return sortedList;
+  }
+
+  /// فلترة بناءً على النص - عام ومفيد
+  static List<T> filterByText<T>(
+    List<T> items,
+    String searchText,
+    List<String> Function(T) getSearchableTexts,
+  ) {
+    if (searchText.isEmpty) return items;
+    
+    final lowerSearchText = searchText.toLowerCase().trim();
+    
+    return items.where((item) {
+      return getSearchableTexts(item).any((text) =>
+          text.toLowerCase().contains(lowerSearchText));
+    }).toList();
+  }
+
+  /// التحقق من صحة وقت الصلاة - مدمج
+  static bool isValidPrayerTime(String timeString) {
+    try {
+      final parts = timeString.split(':');
+      if (parts.length < 2) return false;
+      
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+      
+      return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// التحقق من الفئات الأساسية - مدمج
+  static bool isEssentialCategory(String categoryId) {
+    const essentialCategories = {
+      'morning', 'الصباح',
+      'evening', 'المساء', 
+      'sleep', 'النوم',
+      'prayer', 'الصلاة',
+      'eating', 'الطعام',
+    };
+    return essentialCategories.contains(categoryId.toLowerCase());
+  }
+
+  /// التحقق من الصلوات الرئيسية - مدمج
+  static bool isMainPrayer(String prayerName) {
+    const mainPrayers = ['الفجر', 'الظهر', 'العصر', 'المغرب', 'العشاء'];
+    return mainPrayers.contains(prayerName);
+  }
+
+  /// الحصول على خلفية مناسبة للمحتوى الديني
+  static Color getReligiousBackground(String type) {
+    switch (type) {
+      case 'قران':
+      case 'آية':
+        return const Color(0xFF1E2A1E);
+      case 'ذكر':
+      case 'اذكار':
+        return const Color(0xFF252E25);
+      case 'حديث':
+        return const Color(0xFF2A251E);
+      case 'دعاء':
+        return const Color(0xFF2D2419);
+      default:
+        return surface;
+    }
+  }
+
+  /// تفتيح اللون
+  static Color lighten(Color color, [double amount = 0.1]) {
+    final hsl = HSLColor.fromColor(color);
+    return hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0)).toColor();
+  }
+  
+  /// تغميق اللون
+  static Color darken(Color color, [double amount = 0.1]) {
+    final hsl = HSLColor.fromColor(color);
+    return hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0)).toColor();
+  }
+
   // ========== الثيم الرئيسي ==========
   
   static ThemeData get theme => ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
     
-    // الألوان الأساسية
     primaryColor: primary,
     colorScheme: const ColorScheme.dark(
       primary: primary,
@@ -312,23 +574,21 @@ class AppTheme {
     
     scaffoldBackgroundColor: background,
     
-    // ثيم النصوص
     textTheme: const TextTheme(
       displayLarge: displayLarge,
       displayMedium: displayMedium,
       headlineLarge: headlineLarge,
       headlineMedium: headlineMedium,
-      headlineSmall: headlineSmall, // ✅ إضافة headlineSmall
+      headlineSmall: headlineSmall,
       titleLarge: titleLarge,
       titleMedium: titleMedium,
       bodyLarge: bodyLarge,
       bodyMedium: bodyMedium,
       bodySmall: bodySmall,
       labelMedium: labelMedium,
-      labelSmall: labelSmall, // ✅ إضافة labelSmall
+      labelSmall: labelSmall,
     ),
     
-    // ثيم الشريط العلوي
     appBarTheme: const AppBarTheme(
       elevation: 0,
       backgroundColor: Colors.transparent,
@@ -346,7 +606,6 @@ class AppTheme {
       ),
     ),
     
-    // ثيم البطاقات - المحافظة على التصميم الحالي
     cardTheme: CardThemeData(
       color: card,
       elevation: elevationSm,
@@ -357,7 +616,6 @@ class AppTheme {
       margin: const EdgeInsets.all(space3),
     ),
     
-    // ثيم الأزرار - نفس التصميم
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: primary,
@@ -398,13 +656,11 @@ class AppTheme {
       ),
     ),
     
-    // ثيم الأيقونات
     iconTheme: const IconThemeData(
       color: textSecondary,
       size: iconMd,
     ),
     
-    // ثيم حقول الإدخال
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: surface,
@@ -429,7 +685,6 @@ class AppTheme {
       labelStyle: bodyMedium.copyWith(color: textSecondary),
     ),
     
-    // ثيم الحوارات
     dialogTheme: DialogThemeData(
       backgroundColor: surface,
       elevation: elevationLg,
@@ -441,7 +696,6 @@ class AppTheme {
       contentTextStyle: bodyMedium,
     ),
     
-    // ثيم القوائم السفلية
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: surface,
       elevation: elevationLg,
@@ -452,7 +706,6 @@ class AppTheme {
       ),
     ),
     
-    // ثيم القوائم
     listTileTheme: const ListTileThemeData(
       contentPadding: EdgeInsets.symmetric(
         horizontal: space4,
@@ -473,21 +726,18 @@ class AppTheme {
       iconColor: textSecondary,
     ),
     
-    // ثيم الفواصل
     dividerTheme: const DividerThemeData(
       color: divider,
       thickness: 0.5,
       space: space4,
     ),
     
-    // ثيم مؤشرات التقدم
     progressIndicatorTheme: const ProgressIndicatorThemeData(
       color: primary,
       linearTrackColor: divider,
       circularTrackColor: divider,
     ),
     
-    // ثيم الـ SnackBar
     snackBarTheme: SnackBarThemeData(
       backgroundColor: textPrimary,
       contentTextStyle: bodyMedium.copyWith(color: Colors.black),
@@ -498,165 +748,17 @@ class AppTheme {
       elevation: elevationMd,
     ),
     
-    // ثيم الـ FloatingActionButton
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: primary,
       foregroundColor: Colors.black,
       elevation: elevationMd,
     ),
   );
-  
-  // ========== دوال مساعدة بسيطة ==========
-  
-  /// ألوان الصلوات
-  static const Map<String, Color> prayerColors = {
-    'الفجر': Color(0xFF6B7BA8),
-    'الشروق': secondary,
-    'الظهر': Color(0xFFD08C47),
-    'العصر': accent,
-    'المغرب': Color(0xFF9B6B9B),
-    'العشاء': tertiary,
-  };
-  
-  /// ألوان الفئات
-  static const Map<String, Color> categoryColors = {
-    'اوقات_الصلاة': primary,
-    'الاذكار': accent,
-    'القبلة': tertiary,
-    'قبلة': tertiary,
-    'التسبيح': secondary,
-    'تسبيح': secondary,
-    'القران': Color(0xFF4A6B4A),
-    'الادعية': Color(0xFF8B7355),
-    'المفضلة': Color(0xFFCC8E35),
-    'الاعدادات': Color(0xFF6B7BA8),
-  };
-  
-  /// الحصول على لون الصلاة
-  static Color getPrayerColor(String prayerName) {
-    return prayerColors[prayerName] ?? primary;
-  }
-  
-  /// الحصول على لون الفئة
-  static Color getCategoryColor(String categoryId) {
-    return categoryColors[categoryId] ?? primary;
-  }
-  
-  /// الحصول على خلفية مناسبة للمحتوى الديني
-  static Color getReligiousBackground(String type) {
-    switch (type) {
-      case 'قران':
-      case 'آية':
-        return const Color(0xFF1E2A1E);
-      case 'ذكر':
-      case 'اذكار':
-        return const Color(0xFF252E25);
-      case 'حديث':
-        return const Color(0xFF2A251E);
-      case 'دعاء':
-        return const Color(0xFF2D2419);
-      default:
-        return surface;
-    }
-  }
-  
-  /// تفتيح اللون
-  static Color lighten(Color color, [double amount = 0.1]) {
-    final hsl = HSLColor.fromColor(color);
-    return hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0)).toColor();
-  }
-  
-  /// تغميق اللون
-  static Color darken(Color color, [double amount = 0.1]) {
-    final hsl = HSLColor.fromColor(color);
-    return hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0)).toColor();
-  }
 }
 
-// ========== Extensions بسيطة ومفيدة ==========
+// ========== CardHelper محسّن ومدمج ==========
 
-extension AppThemeExtensions on BuildContext {
-  /// الثيم الحالي
-  ThemeData get theme => Theme.of(this);
-  
-  /// الألوان السريعة
-  Color get primaryColor => AppTheme.primary;
-  Color get secondaryColor => AppTheme.secondary;
-  Color get backgroundColor => AppTheme.background;
-  Color get surfaceColor => AppTheme.surface;
-  Color get cardColor => AppTheme.card;
-  
-  /// النصوص السريعة
-  TextStyle get headlineLarge => AppTheme.headlineLarge;
-  TextStyle get headlineMedium => AppTheme.headlineMedium;
-  TextStyle get headlineSmall => AppTheme.headlineSmall; // ✅ إضافة headlineSmall
-  TextStyle get titleLarge => AppTheme.titleLarge;
-  TextStyle get titleMedium => AppTheme.titleMedium;
-  TextStyle get bodyLarge => AppTheme.bodyLarge;
-  TextStyle get bodyMedium => AppTheme.bodyMedium;
-  TextStyle get bodySmall => AppTheme.bodySmall;
-  TextStyle get labelMedium => AppTheme.labelMedium;
-  TextStyle get labelSmall => AppTheme.labelSmall; // ✅ إضافة labelSmall
-  
-  /// النصوص الدينية
-  TextStyle get quranStyle => AppTheme.quranStyle;
-  TextStyle get dhikrStyle => AppTheme.dhikrStyle;
-  TextStyle get numbersStyle => AppTheme.numbersStyle;
-  
-  /// معلومات الشاشة
-  Size get screenSize => MediaQuery.of(this).size;
-  double get screenWidth => screenSize.width;
-  double get screenHeight => screenSize.height;
-  
-  /// التحقق من نوع الجهاز
-  bool get isMobile => screenWidth < 600;
-  bool get isTablet => screenWidth >= 600 && screenWidth < 1024;
-  bool get isDesktop => screenWidth >= 1024;
-  
-  /// الحصول على لون الصلاة
-  Color getPrayerColor(String prayerName) => AppTheme.getPrayerColor(prayerName);
-  
-  /// الحصول على لون الفئة
-  Color getCategoryColor(String categoryId) => AppTheme.getCategoryColor(categoryId);
-  
-  /// الحصول على خلفية دينية
-  Color getReligiousBackground(String type) => AppTheme.getReligiousBackground(type);
-}
-
-extension AppColorExtensions on Color {
-  /// تفتيح اللون
-  Color lighten([double amount = 0.1]) => AppTheme.lighten(this, amount);
-  
-  /// تغميق اللون
-  Color darken([double amount = 0.1]) => AppTheme.darken(this, amount);
-  
-  /// مع شفافية
-  Color withAlpha(double alpha) => withValues(alpha: alpha);
-}
-
-extension AppSpacingExtensions on double {
-  /// تحويل إلى مساحة أفقية
-  Widget get w => SizedBox(width: this);
-  
-  /// تحويل إلى مساحة عمودية
-  Widget get h => SizedBox(height: this);
-  
-  /// تحويل إلى حشو شامل
-  EdgeInsets get padding => EdgeInsets.all(this);
-  
-  /// تحويل إلى حشو أفقي
-  EdgeInsets get paddingH => EdgeInsets.symmetric(horizontal: this);
-  
-  /// تحويل إلى حشو عمودي
-  EdgeInsets get paddingV => EdgeInsets.symmetric(vertical: this);
-  
-  /// تحويل إلى نصف قطر
-  BorderRadius get radius => BorderRadius.circular(this);
-}
-
-// ========== دوال مساعدة للكروت ==========
-
-/// أدوات مساعدة للكروت الموحدة
+/// أدوات البطاقات الموحدة
 class CardHelper {
   CardHelper._();
   
@@ -712,52 +814,58 @@ class CardHelper {
         return baseStyle ?? AppTheme.bodyMedium;
     }
   }
+}
+
+// ========== Extensions محسّنة ==========
+
+extension AppThemeExtensions on BuildContext {
+  ThemeData get theme => Theme.of(this);
   
-  /// الحصول على أيقونة مناسبة للصلوات
-  static IconData getPrayerIcon(String prayer) {
-    switch (prayer.toLowerCase()) {
-      case 'الفجر':
-      case 'fajr':
-        return Icons.wb_twilight;
-      case 'الشروق':
-      case 'sunrise':
-        return Icons.wb_sunny;
-      case 'الظهر':
-      case 'dhuhr':
-        return Icons.light_mode;
-      case 'العصر':
-      case 'asr':
-        return Icons.wb_cloudy;
-      case 'المغرب':
-      case 'maghrib':
-        return Icons.wb_incandescent;
-      case 'العشاء':
-      case 'isha':
-        return Icons.nightlight_round;
-      default:
-        return Icons.access_time;
-    }
-  }
+  Color get primaryColor => AppTheme.primary;
+  Color get secondaryColor => AppTheme.secondary;
+  Color get backgroundColor => AppTheme.background;
+  Color get surfaceColor => AppTheme.surface;
+  Color get cardColor => AppTheme.card;
   
-  /// تنسيق الأرقام الكبيرة
-  static String formatLargeNumber(int number) {
-    if (number >= 1000000) {
-      return '${(number / 1000000).toStringAsFixed(1)}م';
-    } else if (number >= 1000) {
-      return '${(number / 1000).toStringAsFixed(1)}ك';
-    }
-    return number.toString();
-  }
+  TextStyle get headlineLarge => AppTheme.headlineLarge;
+  TextStyle get headlineMedium => AppTheme.headlineMedium;
+  TextStyle get headlineSmall => AppTheme.headlineSmall;
+  TextStyle get titleLarge => AppTheme.titleLarge;
+  TextStyle get titleMedium => AppTheme.titleMedium;
+  TextStyle get bodyLarge => AppTheme.bodyLarge;
+  TextStyle get bodyMedium => AppTheme.bodyMedium;
+  TextStyle get bodySmall => AppTheme.bodySmall;
+  TextStyle get labelMedium => AppTheme.labelMedium;
+  TextStyle get labelSmall => AppTheme.labelSmall;
   
-  /// تنسيق المدة الزمنية
-  static String formatDuration(Duration duration) {
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes % 60;
-    
-    if (hours > 0) {
-      return '$hoursس $minutesد';
-    } else {
-      return '$minutesد';
-    }
-  }
+  TextStyle get quranStyle => AppTheme.quranStyle;
+  TextStyle get dhikrStyle => AppTheme.dhikrStyle;
+  TextStyle get numbersStyle => AppTheme.numbersStyle;
+  
+  Size get screenSize => MediaQuery.of(this).size;
+  double get screenWidth => screenSize.width;
+  double get screenHeight => screenSize.height;
+  
+  bool get isMobile => screenWidth < 600;
+  bool get isTablet => screenWidth >= 600 && screenWidth < 1024;
+  bool get isDesktop => screenWidth >= 1024;
+  
+  Color getPrayerColor(String prayerName) => AppTheme.getPrayerColor(prayerName);
+  Color getCategoryColor(String categoryId) => AppTheme.getCategoryColor(categoryId);
+  Color getReligiousBackground(String type) => AppTheme.getReligiousBackground(type);
+}
+
+extension AppColorExtensions on Color {
+  Color lighten([double amount = 0.1]) => AppTheme.lighten(this, amount);
+  Color darken([double amount = 0.1]) => AppTheme.darken(this, amount);
+  Color withAlpha(double alpha) => withValues(alpha: alpha);
+}
+
+extension AppSpacingExtensions on double {
+  Widget get w => SizedBox(width: this);
+  Widget get h => SizedBox(height: this);
+  EdgeInsets get padding => EdgeInsets.all(this);
+  EdgeInsets get paddingH => EdgeInsets.symmetric(horizontal: this);
+  EdgeInsets get paddingV => EdgeInsets.symmetric(vertical: this);
+  BorderRadius get radius => BorderRadius.circular(this);
 }
