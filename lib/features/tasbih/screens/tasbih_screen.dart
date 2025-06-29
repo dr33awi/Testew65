@@ -1,16 +1,16 @@
-// lib/features/tasbih/screens/tasbih_screen.dart - محدث بالثيم الإسلامي الموحد
+// lib/features/tasbih/screens/tasbih_screen.dart (مُحدث بنمط Glassmorphism)
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'dart:ui';
 
-// ✅ استيراد النظام الموحد الإسلامي - الوحيد المسموح
-import '../../../app/themes/index.dart';
+import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
 import '../services/tasbih_service.dart';
 
-/// شاشة المسبحة الرقمية - محدثة بالنظام الموحد
+/// شاشة المسبحة الرقمية مع نمط Glassmorphism
 class TasbihScreen extends StatefulWidget {
   const TasbihScreen({super.key});
 
@@ -18,11 +18,9 @@ class TasbihScreen extends StatefulWidget {
   State<TasbihScreen> createState() => _TasbihScreenState();
 }
 
-class _TasbihScreenState extends State<TasbihScreen> with SingleTickerProviderStateMixin {
+class _TasbihScreenState extends State<TasbihScreen> {
   late TasbihService _service;
   late LoggerService _logger;
-  late AnimationController _animationController;
-  late Animation<double> _pulseAnimation;
 
   int _selectedTasbihIndex = 0;
   
@@ -31,37 +29,43 @@ class _TasbihScreenState extends State<TasbihScreen> with SingleTickerProviderSt
       text: 'سُبْحَانَ اللَّهِ',
       transliteration: 'سبحان الله',
       meaning: 'تنزيه الله عن كل نقص',
-      color: AppTheme.primary,
+      gradient: context.primaryGradient,
+      primaryColor: context.primaryColor,
     ),
     TasbihItem(
       text: 'الْحَمْدُ لِلَّهِ',
       transliteration: 'الحمد لله',
       meaning: 'الثناء والشكر لله',
-      color: AppTheme.secondary,
+      gradient: context.accentGradient,
+      primaryColor: context.accentColor,
     ),
     TasbihItem(
       text: 'اللَّهُ أَكْبَرُ',
       transliteration: 'الله أكبر',
       meaning: 'الله أعظم من كل شيء',
-      color: AppTheme.tertiary,
+      gradient: context.tertiaryGradient,
+      primaryColor: context.tertiaryColor,
     ),
     TasbihItem(
       text: 'لَا إِلَهَ إِلَّا اللَّهُ',
       transliteration: 'لا إله إلا الله',
       meaning: 'لا معبود بحق إلا الله',
-      color: AppTheme.accent,
+      gradient: context.primaryGradient,
+      primaryColor: context.primaryColor,
     ),
     TasbihItem(
       text: 'أَسْتَغْفِرُ اللَّهَ',
       transliteration: 'أستغفر الله',
       meaning: 'طلب المغفرة من الله',
-      color: AppTheme.info,
+      gradient: context.accentGradient,
+      primaryColor: context.accentColor,
     ),
     TasbihItem(
       text: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
       transliteration: 'سبحان الله وبحمده',
       meaning: 'تنزيه الله مع حمده',
-      color: AppTheme.success,
+      gradient: context.tertiaryGradient,
+      primaryColor: context.tertiaryColor,
     ),
   ];
 
@@ -73,35 +77,11 @@ class _TasbihScreenState extends State<TasbihScreen> with SingleTickerProviderSt
       logger: getIt<LoggerService>(),
     );
     _logger = getIt<LoggerService>();
-    
-    _animationController = AnimationController(
-      duration: AppTheme.durationFast,
-      vsync: this,
-    );
-    
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.1,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
   }
 
   void _onTasbihTap() {
     _service.increment();
     HapticFeedback.mediumImpact();
-    
-    // تشغيل الأنيميشن
-    _animationController.forward().then((_) {
-      _animationController.reverse();
-    });
     
     _logger.debug(
       message: '[TasbihScreen] increment',
@@ -113,72 +93,42 @@ class _TasbihScreenState extends State<TasbihScreen> with SingleTickerProviderSt
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          'تصفير العداد',
-          style: context.titleLarge,
-        ),
-        content: Text(
-          'هل أنت متأكد من تصفير عداد التسبيح؟',
-          style: context.bodyMedium,
-        ),
-        backgroundColor: context.surfaceColor,
+        title: const Text('تصفير العداد'),
+        content: const Text('هل أنت متأكد من تصفير عداد التسبيح؟'),
         shape: RoundedRectangleBorder(
-          borderRadius: AppTheme.radiusLg.radius,
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
         ),
         actions: [
-          AppButton.outline(
-            text: 'إلغاء',
+          TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            borderColor: AppTheme.textSecondary,
+            child: Text(
+              'إلغاء',
+              style: TextStyle(color: context.textSecondaryColor),
+            ),
           ),
-          AppTheme.space2.w,
-          AppButton(
-            text: 'تصفير',
-            backgroundColor: AppTheme.error,
-            foregroundColor: Colors.white,
+          ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
               _service.reset();
               HapticFeedback.lightImpact();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(
-                    'تم تصفير العداد',
-                    style: AppTheme.bodyMedium.copyWith(color: Colors.black),
-                  ),
-                  backgroundColor: AppTheme.success,
+                  content: const Text('تم تصفير العداد'),
+                  backgroundColor: context.successColor,
                   shape: RoundedRectangleBorder(
-                    borderRadius: AppTheme.radiusMd.radius,
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                   ),
                 ),
               );
             },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showTasbihInfo() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'عن التسبيح',
-          style: context.titleLarge,
-        ),
-        content: Text(
-          'التسبيح هو ذكر الله وتنزيهه عن كل نقص. قال رسول الله ﷺ: "كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن: سبحان الله وبحمده، سبحان الله العظيم"',
-          style: context.bodyMedium.copyWith(height: 1.6),
-        ),
-        backgroundColor: context.surfaceColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppTheme.radiusLg.radius,
-        ),
-        actions: [
-          AppButton.primary(
-            text: 'فهمت',
-            onPressed: () => Navigator.of(context).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: context.errorColor,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              ),
+            ),
+            child: const Text('تصفير'),
           ),
         ],
       ),
@@ -191,89 +141,189 @@ class _TasbihScreenState extends State<TasbihScreen> with SingleTickerProviderSt
       value: _service,
       child: Scaffold(
         backgroundColor: context.backgroundColor,
-        appBar: AppAppBar.basic(
-          title: 'المسبحة الرقمية',
-          actions: [
-            AppBarCounter(count: _service.count),
-            AppTheme.space2.w,
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              color: context.primaryColor,
-              onPressed: _onReset,
-              tooltip: 'تصفير العداد',
-            ),
-            IconButton(
-              icon: const Icon(Icons.info_outline),
-              color: context.primaryColor,
-              onPressed: _showTasbihInfo,
-              tooltip: 'معلومات التسبيح',
-            ),
-            AppTheme.space2.w,
-          ],
-        ),
         body: SafeArea(
-          child: Consumer<TasbihService>(
-            builder: (context, service, _) {
-              return CustomScrollView(
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-                  // اختيار نوع التسبيح
-                  SliverToBoxAdapter(
-                    child: _buildTasbihSelector(),
-                  ),
-                  
-                  SliverToBoxAdapter(
-                    child: AppTheme.space4.h,
-                  ),
-                  
-                  // نص التسبيح المختار
-                  SliverToBoxAdapter(
-                    child: _buildSelectedTasbih(),
-                  ),
-                  
-                  SliverToBoxAdapter(
-                    child: AppTheme.space6.h,
-                  ),
-                  
-                  // العداد الرئيسي
-                  SliverToBoxAdapter(
-                    child: _buildMainCounter(service),
-                  ),
-                  
-                  SliverToBoxAdapter(
-                    child: AppTheme.space6.h,
-                  ),
-                  
-                  // زر التسبيح
-                  SliverToBoxAdapter(
-                    child: _buildTasbihButton(),
-                  ),
-                  
-                  SliverToBoxAdapter(
-                    child: AppTheme.space4.h,
-                  ),
-                  
-                  // إحصائيات سريعة
-                  SliverToBoxAdapter(
-                    child: _buildQuickStats(service),
-                  ),
-                  
-                  SliverToBoxAdapter(
-                    child: AppTheme.space8.h,
-                  ),
-                ],
-              );
-            },
+          child: Column(
+            children: [
+              // شريط التنقل العلوي
+              _buildAppBar(context),
+              
+              // المحتوى
+              Expanded(
+                child: Consumer<TasbihService>(
+                  builder: (context, service, _) {
+                    return CustomScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      slivers: [
+                        // اختيار نوع التسبيح
+                        SliverToBoxAdapter(
+                          child: _buildTasbihSelector(context),
+                        ),
+                        
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: ThemeConstants.space4),
+                        ),
+                        
+                        // نص التسبيح المختار
+                        SliverToBoxAdapter(
+                          child: _buildSelectedTasbih(context),
+                        ),
+                        
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: ThemeConstants.space6),
+                        ),
+                        
+                        // العداد الرئيسي
+                        SliverToBoxAdapter(
+                          child: _buildMainCounter(context, service),
+                        ),
+                        
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: ThemeConstants.space6),
+                        ),
+                        
+                        // زر التسبيح
+                        SliverToBoxAdapter(
+                          child: _buildTasbihButton(context),
+                        ),
+                        
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: ThemeConstants.space8),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTasbihSelector() {
+  Widget _buildAppBar(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(ThemeConstants.space4),
+      child: Row(
+        children: [
+          // أيقونة التطبيق
+          Container(
+            width: 56,
+            height: 56,
+            padding: const EdgeInsets.all(ThemeConstants.space3),
+            decoration: BoxDecoration(
+              gradient: context.successGradient,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+              boxShadow: [
+                BoxShadow(
+                  color: context.successColor.withValues(alpha: 0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Icon(
+              Icons.auto_awesome,
+              color: Colors.white,
+              size: ThemeConstants.iconMd,
+            ),
+          ),
+          
+          const SizedBox(width: ThemeConstants.space3),
+          
+          // العنوان
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'المسبحة الرقمية',
+                  style: context.titleLarge?.copyWith(
+                    fontWeight: ThemeConstants.bold,
+                    color: context.textPrimaryColor,
+                  ),
+                ),
+                Text(
+                  'سبح الله واذكره',
+                  style: context.bodySmall?.copyWith(
+                    color: context.textSecondaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // الإجراءات
+          Row(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: context.cardColor,
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                  border: Border.all(
+                    color: context.dividerColor.withValues(alpha: 0.3),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    _onReset();
+                  },
+                  icon: Icon(
+                    Icons.refresh_rounded,
+                    color: context.primaryColor,
+                  ),
+                  tooltip: 'تصفير العداد',
+                ),
+              ),
+              
+              const SizedBox(width: ThemeConstants.space2),
+              
+              Container(
+                decoration: BoxDecoration(
+                  color: context.cardColor,
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                  border: Border.all(
+                    color: context.dividerColor.withValues(alpha: 0.3),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    _showTasbihInfo();
+                  },
+                  icon: Icon(
+                    Icons.info_outline,
+                    color: context.primaryColor,
+                  ),
+                  tooltip: 'معلومات التسبيح',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTasbihSelector(BuildContext context) {
     return Container(
       height: 80,
-      margin: AppTheme.space4.paddingH,
+      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: _tasbihItems.length,
@@ -282,7 +332,7 @@ class _TasbihScreenState extends State<TasbihScreen> with SingleTickerProviderSt
           final isSelected = index == _selectedTasbihIndex;
           
           return Container(
-            margin: EdgeInsets.only(left: AppTheme.space3),
+            margin: const EdgeInsets.only(right: ThemeConstants.space3),
             child: GestureDetector(
               onTap: () {
                 setState(() {
@@ -290,34 +340,58 @@ class _TasbihScreenState extends State<TasbihScreen> with SingleTickerProviderSt
                 });
                 HapticFeedback.selectionClick();
               },
-              child: AppCard(
-                useGradient: isSelected,
-                color: isSelected ? item.color : null,
-                margin: EdgeInsets.zero,
-                padding: AppTheme.space3.padding,
-                child: SizedBox(
-                  width: 100,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.auto_awesome,
-                        color: isSelected ? Colors.white : item.color,
-                        size: AppTheme.iconMd,
-                      ),
-                      AppTheme.space2.h,
-                      Text(
-                        item.transliteration,
-                        style: AppTheme.labelMedium.copyWith(
-                          color: isSelected ? Colors.white : null,
-                          fontWeight: isSelected ? AppTheme.bold : AppTheme.medium,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+              child: Container(
+                width: 120,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: ThemeConstants.space4,
+                  vertical: ThemeConstants.space3,
+                ),
+                decoration: BoxDecoration(
+                  gradient: isSelected ? item.gradient : null,
+                  color: !isSelected ? context.cardColor : null,
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                  border: Border.all(
+                    color: isSelected 
+                        ? item.primaryColor.withValues(alpha: 0.3)
+                        : context.dividerColor.withValues(alpha: 0.3),
+                    width: isSelected ? 2 : 1,
                   ),
+                  boxShadow: isSelected ? [
+                    BoxShadow(
+                      color: item.primaryColor.withValues(alpha: 0.2),
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
+                    ),
+                  ] : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      item.transliteration,
+                      style: context.labelMedium?.copyWith(
+                        color: isSelected 
+                            ? Colors.white 
+                            : context.textPrimaryColor,
+                        fontWeight: isSelected 
+                            ? ThemeConstants.bold 
+                            : ThemeConstants.medium,
+                        shadows: isSelected ? [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            offset: const Offset(0, 2),
+                            blurRadius: 4,
+                          ),
+                        ] : null,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -327,145 +401,319 @@ class _TasbihScreenState extends State<TasbihScreen> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildSelectedTasbih() {
+  Widget _buildSelectedTasbih(BuildContext context) {
     final selectedItem = _tasbihItems[_selectedTasbihIndex];
     
     return Container(
-      margin: AppTheme.space4.paddingH,
-      child: AppCard(
-        useGradient: true,
-        color: selectedItem.color,
-        padding: AppTheme.space5.padding,
-        child: Column(
+      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      height: 160,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        child: Stack(
           children: [
-            Text(
-              selectedItem.text,
-              style: AppTheme.quranStyle.copyWith(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: AppTheme.bold,
+            // الخلفية المتدرجة
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    selectedItem.primaryColor,
+                    selectedItem.primaryColor.darken(0.2),
+                  ].map((c) => c.withValues(alpha: 0.9)).toList(),
+                ),
               ),
-              textAlign: TextAlign.center,
             ),
-            AppTheme.space3.h,
-            Text(
-              selectedItem.meaning,
-              style: AppTheme.bodyMedium.copyWith(
-                color: Colors.white.withValues(alpha: 0.9),
-                fontSize: 14,
+            
+            // الطبقة الزجاجية
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                ),
               ),
-              textAlign: TextAlign.center,
             ),
+            
+            // المحتوى
+            Padding(
+              padding: const EdgeInsets.all(ThemeConstants.space5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // النصوص
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        selectedItem.text,
+                        style: context.headlineMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: ThemeConstants.bold,
+                          fontSize: 24, // زيادة حجم النص
+                          height: 1.2,
+                          letterSpacing: 0.3,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.4),
+                              offset: const Offset(0, 2),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      
+                      const SizedBox(height: ThemeConstants.space2),
+                      
+                      Text(
+                        selectedItem.meaning,
+                        style: context.bodyMedium?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontSize: 13,
+                          height: 1.2,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              offset: const Offset(0, 1),
+                              blurRadius: 2,
+                            ),
+                          ],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            
+            // العناصر الزخرفية
+            _buildDecorativeElements(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildMainCounter(TasbihService service) {
+  Widget _buildMainCounter(BuildContext context, TasbihService service) {
     final selectedItem = _tasbihItems[_selectedTasbihIndex];
     
     return Container(
-      margin: AppTheme.space4.paddingH,
-      child: AppCard.stat(
-        title: 'العدد الحالي',
-        value: AppTheme.formatLargeNumber(service.count),
-        icon: Icons.touch_app,
-        color: selectedItem.color,
-        subtitle: service.count == 1 ? 'تسبيحة' : 'تسبيحة',
+      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+      padding: const EdgeInsets.all(ThemeConstants.space6),
+      decoration: BoxDecoration(
+        color: context.cardColor,
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(
+          color: context.dividerColor.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Text(
+            'العدد',
+            style: context.titleMedium?.copyWith(
+              color: context.textSecondaryColor,
+              fontWeight: ThemeConstants.medium,
+            ),
+          ),
+          
+          const SizedBox(height: ThemeConstants.space2),
+          
+          Text(
+            '${service.count}',
+            style: context.displayLarge?.copyWith(
+              color: selectedItem.primaryColor,
+              fontWeight: ThemeConstants.bold,
+            ),
+          ),
+          
+          const SizedBox(height: ThemeConstants.space1),
+          
+          Text(
+            service.count == 1 ? 'تسبيحة' : 'تسبيحة',
+            style: context.bodyMedium?.copyWith(
+              color: context.textSecondaryColor,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildTasbihButton() {
+  Widget _buildTasbihButton(BuildContext context) {
     final selectedItem = _tasbihItems[_selectedTasbihIndex];
     
     return Center(
-      child: AnimatedBuilder(
-        animation: _pulseAnimation,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _pulseAnimation.value,
-            child: GestureDetector(
-              onTap: _onTasbihTap,
-              child: Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: AppTheme.oliveGoldGradient,
-                  boxShadow: [
-                    BoxShadow(
-                      color: selectedItem.color.withValues(alpha: 0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
+      child: GestureDetector(
+        onTap: _onTasbihTap,
+        child: Container(
+          width: 200,
+          height: 200,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(100),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(100),
+            child: Stack(
+              children: [
+                // الخلفية المتدرجة
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        selectedItem.primaryColor,
+                        selectedItem.primaryColor.darken(0.2),
+                      ].map((c) => c.withValues(alpha: 0.9)).toList(),
                     ),
-                  ],
+                  ),
                 ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: _onTasbihTap,
-                    borderRadius: BorderRadius.circular(90),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.touch_app,
-                            color: Colors.white,
-                            size: AppTheme.iconXl,
-                          ),
-                          AppTheme.space2.h,
-                          Text(
-                            'سَبِّح',
-                            style: AppTheme.titleLarge.copyWith(
-                              color: Colors.white,
-                              fontWeight: AppTheme.bold,
-                            ),
-                          ),
-                        ],
+                
+                // الطبقة الزجاجية
+                BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        width: 1,
                       ),
                     ),
                   ),
                 ),
-              ),
+                
+                // المحتوى في المنتصف
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.touch_app_rounded,
+                        color: Colors.white,
+                        size: ThemeConstants.icon2xl,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            offset: const Offset(0, 2),
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: ThemeConstants.space2),
+                      Text(
+                        'سَبِّح',
+                        style: context.titleLarge?.copyWith(
+                          color: Colors.white,
+                          fontWeight: ThemeConstants.bold,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.4),
+                              offset: const Offset(0, 2),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // طبقة التفاعل
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: _onTasbihTap,
+                    borderRadius: BorderRadius.circular(100),
+                    splashColor: Colors.white.withValues(alpha: 0.2),
+                    highlightColor: Colors.white.withValues(alpha: 0.1),
+                  ),
+                ),
+                
+                // العناصر الزخرفية
+                _buildDecorativeElements(),
+              ],
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildQuickStats(TasbihService service) {
-    return Container(
-      margin: AppTheme.space4.paddingH,
-      child: Row(
+  Widget _buildDecorativeElements() {
+    return Positioned.fill(
+      child: Stack(
         children: [
-          Expanded(
-            child: AppCard.stat(
-              title: 'اليوم',
-              value: AppTheme.formatLargeNumber(service.dailyCount),
-              icon: Icons.today,
-              color: AppTheme.info,
+          // دائرة زخرفية صغيرة
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
             ),
           ),
-          AppTheme.space3.w,
-          Expanded(
-            child: AppCard.stat(
-              title: 'المجموع',
-              value: AppTheme.formatLargeNumber(service.totalCount),
-              icon: Icons.analytics,
-              color: AppTheme.success,
+          
+          // دائرة إضافية
+          Positioned(
+            bottom: 12,
+            left: 12,
+            child: Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
             ),
           ),
-          AppTheme.space3.w,
-          Expanded(
-            child: AppCard.stat(
-              title: 'دورات',
-              value: service.completedSets.toString(),
-              icon: Icons.repeat,
-              color: AppTheme.warning,
+        ],
+      ),
+    );
+  }
+
+  void _showTasbihInfo() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('عن التسبيح'),
+        content: const Text(
+          'التسبيح هو ذكر الله وتنزيهه عن كل نقص. قال رسول الله ﷺ: "كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن: سبحان الله وبحمده، سبحان الله العظيم"',
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'فهمت',
+              style: TextStyle(color: context.primaryColor),
             ),
           ),
         ],
@@ -474,17 +722,19 @@ class _TasbihScreenState extends State<TasbihScreen> with SingleTickerProviderSt
   }
 }
 
-/// نموذج بيانات التسبيح - محدث بالثيم الموحد
+/// نموذج بيانات التسبيح
 class TasbihItem {
   final String text;
   final String transliteration;
   final String meaning;
-  final Color color;
+  final LinearGradient gradient;
+  final Color primaryColor;
 
   const TasbihItem({
     required this.text,
     required this.transliteration,
     required this.meaning,
-    required this.color,
+    required this.gradient,
+    required this.primaryColor,
   });
 }

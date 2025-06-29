@@ -1,13 +1,11 @@
-// lib/features/home/screens/home_screen.dart - محدث بالنظام الموحد الإسلامي
+// lib/features/home/screens/home_screen.dart - بدون Animations
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-// ✅ استيراد النظام الموحد الإسلامي - الوحيد المسموح
-import '../../../app/themes/index.dart';
-
+import '../../../app/themes/app_theme.dart';
 import '../widgets/welcome_message.dart';
 import '../widgets/category_grid.dart';
 import '../../daily_quote/widgets/daily_quotes_card.dart';
+import '../../prayer_times/widgets/home_prayer_times_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -16,44 +14,40 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      appBar: AppAppBar.home(
-        title: 'مُسلم',
-        actions: [
-          AppBarSettingsButton(
-            onPressed: () => _onSettingsTap(context),
-          ),
-          AppTheme.space2.w,
-        ],
-      ),
+      appBar: _buildAppBar(context),
       body: RefreshIndicator(
         onRefresh: () => _handleRefresh(context),
         color: context.primaryColor,
         backgroundColor: context.cardColor,
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: AppTheme.space4.paddingH + AppTheme.space2.paddingV,
+        child: const SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
+          padding: EdgeInsets.symmetric(
+            horizontal: ThemeConstants.space4,
+            vertical: ThemeConstants.space2,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // رسالة الترحيب
-              const WelcomeMessage(),
+              WelcomeMessage(),
               
-              AppTheme.space4.h,
+              SizedBox(height: ThemeConstants.space4),
               
               // مواقيت الصلاة
-              _buildPrayerTimesCard(context),
+              PrayerTimesCard(),
               
-              AppTheme.space4.h,
+              SizedBox(height: ThemeConstants.space4),
               
               // الاقتباسات اليومية
-              const DailyQuotesCard(),
+              DailyQuotesCard(),
               
-              AppTheme.space6.h,
+              SizedBox(height: ThemeConstants.space6),
               
-              // شبكة الفئات
-              const SimpleCategoryGrid(),
+              // شبكة الفئات مع العنوان المدمج
+              SimpleCategoryGrid(),
               
-              AppTheme.space8.h,
+              // مساحة إضافية للأسفل
+              SizedBox(height: ThemeConstants.space8),
             ],
           ),
         ),
@@ -61,88 +55,139 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPrayerTimesCard(BuildContext context) {
-    // محاكاة بيانات أوقات الصلاة
-    final prayerTimes = {
-      'الفجر': '05:30',
-      'الشروق': '06:45',
-      'الظهر': '12:15',
-      'العصر': '15:30',
-      'المغرب': '18:00',
-      'العشاء': '19:30',
-    };
-
-    const currentPrayer = 'الظهر';
-    const nextPrayer = 'العصر';
-    const timeToNext = Duration(hours: 3, minutes: 15);
-
-    return AppCard.prayerTimes(
-      prayerTimes: prayerTimes,
-      currentPrayer: currentPrayer,
-      nextPrayer: nextPrayer,
-      timeToNext: timeToNext,
-      onTap: () => _onPrayerTimesTap(context),
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      toolbarHeight: 70,
+      systemOverlayStyle: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: context.isDarkMode 
+            ? Brightness.light 
+            : Brightness.dark,
+      ),
+      leading: const SizedBox.shrink(),
+      leadingWidth: 0,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              context.primaryColor.withValues(alpha: 0.1),
+              context.primaryColor.withValues(alpha: 0.05),
+              Colors.transparent,
+            ],
+          ),
+        ),
+      ),
+      title: Row(
+        children: [
+          // أيقونة التطبيق
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  context.primaryColor,
+                  context.primaryColor.darken(0.2),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: context.primaryColor.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.mosque_outlined,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          
+          const SizedBox(width: ThemeConstants.space3),
+          
+          // اسم التطبيق والترحيب
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'مُسلم',
+                  style: context.headlineSmall?.copyWith(
+                    fontWeight: ThemeConstants.bold,
+                    color: context.textPrimaryColor,
+                    fontSize: 20,
+                    height: 1.1,
+                  ),
+                ),
+                Text(
+                  'السلام عليكم ورحمة الله',
+                  style: context.bodySmall?.copyWith(
+                    color: context.textSecondaryColor,
+                    fontSize: 12,
+                    height: 1.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        // أيقونة الإعدادات
+        Container(
+          margin: const EdgeInsets.only(left: ThemeConstants.space4),
+          decoration: BoxDecoration(
+            color: context.cardColor.withValues(alpha: 0.8),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: context.dividerColor.withValues(alpha: 0.3),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: context.primaryColor.withValues(alpha: 0.1),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: IconButton(
+            icon: Icon(
+              Icons.settings_outlined,
+              color: context.primaryColor,
+              size: 22,
+            ),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.pushNamed(context, '/settings').catchError((error) {
+                context.showInfoSnackBar('هذه الميزة قيد التطوير');
+                return null;
+              });
+            },
+            tooltip: 'الإعدادات',
+          ),
+        ),
+      ],
     );
-  }
-
-  void _onSettingsTap(BuildContext context) {
-    HapticFeedback.lightImpact();
-    Navigator.pushNamed(context, '/settings').catchError((error) {
-      _showInfoSnackBar(context, 'هذه الميزة قيد التطوير');
-      return null;
-    });
-  }
-
-  void _onPrayerTimesTap(BuildContext context) {
-    HapticFeedback.lightImpact();
-    Navigator.pushNamed(context, '/prayer-times').catchError((error) {
-      _showInfoSnackBar(context, 'هذه الميزة قيد التطوير');
-      return null;
-    });
   }
 
   Future<void> _handleRefresh(BuildContext context) async {
     HapticFeedback.lightImpact();
     
     // محاكاة تحديث البيانات
-    await Future.delayed(AppTheme.durationSlow);
+    await Future.delayed(const Duration(milliseconds: 800));
     
     if (context.mounted) {
-      _showSuccessSnackBar(context, 'تم تحديث البيانات بنجاح');
+      context.showSuccessSnackBar('تم تحديث البيانات بنجاح');
     }
-  }
-
-  void _showSuccessSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: context.bodyMedium.copyWith(color: Colors.white),
-        ),
-        backgroundColor: AppTheme.success,
-        duration: AppTheme.durationNormal,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppTheme.radiusMd.radius,
-        ),
-      ),
-    );
-  }
-
-  void _showInfoSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: context.bodyMedium.copyWith(color: Colors.white),
-        ),
-        backgroundColor: AppTheme.info,
-        duration: AppTheme.durationNormal,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppTheme.radiusMd.radius,
-        ),
-      ),
-    );
   }
 }

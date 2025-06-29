@@ -1,10 +1,8 @@
-// lib/features/athkar/screens/athkar_categories_screen.dart - محدث بالثيم الإسلامي الموحد
+// lib/features/athkar/screens/athkar_categories_screen.dart - محدث بنمط category_grid
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-// ✅ استيراد النظام الموحد الإسلامي - الوحيد المسموح
-import 'package:athkar_app/app/themes/index.dart';
-
+import 'dart:ui';
+import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../app/routes/app_router.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
@@ -51,7 +49,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
 
   void _setupShimmerAnimation() {
     _shimmerController = AnimationController(
-      duration: AppTheme.durationSlow,
+      duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat();
 
@@ -191,16 +189,12 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
-      // ✅ استخدام AppAppBar الموحد
-      appBar: AppAppBar.home(
+      backgroundColor: context.backgroundColor,
+      appBar: CustomAppBar.simple(
         title: 'أذكار المسلم',
         actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_outlined,
-              color: AppTheme.textSecondary,
-            ),
+          AppBarAction(
+            icon: ThemeConstants.iconNotifications,
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(
@@ -215,17 +209,16 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
         onRefresh: () async {
           await _loadProgress();
         },
-        color: AppTheme.primary,
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
             // رسالة الترحيب مدمجة في الصفحة
             SliverToBoxAdapter(
-              child: _buildWelcomeSection(),
+              child: _buildWelcomeSection(context),
             ),
             
-            SliverToBoxAdapter(
-              child: AppTheme.space4.h,
+            const SliverToBoxAdapter(
+              child: SizedBox(height: ThemeConstants.space4),
             ),
                   
             // قائمة الفئات
@@ -242,7 +235,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                 
                 if (snapshot.hasError) {
                   return SliverFillRemaining(
-                    child: AppEmptyState.noData(
+                    child: AppEmptyState.error(
                       message: 'حدث خطأ في تحميل البيانات',
                       onRetry: () {
                         setState(() {
@@ -271,12 +264,12 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                 });
                 
                 return SliverPadding(
-                  padding: AppTheme.space4.padding,
+                  padding: const EdgeInsets.all(ThemeConstants.space4),
                   sliver: SliverGrid(
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      mainAxisSpacing: AppTheme.space3,
-                      crossAxisSpacing: AppTheme.space3,
+                      mainAxisSpacing: ThemeConstants.space3,
+                      crossAxisSpacing: ThemeConstants.space3,
                       childAspectRatio: 0.95,
                     ),
                     delegate: SliverChildBuilderDelegate(
@@ -287,7 +280,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                         // إذا لم يتم إعداد الانيميشن بعد، أرجع البطاقة بدون انيميشن
                         if (_scaleAnimations == null || _fadeAnimations == null || 
                             index >= _scaleAnimations!.length || index >= _fadeAnimations!.length) {
-                          return _buildCategoryCard(category, progress);
+                          return _buildCategoryCard(context, category, progress, index);
                         }
                         
                         return AnimatedBuilder(
@@ -300,7 +293,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                               opacity: _fadeAnimations![index],
                               child: ScaleTransition(
                                 scale: _scaleAnimations![index],
-                                child: _buildCategoryCard(category, progress),
+                                child: _buildCategoryCard(context, category, progress, index),
                               ),
                             );
                           },
@@ -313,8 +306,8 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
               },
             ),
             
-            SliverToBoxAdapter(
-              child: AppTheme.space8.h,
+            const SliverToBoxAdapter(
+              child: SizedBox(height: ThemeConstants.space8),
             ),
           ],
         ),
@@ -322,83 +315,367 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     );
   }
 
-  Widget _buildWelcomeSection() {
-    return Padding(
-      padding: AppTheme.space4.padding,
-      child: AppCard(
-        useGradient: true,
-        color: AppTheme.primary,
-        onTap: () {
-          HapticFeedback.lightImpact();
-          // يمكن إضافة إجراء عند الضغط على كارد الترحيب
-        },
-        child: Stack(
-          children: [
-            // المحتوى الرئيسي
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
-                  style: AppTheme.titleMedium.copyWith(
-                    color: Colors.white,
-                    fontWeight: AppTheme.bold,
-                    height: 1.4,
+Widget _buildWelcomeSection(BuildContext context) {
+  final welcomeColor = context.primaryColor;
+  final gradientColors = [
+    welcomeColor,
+    welcomeColor.darken(0.2),
+  ];
+
+  return Padding(
+    padding: const EdgeInsets.all(ThemeConstants.space4),
+    child: GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        // يمكن إضافة إجراء عند الضغط على كارد الترحيب
+      },
+      child: Container(
+        height: 160, // ارتفاع ثابت مثل كارد الفئات
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+          child: Stack(
+            children: [
+              // الخلفية المتدرجة
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: gradientColors.map((c) => 
+                      c.withValues(alpha: 0.9)
+                    ).toList(),
                   ),
                 ),
-                
-                AppTheme.space2.h,
-                
-                Text(
-                  'اقرأ الأذكار اليومية وحافظ على ذكر الله',
-                  style: AppTheme.bodyMedium.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
+              ),
+              
+              // الطبقة الزجاجية
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
                   ),
                 ),
-              ],
+              ),
+              
+              // المحتوى
+              Padding(
+                padding: const EdgeInsets.all(ThemeConstants.space5),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    
+                    // النصوص
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
+                          style: context.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: ThemeConstants.bold,
+                            fontSize: 16,
+                            height: 1.3,
+                            letterSpacing: 0.3,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withValues(alpha: 0.4),
+                                offset: const Offset(0, 2),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        
+                        const SizedBox(height: ThemeConstants.space2),
+                        
+                        Text(
+                          'اقرأ الأذكار اليومية وحافظ على ذكر الله',
+                          style: context.bodyMedium?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontSize: 13,
+                            height: 1.2,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                offset: const Offset(0, 1),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              
+              // تأثير الهوفر للتفاعل
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    // يمكن إضافة إجراء هنا
+                  },
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                  splashColor: Colors.white.withValues(alpha: 0.2),
+                  highlightColor: Colors.white.withValues(alpha: 0.1),
+                ),
+              ),
+              
+              // عناصر زخرفية
+              _buildWelcomeDecorativeElements(),
+              
+              // تأثير التلميع المتحرك (اختياري - يمكن إزالته للحصول على نمط مطابق تماماً)
+              Positioned.fill(
+                child: AnimatedBuilder(
+                  animation: _shimmerAnimation,
+                  builder: (context, child) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.transparent,
+                            Colors.white.withValues(alpha: 0.1),
+                            Colors.transparent,
+                          ],
+                          stops: [
+                            (_shimmerAnimation.value - 0.3).clamp(0.0, 1.0),
+                            _shimmerAnimation.value.clamp(0.0, 1.0),
+                            (_shimmerAnimation.value + 0.3).clamp(0.0, 1.0),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildWelcomeDecorativeElements() {
+  return Positioned.fill(
+    child: Stack(
+      children: [
+        // دائرة زخرفية صغيرة
+        Positioned(
+          top: 8,
+          right: 8,
+          child: Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.3),
             ),
-            
-            // تأثير التلميع المتحرك
-            Positioned.fill(
-              child: AnimatedBuilder(
-                animation: _shimmerAnimation,
-                builder: (context, child) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.transparent,
-                          Colors.white.withValues(alpha: 0.1),
-                          Colors.transparent,
-                        ],
-                        stops: [
-                          (_shimmerAnimation.value - 0.3).clamp(0.0, 1.0),
-                          _shimmerAnimation.value.clamp(0.0, 1.0),
-                          (_shimmerAnimation.value + 0.3).clamp(0.0, 1.0),
+          ),
+        ),
+        
+        // دائرة زخرفية إضافية
+        Positioned(
+          bottom: 12,
+          left: 12,
+          child: Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.2),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+  Widget _buildCategoryCard(BuildContext context, AthkarCategory category, int progress, int index) {
+    final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
+    final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
+    final gradientColors = [
+      categoryColor,
+      categoryColor.darken(0.2),
+    ];
+    
+    return GestureDetector(
+      onTap: () => _openCategoryDetails(category),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+          child: Stack(
+            children: [
+              // الخلفية المتدرجة
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: gradientColors.map((c) => 
+                      c.withValues(alpha: 0.9)
+                    ).toList(),
+                  ),
+                ),
+              ),
+              
+              // الطبقة الزجاجية
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
+                ),
+              ),
+              
+              // المحتوى
+              Padding(
+                padding: const EdgeInsets.all(ThemeConstants.space5),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // الأيقونة
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.25),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.4),
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
                         ],
                       ),
-                      borderRadius: AppTheme.radiusLg.radius,
+                      child: Icon(
+                        categoryIcon,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                     ),
-                  );
-                },
+                    
+                    const Spacer(),
+                    
+                    // النصوص
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          category.title,
+                          style: context.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: ThemeConstants.bold,
+                            fontSize: 18,
+                            height: 1.2,
+                            letterSpacing: 0.3,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withValues(alpha: 0.4),
+                                offset: const Offset(0, 2),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: ThemeConstants.space3),
+                    
+                    // مؤشر الانتقال فقط
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: Colors.white,
+                            size: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              
+              // تأثير الهوفر للتفاعل
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _openCategoryDetails(category),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                  splashColor: Colors.white.withValues(alpha: 0.2),
+                  highlightColor: Colors.white.withValues(alpha: 0.1),
+                ),
+              ),
+              
+              // عناصر زخرفية
+              _buildDecorativeElements(categoryColor),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildCategoryCard(AthkarCategory category, int progress) {
-    return AppCard.category(
-      categoryId: category.id,
-      title: category.title,
-      count: category.athkar.length,
-      onTap: () => _openCategoryDetails(category),
-      isCompact: true,
-      customDescription: CategoryUtils.getDescription(category.id),
+  Widget _buildDecorativeElements(Color categoryColor) {
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          // دائرة زخرفية صغيرة
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

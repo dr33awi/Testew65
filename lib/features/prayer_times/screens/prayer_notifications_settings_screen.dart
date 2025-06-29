@@ -1,64 +1,23 @@
-// lib/features/prayer_times/screens/prayer_notifications_settings_screen.dart - محدث بالثيم الإسلامي الموحد
+// lib/features/prayer_times/screens/prayer_notifications_settings_screen.dart (مُصلح)
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-// ✅ استيراد النظام الموحد الإسلامي - محدث
-import 'package:athkar_app/app/themes/index.dart';
-
+import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
-
-// نماذج البيانات الأساسية
-enum PrayerType {
-  fajr,
-  dhuhr,
-  asr,
-  maghrib,
-  isha,
-}
-
-class PrayerNotificationSettings {
-  final bool enabled;
-  final bool vibrate;
-  final Map<PrayerType, bool> enabledPrayers;
-  final Map<PrayerType, int> minutesBefore;
-
-  PrayerNotificationSettings({
-    required this.enabled,
-    required this.vibrate,
-    required this.enabledPrayers,
-    required this.minutesBefore,
-  });
-
-  PrayerNotificationSettings copyWith({
-    bool? enabled,
-    bool? vibrate,
-    Map<PrayerType, bool>? enabledPrayers,
-    Map<PrayerType, int>? minutesBefore,
-  }) {
-    return PrayerNotificationSettings(
-      enabled: enabled ?? this.enabled,
-      vibrate: vibrate ?? this.vibrate,
-      enabledPrayers: enabledPrayers ?? this.enabledPrayers,
-      minutesBefore: minutesBefore ?? this.minutesBefore,
-    );
-  }
-}
+import '../services/prayer_times_service.dart';
+import '../models/prayer_time_model.dart';
 
 class PrayerNotificationsSettingsScreen extends StatefulWidget {
   const PrayerNotificationsSettingsScreen({super.key});
 
   @override
-  State<PrayerNotificationsSettingsScreen> createState() => 
-    _PrayerNotificationsSettingsScreenState();
+  State<PrayerNotificationsSettingsScreen> createState() => _PrayerNotificationsSettingsScreenState();
 }
 
-class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsSettingsScreen>
-    with TickerProviderStateMixin {
+class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsSettingsScreen> {
   late final LoggerService _logger;
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
+  late final PrayerTimesService _prayerService;
   
   late PrayerNotificationSettings _notificationSettings;
   
@@ -69,53 +28,18 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
   @override
   void initState() {
     super.initState();
-    _setupAnimations();
     _initializeServices();
     _loadSettings();
   }
 
-  void _setupAnimations() {
-    _animationController = AnimationController(
-      duration: AppTheme.durationNormal,
-      vsync: this,
-    );
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
-    
-    _animationController.forward();
-  }
-
   void _initializeServices() {
     _logger = getIt<LoggerService>();
+    _prayerService = getIt<PrayerTimesService>();
   }
 
   void _loadSettings() {
-    // تحميل الإعدادات الافتراضية
     setState(() {
-      _notificationSettings = PrayerNotificationSettings(
-        enabled: true,
-        vibrate: true,
-        enabledPrayers: {
-          PrayerType.fajr: true,
-          PrayerType.dhuhr: true,
-          PrayerType.asr: true,
-          PrayerType.maghrib: true,
-          PrayerType.isha: true,
-        },
-        minutesBefore: {
-          PrayerType.fajr: 10,
-          PrayerType.dhuhr: 5,
-          PrayerType.asr: 5,
-          PrayerType.maghrib: 5,
-          PrayerType.isha: 10,
-        },
-      );
+      _notificationSettings = _prayerService.notificationSettings;
       _isLoading = false;
     });
   }
@@ -130,24 +54,16 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
     setState(() => _isSaving = true);
     
     try {
-      // محاكاة حفظ الإعدادات
-      await Future.delayed(const Duration(seconds: 1));
+      await _prayerService.updateNotificationSettings(_notificationSettings);
       
       _logger.logEvent('prayer_notification_settings_updated', parameters: {
         'enabled': _notificationSettings.enabled,
         'enabled_prayers_count': _notificationSettings.enabledPrayers.values.where((v) => v).length,
-        'vibrate': _notificationSettings.vibrate,
       });
       
       if (!mounted) return;
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('تم حفظ إعدادات الإشعارات بنجاح'),
-          backgroundColor: AppTheme.success,
-        ),
-      );
-      
+      context.showSuccessSnackBar('تم حفظ إعدادات الإشعارات بنجاح');
       setState(() {
         _hasChanges = false;
       });
@@ -159,12 +75,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
       
       if (!mounted) return;
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('فشل حفظ إعدادات الإشعارات'),
-          backgroundColor: AppTheme.error,
-        ),
-      );
+      context.showErrorSnackBar('فشل حفظ إعدادات الإشعارات');
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -173,39 +84,37 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
   }
 
   @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: AppAppBar.basic(
-        title: 'إعدادات إشعارات الصلوات',
+      backgroundColor: context.backgroundColor,
+      appBar: AppBar(
+        backgroundColor: context.backgroundColor,
+        elevation: 0,
+        title: Text(
+          'إعدادات إشعارات الصلوات',
+          style: context.titleLarge?.semiBold,
+        ),
         actions: [
           if (_hasChanges && !_isSaving)
             IconButton(
-              icon: const Icon(Icons.save, color: AppTheme.primary),
+              icon: const Icon(Icons.save),
               onPressed: _saveSettings,
               tooltip: 'حفظ التغييرات',
             ),
         ],
-        onBackPressed: () {
-          if (_hasChanges) {
-            _showUnsavedChangesDialog();
-          } else {
-            Navigator.pop(context);
-          }
-        },
+        leading: BackButton(
+          onPressed: () {
+            if (_hasChanges) {
+              _showUnsavedChangesDialog();
+            } else {
+              Navigator.pop(context);
+            }
+          },
+        ),
       ),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: _isLoading
-            ? AppLoading.page(message: 'جاري تحميل الإعدادات...')
-            : _buildContent(),
-      ),
+      body: _isLoading
+          ? Center(child: AppLoading.circular())
+          : _buildContent(),
     );
   }
 
@@ -228,36 +137,77 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
         ),
         
         // مساحة في الأسفل
-        SliverToBoxAdapter(child: AppTheme.space8.h),
+        const SliverToBoxAdapter(
+          child: SizedBox(height: 80),
+        ),
       ],
     );
   }
 
   Widget _buildMainSettingsSection() {
-    return Padding(
-      padding: AppTheme.space4.paddingH,
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: context.cardColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppTheme.space4.h,
-          
           // عنوان القسم
-          Text(
-            'إعدادات الإشعارات العامة',
-            style: AppTheme.headlineMedium.copyWith(
-              fontWeight: AppTheme.bold,
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: context.primaryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.notifications_active,
+                    color: context.primaryColor,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'إعدادات الإشعارات العامة',
+                        style: context.titleMedium?.semiBold,
+                      ),
+                      Text(
+                        'تفعيل أو تعطيل الإشعارات لجميع الصلوات',
+                        style: context.bodySmall?.copyWith(
+                          color: context.textSecondaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
           
-          AppTheme.space3.h,
+          const Divider(),
           
-          // تفعيل الإشعارات
-          SettingCard.toggle(
-            title: 'تفعيل الإشعارات',
-            subtitle: 'تلقي تنبيهات أوقات الصلاة',
-            icon: Icons.notifications,
+          // تفعيل/تعطيل الإشعارات
+          SwitchListTile(
+            title: const Text('تفعيل الإشعارات'),
+            subtitle: const Text('تلقي تنبيهات أوقات الصلاة'),
             value: _notificationSettings.enabled,
-            onChanged: (bool value) {
+            onChanged: (value) {
               setState(() {
                 _notificationSettings = _notificationSettings.copyWith(
                   enabled: value,
@@ -265,19 +215,16 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 _markAsChanged();
               });
             },
-            color: AppTheme.primary,
+            activeColor: context.primaryColor,
           ),
           
-          AppTheme.space3.h,
-          
           // الاهتزاز
-          SettingCard.toggle(
-            title: 'الاهتزاز',
-            subtitle: 'اهتزاز الجهاز عند التنبيه',
-            icon: Icons.vibration,
+          SwitchListTile(
+            title: const Text('الاهتزاز'),
+            subtitle: const Text('اهتزاز الجهاز عند التنبيه'),
             value: _notificationSettings.vibrate,
             onChanged: _notificationSettings.enabled
-                ? (bool value) {
+                ? (value) {
                     setState(() {
                       _notificationSettings = _notificationSettings.copyWith(
                         vibrate: value,
@@ -286,8 +233,10 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                     });
                   }
                 : null,
-            color: AppTheme.secondary,
+            activeColor: context.primaryColor,
           ),
+          
+          const SizedBox(height: 8),
         ],
       ),
     );
@@ -295,219 +244,221 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
 
   Widget _buildPrayerNotificationsSection() {
     const prayers = [
-      (PrayerType.fajr, 'الفجر'),
-      (PrayerType.dhuhr, 'الظهر'),
-      (PrayerType.asr, 'العصر'),
-      (PrayerType.maghrib, 'المغرب'),
-      (PrayerType.isha, 'العشاء'),
+      (PrayerType.fajr, 'الفجر', Icons.dark_mode),
+      (PrayerType.dhuhr, 'الظهر', Icons.light_mode),
+      (PrayerType.asr, 'العصر', Icons.wb_cloudy),
+      (PrayerType.maghrib, 'المغرب', Icons.wb_twilight),
+      (PrayerType.isha, 'العشاء', Icons.bedtime),
     ];
     
-    return Padding(
-      padding: AppTheme.space4.paddingH,
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: context.cardColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppTheme.space6.h,
-          
           // عنوان القسم
-          Text(
-            'إعدادات إشعارات الصلوات',
-            style: AppTheme.headlineMedium.copyWith(
-              fontWeight: AppTheme.bold,
-            ),
-          ),
-          
-          AppTheme.space3.h,
-          
-          ...prayers.map((prayer) => _buildPrayerNotificationCard(
-            prayer.$1,
-            prayer.$2,
-          )).toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPrayerNotificationCard(PrayerType type, String name) {
-    final isEnabled = _notificationSettings.enabledPrayers[type] ?? false;
-    final minutesBefore = _notificationSettings.minutesBefore[type] ?? 0;
-    final prayerColor = AppTheme.getPrayerColor(name);
-    
-    return Padding(
-      padding: EdgeInsets.only(bottom: AppTheme.space3),
-      child: AppCard(
-        child: Column(
-          children: [
-            // رأس الصلاة مع التبديل
-            Row(
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
-                // أيقونة الصلاة
-                Icon(
-                  AppTheme.getPrayerIcon(name),
-                  color: prayerColor,
-                  size: AppTheme.iconMd,
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: context.primaryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.mosque,
+                    color: context.primaryColor,
+                    size: 24,
+                  ),
                 ),
-                
-                AppTheme.space3.w,
-                
-                // معلومات الصلاة
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        name,
-                        style: AppTheme.bodyLarge.copyWith(
-                          fontWeight: AppTheme.semiBold,
-                        ),
+                        'إعدادات إشعارات الصلوات',
+                        style: context.titleMedium?.semiBold,
                       ),
-                      AppTheme.space1.h,
                       Text(
-                        isEnabled && _notificationSettings.enabled
-                            ? 'تنبيه قبل $minutesBefore دقيقة'
-                            : 'التنبيه معطل',
-                        style: AppTheme.bodySmall.copyWith(
-                          color: AppTheme.textSecondary,
+                        'تخصيص الإشعارات لكل صلاة على حدة',
+                        style: context.bodySmall?.copyWith(
+                          color: context.textSecondaryColor,
                         ),
                       ),
                     ],
                   ),
                 ),
-                
-                // مفتاح التشغيل
-                Switch(
-                  value: isEnabled,
-                  onChanged: _notificationSettings.enabled
-                      ? (bool value) {
-                          HapticFeedback.lightImpact();
-                          setState(() {
-                            final updatedPrayers = Map<PrayerType, bool>.from(
-                              _notificationSettings.enabledPrayers,
-                            );
-                            updatedPrayers[type] = value;
-                            
-                            _notificationSettings = _notificationSettings.copyWith(
-                              enabledPrayers: updatedPrayers,
-                            );
-                            _markAsChanged();
-                          });
-                        }
-                      : null,
-                  activeColor: prayerColor,
-                ),
               ],
             ),
-            
-            // إعدادات الدقائق
-            if (isEnabled && _notificationSettings.enabled) ...[
-              AppTheme.space3.h,
-              _buildMinutesSelector(type, minutesBefore, prayerColor),
-            ],
-          ],
-        ),
+          ),
+          
+          const Divider(),
+          
+          // قائمة الصلوات
+          ...prayers.map((prayer) => _buildPrayerNotificationTile(
+            prayer.$1,
+            prayer.$2,
+            prayer.$3,
+          )),
+        ],
       ),
     );
   }
 
-  Widget _buildMinutesSelector(PrayerType type, int minutesBefore, Color prayerColor) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildPrayerNotificationTile(
+    PrayerType type,
+    String name,
+    IconData icon,
+  ) {
+    final isEnabled = _notificationSettings.enabledPrayers[type] ?? false;
+    final minutesBefore = _notificationSettings.minutesBefore[type] ?? 0;
+    
+    return ExpansionTile(
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: context.primaryColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(
+          icon,
+          color: context.primaryColor,
+          size: 20,
+        ),
+      ),
+      title: Text(name),
+      subtitle: Text(
+        isEnabled && _notificationSettings.enabled
+            ? 'تنبيه قبل $minutesBefore دقيقة'
+            : 'التنبيه معطل',
+      ),
+      trailing: Switch(
+        value: isEnabled,
+        onChanged: _notificationSettings.enabled
+            ? (value) {
+                HapticFeedback.lightImpact();
+                setState(() {
+                  final updatedPrayers = Map<PrayerType, bool>.from(
+                    _notificationSettings.enabledPrayers,
+                  );
+                  updatedPrayers[type] = value;
+                  
+                  _notificationSettings = _notificationSettings.copyWith(
+                    enabledPrayers: updatedPrayers,
+                  );
+                  _markAsChanged();
+                });
+              }
+            : null,
+        activeColor: context.primaryColor,
+      ),
       children: [
-        // فاصل
-        Container(
-          height: 1,
-          color: AppTheme.divider,
-          margin: AppTheme.space2.paddingV,
-        ),
-        
-        Row(
-          children: [
-            Icon(
-              Icons.schedule,
-              color: prayerColor,
-              size: AppTheme.iconSm,
-            ),
-            
-            AppTheme.space2.w,
-            
-            Text(
-              'التنبيه قبل:',
-              style: AppTheme.bodyMedium.copyWith(
-                fontWeight: AppTheme.medium,
-              ),
-            ),
-          ],
-        ),
-        
-        AppTheme.space3.h,
-        
-        // قائمة الدقائق
-        Wrap(
-          spacing: AppTheme.space2,
-          runSpacing: AppTheme.space2,
-          children: [0, 5, 10, 15, 20, 25, 30, 45, 60].map((minutes) {
-            final isSelected = minutesBefore == minutes;
-            
-            return GestureDetector(
-              onTap: () => _updateMinutesBefore(type, minutes),
-              child: AnimatedContainer(
-                duration: AppTheme.durationFast,
-                padding: AppTheme.space2.paddingH.add(AppTheme.space1.paddingV),
-                decoration: BoxDecoration(
-                  color: isSelected 
-                      ? prayerColor 
-                      : AppTheme.surface,
-                  borderRadius: AppTheme.radiusFull.radius,
-                  border: Border.all(
-                    color: isSelected 
-                        ? prayerColor 
-                        : AppTheme.border,
-                  ),
-                ),
-                child: Text(
-                  '$minutes د',
-                  style: AppTheme.bodySmall.copyWith(
-                    color: isSelected 
-                        ? Colors.white 
-                        : AppTheme.textPrimary,
-                    fontWeight: isSelected 
-                        ? AppTheme.semiBold 
-                        : AppTheme.medium,
-                    fontFamily: AppTheme.numbersFont,
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
+        if (isEnabled && _notificationSettings.enabled)
+          _buildMinutesSelector(type, minutesBefore),
       ],
     );
   }
 
-  void _updateMinutesBefore(PrayerType type, int minutes) {
-    HapticFeedback.selectionClick();
-    setState(() {
-      final updatedMinutes = Map<PrayerType, int>.from(
-        _notificationSettings.minutesBefore,
-      );
-      updatedMinutes[type] = minutes;
-      
-      _notificationSettings = _notificationSettings.copyWith(
-        minutesBefore: updatedMinutes,
-      );
-      _markAsChanged();
-    });
+  Widget _buildMinutesSelector(PrayerType type, int minutesBefore) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 8,
+      ),
+      child: Row(
+        children: [
+          const Text('التنبيه قبل'),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 80,
+            child: DropdownButtonFormField<int>(
+              value: minutesBefore,
+              decoration: const InputDecoration(
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+              ),
+              items: [0, 5, 10, 15, 20, 25, 30, 45, 60]
+                  .map((minutes) => DropdownMenuItem(
+                        value: minutes,
+                        child: Text('$minutes'),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  HapticFeedback.selectionClick();
+                  setState(() {
+                    final updatedMinutes = Map<PrayerType, int>.from(
+                      _notificationSettings.minutesBefore,
+                    );
+                    updatedMinutes[type] = value;
+                    
+                    _notificationSettings = _notificationSettings.copyWith(
+                      minutesBefore: updatedMinutes,
+                    );
+                    _markAsChanged();
+                  });
+                }
+              },
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Text('دقيقة'),
+        ],
+      ),
+    );
   }
 
   Widget _buildSaveButton() {
     return Padding(
-      padding: AppTheme.space4.padding,
-      child: AppButton.primary(
-        text: 'حفظ الإعدادات',
-        icon: Icons.save,
-        isLoading: _isSaving,
-        isFullWidth: true,
-        onPressed: _isSaving || !_hasChanges ? null : _saveSettings,
+      padding: const EdgeInsets.all(16),
+      child: SizedBox(
+        width: double.infinity,
+        height: 50,
+        child: ElevatedButton(
+          onPressed: _isSaving || !_hasChanges ? null : _saveSettings,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: context.primaryColor,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 2,
+          ),
+          child: _isSaving
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : const Text(
+                  'حفظ الإعدادات',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+        ),
       ),
     );
   }
@@ -516,34 +467,37 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Text(
-          'تغييرات غير محفوظة',
-          style: AppTheme.titleLarge,
-        ),
-        content: Text(
-          'لديك تغييرات لم يتم حفظها. هل تريد حفظ التغييرات قبل المغادرة؟',
-          style: AppTheme.bodyMedium,
-        ),
+        title: const Text('تغييرات غير محفوظة'),
+        content: const Text('لديك تغييرات لم يتم حفظها. هل تريد حفظ التغييرات قبل المغادرة؟'),
         actions: [
-          AppButton.outline(
-            text: 'تجاهل التغييرات',
+          TextButton(
             onPressed: () {
               Navigator.pop(context);
               Navigator.pop(context);
             },
+            child: const Text('تجاهل التغييرات'),
           ),
-          AppButton.primary(
-            text: 'حفظ وخروج',
+          ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               _saveSettings().then((_) {
-                if (mounted) Navigator.pop(context);
+                Navigator.pop(context);
               });
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: context.primaryColor,
+            ),
+            child: const Text('حفظ وخروج'),
           ),
         ],
       ),
     );
+  }
+}
+
+// إضافة AppLoading المفقود
+class AppLoading {
+  static Widget circular() {
+    return const CircularProgressIndicator();
   }
 }

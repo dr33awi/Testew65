@@ -1,343 +1,410 @@
-// lib/features/settings/widgets/settings_tile.dart - محدث بالنظام الموحد الإسلامي
+// lib/features/settings/widgets/settings_tile.dart (مُنظف)
 
 import 'package:flutter/material.dart';
-
-// ✅ استيراد النظام الموحد الإسلامي
+import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
-import '../../../app/themes/widgets/widgets.dart';
 
 class SettingsTile extends StatelessWidget {
+  final IconData icon;
   final String title;
   final String? subtitle;
-  final IconData? icon;
   final Widget? trailing;
   final VoidCallback? onTap;
-  final bool enabled;
+  final VoidCallback? onLongPress;
   final Color? iconColor;
+  final Color? backgroundColor;
+  final bool enabled;
+  final bool showRipple;
+  final EdgeInsetsGeometry? padding;
+  final BorderRadius? borderRadius;
+  final bool showDivider;
+  final Widget? badge;
   final double? iconSize;
-  final EdgeInsets? padding;
-  final String? badge;
-  final BadgeType? badgeType;
+  final CrossAxisAlignment crossAxisAlignment;
 
   const SettingsTile({
     super.key,
+    required this.icon,
     required this.title,
     this.subtitle,
-    this.icon,
     this.trailing,
     this.onTap,
-    this.enabled = true,
+    this.onLongPress,
     this.iconColor,
-    this.iconSize,
+    this.backgroundColor,
+    this.enabled = true,
+    this.showRipple = true,
     this.padding,
+    this.borderRadius,
+    this.showDivider = false,
     this.badge,
-    this.badgeType,
+    this.iconSize,
+    this.crossAxisAlignment = CrossAxisAlignment.center,
   });
 
-  // Factory constructors للأنواع الشائعة
-  factory SettingsTile.navigation({
-    Key? key,
-    required String title,
-    String? subtitle,
-    IconData? icon,
-    required VoidCallback onTap,
-    Color? iconColor,
-    String? badge,
-    BadgeType? badgeType,
-  }) {
-    return SettingsTile(
-      key: key,
-      title: title,
-      subtitle: subtitle,
-      icon: icon,
-      onTap: onTap,
-      iconColor: iconColor,
-      badge: badge,
-      badgeType: badgeType,
-      trailing: const Icon(
-        Icons.chevron_right,
-        color: AppTheme.textSecondary,
-      ),
-    );
+  void _handleTap() {
+    if (!enabled || onTap == null) return;
+    HapticFeedback.mediumImpact();
+    onTap!();
   }
 
-  factory SettingsTile.toggle({
-    Key? key,
-    required String title,
-    String? subtitle,
-    IconData? icon,
-    required bool value,
-    required ValueChanged<bool>? onChanged, // ✅ إضافة nullable
-    Color? iconColor,
-    bool enabled = true,
-  }) {
-    return SettingsTile(
-      key: key,
-      title: title,
-      subtitle: subtitle,
-      icon: icon,
-      iconColor: iconColor,
-      enabled: enabled,
-      trailing: Switch(
-        value: value,
-        onChanged: enabled && onChanged != null ? onChanged : null,
-        activeColor: iconColor ?? AppTheme.primary,
-      ),
-      onTap: enabled && onChanged != null ? () => onChanged(!value) : null,
-    );
+  void _handleLongPress() {
+    if (!enabled || onLongPress == null) return;
+    HapticFeedback.heavyImpact();
+    onLongPress!();
   }
 
   @override
   Widget build(BuildContext context) {
-    // ✅ إصلاح مشكلة onTap nullable
-    return AnimatedPress(
-      onTap: (enabled && onTap != null) ? onTap! : () {}, // تقديم دالة فارغة بدلاً من null
-      child: Container(
-        padding: padding ?? const EdgeInsets.symmetric(
-          horizontal: AppTheme.space4,
-          vertical: AppTheme.space4,
-        ),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-          color: enabled 
-              ? Colors.transparent
-              : AppTheme.textSecondary.withValues(alpha: 0.05),
-        ),
-        child: Row(
-          children: [
-            // الأيقونة
-            if (icon != null) ...[
-              _buildIcon(context),
-              AppTheme.space4.w,
-            ],
-            
-            // النص الرئيسي
-            Expanded(
-              child: _buildContent(context),
+    final effectiveIconColor = iconColor ?? context.primaryColor;
+    final effectiveBackgroundColor = backgroundColor ?? Colors.transparent;
+    final effectivePadding = padding ?? const EdgeInsets.symmetric(
+      horizontal: ThemeConstants.space4,
+      vertical: ThemeConstants.space4,
+    );
+    final effectiveBorderRadius = borderRadius ?? 
+        BorderRadius.circular(ThemeConstants.radiusXl);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: effectiveBackgroundColor,
+        borderRadius: effectiveBorderRadius,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _handleTap,
+          onLongPress: _handleLongPress,
+          borderRadius: effectiveBorderRadius,
+          splashColor: showRipple 
+              ? effectiveIconColor.withValues(alpha: 0.1)
+              : Colors.transparent,
+          highlightColor: showRipple
+              ? effectiveIconColor.withValues(alpha: 0.05)
+              : Colors.transparent,
+          child: Opacity(
+            opacity: enabled ? 1.0 : 0.6,
+            child: Padding(
+              padding: effectivePadding,
+              child: Row(
+                crossAxisAlignment: crossAxisAlignment,
+                children: [
+                  _buildIcon(context, effectiveIconColor),
+                  ThemeConstants.space4.w,
+                  Expanded(child: _buildContent(context)),
+                  if (trailing != null) ...[
+                    ThemeConstants.space3.w,
+                    _buildTrailing(context),
+                  ] else if (onTap != null && enabled) ...[
+                    ThemeConstants.space3.w,
+                    _buildDefaultTrailing(context),
+                  ],
+                ],
+              ),
             ),
-            
-            // العنصر الجانبي والشارة
-            if (badge != null || trailing != null) ...[
-              AppTheme.space3.w,
-              _buildTrailingSection(context),
-            ],
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildIcon(BuildContext context) {
-    return Container(
-      padding: AppTheme.space2.padding,
-      decoration: BoxDecoration(
-        color: enabled 
-            ? (iconColor ?? AppTheme.primary).withValues(alpha: 0.1)
-            : AppTheme.textSecondary.withValues(alpha: 0.05),
-        borderRadius: AppTheme.radiusMd.radius,
-        border: Border.all(
-          color: enabled 
-              ? (iconColor ?? AppTheme.primary).withValues(alpha: 0.2)
-              : AppTheme.textSecondary.withValues(alpha: 0.5),
+  Widget _buildIcon(BuildContext context, Color iconColor) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          width: iconSize != null ? iconSize! + 16 : 48,
+          height: iconSize != null ? iconSize! + 16 : 48,
+          decoration: BoxDecoration(
+            color: enabled 
+                ? iconColor.withValues(alpha: 0.1)
+                : context.textSecondaryColor.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+          ),
+          child: Icon(
+            icon,
+            color: enabled 
+                ? iconColor
+                : context.textSecondaryColor.withValues(alpha: 0.5),
+            size: iconSize ?? ThemeConstants.iconMd,
+          ),
         ),
-      ),
-      child: Icon(
-        icon!,
-        color: enabled 
-            ? iconColor ?? AppTheme.primary
-            : AppTheme.textSecondary.withValues(alpha: 0.7),
-        size: iconSize ?? AppTheme.iconMd,
-      ),
+        
+        if (badge != null)
+          Positioned(
+            top: 0,
+            right: 0,
+            child: badge!,
+          ),
+      ],
     );
   }
 
   Widget _buildContent(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           title,
-          style: context.bodyLarge.copyWith(
+          style: context.titleMedium?.copyWith(
             color: enabled 
-                ? AppTheme.textPrimary
-                : AppTheme.textSecondary.withValues(alpha: 0.7),
-            fontWeight: AppTheme.medium,
+                ? context.textPrimaryColor
+                : context.textSecondaryColor.withValues(alpha: 0.7),
+            fontWeight: ThemeConstants.medium,
+            height: 1.2,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         
         if (subtitle != null) ...[
-          AppTheme.space1.h,
+          ThemeConstants.space1.h,
           Text(
             subtitle!,
-            style: context.bodySmall.copyWith(
+            style: context.bodySmall?.copyWith(
               color: enabled 
-                  ? AppTheme.textSecondary
-                  : AppTheme.textSecondary.withValues(alpha: 0.5),
+                  ? context.textSecondaryColor
+                  : context.textSecondaryColor.withValues(alpha: 0.5),
+              height: 1.3,
             ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ],
     );
   }
 
-  Widget _buildTrailingSection(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // الشارة
-        if (badge != null) ...[
-          _buildBadge(context),
-          AppTheme.space2.w,
-        ],
-        
-        // العنصر الجانبي
-        if (trailing != null) trailing!,
-      ],
+  Widget _buildTrailing(BuildContext context) {
+    return Opacity(
+      opacity: enabled ? 1.0 : 0.5,
+      child: trailing!,
     );
   }
 
-  Widget _buildBadge(BuildContext context) {
-    final badgeColor = _getBadgeColor(context);
-    
+  Widget _buildDefaultTrailing(BuildContext context) {
+    return Icon(
+      Icons.arrow_forward_ios_rounded,
+      size: ThemeConstants.iconSm,
+      color: context.textSecondaryColor.withValues(
+        alpha: enabled ? 0.6 : 0.3,
+      ),
+    );
+  }
+}
+
+/// Badge للإشعارات أو التنبيهات
+class SettingsBadge extends StatelessWidget {
+  final String? text;
+  final Color? color;
+  final bool isNew;
+  final bool isWarning;
+  final bool isError;
+  final double? size;
+
+  const SettingsBadge({
+    super.key,
+    this.text,
+    this.color,
+    this.isNew = false,
+    this.isWarning = false,
+    this.isError = false,
+    this.size,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    Color badgeColor;
+    if (color != null) {
+      badgeColor = color!;
+    } else if (isError) {
+      badgeColor = ThemeConstants.error;
+    } else if (isWarning) {
+      badgeColor = ThemeConstants.warning;
+    } else if (isNew) {
+      badgeColor = ThemeConstants.success;
+    } else {
+      badgeColor = context.primaryColor;
+    }
+
+    final effectiveSize = size ?? 16.0;
+
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppTheme.space2,
+      constraints: BoxConstraints(
+        minWidth: effectiveSize,
+        minHeight: effectiveSize,
+      ),
+      padding: EdgeInsets.symmetric(
+        horizontal: text != null ? 6 : 0,
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: badgeColor.withValues(alpha: 0.1),
-        borderRadius: AppTheme.radiusFull.radius,
-        border: Border.all(
-          color: badgeColor.withValues(alpha: 0.3),
-        ),
+        color: badgeColor,
+        borderRadius: BorderRadius.circular(effectiveSize / 2),
+        boxShadow: [
+          BoxShadow(
+            color: badgeColor.withValues(alpha: 0.3),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
-      child: Text(
-        badge!,
-        style: context.bodySmall.copyWith(
-          color: badgeColor,
-          fontWeight: AppTheme.medium,
-        ),
-      ),
+      child: text != null
+          ? Text(
+              text!,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: effectiveSize * 0.6,
+                fontWeight: FontWeight.bold,
+                height: 1,
+              ),
+              textAlign: TextAlign.center,
+            )
+          : null,
     );
   }
 
-  Color _getBadgeColor(BuildContext context) {
-    Color badgeColor = AppTheme.primary;
-    
-    switch (badgeType) {
-      case BadgeType.error:
-        badgeColor = AppTheme.error;
-        break;
-      case BadgeType.warning:
-        badgeColor = AppTheme.warning;
-        break;
-      case BadgeType.success:
-        badgeColor = AppTheme.success;
-        break;
-      case BadgeType.info:
-      default:
-        badgeColor = AppTheme.info;
-        break;
-    }
-    
-    return badgeColor;
+  factory SettingsBadge.isNew([String? text]) => SettingsBadge(
+        text: text ?? 'جديد',
+        isNew: true,
+      );
+
+  factory SettingsBadge.warning([String? text]) => SettingsBadge(
+        text: text ?? '!',
+        isWarning: true,
+      );
+
+  factory SettingsBadge.error([String? text]) => SettingsBadge(
+        text: text ?? '!',
+        isError: true,
+      );
+
+  factory SettingsBadge.count(int count, {Color? color}) => SettingsBadge(
+        text: count > 99 ? '99+' : count.toString(),
+        color: color,
+      );
+
+  factory SettingsBadge.dot({Color? color}) => SettingsBadge(
+        color: color,
+        size: 8,
+      );
+}
+
+/// Switch مخصص للإعدادات
+class SettingsSwitch extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+  final Color? activeColor;
+  final Color? inactiveColor;
+  final bool enabled;
+
+  const SettingsSwitch({
+    super.key,
+    required this.value,
+    this.onChanged,
+    this.activeColor,
+    this.inactiveColor,
+    this.enabled = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Switch.adaptive(
+      value: value,
+      onChanged: enabled ? onChanged : null,
+      activeColor: activeColor ?? context.primaryColor,
+      inactiveThumbColor: inactiveColor,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    );
   }
 }
 
-enum BadgeType {
-  info,
-  success,
-  warning,
-  error,
+/// قائمة منسدلة للإعدادات
+class SettingsDropdown<T> extends StatelessWidget {
+  final T value;
+  final List<DropdownMenuItem<T>> items;
+  final ValueChanged<T?>? onChanged;
+  final String? hint;
+  final bool enabled;
+
+  const SettingsDropdown({
+    super.key,
+    required this.value,
+    required this.items,
+    this.onChanged,
+    this.hint,
+    this.enabled = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButton<T>(
+      value: value,
+      items: items,
+      onChanged: enabled ? onChanged : null,
+      hint: hint != null ? Text(hint!) : null,
+      underline: const SizedBox(),
+      isDense: true,
+      icon: Icon(
+        Icons.arrow_drop_down,
+        color: context.textSecondaryColor,
+      ),
+    );
+  }
 }
 
-/// زر إجراء للإعدادات
+/// زر إجراء في الإعدادات
 class SettingsActionButton extends StatelessWidget {
   final String text;
+  final VoidCallback? onPressed;
   final IconData? icon;
-  final VoidCallback onPressed;
-  final bool isDestructive;
-  final bool isOutlined;
+  final Color? color;
+  final bool outlined;
+  final bool enabled;
 
   const SettingsActionButton({
     super.key,
     required this.text,
+    this.onPressed,
     this.icon,
-    required this.onPressed,
-    this.isDestructive = false,
-    this.isOutlined = false,
+    this.color,
+    this.outlined = false,
+    this.enabled = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (isOutlined) {
-      return AppButton.outline(
-        text: text,
-        icon: icon,
-        onPressed: onPressed,
-        borderColor: isDestructive ? AppTheme.error : AppTheme.primary,
+    final effectiveColor = color ?? context.primaryColor;
+
+    if (outlined) {
+      return OutlinedButton.icon(
+        onPressed: enabled ? onPressed : null,
+        icon: icon != null ? Icon(icon, size: 16) : const SizedBox(),
+        label: Text(text),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: effectiveColor,
+          side: BorderSide(color: effectiveColor),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+          ),
+        ),
       );
     }
-    
-    return AppButton.primary(
-      text: text,
-      icon: icon,
-      onPressed: onPressed,
-    );
-  }
-}
 
-/// فاصل بصري للإعدادات
-class SettingsDivider extends StatelessWidget {
-  final String? label;
-  final EdgeInsets? padding;
-
-  const SettingsDivider({
-    super.key,
-    this.label,
-    this.padding,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: padding ?? const EdgeInsets.symmetric(
-        vertical: AppTheme.space3,
-        horizontal: AppTheme.space4,
-      ),
-      child: Row(
-        children: [
-          if (label != null) ...[
-            Text(
-              label!,
-              style: context.bodySmall.copyWith(
-                color: AppTheme.textSecondary,
-                fontWeight: AppTheme.semiBold,
-              ),
-            ),
-            AppTheme.space3.w,
-          ],
-          
-          Expanded(
-            child: Container(
-              height: 1,
-              color: AppTheme.divider,
-            ),
-          ),
-        ],
+    return ElevatedButton.icon(
+      onPressed: enabled ? onPressed : null,
+      icon: icon != null ? Icon(icon, size: 16) : const SizedBox(),
+      label: Text(text),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: effectiveColor,
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
       ),
     );
-  }
-}
-
-/// مساحة فارغة للإعدادات
-class SettingsSpacing extends StatelessWidget {
-  final double? height;
-
-  const SettingsSpacing({super.key, this.height});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(height: height ?? AppTheme.space4);
   }
 }

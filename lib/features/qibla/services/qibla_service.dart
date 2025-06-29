@@ -1,13 +1,10 @@
-// lib/features/qibla/services/qibla_service.dart - محدث مع تحسينات الأداء
+// lib/features/qibla/services/qibla_service.dart
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-
-// ✅ استيراد الثيم الإسلامي الموحد
-import 'package:athkar_app/app/themes/index.dart';
 
 import '../../../core/infrastructure/services/logging/logger_service.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
@@ -81,9 +78,9 @@ class QiblaService extends ChangeNotifier {
   // التحقق من توفر البوصلة بدقة أعلى
   Future<void> _checkCompassAvailability() async {
     try {
-      // اختبار أكثر دقة للبوصلة مع timeout محسن
+      // اختبار أكثر دقة للبوصلة
       final compassEvents = await FlutterCompass.events
-          ?.timeout(AppTheme.durationSlow)
+          ?.timeout(const Duration(seconds: 5))
           .take(5)
           .toList();
       
@@ -128,13 +125,13 @@ class QiblaService extends ChangeNotifier {
     _logger.info(message: '[QiblaService] بدأ الاستماع للبوصلة');
   }
 
-  // معالجة قراءة البوصلة محسنة باستخدام مؤقتات الثيم
+  // معالجة قراءة البوصلة محسنة
   void _processCompassReading(CompassEvent event) {
     final now = DateTime.now();
     
     // تقليل معدل التحديث لتوفير البطارية وتحسين الأداء
     if (_lastUpdate != null && 
-        now.difference(_lastUpdate!) < AppTheme.durationFast) {
+        now.difference(_lastUpdate!) < const Duration(milliseconds: 50)) {
       return;
     }
     
@@ -195,7 +192,7 @@ class QiblaService extends ChangeNotifier {
     return math.max(0.0, 1.0 - math.pow(normalizedAccuracy, 1.5));
   }
 
-  // بدء المعايرة محسن مع استخدام مؤقتات الثيم
+  // بدء المعايرة محسن
   Future<void> startCalibration() async {
     _isCalibrated = false;
     _directionHistory.clear(); // إعادة تعيين التاريخ
@@ -203,8 +200,8 @@ class QiblaService extends ChangeNotifier {
 
     _logger.info(message: '[QiblaService] بدء معايرة البوصلة');
 
-    // فترة معايرة محسنة باستخدام مؤقت الثيم
-    await Future.delayed(AppTheme.durationSlow * 2.5); // 5 ثوانٍ
+    // فترة معايرة أطول للدقة
+    await Future.delayed(const Duration(seconds: 5));
     
     _isCalibrated = true;
     await _saveCalibrationData();
@@ -213,7 +210,7 @@ class QiblaService extends ChangeNotifier {
     _logger.info(message: '[QiblaService] تمت المعايرة بنجاح');
   }
 
-  // تحديث بيانات القبلة مع دقة عالية
+  // تحديث بيانات القبلة مع دقة Vincenty العالية
   Future<void> updateQiblaData() async {
     if (_isLoading) return;
 
@@ -228,10 +225,10 @@ class QiblaService extends ChangeNotifier {
         return;
       }
 
-      // الحصول على الموقع بأعلى دقة ممكنة مع timeout محسن
+      // الحصول على الموقع بأعلى دقة ممكنة
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.bestForNavigation,
-        timeLimit: AppTheme.durationSlow * 10, // 20 ثانية
+        timeLimit: const Duration(seconds: 20),
       );
 
       _logger.info(
@@ -275,7 +272,7 @@ class QiblaService extends ChangeNotifier {
         );
       }
 
-      // إنشاء نموذج القبلة باستخدام حسابات دقيقة
+      // إنشاء نموذج القبلة باستخدام حسابات Vincenty الدقيقة
       _qiblaData = QiblaModel.fromCoordinates(
         latitude: position.latitude,
         longitude: position.longitude,

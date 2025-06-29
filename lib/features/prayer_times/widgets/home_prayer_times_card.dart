@@ -1,14 +1,8 @@
-// lib/features/prayer_times/widgets/home_prayer_times_card.dart - محدث بالنظام الموحد الإسلامي الكامل
-
+// lib/features/prayer_times/widgets/home_prayer_times_card.dart - بطاقة مواقيت مبسطة ومحسنة
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
-
-// ✅ استيراد النظام الموحد الإسلامي - محدث
 import '../../../app/themes/app_theme.dart';
-import '../../../app/themes/widgets/widgets.dart';
-import '../../../app/themes/widgets/extended_cards.dart';
-import '../../../app/themes/utils/prayer_utils.dart';
 import '../../../app/di/service_locator.dart';
 import '../services/prayer_times_service.dart';
 import '../models/prayer_time_model.dart';
@@ -23,13 +17,11 @@ class PrayerTimesCard extends StatefulWidget {
 class _PrayerTimesCardState extends State<PrayerTimesCard>
     with TickerProviderStateMixin {
   
-  // Animation Controllers
+  // Animation Controllers - إزالة pulse controller أيضاً
   late AnimationController _fadeController;
-  late AnimationController _pulseController;
   
-  // Animations
+  // Animations - إزالة pulse animation
   late Animation<double> _fadeAnimation;
-  late Animation<double> _pulseAnimation;
   
   // Service
   late PrayerTimesService _prayerService;
@@ -56,13 +48,9 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
   }
 
   void _setupAnimations() {
+    // إزالة جميع animations عدا fade
     _fadeController = AnimationController(
-      duration: AppTheme.durationNormal,
-      vsync: this,
-    );
-    
-    _pulseController = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
@@ -73,17 +61,8 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       parent: _fadeController,
       curve: Curves.easeOut,
     ));
-    
-    _pulseAnimation = Tween<double>(
-      begin: 0.95,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
 
     _fadeController.forward();
-    _pulseController.repeat(reverse: true);
   }
 
   void _startClockTimer() {
@@ -188,15 +167,13 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
           _isLoadingLocation = false;
         });
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('فشل في تحديث الموقع. تحقق من إعدادات الموقع.'),
-            backgroundColor: AppTheme.error,
-            action: SnackBarAction(
-              label: 'إعادة المحاولة',
-              textColor: Colors.white,
-              onPressed: _updatePrayerTimes,
-            ),
+        AppSnackBar.showError(
+          context: context,
+          message: 'فشل في تحديث الموقع. تحقق من إعدادات الموقع.',
+          action: SnackBarAction(
+            label: 'إعادة المحاولة',
+            textColor: Colors.white,
+            onPressed: _updatePrayerTimes,
           ),
         );
       }
@@ -206,7 +183,6 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
   @override
   void dispose() {
     _fadeController.dispose();
-    _pulseController.dispose();
     _timesSubscription?.cancel();
     _nextPrayerSubscription?.cancel();
     _clockTimer?.cancel();
@@ -217,13 +193,13 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isTablet = context.isTablet;
+        final isTablet = constraints.maxWidth > 600;
         
         return FadeTransition(
           opacity: _fadeAnimation,
           child: Container(
             constraints: BoxConstraints(
-              minHeight: isTablet ? 180 : 160,
+              minHeight: isTablet ? 180 : 160, // زيادة ارتفاع الكارد لاستيعاب الأيقونات الكبيرة
               maxHeight: isTablet ? 220 : 200,
             ),
             child: _buildContent(context, isTablet),
@@ -256,68 +232,109 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
 
   Widget _buildPrayerCard(BuildContext context, PrayerTime nextPrayer, bool isTablet) {
     final prayerColor = context.getPrayerColor(nextPrayer.nameAr);
+    final gradientColors = [
+      prayerColor,
+      prayerColor.darken(0.3),
+    ];
     
-    return AnimatedPress(
+    return GestureDetector(
       onTap: _navigateToPrayerTimes,
-      child: AppCard(
-        useGradient: true,
-        color: prayerColor,
-        onTap: _navigateToPrayerTimes,
-        child: _buildCardContent(context, nextPrayer, isTablet),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg), // تصغير نصف القطر
+          boxShadow: [
+            BoxShadow(
+              color: prayerColor.withValues(alpha: 0.2), // تقليل الظل
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+              spreadRadius: -3,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+          child: Stack(
+            children: [
+              // الخلفية المتدرجة البسيطة
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: gradientColors.map((c) => 
+                      c.withValues(alpha: 0.95)
+                    ).toList(),
+                  ),
+                ),
+              ),
+              
+              // المحتوى الرئيسي
+              Padding(
+                padding: EdgeInsets.all(
+                  isTablet ? ThemeConstants.space4 : ThemeConstants.space3, // تقليل المسافات
+                ),
+                child: Column(
+                  children: [
+                    _buildMainHeader(context, nextPrayer, isTablet),
+                    
+                    SizedBox(height: isTablet ? ThemeConstants.space2 : ThemeConstants.space1),
+                    
+                    _buildPrayerTimeline(context, isTablet),
+                  ],
+                ),
+              ),
+              
+              // عناصر زخرفية مصغرة
+              _buildDecorativeElements(),
+              
+              // تأثير التفاعل
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _navigateToPrayerTimes,
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                  splashColor: Colors.white.withValues(alpha: 0.1),
+                  highlightColor: Colors.white.withValues(alpha: 0.05),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-    );
-  }
-
-  Widget _buildCardContent(BuildContext context, PrayerTime nextPrayer, bool isTablet) {
-    return Column(
-      children: [
-        _buildMainHeader(context, nextPrayer, isTablet),
-        
-        SizedBox(height: isTablet ? AppTheme.space3 : AppTheme.space2),
-        
-        _buildPrayerTimeline(context, isTablet),
-      ],
     );
   }
 
   Widget _buildMainHeader(BuildContext context, PrayerTime nextPrayer, bool isTablet) {
     return Row(
       children: [
-        // أيقونة المسجد مع تأثير النبضة
-        AnimatedBuilder(
-          animation: _pulseAnimation,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _pulseAnimation.value,
-              child: Container(
-                width: isTablet ? 50 : 40,
-                height: isTablet ? 50 : 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.2),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.4),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.white.withValues(alpha: 0.3),
-                      blurRadius: 15,
-                      spreadRadius: 3,
-                    ),
-                  ],
-                ),
-                child: Icon(
-                  Icons.mosque_rounded,
-                  color: Colors.white,
-                  size: isTablet ? 24 : 20,
-                ),
+        // أيقونة المسجد ثابتة
+        Container(
+          width: isTablet ? 50 : 40,
+          height: isTablet ? 50 : 40,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withValues(alpha: 0.2),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.4),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
               ),
-            );
-          },
+            ],
+          ),
+          child: Icon(
+            Icons.mosque_rounded,
+            color: Colors.white,
+            size: isTablet ? 24 : 20,
+          ),
         ),
         
-        SizedBox(width: isTablet ? AppTheme.space3 : AppTheme.space2),
+        SizedBox(width: isTablet ? ThemeConstants.space3 : ThemeConstants.space2),
         
         // معلومات الموقع والصلاة
         Expanded(
@@ -329,9 +346,10 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                 alignment: Alignment.centerRight,
                 child: Text(
                   'مواقيت الصلاة',
-                  style: (isTablet ? context.titleMedium : context.titleMedium).copyWith(
+                  style: (isTablet ? context.titleMedium : context.titleSmall)?.copyWith(
                     color: Colors.white,
-                    fontWeight: AppTheme.bold,
+                    fontWeight: ThemeConstants.bold,
+                    height: 1.1,
                     shadows: [
                       Shadow(
                         color: Colors.black.withValues(alpha: 0.3),
@@ -358,7 +376,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                   Expanded(
                     child: Text(
                       _location?.displayName ?? 'جاري تحديد الموقع...',
-                      style: context.bodySmall.copyWith(
+                      style: context.labelSmall?.copyWith(
                         color: Colors.white.withValues(alpha: 0.8),
                         fontSize: isTablet ? 11 : 10,
                       ),
@@ -371,8 +389,20 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
             ],
           ),
         ),
+        
+
       ],
     );
+  }
+
+  Widget _buildNextPrayerInfo(BuildContext context, PrayerTime nextPrayer, bool isTablet) {
+    // تم حذف هذه الدالة لأنها لم تعد مستخدمة
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildTimeRemaining(BuildContext context, PrayerTime nextPrayer, bool isTablet) {
+    // تم حذف هذه الدالة لأنها لم تعد مستخدمة
+    return const SizedBox.shrink();
   }
 
   Widget _buildPrayerTimeline(BuildContext context, bool isTablet) {
@@ -386,7 +416,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       child: LayoutBuilder(
         builder: (context, constraints) {
           return Container(
-            height: constraints.maxHeight,
+            height: constraints.maxHeight, // استخدام كامل المساحة المتاحة
             padding: EdgeInsets.symmetric(horizontal: isTablet ? 8 : 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -409,6 +439,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     
     return LayoutBuilder(
       builder: (context, constraints) {
+        // حساب حجم الأيقونة بناءً على المساحة المتاحة
         final availableWidth = constraints.maxWidth;
         final iconSize = (availableWidth * 0.6).clamp(40.0, isTablet ? 80.0 : 60.0);
         final circleSize = iconSize + (isActive ? 12 : 8);
@@ -417,7 +448,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AnimatedContainer(
-              duration: AppTheme.durationNormal,
+              duration: ThemeConstants.durationNormal,
               width: circleSize,
               height: circleSize,
               decoration: BoxDecoration(
@@ -447,13 +478,13 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
               ),
               child: Center(
                 child: Icon(
-                  CardHelper.getPrayerIcon(prayer.nameAr),
+                  context.getPrayerIcon(prayer.nameAr),
                   color: isActive
                       ? context.getPrayerColor(prayer.nameAr)
                       : isPassed 
                           ? context.getPrayerColor(prayer.nameAr).withValues(alpha: 0.9)
                           : Colors.white.withValues(alpha: 0.7),
-                  size: iconSize * 0.6,
+                  size: iconSize * 0.6, // الأيقونة تأخذ 60% من حجم الدائرة
                 ),
               ),
             ),
@@ -464,9 +495,9 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
               fit: BoxFit.scaleDown,
               child: Text(
                 prayer.nameAr,
-                style: context.bodyMedium.copyWith(
+                style: context.labelLarge?.copyWith(
                   color: Colors.white.withValues(alpha: isActive ? 1.0 : 0.8),
-                  fontWeight: isActive ? AppTheme.bold : AppTheme.semiBold,
+                  fontWeight: isActive ? ThemeConstants.bold : ThemeConstants.semiBold,
                   fontSize: isTablet ? 16 : 14,
                 ),
                 textAlign: TextAlign.center,
@@ -478,12 +509,12 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
-                PrayerUtils.formatPrayerTime(prayer.time, showPeriod: false),
-                style: context.bodyMedium.copyWith(
+                _formatTimeShort(prayer.time),
+                style: context.labelLarge?.copyWith(
                   color: Colors.white.withValues(alpha: isActive ? 0.95 : 0.7),
                   fontSize: isTablet ? 14 : 12,
-                  fontWeight: AppTheme.medium,
-                  fontFamily: AppTheme.numbersFont,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                  fontWeight: ThemeConstants.medium,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -494,12 +525,36 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     );
   }
 
+  Widget _buildDecorativeElements() {
+    // تم إزالة العناصر الزخرفية
+    return const SizedBox.shrink();
+  }
+
   Widget _buildLoadingState(bool isTablet) {
-    return AppCard(
+    return Container(
+      height: isTablet ? 140 : 120,
+      decoration: BoxDecoration(
+        color: context.cardColor,
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        border: Border.all(
+          color: context.dividerColor.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          AppLoading.page(message: 'جاري تحميل المواقيت...'),
+          AppLoading.circular(
+            size: LoadingSize.medium,
+            color: context.primaryColor,
+          ),
+          SizedBox(height: isTablet ? ThemeConstants.space2 : ThemeConstants.space1),
+          Text(
+            'جاري تحميل المواقيت...',
+            style: context.bodySmall?.copyWith(
+              color: context.textSecondaryColor,
+            ),
+          ),
         ],
       ),
     );
@@ -510,7 +565,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       title: _errorMessage ?? 'خطأ في تحميل المواقيت',
       subtitle: 'اضغط للمحاولة مرة أخرى',
       icon: Icons.error_outline,
-      color: AppTheme.error,
+      iconColor: context.errorColor,
       onTap: _updatePrayerTimes,
     );
   }
@@ -524,7 +579,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
           ? 'الرجاء الانتظار'
           : 'اضغط لتحديد موقعك وعرض مواقيت الصلاة',
       icon: _isLoadingLocation ? Icons.hourglass_empty : Icons.location_on,
-      color: AppTheme.primary,
+      iconColor: context.primaryColor,
       onTap: _updatePrayerTimes,
     );
   }
@@ -533,15 +588,30 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     HapticFeedback.lightImpact();
     Navigator.pushNamed(context, '/prayer-times').catchError((error) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('هذه الميزة قيد التطوير'),
-            backgroundColor: AppTheme.info,
-          ),
+        AppSnackBar.showInfo(
+          context: context,
+          message: 'هذه الميزة قيد التطوير',
         );
       }
       return null;
     });
+  }
+
+  String _formatTime(DateTime time) {
+    final hour = time.hour;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = hour >= 12 ? 'م' : 'ص';
+    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+    
+    return '$displayHour:$minute $period';
+  }
+
+  String _formatTimeShort(DateTime time) {
+    final hour = time.hour;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+    
+    return '$displayHour:$minute';
   }
 }
 

@@ -1,9 +1,7 @@
 // lib/features/prayer_times/widgets/prayer_time_card.dart (محدث بالنظام الموحد)
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
-import '../../../app/themes/widgets/widgets.dart';
 import '../models/prayer_time_model.dart';
 
 /// بطاقة وقت الصلاة المحسنة باستخدام النظام الموحد
@@ -27,7 +25,6 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
-  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
@@ -37,26 +34,16 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
 
   void _setupAnimations() {
     _animationController = AnimationController(
-      duration: AppTheme.durationNormal,
+      duration: ThemeConstants.durationNormal,
       vsync: this,
     );
-    
     _scaleAnimation = Tween<double>(
       begin: 0.95,
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeOut,
+      curve: ThemeConstants.curveSmooth,
     ));
-
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
-
     _animationController.forward();
   }
 
@@ -71,87 +58,83 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
     final isNext = widget.prayer.isNext;
     final isPassed = widget.prayer.isPassed;
     final useGradient = widget.forceColored || isNext;
-    final prayerColor = AppTheme.getPrayerColor(widget.prayer.nameAr);
     
     return RepaintBoundary(
-      child: FadeTransition(
-        opacity: _fadeAnimation,
-        child: AnimatedBuilder(
-          animation: _scaleAnimation,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _scaleAnimation.value,
-              child: _buildCard(context, useGradient, isPassed, prayerColor),
-            );
-          },
-        ),
+      child: AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: _buildCard(context, useGradient, isPassed),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildCard(BuildContext context, bool useGradient, bool isPassed, Color prayerColor) {
-    return AnimatedPress(
+  Widget _buildCard(BuildContext context, bool useGradient, bool isPassed) {
+    // استخدام AppCard من النظام الموحد
+    return AppCard(
+      type: CardType.normal,
+      style: useGradient ? CardStyle.gradient : CardStyle.normal,
+      primaryColor: useGradient 
+          ? context.getPrayerColor(widget.prayer.type.name)
+          : context.cardColor,
+      gradientColors: useGradient ? [
+        context.getPrayerColor(widget.prayer.type.name),
+        context.getPrayerColor(widget.prayer.type.name).darken(0.2),
+      ] : null,
       onTap: _handleCardTap,
-      child: AppCard(
-        useGradient: useGradient,
-        color: useGradient ? prayerColor : null,
-        margin: const EdgeInsets.only(bottom: AppTheme.space3),
-        child: _buildCardContent(context, useGradient, isPassed, prayerColor),
-      ),
+      margin: const EdgeInsets.only(bottom: ThemeConstants.space3),
+      child: _buildCardContent(context, useGradient, isPassed),
     );
   }
 
-  Widget _buildCardContent(BuildContext context, bool useGradient, bool isPassed, Color prayerColor) {
+  Widget _buildCardContent(BuildContext context, bool useGradient, bool isPassed) {
     return Row(
       children: [
-        _buildStatusIcon(context, useGradient, isPassed, prayerColor),
+        _buildEnhancedStatusIcon(context, useGradient, isPassed),
         
-        AppTheme.space4.w,
+        ThemeConstants.space4.w,
         
         Expanded(
           child: _buildPrayerInfo(context, useGradient, isPassed),
         ),
         
-        AppTheme.space4.w,
+        ThemeConstants.space4.w,
         
-        _buildTimeSection(context, useGradient, prayerColor),
-        
-        AppTheme.space3.w,
-        
-        _buildNotificationToggle(context, useGradient, prayerColor),
+        _buildEnhancedTimeSection(context, useGradient),
       ],
     );
   }
 
-  Widget _buildStatusIcon(BuildContext context, bool useGradient, bool isPassed, Color prayerColor) {
+  Widget _buildEnhancedStatusIcon(
+    BuildContext context, 
+    bool useGradient, 
+    bool isPassed
+  ) {
     final iconData = _getStatusIcon(isPassed);
-    final iconColor = _getIconColor(context, useGradient, isPassed, prayerColor);
+    final iconColor = _getIconColor(context, useGradient, isPassed);
     
     return Container(
       width: 70,
       height: 70,
       decoration: BoxDecoration(
-        gradient: useGradient ? LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.white.withValues(alpha: 0.3),
-            Colors.white.withValues(alpha: 0.1),
-          ],
-        ) : null,
-        color: !useGradient ? iconColor.withValues(alpha: 0.1) : null,
-        borderRadius: AppTheme.radiusXl.radius,
+        color: useGradient 
+            ? Colors.white.withValues(alpha: 0.25)
+            : iconColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
         border: Border.all(
           color: useGradient 
               ? Colors.white.withValues(alpha: 0.4)
-              : iconColor.withValues(alpha: 0.2),
+              : iconColor.withValues(alpha: 0.3),
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
-            color: iconColor.withValues(alpha: useGradient ? 0.3 : 0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: iconColor.withValues(alpha: useGradient ? 0.3 : 0.15),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
             spreadRadius: 1,
           ),
         ],
@@ -160,7 +143,7 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
         child: Icon(
           iconData,
           color: iconColor,
-          size: AppTheme.iconLg,
+          size: ThemeConstants.iconLg,
         ),
       ),
     );
@@ -172,21 +155,21 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
     } else if (isPassed) {
       return Icons.check_circle_rounded;
     } else {
-      return Icons.mosque;
+      return context.getPrayerIcon(widget.prayer.nameAr);
     }
   }
 
-  Color _getIconColor(BuildContext context, bool useGradient, bool isPassed, Color prayerColor) {
+  Color _getIconColor(BuildContext context, bool useGradient, bool isPassed) {
     if (useGradient) {
       return Colors.white;
     }
     
     if (widget.prayer.isNext) {
-      return prayerColor;
+      return context.getPrayerColor(widget.prayer.type.name);
     } else if (isPassed) {
-      return AppTheme.success;
+      return context.successColor;
     } else {
-      return prayerColor;
+      return context.getPrayerColor(widget.prayer.type.name);
     }
   }
 
@@ -196,11 +179,11 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
       children: [
         Text(
           widget.prayer.nameAr,
-          style: AppTheme.titleLarge.copyWith(
+          style: context.headlineSmall?.copyWith(
             color: _getTextColor(context, useGradient, isPassed),
             fontWeight: widget.prayer.isNext 
-                ? AppTheme.bold 
-                : AppTheme.semiBold,
+                ? ThemeConstants.bold 
+                : ThemeConstants.semiBold,
             shadows: useGradient ? [
               Shadow(
                 color: Colors.black.withValues(alpha: 0.3),
@@ -211,107 +194,61 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
           ),
         ),
         
-        AppTheme.space1.h,
+        ThemeConstants.space2.h,
         
         Text(
           widget.prayer.nameEn,
-          style: AppTheme.bodySmall.copyWith(
+          style: context.bodySmall?.copyWith(
             color: _getTextColor(context, useGradient, isPassed).withValues(alpha: 0.8),
-            fontWeight: AppTheme.medium,
+            fontWeight: ThemeConstants.medium,
           ),
         ),
-        
-        // معلومات إضافية
-        if (widget.prayer.isNext) ...[
-          AppTheme.space1.h,
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.space2,
-              vertical: AppTheme.space1,
-            ),
-            decoration: BoxDecoration(
-              color: useGradient 
-                  ? Colors.black.withValues(alpha: 0.2)
-                  : AppTheme.primary.withValues(alpha: 0.1),
-              borderRadius: AppTheme.radiusFull.radius,
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.timer,
-                  size: AppTheme.iconSm,
-                  color: Colors.white,
-                ),
-                SizedBox(width: AppTheme.space1),
-                Text(
-                  'قادمة',
-                  style: AppTheme.caption,
-                ),
-              ],
-            ),
-          ),
-        ] else if (isPassed) ...[
-          AppTheme.space1.h,
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.space2,
-              vertical: AppTheme.space1,
-            ),
-            decoration: BoxDecoration(
-              color: AppTheme.success.withValues(alpha: 0.1),
-              borderRadius: AppTheme.radiusFull.radius,
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.check,
-                  size: AppTheme.iconSm,
-                  color: AppTheme.success,
-                ),
-                SizedBox(width: AppTheme.space1),
-                Text(
-                  'انتهى',
-                  style: AppTheme.caption,
-                ),
-              ],
-            ),
-          ),
-        ],
       ],
     );
   }
 
-  Widget _buildTimeSection(BuildContext context, bool useGradient, Color prayerColor) {
+  Widget _buildEnhancedTimeSection(BuildContext context, bool useGradient) {
+    final baseColor = context.getPrayerColor(widget.prayer.type.name);
+    
     return Container(
-      padding: AppTheme.space3.padding,
+      padding: const EdgeInsets.all(ThemeConstants.space4),
       decoration: BoxDecoration(
-        gradient: useGradient ? LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Colors.white.withValues(alpha: 0.25),
-            Colors.white.withValues(alpha: 0.15),
-          ],
-        ) : null,
-        color: !useGradient ? prayerColor.withValues(alpha: 0.1) : null,
-        borderRadius: AppTheme.radiusLg.radius,
+          colors: useGradient 
+              ? [
+                  Colors.white.withValues(alpha: 0.25),
+                  Colors.white.withValues(alpha: 0.15),
+                ]
+              : [
+                  baseColor.withValues(alpha: 0.15),
+                  baseColor.withValues(alpha: 0.1),
+                ],
+        ),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
         border: Border.all(
           color: useGradient 
               ? Colors.white.withValues(alpha: 0.3)
-              : prayerColor.withValues(alpha: 0.2),
+              : baseColor.withValues(alpha: 0.2),
           width: 1.5,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: (useGradient ? Colors.white : baseColor).withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             _formatTime(widget.prayer.time),
-            style: AppTheme.titleLarge.copyWith(
-              color: useGradient ? Colors.white : prayerColor,
-              fontWeight: AppTheme.bold,
+            style: context.headlineMedium?.copyWith(
+              color: useGradient ? Colors.white : baseColor,
+              fontWeight: ThemeConstants.bold,
               shadows: useGradient ? [
                 Shadow(
                   color: Colors.black.withValues(alpha: 0.3),
@@ -323,61 +260,30 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
           ),
           
           if (widget.prayer.iqamaTime != null) ...[
-            AppTheme.space1.h,
+            ThemeConstants.space1.h,
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.space2,
-                vertical: AppTheme.space1,
+                horizontal: ThemeConstants.space2,
+                vertical: ThemeConstants.space1,
               ),
               decoration: BoxDecoration(
                 color: useGradient 
                     ? Colors.black.withValues(alpha: 0.2)
-                    : AppTheme.surface,
-                borderRadius: AppTheme.radiusSm.radius,
+                    : context.surfaceColor,
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
               ),
               child: Text(
                 'الإقامة ${_formatTime(widget.prayer.iqamaTime!)}',
-                style: AppTheme.bodySmall.copyWith(
+                style: context.labelSmall?.copyWith(
                   color: useGradient 
                       ? Colors.white.withValues(alpha: 0.9)
-                      : AppTheme.textSecondary,
-                  fontWeight: AppTheme.medium,
+                      : context.textSecondaryColor,
+                  fontWeight: ThemeConstants.medium,
                 ),
               ),
             ),
           ],
         ],
-      ),
-    );
-  }
-
-  Widget _buildNotificationToggle(BuildContext context, bool useGradient, Color prayerColor) {
-    // هذا مجرد مؤشر للتنبيه - يمكن إضافة وظائف أكثر لاحقاً
-    return AnimatedPress(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        // يمكن إضافة toggle للتنبيه هنا
-        widget.onNotificationToggle(true);
-      },
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: useGradient 
-              ? Colors.white.withValues(alpha: 0.2)
-              : prayerColor.withValues(alpha: 0.1),
-          borderRadius: AppTheme.radiusMd.radius,
-          border: Border.all(
-            color: useGradient 
-                ? Colors.white.withValues(alpha: 0.3)
-                : prayerColor.withValues(alpha: 0.2),
-          ),
-        ),
-        child: const Icon(
-          Icons.notifications_active,
-          color: Colors.white,
-          size: AppTheme.iconSm,
-        ),
       ),
     );
   }
@@ -389,8 +295,8 @@ class _PrayerTimeCardState extends State<PrayerTimeCard>
 
   Color _getTextColor(BuildContext context, bool useGradient, bool isPassed) {
     if (useGradient) return Colors.white;
-    if (isPassed) return AppTheme.textSecondary;
-    return AppTheme.textPrimary;
+    if (isPassed) return context.textSecondaryColor;
+    return context.textPrimaryColor;
   }
 
   String _formatTime(DateTime time) {

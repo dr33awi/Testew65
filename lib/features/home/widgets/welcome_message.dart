@@ -1,8 +1,7 @@
-// lib/features/home/widgets/welcome_message.dart - محدث بالنظام الموحد الإسلامي
+// lib/features/home/widgets/welcome_message.dart - رسالة ترحيب مصغرة
 import 'package:flutter/material.dart';
-
-// ✅ استيراد النظام الموحد الإسلامي - الوحيد المسموح
-import '../../../app/themes/index.dart';
+import 'dart:ui';
+import '../../../app/themes/app_theme.dart';
 
 class WelcomeMessage extends StatefulWidget {
   const WelcomeMessage({super.key});
@@ -34,7 +33,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
 
   void _setupShimmerAnimation() {
     _shimmerController = AnimationController(
-      duration: AppTheme.durationSlow,
+      duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat();
 
@@ -60,113 +59,218 @@ class _WelcomeMessageState extends State<WelcomeMessage>
     final greeting = _getGreeting(hour);
     final message = _getMessage(hour);
     final icon = _getGreetingIcon(hour);
-    final gradientColor = _getTimeBasedColor(hour);
+    final gradientColors = context.getTimeBasedGradient(dateTime: now).colors;
     
     return LayoutBuilder(
       builder: (context, constraints) {
-        return AppCard(
-          useGradient: true,
-          color: gradientColor,
-          margin: EdgeInsets.zero,
-          padding: context.isMobile ? AppTheme.space3.padding : AppTheme.space4.padding,
-          child: Row(
-            children: [
-              // الأيقونة المتحركة
-              Container(
-                width: context.isMobile ? 50 : 60,
-                height: context.isMobile ? 50 : 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.2),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.4),
-                    width: 1.5,
+        final isTablet = constraints.maxWidth > 600;
+        
+        return Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(
+            minHeight: 100, // تقليل من 140
+            maxHeight: 130, // تقليل من 180
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg), // تقليل من radius2xl
+            boxShadow: [
+              BoxShadow(
+                color: gradientColors.first.withValues(alpha: 0.2), // تقليل الشفافية
+                blurRadius: 12, // تقليل من 20
+                offset: const Offset(0, 6), // تقليل من 10
+                spreadRadius: -3, // تقليل من -5
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+            child: Stack(
+              children: [
+                // الخلفية المتدرجة
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: gradientColors.map((c) => 
+                        c.withValues(alpha: 0.95)
+                      ).toList(),
+                    ),
                   ),
-                  boxShadow: AppTheme.shadowSm,
                 ),
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0.0, end: 1.0),
-                  duration: AppTheme.durationSlow,
-                  curve: Curves.elasticOut,
-                  builder: (context, value, child) {
-                    return Transform.scale(
-                      scale: value,
-                      child: Transform.rotate(
-                        angle: value * 0.1,
-                        child: Icon(
-                          icon,
-                          color: Colors.white,
-                          size: context.isMobile ? AppTheme.iconMd : AppTheme.iconLg,
+                
+                // تأثير التلميع المتحرك
+                AnimatedBuilder(
+                  animation: _shimmerAnimation,
+                  builder: (context, child) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.transparent,
+                            Colors.white.withValues(alpha: 0.08), // تقليل الشفافية
+                            Colors.transparent,
+                          ],
+                          stops: [
+                            (_shimmerAnimation.value - 0.3).clamp(0.0, 1.0),
+                            _shimmerAnimation.value.clamp(0.0, 1.0),
+                            (_shimmerAnimation.value + 0.3).clamp(0.0, 1.0),
+                          ],
                         ),
                       ),
                     );
                   },
                 ),
-              ),
-              
-              AppTheme.space3.w,
-              
-              // النصوص
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // التحية
-                    Text(
-                      greeting,
-                      style: (context.isMobile ? AppTheme.titleLarge : AppTheme.headlineMedium).copyWith(
-                        color: Colors.white,
-                        fontWeight: AppTheme.bold,
-                        height: 1.1,
+                
+                // الطبقة الزجاجية
+                BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.1),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        width: 1,
                       ),
+                      borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
                     ),
-                    
-                    AppTheme.space1.h,
-                    
-                    // الرسالة
-                    Text(
-                      message,
-                      style: (context.isMobile ? AppTheme.bodySmall : AppTheme.bodyMedium).copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        height: 1.2,
-                        fontWeight: AppTheme.medium,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    
-                    AppTheme.space2.h,
-                    
-                    // معلومات الوقت والتاريخ
-                    _buildTimeInfo(context, now),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+                
+                // المحتوى الرئيسي
+                Padding(
+                  padding: EdgeInsets.all(
+                    isTablet ? ThemeConstants.space4 : ThemeConstants.space3, // تقليل المسافات
+                  ),
+                  child: _buildContent(context, now, greeting, message, icon, isTablet),
+                ),
+                
+                // نقاط زخرفية مصغرة
+                _buildDecorativeElements(),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildTimeInfo(BuildContext context, DateTime now) {
-    final timeStr = AppTheme.formatPrayerTime(now, use24Hour: true);
+  Widget _buildContent(BuildContext context, DateTime now, String greeting, 
+                      String message, IconData icon, bool isTablet) {
+    return Row(
+      children: [
+        // الأيقونة المتحركة مصغرة
+        Container(
+          width: isTablet ? 60 : 45, // تقليل الحجم
+          height: isTablet ? 60 : 45,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withValues(alpha: 0.2),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.4),
+              width: 1.5, // تقليل سمك الحدود
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 6, // تقليل الظل
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.elasticOut,
+            builder: (context, value, child) {
+              return Transform.scale(
+                scale: value,
+                child: Transform.rotate(
+                  angle: value * 0.1,
+                  child: Icon(
+                    icon,
+                    color: Colors.white,
+                    size: isTablet ? ThemeConstants.iconLg : ThemeConstants.iconMd, // تقليل حجم الأيقونة
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        
+        SizedBox(width: isTablet ? ThemeConstants.space4 : ThemeConstants.space3), // تقليل المسافة
+        
+        // النصوص
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // التحية
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: Text(
+                  greeting,
+                  style: (isTablet ? context.headlineMedium : context.titleLarge)?.copyWith( // تقليل حجم النص
+                    color: Colors.white,
+                    fontWeight: ThemeConstants.bold,
+                    height: 1.1,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        offset: const Offset(0, 1), // تقليل الظل
+                        blurRadius: 3,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              
+              SizedBox(height: ThemeConstants.space1), // تقليل المسافة
+              
+              // الرسالة
+              Text(
+                message,
+                style: (isTablet ? context.bodyMedium : context.bodySmall)?.copyWith( // تقليل حجم النص
+                  color: Colors.white.withValues(alpha: 0.9),
+                  height: 1.2,
+                  fontWeight: ThemeConstants.medium,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              
+              SizedBox(height: isTablet ? ThemeConstants.space3 : ThemeConstants.space2), // تقليل المسافة
+              
+              // معلومات الوقت والتاريخ
+              _buildTimeInfo(context, now, isTablet),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimeInfo(BuildContext context, DateTime now, bool isTablet) {
+    final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
     final dateStr = _getArabicDate(now);
     
     return Wrap(
-      spacing: AppTheme.space1,
-      runSpacing: AppTheme.space1,
+      spacing: ThemeConstants.space1, // تقليل المسافة
+      runSpacing: ThemeConstants.space1,
       children: [
         // الوقت
         Container(
           padding: EdgeInsets.symmetric(
-            horizontal: context.isMobile ? AppTheme.space2 : AppTheme.space3,
-            vertical: AppTheme.space1,
+            horizontal: isTablet ? ThemeConstants.space3 : ThemeConstants.space2, // تقليل المسافات
+            vertical: isTablet ? ThemeConstants.space1 : ThemeConstants.space1,
           ),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.25),
-            borderRadius: AppTheme.radiusFull.radius,
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.3),
               width: 1,
@@ -176,19 +280,19 @@ class _WelcomeMessageState extends State<WelcomeMessage>
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                Icons.access_time,
+                Icons.access_time_rounded,
                 color: Colors.white,
-                size: AppTheme.iconSm,
+                size: isTablet ? 14 : 12, // تقليل حجم الأيقونة
               ),
               
-              AppTheme.space1.w,
+              SizedBox(width: ThemeConstants.space1),
               
               Text(
                 timeStr,
-                style: AppTheme.numbersStyle.copyWith(
+                style: (isTablet ? context.labelMedium : context.labelSmall)?.copyWith( // تقليل حجم النص
                   color: Colors.white,
-                  fontWeight: AppTheme.bold,
-                  fontSize: context.isMobile ? 12 : 14,
+                  fontWeight: ThemeConstants.bold,
+                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
             ],
@@ -198,12 +302,12 @@ class _WelcomeMessageState extends State<WelcomeMessage>
         // التاريخ
         Container(
           padding: EdgeInsets.symmetric(
-            horizontal: context.isMobile ? AppTheme.space2 : AppTheme.space3,
-            vertical: AppTheme.space1,
+            horizontal: isTablet ? ThemeConstants.space3 : ThemeConstants.space2,
+            vertical: isTablet ? ThemeConstants.space1 : ThemeConstants.space1,
           ),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: AppTheme.radiusFull.radius,
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.2),
               width: 1,
@@ -213,20 +317,19 @@ class _WelcomeMessageState extends State<WelcomeMessage>
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                Icons.calendar_today,
+                Icons.calendar_today_rounded,
                 color: Colors.white.withValues(alpha: 0.9),
-                size: AppTheme.iconSm,
+                size: isTablet ? 14 : 12,
               ),
               
-              AppTheme.space1.w,
+              SizedBox(width: ThemeConstants.space1),
               
               Flexible(
                 child: Text(
                   dateStr,
-                  style: AppTheme.labelMedium.copyWith(
+                  style: (isTablet ? context.labelMedium : context.labelSmall)?.copyWith(
                     color: Colors.white.withValues(alpha: 0.9),
-                    fontWeight: AppTheme.medium,
-                    fontSize: context.isMobile ? 12 : 14,
+                    fontWeight: ThemeConstants.medium,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -235,6 +338,77 @@ class _WelcomeMessageState extends State<WelcomeMessage>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildDecorativeElements() {
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          // دائرة زخرفية علوية يمين مصغرة
+          Positioned(
+            top: -15,
+            right: -15,
+            child: Container(
+              width: 60, // تقليل الحجم
+              height: 60,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.08), // تقليل الشفافية
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  width: 1,
+                ),
+              ),
+            ),
+          ),
+          
+          // دائرة زخرفية سفلية يسار مصغرة
+          Positioned(
+            bottom: -20,
+            left: -20,
+            child: Container(
+              width: 70, // تقليل الحجم
+              height: 70,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.04),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  width: 1,
+                ),
+              ),
+            ),
+          ),
+          
+          // نقاط صغيرة متناثرة
+          Positioned(
+            top: 20,
+            left: 30,
+            child: Container(
+              width: 3, // تقليل الحجم
+              height: 3,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
+            ),
+          ),
+          
+          Positioned(
+            bottom: 35,
+            right: 45,
+            child: Container(
+              width: 4,
+              height: 4,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.25),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -289,22 +463,6 @@ class _WelcomeMessageState extends State<WelcomeMessage>
       return Icons.wb_twilight;
     } else {
       return Icons.nights_stay;
-    }
-  }
-
-  Color _getTimeBasedColor(int hour) {
-    if (hour >= 5 && hour < 7) {
-      return AppTheme.primary; // الفجر
-    } else if (hour >= 7 && hour < 12) {
-      return AppTheme.primary; // الصباح
-    } else if (hour >= 12 && hour < 15) {
-      return AppTheme.secondary; // الظهر
-    } else if (hour >= 15 && hour < 18) {
-      return AppTheme.accent; // العصر
-    } else if (hour >= 18 && hour < 20) {
-      return AppTheme.tertiary; // المغرب
-    } else {
-      return AppTheme.primaryDark; // الليل
     }
   }
 }

@@ -1,42 +1,16 @@
-// lib/features/settings/widgets/service_status_widgets.dart - محدث بالنظام الموحد الإسلامي
+// lib/features/settings/widgets/service_status_widgets.dart - مُصحح
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-// ✅ استيراد النظام الموحد الإسلامي
 import '../../../app/themes/app_theme.dart';
-import '../../../app/themes/widgets/widgets.dart';
-import '../../../app/themes/widgets/extended_cards.dart';
+import '../../../core/infrastructure/services/permissions/permission_service.dart';
+import '../../../core/infrastructure/services/device/battery/battery_service.dart';
 import '../services/settings_services_manager.dart';
 
-// ✅ إضافة ServiceStatus class المفقود
-class ServiceStatus {
-  final bool notificationsEnabled;
-  final bool locationAvailable;
-  final bool batteryOptimized;
-  final Map<String, dynamic> details;
-
-  const ServiceStatus({
-    required this.notificationsEnabled,
-    required this.locationAvailable,
-    required this.batteryOptimized,
-    this.details = const {},
-  });
-
-  factory ServiceStatus.initial() {
-    return const ServiceStatus(
-      notificationsEnabled: false,
-      locationAvailable: false,
-      batteryOptimized: false,
-    );
-  }
-}
-
-// ✅ إصلاح ServiceStatusOverview constructor
 class ServiceStatusOverview extends StatefulWidget {
-  final ServiceStatus status; // ✅ إضافة المعامل المطلوب
-  final SettingsServicesManager servicesManager; // ✅ إضافة المعامل المطلوب
-  final VoidCallback? onRefresh; // ✅ إضافة المعامل المطلوب
+  final ServiceStatus status;
+  final SettingsServicesManager servicesManager;
+  final VoidCallback? onRefresh;
 
   const ServiceStatusOverview({
     super.key,
@@ -49,473 +23,673 @@ class ServiceStatusOverview extends StatefulWidget {
   State<ServiceStatusOverview> createState() => _ServiceStatusOverviewState();
 }
 
-class _ServiceStatusOverviewState extends State<ServiceStatusOverview>
-    with TickerProviderStateMixin {
-  
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  
-  bool _notificationsEnabled = true;
-  bool _locationEnabled = true;
-  bool _batteryOptimized = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _setupAnimations();
-    _checkServiceStatus();
-    _updateFromWidget();
-  }
-
-  void _setupAnimations() {
-    _animationController = AnimationController(
-      duration: AppTheme.durationNormal,
-      vsync: this,
-    );
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
-    
-    _animationController.forward();
-  }
-
-  void _updateFromWidget() {
-    setState(() {
-      _notificationsEnabled = widget.status.notificationsEnabled;
-      _locationEnabled = widget.status.locationAvailable;
-      _batteryOptimized = widget.status.batteryOptimized;
-    });
-  }
-
-  @override
-  void didUpdateWidget(ServiceStatusOverview oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.status != widget.status) {
-      _updateFromWidget();
-    }
-  }
-
-  Future<void> _checkServiceStatus() async {
-    // هنا يمكن إضافة فحص حقيقي للخدمات
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    if (mounted) {
-      _updateFromWidget();
-    }
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
+class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: AppCard(
-        useGradient: true,
-        color: AppTheme.info,
-        margin: AppTheme.space4.padding,
-        child: Column(
-          children: [
-            _buildHeader(context),
-            
-            AppTheme.space4.h,
-            
-            _buildServiceIndicators(context),
-            
-            AppTheme.space4.h,
-            
-            _buildQuickActions(context),
-          ],
+    final healthyServices = _getHealthyServicesCount();
+    final totalServices = _getTotalServicesCount();
+    final healthPercentage = (healthyServices / totalServices * 100).round();
+
+    return Container(
+      margin: const EdgeInsets.all(ThemeConstants.space4),
+      decoration: BoxDecoration(
+        gradient: _getHealthGradient(healthPercentage),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        boxShadow: [
+          BoxShadow(
+            color: _getHealthColor(healthPercentage).withOpacitySafe(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.onRefresh,
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+          child: Padding(
+            padding: const EdgeInsets.all(ThemeConstants.space5),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(context, healthPercentage),
+                ThemeConstants.space4.h,
+                _buildServicesGrid(context),
+                ThemeConstants.space4.h,
+                _buildBatteryInfo(context),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, int healthPercentage) {
     return Row(
       children: [
         Container(
-          padding: AppTheme.space3.padding,
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: AppTheme.radiusMd.radius,
+            color: Colors.white.withOpacitySafe(0.2),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
           ),
-          child: const Icon(
-            Icons.settings_system_daydream,
+          child: Icon(
+            _getHealthIcon(healthPercentage),
             color: Colors.white,
-            size: AppTheme.iconLg,
+            size: 24,
           ),
         ),
-        
-        AppTheme.space3.w,
-        
+        ThemeConstants.space3.w,
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'حالة النظام',
-                style: context.titleMedium.copyWith(
+                'حالة الخدمات',
+                style: context.titleMedium?.copyWith(
                   color: Colors.white,
-                  fontWeight: AppTheme.bold,
+                  fontWeight: ThemeConstants.bold,
                 ),
               ),
               Text(
-                'مراقبة أداء التطبيق والخدمات',
-                style: context.bodySmall.copyWith(
-                  color: Colors.white.withValues(alpha: 0.8),
+                _getHealthDescription(healthPercentage),
+                style: context.bodySmall?.copyWith(
+                  color: Colors.white.withOpacitySafe(0.9),
                 ),
               ),
             ],
           ),
         ),
-        
-        _buildOverallStatus(),
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 6,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacitySafe(0.2),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            '$healthPercentage%',
+            style: context.labelLarge?.copyWith(
+              color: Colors.white,
+              fontWeight: ThemeConstants.bold,
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildOverallStatus() {
-    final overallHealth = _calculateOverallHealth();
-    final color = _getHealthColor(overallHealth);
+  Widget _buildServicesGrid(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _ServiceIndicator(
+            icon: Icons.notifications,
+            label: 'الإشعارات',
+            isActive: widget.status.isNotificationEnabled,
+            onTap: () => _handleNotificationTap(context),
+          ),
+        ),
+        ThemeConstants.space3.w,
+        Expanded(
+          child: _ServiceIndicator(
+            icon: Icons.location_on,
+            label: 'الموقع',
+            isActive: widget.status.isLocationEnabled,
+            onTap: () => _handleLocationTap(context),
+          ),
+        ),
+        ThemeConstants.space3.w,
+        Expanded(
+          child: _ServiceIndicator(
+            icon: Icons.battery_saver,
+            label: 'البطارية',
+            isActive: widget.status.isBatteryOptimized,
+            onTap: () => _handleBatteryTap(context),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBatteryInfo(BuildContext context) {
+    final batteryState = widget.status.batteryState;
     
     return Container(
-      padding: AppTheme.space2.padding,
+      padding: const EdgeInsets.all(ThemeConstants.space3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
-        borderRadius: AppTheme.radiusFull.radius,
+        color: Colors.white.withOpacitySafe(0.1),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            _getHealthIcon(overallHealth),
-            color: Colors.white,
-            size: AppTheme.iconSm,
+            batteryState.isCharging ? Icons.battery_charging_full : Icons.battery_std,
+            color: Colors.white.withOpacitySafe(0.8),
+            size: 20,
           ),
-          
-          AppTheme.space1.w,
-          
+          ThemeConstants.space2.w,
           Text(
-            '${overallHealth.toInt()}%',
-            style: context.bodySmall.copyWith(
-              color: Colors.white,
-              fontWeight: AppTheme.semiBold,
-              fontFamily: AppTheme.numbersFont,
+            'البطارية: ${batteryState.level}%',
+            style: context.bodySmall?.copyWith(
+              color: Colors.white.withOpacitySafe(0.9),
             ),
           ),
+          if (batteryState.isPowerSaveMode) ...[
+            ThemeConstants.space2.w,
+            Icon(
+              Icons.power_settings_new,
+              color: Colors.orange,
+              size: 16,
+            ),
+            ThemeConstants.space1.w,
+            Text(
+              'وضع توفير الطاقة',
+              style: context.labelSmall?.copyWith(
+                color: Colors.orange,
+                fontWeight: ThemeConstants.semiBold,
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  // ✅ إصلاح نوع المعامل من Context إلى BuildContext
-  Widget _buildServiceIndicators(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        _ServiceIndicator(
-          icon: Icons.notifications,
-          label: 'الإشعارات',
-          isActive: _notificationsEnabled,
-          onTap: _toggleNotifications,
-        ),
-        
-        AppTheme.space3.w,
-        
-        _ServiceIndicator(
-          icon: Icons.location_on,
-          label: 'الموقع',
-          isActive: _locationEnabled,
-          onTap: _toggleLocation,
-        ),
-        
-        AppTheme.space3.w,
-        
-        _ServiceIndicator(
-          icon: Icons.battery_saver,
-          label: 'البطارية',
-          isActive: _batteryOptimized,
-          onTap: _optimizeBattery,
-        ),
-      ],
-    );
-  }
+  // =============== معالجات الأحداث ===============
 
-  Widget _buildQuickActions(BuildContext context) {
-    return Column(
-      children: [
-        const Divider(
-          color: Colors.white24,
-        ),
-        
-        AppTheme.space2.h,
-        
-        Row(
-          children: [
-            Expanded(
-              child: AppButton.outline(
-                text: 'تشخيص المشاكل',
-                icon: Icons.health_and_safety,
-                onPressed: _runDiagnostics,
-                borderColor: Colors.white,
-              ),
-            ),
-            
-            AppTheme.space3.w,
-            
-            Expanded(
-              child: AppButton.secondary(
-                text: 'إعدادات النظام',
-                icon: Icons.settings,
-                onPressed: _openSystemSettings,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  void _toggleNotifications() async {
+  Future<void> _handleNotificationTap(BuildContext context) async {
     HapticFeedback.lightImpact();
-    setState(() {
-      _notificationsEnabled = !_notificationsEnabled;
-    });
     
-    if (_notificationsEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('تم تفعيل الإشعارات بنجاح'),
-          backgroundColor: AppTheme.success,
-        ),
+    if (widget.status.isNotificationEnabled) {
+      _showServiceOptions(
+        context,
+        'إعدادات الإشعارات',
+        [
+          ServiceOption(
+            icon: Icons.settings,
+            title: 'تخصيص الإشعارات',
+            subtitle: 'إدارة أنواع الإشعارات والتوقيتات',
+            onTap: () => Navigator.pushNamed(context, '/notification-settings'),
+          ),
+        ],
       );
+    } else {
+      final result = await widget.servicesManager.requestPermission(
+        AppPermissionType.notification,
+      );
+      
+      if (result.isSuccess) {
+        _showSuccessMessage(context, 'تم تفعيل الإشعارات بنجاح');
+      } else {
+        _showPermissionDeniedDialog(context, 'الإشعارات');
+      }
     }
   }
 
-  void _toggleLocation() async {
+  Future<void> _handleLocationTap(BuildContext context) async {
     HapticFeedback.lightImpact();
-    widget.onRefresh?.call();
+    
+    if (widget.status.isLocationEnabled) {
+      _showServiceOptions(
+        context,
+        'إعدادات الموقع',
+        [
+          ServiceOption(
+            icon: Icons.refresh,
+            title: 'تحديث الموقع',
+            subtitle: 'إعادة تحديد الموقع الحالي',
+            onTap: () => _updateLocation(context),
+          ),
+          ServiceOption(
+            icon: Icons.calculate,
+            title: 'إعدادات الحساب',
+            subtitle: 'تخصيص طريقة حساب مواقيت الصلاة',
+            onTap: () => Navigator.pushNamed(context, '/prayer-settings'),
+          ),
+        ],
+      );
+    } else {
+      final result = await widget.servicesManager.requestPermission(
+        AppPermissionType.location,
+      );
+      
+      if (result.isSuccess) {
+        await _updateLocation(context);
+      } else {
+        _showPermissionDeniedDialog(context, 'الموقع');
+      }
+    }
   }
 
-  void _optimizeBattery() async {
+  Future<void> _handleBatteryTap(BuildContext context) async {
     HapticFeedback.lightImpact();
-    setState(() {
-      _batteryOptimized = true;
-    });
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('تم تحسين إعدادات البطارية'),
-        backgroundColor: AppTheme.success,
-      ),
+    if (widget.status.isBatteryOptimized) {
+      _showServiceOptions(
+        context,
+        'إعدادات البطارية',
+        [
+          ServiceOption(
+            icon: Icons.info,
+            title: 'معلومات البطارية',
+            subtitle: 'عرض تفاصيل حالة البطارية الحالية',
+            onTap: () => _showBatteryDetails(context),
+          ),
+          ServiceOption(
+            icon: Icons.settings,
+            title: 'إعدادات النظام',
+            subtitle: 'فتح إعدادات البطارية في النظام',
+            onTap: () => widget.servicesManager.permissionService.openAppSettings(
+              AppSettingsType.battery,
+            ),
+          ),
+        ],
+      );
+    } else {
+      final result = await widget.servicesManager.optimizeBatterySettings();
+      
+      if (result.isSuccess && result.isOptimized) {
+        _showSuccessMessage(context, 'تم تحسين إعدادات البطارية');
+      } else {
+        _showBatteryOptimizationDialog(context);
+      }
+    }
+  }
+
+  // =============== Helper Methods ===============
+
+  int _getHealthyServicesCount() {
+    int count = 0;
+    if (widget.status.isNotificationEnabled) count++;
+    if (widget.status.isLocationEnabled) count++;
+    if (widget.status.isBatteryOptimized) count++;
+    return count;
+  }
+
+  int _getTotalServicesCount() => 3;
+
+  Color _getHealthColor(int percentage) {
+    if (percentage >= 80) return context.successColor;
+    if (percentage >= 50) return context.warningColor;
+    return context.errorColor;
+  }
+
+  Gradient _getHealthGradient(int percentage) {
+    final color = _getHealthColor(percentage);
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        color,
+        color.withOpacitySafe(0.8),
+      ],
     );
   }
 
-  double _calculateOverallHealth() {
-    int activeServices = 0;
-    if (_notificationsEnabled) activeServices++;
-    if (_locationEnabled) activeServices++;
-    if (_batteryOptimized) activeServices++;
-    
-    return (activeServices / 3) * 100;
-  }
-
-  Color _getHealthColor(double percentage) {
-    if (percentage >= 80) return AppTheme.success;
-    if (percentage >= 50) return AppTheme.warning;
-    return AppTheme.error;
-  }
-
-  IconData _getHealthIcon(double percentage) {
+  IconData _getHealthIcon(int percentage) {
     if (percentage >= 80) return Icons.check_circle;
     if (percentage >= 50) return Icons.warning;
     return Icons.error;
   }
 
-  void _runDiagnostics() {
-    HapticFeedback.lightImpact();
-    
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _DiagnosticsBottomSheet(),
-    );
+  String _getHealthDescription(int percentage) {
+    if (percentage >= 80) return 'جميع الخدمات تعمل بشكل مثالي';
+    if (percentage >= 50) return 'معظم الخدمات تعمل بشكل جيد';
+    return 'تحتاج بعض الخدمات إلى تفعيل';
   }
 
-  void _openSystemSettings() {
-    HapticFeedback.lightImpact();
+  // =============== العمليات ===============
+
+  Future<void> _updateLocation(BuildContext context) async {
+    final result = await widget.servicesManager.updatePrayerLocation();
+    
+    if (result.isSuccess) {
+      _showSuccessMessage(context, 'تم تحديث الموقع بنجاح');
+    } else {
+      _showErrorMessage(context, 'فشل في تحديث الموقع');
+    }
+  }
+
+  void _showBatteryDetails(BuildContext context) {
+    final batteryState = widget.status.batteryState;
     
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surface,
-        title: Text(
-          'إعدادات النظام',
-          style: context.titleLarge,
+        title: Row(
+          children: [
+            Icon(Icons.battery_std, color: context.primaryColor),
+            ThemeConstants.space2.w,
+            const Text('معلومات البطارية'),
+          ],
         ),
-        content: Text(
-          'هل تريد فتح إعدادات النظام لتحسين أداء التطبيق؟',
-          style: context.bodyMedium,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _BatteryInfoRow(
+              icon: Icons.battery_std,
+              label: 'مستوى الشحن',
+              value: '${batteryState.level}%',
+            ),
+            _BatteryInfoRow(
+              icon: batteryState.isCharging ? Icons.power : Icons.power_off,
+              label: 'حالة الشحن',
+              value: batteryState.isCharging ? 'يشحن' : 'لا يشحن',
+            ),
+            _BatteryInfoRow(
+              icon: Icons.power_settings_new,
+              label: 'وضع توفير الطاقة',
+              value: batteryState.isPowerSaveMode ? 'مفعل' : 'معطل',
+            ),
+          ],
         ),
         actions: [
-          AppButton.text(
-            text: 'إلغاء',
+          TextButton(
             onPressed: () => Navigator.pop(context),
-          ),
-          AppButton.primary(
-            text: 'فتح الإعدادات',
-            onPressed: () {
-              Navigator.pop(context);
-              // فتح إعدادات النظام
-            },
+            child: const Text('إغلاق'),
           ),
         ],
       ),
     );
   }
+
+  void _showBatteryOptimizationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.battery_saver, color: context.warningColor),
+            ThemeConstants.space2.w,
+            const Text('تحسين البطارية'),
+          ],
+        ),
+        content: const Text(
+          'لضمان عمل التذكيرات في الخلفية، يُنصح بإيقاف تحسين البطارية لهذا التطبيق من إعدادات النظام.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('لاحقاً'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              widget.servicesManager.permissionService.openAppSettings(
+                AppSettingsType.battery,
+              );
+            },
+            child: const Text('فتح الإعدادات'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showServiceOptions(
+    BuildContext context,
+    String title,
+    List<ServiceOption> options,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(ThemeConstants.radiusXl),
+        ),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(ThemeConstants.space4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: context.dividerColor,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            ThemeConstants.space4.h,
+            Text(
+              title,
+              style: context.titleLarge?.copyWith(
+                fontWeight: ThemeConstants.bold,
+              ),
+            ),
+            ThemeConstants.space4.h,
+            ...options.map((option) => _ServiceOptionTile(option: option)),
+            ThemeConstants.space2.h,
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPermissionDeniedDialog(BuildContext context, String permissionName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('إذن $permissionName مطلوب'),
+        content: Text(
+          'لاستخدام هذه الميزة، يجب منح إذن $permissionName. يمكنك تفعيله من إعدادات التطبيق.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('لاحقاً'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              widget.servicesManager.permissionService.openAppSettings();
+            },
+            child: const Text('فتح الإعدادات'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSuccessMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.white, size: 20),
+            ThemeConstants.space2.w,
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: context.successColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
+      ),
+    );
+  }
+
+  void _showErrorMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.error, color: Colors.white, size: 20),
+            ThemeConstants.space2.w,
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: context.errorColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
+      ),
+    );
+  }
 }
+
+// =============== Widgets مساعدة ===============
 
 class _ServiceIndicator extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool isActive;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _ServiceIndicator({
     required this.icon,
     required this.label,
     required this.isActive,
-    required this.onTap,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: AnimatedPress(
-        onTap: onTap,
-        child: Container(
-          padding: AppTheme.space3.padding,
-          decoration: BoxDecoration(
-            color: isActive 
-                ? Colors.white.withValues(alpha: 0.2)
-                : Colors.white.withValues(alpha: 0.1),
-            borderRadius: AppTheme.radiusMd.radius,
-            border: Border.all(
-              color: isActive 
-                  ? Colors.white.withValues(alpha: 0.4)
-                  : Colors.white.withValues(alpha: 0.2),
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacitySafe(isActive ? 0.2 : 0.1),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              border: isActive ? null : Border.all(
+                color: Colors.white.withOpacitySafe(0.3),
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white.withOpacitySafe(isActive ? 1.0 : 0.6),
+              size: 20,
             ),
           ),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                color: isActive ? Colors.white : Colors.white60,
-                size: AppTheme.iconMd,
-              ),
-              
-              AppTheme.space2.h,
-              
-              Text(
-                label,
-                style: context.bodySmall.copyWith(
-                  color: isActive ? Colors.white : Colors.white60,
-                  fontWeight: isActive ? AppTheme.semiBold : AppTheme.regular,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+          ThemeConstants.space2.h,
+          Text(
+            label,
+            style: context.labelSmall?.copyWith(
+              color: Colors.white.withOpacitySafe(isActive ? 1.0 : 0.7),
+              fontSize: 11,
+              fontWeight: isActive ? ThemeConstants.semiBold : ThemeConstants.regular,
+            ),
+            textAlign: TextAlign.center,
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
-class _DiagnosticsBottomSheet extends StatelessWidget {
+class _BatteryInfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _BatteryInfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      margin: EdgeInsets.zero,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // مقبض السحب
-          Container(
-            width: 40,
-            height: 4,
-            margin: const EdgeInsets.only(top: AppTheme.space3),
-            decoration: BoxDecoration(
-              color: AppTheme.divider,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          
-          AppTheme.space4.h,
-          
-          Text(
-            'تشخيص النظام',
-            style: context.titleLarge.copyWith(
-              fontWeight: AppTheme.bold,
-            ),
-          ),
-          
-          AppTheme.space4.h,
-          
-          // نتائج التشخيص
-          _buildDiagnosticItem('أداء التطبيق', 'ممتاز', Icons.speed, AppTheme.success),
-          _buildDiagnosticItem('استخدام الذاكرة', 'جيد', Icons.memory, AppTheme.warning),
-          _buildDiagnosticItem('حالة قاعدة البيانات', 'ممتاز', Icons.storage, AppTheme.success),
-          _buildDiagnosticItem('اتصال الشبكة', 'جيد', Icons.wifi, AppTheme.success),
-          
-          AppTheme.space4.h,
-          
-          AppButton.primary(
-            text: 'إغلاق',
-            isFullWidth: true,
-            onPressed: () => Navigator.pop(context),
-          ),
-          
-          AppTheme.space2.h,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDiagnosticItem(String title, String status, IconData icon, Color color) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppTheme.space2),
-      padding: AppTheme.space3.padding,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: AppTheme.radiusMd.radius,
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, color: color, size: AppTheme.iconMd),
-          AppTheme.space3.w,
+          Icon(
+            icon,
+            size: ThemeConstants.iconSm,
+            color: context.textSecondaryColor,
+          ),
+          ThemeConstants.space3.w,
           Expanded(
-            child: Text(title, style: AppTheme.bodyMedium),
+            child: Text(
+              label,
+              style: context.bodyMedium,
+            ),
           ),
           Text(
-            status,
-            style: AppTheme.bodyMedium.copyWith(
-              color: color,
-              fontWeight: AppTheme.semiBold,
+            value,
+            style: context.bodyMedium?.copyWith(
+              fontWeight: ThemeConstants.semiBold,
+              color: context.primaryColor,
             ),
           ),
         ],
       ),
     );
   }
+}
+
+class _ServiceOptionTile extends StatelessWidget {
+  final ServiceOption option;
+
+  const _ServiceOptionTile({
+    required this.option,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: (option.isDestructive ? context.errorColor : context.primaryColor)
+              .withOpacitySafe(0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          option.icon,
+          color: option.isDestructive ? context.errorColor : context.primaryColor,
+          size: 20,
+        ),
+      ),
+      title: Text(
+        option.title,
+        style: context.titleSmall?.copyWith(
+          color: option.isDestructive ? context.errorColor : null,
+        ),
+      ),
+      subtitle: option.subtitle != null ? Text(option.subtitle!) : null,
+      onTap: () {
+        Navigator.pop(context);
+        option.onTap?.call();
+      },
+      trailing: Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+        color: context.textSecondaryColor,
+      ),
+    );
+  }
+}
+
+// =============== Models ===============
+
+class ServiceOption {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final VoidCallback? onTap;
+  final bool isDestructive;
+
+  ServiceOption({
+    required this.icon,
+    required this.title,
+    this.subtitle,
+    this.onTap,
+    this.isDestructive = false,
+  });
 }
