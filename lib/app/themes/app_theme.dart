@@ -1,4 +1,4 @@
-// lib/app/themes/app_theme.dart
+// lib/app/themes/app_theme.dart - مصحح بالكامل
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'theme_constants.dart';

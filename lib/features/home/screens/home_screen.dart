@@ -1,4 +1,4 @@
-// lib/features/home/screens/home_screen.dart - محسن باستخدام النظام الموحد
+// lib/features/home/screens/home_screen.dart - بدون Animations
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
@@ -14,7 +14,6 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      // ✅ استخدام CustomAppBar الموحد المحسن
       appBar: _buildAppBar(context),
       body: RefreshIndicator(
         onRefresh: () => _handleRefresh(context),
@@ -56,15 +55,9 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // ✅ AppBar محسن باستخدام CustomAppBar الموحد
   PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return CustomAppBar(
-      titleWidget: _buildAppTitle(context),
-      actions: [
-        _buildSettingsButton(context),
-      ],
+    return AppBar(
       backgroundColor: Colors.transparent,
-      foregroundColor: context.textPrimaryColor,
       elevation: 0,
       toolbarHeight: 70,
       systemOverlayStyle: SystemUiOverlayStyle(
@@ -73,6 +66,8 @@ class HomeScreen extends StatelessWidget {
             ? Brightness.light 
             : Brightness.dark,
       ),
+      leading: const SizedBox.shrink(),
+      leadingWidth: 0,
       flexibleSpace: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -86,113 +81,105 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  // ✅ Widget منفصل لعنوان التطبيق
-  Widget _buildAppTitle(BuildContext context) {
-    return Row(
-      children: [
-        // أيقونة التطبيق محسنة
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                context.primaryColor,
-                context.primaryColor.darken(0.2),
+      title: Row(
+        children: [
+          // أيقونة التطبيق
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  context.primaryColor,
+                  context.primaryColor.darken(0.2),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: context.primaryColor.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
               ],
             ),
+            child: const Icon(
+              Icons.mosque_outlined,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          
+          const SizedBox(width: ThemeConstants.space3),
+          
+          // اسم التطبيق والترحيب
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'مُسلم',
+                  style: context.headlineSmall?.copyWith(
+                    fontWeight: ThemeConstants.bold,
+                    color: context.textPrimaryColor,
+                    fontSize: 20,
+                    height: 1.1,
+                  ),
+                ),
+                Text(
+                  'السلام عليكم ورحمة الله',
+                  style: context.bodySmall?.copyWith(
+                    color: context.textSecondaryColor,
+                    fontSize: 12,
+                    height: 1.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        // أيقونة الإعدادات
+        Container(
+          margin: const EdgeInsets.only(left: ThemeConstants.space4),
+          decoration: BoxDecoration(
+            color: context.cardColor.withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(12),
-            // ✅ استخدام الظل الموحد من ThemeConstants
-            boxShadow: ThemeConstants.shadowMd,
-          ),
-          child: const Icon(
-            Icons.mosque_outlined,
-            color: Colors.white,
-            size: 24,
-          ),
-        ),
-        
-        const SizedBox(width: ThemeConstants.space3),
-        
-        // اسم التطبيق والترحيب
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'مُسلم',
-                style: context.headlineSmall?.copyWith(
-                  fontWeight: ThemeConstants.bold,
-                  fontSize: 20,
-                  height: 1.1,
-                ),
-              ),
-              Text(
-                'السلام عليكم ورحمة الله',
-                style: context.bodySmall?.copyWith(
-                  color: context.textSecondaryColor,
-                  fontSize: 12,
-                  height: 1.2,
-                ),
+            border: Border.all(
+              color: context.dividerColor.withValues(alpha: 0.3),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: context.primaryColor.withValues(alpha: 0.1),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
               ),
             ],
+          ),
+          child: IconButton(
+            icon: Icon(
+              Icons.settings_outlined,
+              color: context.primaryColor,
+              size: 22,
+            ),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.pushNamed(context, '/settings').catchError((error) {
+                context.showInfoSnackBar('هذه الميزة قيد التطوير');
+                return null;
+              });
+            },
+            tooltip: 'الإعدادات',
           ),
         ),
       ],
     );
   }
 
-  // ✅ زر الإعدادات محسن
-  Widget _buildSettingsButton(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(left: ThemeConstants.space4),
-      decoration: BoxDecoration(
-        color: context.cardColor.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: context.dividerColor.withValues(alpha: 0.3),
-          width: 1,
-        ),
-        // ✅ استخدام الظل الموحد
-        boxShadow: [
-          BoxShadow(
-            color: context.primaryColor.withValues(alpha: 0.1),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: IconButton(
-        icon: Icon(
-          Icons.settings_outlined,
-          color: context.primaryColor,
-          size: 22,
-        ),
-        onPressed: () => _navigateToSettings(context),
-        tooltip: 'الإعدادات',
-      ),
-    );
-  }
-
-  // ✅ دالة منفصلة للتنقل إلى الإعدادات
-  void _navigateToSettings(BuildContext context) {
-    HapticFeedback.lightImpact();
-    Navigator.pushNamed(context, '/settings').catchError((error) {
-      // ✅ استخدام النظام الموحد بدلاً من Extension
-      AppSnackBar.showInfo(
-        context: context,
-        message: 'هذه الميزة قيد التطوير',
-      );
-      return null;
-    });
-  }
-
-  // ✅ دالة التحديث محسنة
   Future<void> _handleRefresh(BuildContext context) async {
     HapticFeedback.lightImpact();
     
@@ -200,11 +187,7 @@ class HomeScreen extends StatelessWidget {
     await Future.delayed(const Duration(milliseconds: 800));
     
     if (context.mounted) {
-      // ✅ استخدام النظام الموحد بدلاً من Extension
-      AppSnackBar.showSuccess(
-        context: context,
-        message: 'تم تحديث البيانات بنجاح',
-      );
+      context.showSuccessSnackBar('تم تحديث البيانات بنجاح');
     }
   }
 }
