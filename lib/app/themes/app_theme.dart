@@ -1,8 +1,8 @@
-// lib/app/themes/app_theme.dart - النواة المركزية المحسنة مع دمج جميع الدوال المساعدة
+// lib/app/themes/app_theme.dart - النواة المحسّنة والمنظّفة
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// نظام الثيم الإسلامي المركزي - يحتوي على كل شيء
+/// نظام الثيم الإسلامي المركزي - منظّف ومحسّن
 class AppTheme {
   AppTheme._();
 
@@ -217,7 +217,7 @@ class AppTheme {
   static const Duration durationNormal = Duration(milliseconds: 300);
   static const Duration durationSlow = Duration(milliseconds: 500);
 
-  // ========== الظلال ==========
+  // ========== الظلال الموحدة ==========
   
   static List<BoxShadow> get shadowSm => [
     BoxShadow(
@@ -242,15 +242,6 @@ class AppTheme {
       offset: const Offset(0, 8),
     ),
   ];
-  
-  static List<BoxShadow> get cardShadow => [
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.1),
-      blurRadius: 12,
-      offset: const Offset(0, 6),
-      spreadRadius: 1,
-    ),
-  ];
 
   // ========== التدرجات ==========
   
@@ -272,9 +263,9 @@ class AppTheme {
     end: Alignment.bottomRight,
   );
 
-  // ========== البيانات المركزية ==========
+  // ========== البيانات المركزية - منظّفة ==========
   
-  /// ألوان الصلوات - مركزية
+  /// ألوان الصلوات
   static const Map<String, Color> prayerColors = {
     'الفجر': Color(0xFF6B7BA8),
     'الشروق': secondary,
@@ -284,7 +275,7 @@ class AppTheme {
     'العشاء': tertiary,
   };
   
-  /// ألوان الفئات - مركزية
+  /// ألوان الفئات
   static const Map<String, Color> categoryColors = {
     'morning': primary,
     'الصباح': primary,
@@ -306,18 +297,9 @@ class AppTheme {
     'الدعاء': Color(0xFF8B7355),
     'general': primary,
     'عامة': primary,
-    'اوقات_الصلاة': primary,
-    'الاذكار': accent,
-    'القبلة': tertiary,
-    'قبلة': tertiary,
-    'تسبيح': secondary,
-    'القران': Color(0xFF4A6B4A),
-    'الادعية': Color(0xFF8B7355),
-    'المفضلة': Color(0xFFCC8E35),
-    'الاعدادات': Color(0xFF6B7BA8),
   };
 
-  /// أيقونات الصلوات - مركزية
+  /// أيقونات الصلوات
   static const Map<String, IconData> prayerIcons = {
     'الفجر': Icons.wb_twilight,
     'fajr': Icons.wb_twilight,
@@ -333,7 +315,7 @@ class AppTheme {
     'isha': Icons.nightlight_round,
   };
 
-  /// أيقونات الفئات - مركزية
+  /// أيقونات الفئات
   static const Map<String, IconData> categoryIcons = {
     'morning': Icons.wb_sunny,
     'الصباح': Icons.wb_sunny,
@@ -357,7 +339,7 @@ class AppTheme {
     'عامة': Icons.book,
   };
 
-  /// أولويات الصلوات - مركزية
+  /// أولويات الصلوات
   static const Map<String, int> prayerPriorities = {
     'الفجر': 1,
     'fajr': 1,
@@ -373,7 +355,7 @@ class AppTheme {
     'isha': 6,
   };
 
-  /// أولويات الفئات - مركزية
+  /// أولويات الفئات
   static const Map<String, int> categoryPriorities = {
     'morning': 1,
     'الصباح': 1,
@@ -395,7 +377,7 @@ class AppTheme {
     'عامة': 99,
   };
 
-  // ========== الدوال المساعدة المدمجة ==========
+  // ========== الدوال المركزية الأساسية ==========
   
   /// الحصول على لون الصلاة
   static Color getPrayerColor(String prayerName) {
@@ -427,7 +409,9 @@ class AppTheme {
     return categoryPriorities[categoryId.toLowerCase()] ?? 99;
   }
 
-  /// تنسيق الأرقام الكبيرة - مدمج
+  // ========== دوال التنسيق الأساسية ==========
+
+  /// تنسيق الأرقام الكبيرة
   static String formatLargeNumber(num number) {
     if (number >= 1000000) {
       return '${(number / 1000000).toStringAsFixed(1)}م';
@@ -437,7 +421,7 @@ class AppTheme {
     return number.toString();
   }
 
-  /// تنسيق المدة الزمنية - مدمج
+  /// تنسيق المدة الزمنية
   static String formatDuration(Duration duration) {
     final hours = duration.inHours;
     final minutes = duration.inMinutes % 60;
@@ -449,7 +433,7 @@ class AppTheme {
     }
   }
 
-  /// تنسيق وقت الصلاة - مدمج
+  /// تنسيق وقت الصلاة
   static String formatPrayerTime(DateTime time, {bool use24Hour = false}) {
     if (use24Hour) {
       return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
@@ -462,7 +446,9 @@ class AppTheme {
     }
   }
 
-  /// ترتيب القوائم بناءً على الأولوية - عام ومفيد
+  // ========== دوال الترتيب والفلترة الأساسية ==========
+
+  /// ترتيب القوائم بناءً على الأولوية
   static List<T> sortByPriority<T>(
     List<T> items,
     int Function(T) getPriorityFunction,
@@ -472,7 +458,7 @@ class AppTheme {
     return sortedList;
   }
 
-  /// فلترة بناءً على النص - عام ومفيد
+  /// فلترة بناءً على النص
   static List<T> filterByText<T>(
     List<T> items,
     String searchText,
@@ -488,7 +474,9 @@ class AppTheme {
     }).toList();
   }
 
-  /// التحقق من صحة وقت الصلاة - مدمج
+  // ========== دوال التحقق الأساسية ==========
+
+  /// التحقق من صحة وقت الصلاة
   static bool isValidPrayerTime(String timeString) {
     try {
       final parts = timeString.split(':');
@@ -503,7 +491,7 @@ class AppTheme {
     }
   }
 
-  /// التحقق من الفئات الأساسية - مدمج
+  /// التحقق من الفئات الأساسية
   static bool isEssentialCategory(String categoryId) {
     const essentialCategories = {
       'morning', 'الصباح',
@@ -515,10 +503,24 @@ class AppTheme {
     return essentialCategories.contains(categoryId.toLowerCase());
   }
 
-  /// التحقق من الصلوات الرئيسية - مدمج
+  /// التحقق من الصلوات الرئيسية
   static bool isMainPrayer(String prayerName) {
     const mainPrayers = ['الفجر', 'الظهر', 'العصر', 'المغرب', 'العشاء'];
     return mainPrayers.contains(prayerName);
+  }
+
+  // ========== دوال الألوان ==========
+
+  /// تفتيح اللون
+  static Color lighten(Color color, [double amount = 0.1]) {
+    final hsl = HSLColor.fromColor(color);
+    return hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0)).toColor();
+  }
+  
+  /// تغميق اللون
+  static Color darken(Color color, [double amount = 0.1]) {
+    final hsl = HSLColor.fromColor(color);
+    return hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0)).toColor();
   }
 
   /// الحصول على خلفية مناسبة للمحتوى الديني
@@ -537,18 +539,6 @@ class AppTheme {
       default:
         return surface;
     }
-  }
-
-  /// تفتيح اللون
-  static Color lighten(Color color, [double amount = 0.1]) {
-    final hsl = HSLColor.fromColor(color);
-    return hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0)).toColor();
-  }
-  
-  /// تغميق اللون
-  static Color darken(Color color, [double amount = 0.1]) {
-    final hsl = HSLColor.fromColor(color);
-    return hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0)).toColor();
   }
 
   // ========== الثيم الرئيسي ==========
@@ -696,16 +686,6 @@ class AppTheme {
       contentTextStyle: bodyMedium,
     ),
     
-    bottomSheetTheme: const BottomSheetThemeData(
-      backgroundColor: surface,
-      elevation: elevationLg,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(radiusXl),
-        ),
-      ),
-    ),
-    
     listTileTheme: const ListTileThemeData(
       contentPadding: EdgeInsets.symmetric(
         horizontal: space4,
@@ -756,7 +736,7 @@ class AppTheme {
   );
 }
 
-// ========== CardHelper محسّن ومدمج ==========
+// ========== CardHelper محسّن ومبسّط ==========
 
 /// أدوات البطاقات الموحدة
 class CardHelper {
@@ -776,7 +756,7 @@ class CardHelper {
           end: Alignment.bottomRight,
           colors: gradientColors ?? [
             color ?? AppTheme.primary,
-            (color ?? AppTheme.primary).darken(0.2),
+            AppTheme.darken(color ?? AppTheme.primary, 0.2),
           ],
         ),
         borderRadius: BorderRadius.circular(borderRadius),
@@ -829,14 +809,12 @@ extension AppThemeExtensions on BuildContext {
   
   TextStyle get headlineLarge => AppTheme.headlineLarge;
   TextStyle get headlineMedium => AppTheme.headlineMedium;
-  TextStyle get headlineSmall => AppTheme.headlineSmall;
   TextStyle get titleLarge => AppTheme.titleLarge;
   TextStyle get titleMedium => AppTheme.titleMedium;
   TextStyle get bodyLarge => AppTheme.bodyLarge;
   TextStyle get bodyMedium => AppTheme.bodyMedium;
   TextStyle get bodySmall => AppTheme.bodySmall;
   TextStyle get labelMedium => AppTheme.labelMedium;
-  TextStyle get labelSmall => AppTheme.labelSmall;
   
   TextStyle get quranStyle => AppTheme.quranStyle;
   TextStyle get dhikrStyle => AppTheme.dhikrStyle;

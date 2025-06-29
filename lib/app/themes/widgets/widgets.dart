@@ -1,12 +1,12 @@
-// lib/app/themes/widgets/widgets.dart - النظام الموحد للمكونات منظّف
+// lib/app/themes/widgets/widgets.dart - النظام الموحد المحسّن للكروت
 import 'package:athkar_app/app/themes/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// ==================== البطاقة الموحدة المحسّنة ====================
+// ==================== البطاقة الموحدة الشاملة ====================
 
-/// بطاقة موحدة شاملة مع جميع الأنواع
-class AppCard extends StatelessWidget {
+/// بطاقة موحدة شاملة - النسخة الوحيدة المعتمدة
+class AppCard extends StatefulWidget {
   final Widget? child;
   final String? title;
   final String? subtitle;
@@ -16,7 +16,10 @@ class AppCard extends StatelessWidget {
   final EdgeInsets? padding;
   final EdgeInsets? margin;
   final bool useGradient;
-  final List<Widget>? actions;
+  final bool useAnimation;
+  final List<CardAction>? actions;
+  final double? borderRadius;
+  final double? elevation;
 
   const AppCard({
     super.key,
@@ -29,20 +32,23 @@ class AppCard extends StatelessWidget {
     this.padding,
     this.margin,
     this.useGradient = false,
+    this.useAnimation = true,
     this.actions,
+    this.borderRadius,
+    this.elevation,
   });
 
-  // ========== Factory Constructors للأنواع المختلفة ==========
+  // ========== Factory Constructors الموحدة ==========
 
-  /// بطاقة معلومات بسيطة
-  factory AppCard.info({
+  /// بطاقة معلومات أساسية
+  factory AppCard.basic({
     Key? key,
     required String title,
     String? subtitle,
     IconData? icon,
     Color? color,
     VoidCallback? onTap,
-    List<Widget>? actions,
+    List<CardAction>? actions,
   }) {
     return AppCard(
       key: key,
@@ -63,42 +69,23 @@ class AppCard extends StatelessWidget {
     IconData? icon,
     Color? color,
     VoidCallback? onTap,
+    String? subtitle,
   }) {
     return AppCard(
       key: key,
       useGradient: true,
       color: color ?? AppTheme.primary,
       onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, color: Colors.white, size: AppTheme.iconLg),
-            AppTheme.space2.h,
-          ],
-          Text(
-            value,
-            style: AppTheme.displayLarge.copyWith(
-              color: Colors.white,
-              fontSize: 28,
-              fontFamily: AppTheme.numbersFont,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          AppTheme.space1.h,
-          Text(
-            title,
-            style: AppTheme.labelMedium.copyWith(
-              color: Colors.white.withValues(alpha: 0.9),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+      child: _StatCardContent(
+        title: title,
+        value: value,
+        icon: icon,
+        subtitle: subtitle,
       ),
     );
   }
 
-  /// بطاقة ذكر/دعاء
+  /// بطاقة ذكر/دعاء موحدة
   factory AppCard.athkar({
     Key? key,
     required String content,
@@ -106,266 +93,62 @@ class AppCard extends StatelessWidget {
     String? fadl,
     required int currentCount,
     required int totalCount,
-    required Color primaryColor,
-    required VoidCallback onTap,
-    List<Widget>? actions,
+    Color? primaryColor,
     bool isCompleted = false,
+    required VoidCallback onTap,
+    List<CardAction>? actions,
+    bool showProgress = true,
+    bool useAdvancedAnimation = false,
   }) {
-    final progress = currentCount / totalCount;
-    
     return AppCard(
       key: key,
-      color: primaryColor,
+      color: primaryColor ?? AppTheme.primary,
       onTap: onTap,
       actions: actions,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // النص الرئيسي
-          Container(
-            width: double.infinity,
-            padding: AppTheme.space4.padding,
-            decoration: CardHelper.getCardDecoration(
-              color: isCompleted 
-                  ? primaryColor.withValues(alpha: 0.2)
-                  : primaryColor.withValues(alpha: 0.1),
-              borderRadius: AppTheme.radiusMd,
-            ).copyWith(
-              border: Border.all(
-                color: isCompleted
-                    ? primaryColor.withValues(alpha: 0.4)
-                    : primaryColor.withValues(alpha: 0.2),
-                width: isCompleted ? 2 : 1,
-              ),
-              boxShadow: [],
-            ),
-            child: Column(
-              children: [
-                Text(
-                  content,
-                  style: CardHelper.getTextStyle('quran').copyWith(
-                    height: 1.8,
-                    color: isCompleted
-                        ? primaryColor
-                        : AppTheme.textReligious,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                
-                if (isCompleted) ...[
-                  AppTheme.space2.h,
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.check_circle,
-                        color: primaryColor,
-                        size: AppTheme.iconSm,
-                      ),
-                      AppTheme.space1.w,
-                      Text(
-                        'مكتمل',
-                        style: AppTheme.caption.copyWith(
-                          color: primaryColor,
-                          fontWeight: AppTheme.medium,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          ),
-          
-          AppTheme.space3.h,
-          
-          // المعلومات الإضافية
-          if (source != null) ...[
-            Row(
-              children: [
-                Icon(
-                  Icons.library_books,
-                  size: AppTheme.iconSm,
-                  color: primaryColor,
-                ),
-                AppTheme.space2.w,
-                Expanded(
-                  child: Text(
-                    'المصدر: $source',
-                    style: AppTheme.bodySmall,
-                  ),
-                ),
-              ],
-            ),
-            AppTheme.space1.h,
-          ],
-          
-          if (fadl != null) ...[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.star,
-                  size: AppTheme.iconSm,
-                  color: AppTheme.warning,
-                ),
-                AppTheme.space2.w,
-                Expanded(
-                  child: Text(
-                    'الفضل: $fadl',
-                    style: AppTheme.bodySmall,
-                  ),
-                ),
-              ],
-            ),
-            AppTheme.space2.h,
-          ],
-          
-          // شريط التقدم
-          if (!isCompleted) ...[
-            Container(
-              width: double.infinity,
-              height: 6,
-              decoration: BoxDecoration(
-                color: primaryColor.withValues(alpha: 0.2),
-                borderRadius: AppTheme.radiusFull.radius,
-              ),
-              child: FractionallySizedBox(
-                alignment: Alignment.centerLeft,
-                widthFactor: progress,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: primaryColor,
-                    borderRadius: AppTheme.radiusFull.radius,
-                  ),
-                ),
-              ),
-            ),
-            AppTheme.space2.h,
-          ],
-          
-          // العداد
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.space3,
-                  vertical: AppTheme.space1,
-                ),
-                decoration: BoxDecoration(
-                  color: isCompleted ? AppTheme.success : primaryColor,
-                  borderRadius: AppTheme.radiusFull.radius,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (isCompleted)
-                      const Icon(
-                        Icons.check,
-                        size: 14,
-                        color: Colors.white,
-                      )
-                    else ...[
-                      Text(
-                        '$currentCount',
-                        style: AppTheme.labelMedium.copyWith(
-                          color: Colors.white,
-                          fontWeight: AppTheme.bold,
-                          fontFamily: AppTheme.numbersFont,
-                        ),
-                      ),
-                      Text(
-                        ' / $totalCount',
-                        style: AppTheme.labelMedium.copyWith(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontFamily: AppTheme.numbersFont,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              
-              if (actions != null && actions.isNotEmpty)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: actions,
-                ),
-            ],
-          ),
-        ],
+      useAnimation: useAdvancedAnimation,
+      child: _AthkarCardContent(
+        content: content,
+        source: source,
+        fadl: fadl,
+        currentCount: currentCount,
+        totalCount: totalCount,
+        primaryColor: primaryColor ?? AppTheme.primary,
+        isCompleted: isCompleted,
+        showProgress: showProgress,
       ),
     );
   }
 
-  /// بطاقة صلاة
+  /// بطاقة صلاة موحدة
   factory AppCard.prayer({
     Key? key,
     required String prayerName,
     required String time,
     bool isCurrent = false,
     bool isNext = false,
+    bool isCompleted = false,
     VoidCallback? onTap,
+    Duration? remainingTime,
+    bool isCompact = false,
   }) {
-    final prayerColor = AppTheme.getPrayerColor(prayerName);
-    
     return AppCard(
       key: key,
       useGradient: isCurrent,
-      color: isCurrent ? prayerColor : null,
+      color: isCurrent ? AppTheme.getPrayerColor(prayerName) : null,
       onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            AppTheme.getPrayerIcon(prayerName),
-            size: AppTheme.iconLg,
-            color: isCurrent ? Colors.white : prayerColor,
-          ),
-          AppTheme.space2.h,
-          Text(
-            prayerName,
-            style: AppTheme.titleMedium.copyWith(
-              color: isCurrent ? Colors.white : null,
-              fontWeight: AppTheme.semiBold,
-            ),
-          ),
-          AppTheme.space1.h,
-          Text(
-            time,
-            style: AppTheme.bodyLarge.copyWith(
-              fontFamily: AppTheme.numbersFont,
-              fontWeight: AppTheme.bold,
-              color: isCurrent ? Colors.white : prayerColor,
-            ),
-          ),
-          if (isNext) ...[
-            AppTheme.space1.h,
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.space2,
-                vertical: 2,
-              ),
-              decoration: BoxDecoration(
-                color: (isCurrent ? Colors.white : prayerColor).withValues(alpha: 0.2),
-                borderRadius: AppTheme.radiusFull.radius,
-              ),
-              child: Text(
-                'التالية',
-                style: AppTheme.caption.copyWith(
-                  color: isCurrent ? Colors.white : prayerColor,
-                  fontWeight: AppTheme.medium,
-                ),
-              ),
-            ),
-          ],
-        ],
+      child: _PrayerCardContent(
+        prayerName: prayerName,
+        time: time,
+        isCurrent: isCurrent,
+        isNext: isNext,
+        isCompleted: isCompleted,
+        remainingTime: remainingTime,
+        isCompact: isCompact,
       ),
     );
   }
 
-  /// بطاقة فئة
+  /// بطاقة فئة موحدة
   factory AppCard.category({
     Key? key,
     required String categoryId,
@@ -374,87 +157,740 @@ class AppCard extends StatelessWidget {
     VoidCallback? onTap,
     bool showDescription = true,
     bool isCompact = false,
+    String? customDescription,
   }) {
-    final categoryColor = AppTheme.getCategoryColor(categoryId);
-    final categoryIcon = AppTheme.getCategoryIcon(categoryId);
-    
-    if (isCompact) {
-      return AppCard(
-        key: key,
-        useGradient: true,
-        color: categoryColor,
-        onTap: onTap,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              categoryIcon,
-              color: Colors.white,
-              size: AppTheme.iconLg,
-            ),
-            AppTheme.space2.h,
-            Text(
-              title,
-              style: AppTheme.titleMedium.copyWith(
-                color: Colors.white,
-                fontWeight: AppTheme.semiBold,
+    return AppCard(
+      key: key,
+      useGradient: isCompact,
+      color: AppTheme.getCategoryColor(categoryId),
+      onTap: onTap,
+      child: _CategoryCardContent(
+        categoryId: categoryId,
+        title: title,
+        count: count,
+        showDescription: showDescription,
+        isCompact: isCompact,
+        customDescription: customDescription,
+      ),
+    );
+  }
+
+  /// بطاقة القبلة موحدة
+  factory AppCard.qibla({
+    Key? key,
+    required double direction,
+    String? locationName,
+    double? accuracy,
+    bool isCalibrated = false,
+    VoidCallback? onTap,
+    VoidCallback? onCalibrate,
+    bool isSimple = false,
+  }) {
+    return AppCard(
+      key: key,
+      useGradient: isSimple,
+      color: isSimple ? AppTheme.tertiary : null,
+      onTap: onTap,
+      child: _QiblaCardContent(
+        direction: direction,
+        locationName: locationName,
+        accuracy: accuracy,
+        isCalibrated: isCalibrated,
+        onCalibrate: onCalibrate,
+        isSimple: isSimple,
+      ),
+    );
+  }
+
+  /// بطاقة أوقات الصلاة المتقدمة
+  factory AppCard.prayerTimes({
+    Key? key,
+    required Map<String, String> prayerTimes,
+    String? currentPrayer,
+    String? nextPrayer,
+    Duration? timeToNext,
+    VoidCallback? onTap,
+  }) {
+    return AppCard(
+      key: key,
+      padding: AppTheme.space5.padding,
+      onTap: onTap,
+      child: _PrayerTimesCardContent(
+        prayerTimes: prayerTimes,
+        currentPrayer: currentPrayer,
+        nextPrayer: nextPrayer,
+        timeToNext: timeToNext,
+      ),
+    );
+  }
+
+  @override
+  State<AppCard> createState() => _AppCardState();
+}
+
+class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.useAnimation && widget.onTap != null) {
+      _animationController = AnimationController(
+        duration: const Duration(milliseconds: 150),
+        vsync: this,
+      );
+      _scaleAnimation = Tween<double>(
+        begin: 1.0,
+        end: 0.97,
+      ).animate(CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ));
+    } else {
+      _animationController = AnimationController(
+        duration: Duration.zero,
+        vsync: this,
+      );
+      _scaleAnimation = const AlwaysStoppedAnimation(1.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() {
+    if (widget.onTap != null) {
+      HapticFeedback.lightImpact();
+      if (widget.useAnimation) {
+        _animationController.forward().then((_) {
+          _animationController.reverse();
+        });
+      }
+      widget.onTap!();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: Container(
+            margin: widget.margin ?? AppTheme.space3.padding,
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: (widget.borderRadius ?? AppTheme.radiusLg).radius,
+              child: InkWell(
+                onTap: _handleTap,
+                borderRadius: (widget.borderRadius ?? AppTheme.radiusLg).radius,
+                child: Container(
+                  decoration: CardHelper.getCardDecoration(
+                    color: widget.color,
+                    useGradient: widget.useGradient,
+                    borderRadius: widget.borderRadius ?? AppTheme.radiusLg,
+                  ),
+                  padding: widget.padding ?? AppTheme.space4.padding,
+                  child: widget.child ?? _buildDefaultContent(),
+                ),
               ),
-              textAlign: TextAlign.center,
             ),
-            AppTheme.space1.h,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDefaultContent() {
+    final isGradient = widget.useGradient;
+    final textColor = isGradient ? Colors.white : null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (widget.icon != null || widget.title != null) ...[
+          Row(
+            children: [
+              if (widget.icon != null) ...[
+                Icon(
+                  widget.icon!,
+                  color: textColor ?? widget.color ?? AppTheme.primary,
+                  size: AppTheme.iconLg,
+                ),
+                AppTheme.space3.w,
+              ],
+              if (widget.title != null)
+                Expanded(
+                  child: Text(
+                    widget.title!,
+                    style: AppTheme.titleMedium.copyWith(
+                      color: textColor,
+                      fontWeight: AppTheme.semiBold,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          if (widget.subtitle != null) AppTheme.space2.h,
+        ],
+        
+        if (widget.subtitle != null) ...[
+          Text(
+            widget.subtitle!,
+            style: AppTheme.bodySmall.copyWith(
+              color: textColor?.withValues(alpha: 0.8),
+            ),
+          ),
+        ],
+        
+        if (widget.actions != null && widget.actions!.isNotEmpty) ...[
+          AppTheme.space4.h,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: widget.actions!.map((action) => 
+              Padding(
+                padding: const EdgeInsets.only(left: AppTheme.space2),
+                child: action,
+              ),
+            ).toList(),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+// ==================== محتويات البطاقات المتخصصة ====================
+
+/// محتوى بطاقة الإحصائية
+class _StatCardContent extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData? icon;
+  final String? subtitle;
+
+  const _StatCardContent({
+    required this.title,
+    required this.value,
+    this.icon,
+    this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        if (icon != null) ...[
+          Icon(icon!, color: Colors.white, size: AppTheme.iconLg),
+          AppTheme.space2.h,
+        ],
+        Text(
+          value,
+          style: AppTheme.displayLarge.copyWith(
+            color: Colors.white,
+            fontSize: 28,
+            fontFamily: AppTheme.numbersFont,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        AppTheme.space1.h,
+        Text(
+          title,
+          style: AppTheme.labelMedium.copyWith(
+            color: Colors.white.withValues(alpha: 0.9),
+          ),
+          textAlign: TextAlign.center,
+        ),
+        if (subtitle != null) ...[
+          AppTheme.space1.h,
+          Text(
+            subtitle!,
+            style: AppTheme.caption.copyWith(
+              color: Colors.white.withValues(alpha: 0.7),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// محتوى بطاقة الذكر الموحدة
+class _AthkarCardContent extends StatelessWidget {
+  final String content;
+  final String? source;
+  final String? fadl;
+  final int currentCount;
+  final int totalCount;
+  final Color primaryColor;
+  final bool isCompleted;
+  final bool showProgress;
+
+  const _AthkarCardContent({
+    required this.content,
+    this.source,
+    this.fadl,
+    required this.currentCount,
+    required this.totalCount,
+    required this.primaryColor,
+    required this.isCompleted,
+    required this.showProgress,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = totalCount > 0 ? currentCount / totalCount : 0.0;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // النص الرئيسي
+        Container(
+          width: double.infinity,
+          padding: AppTheme.space4.padding,
+          decoration: BoxDecoration(
+            color: isCompleted 
+                ? primaryColor.withValues(alpha: 0.2)
+                : primaryColor.withValues(alpha: 0.1),
+            borderRadius: AppTheme.radiusMd.radius,
+            border: Border.all(
+              color: isCompleted
+                  ? primaryColor.withValues(alpha: 0.4)
+                  : primaryColor.withValues(alpha: 0.2),
+              width: isCompleted ? 2 : 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              Text(
+                content,
+                style: AppTheme.quranStyle.copyWith(
+                  height: 1.8,
+                  color: isCompleted ? primaryColor : AppTheme.textReligious,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              
+              if (isCompleted) ...[
+                AppTheme.space2.h,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      color: primaryColor,
+                      size: AppTheme.iconSm,
+                    ),
+                    AppTheme.space1.w,
+                    Text(
+                      'مكتمل',
+                      style: AppTheme.caption.copyWith(
+                        color: primaryColor,
+                        fontWeight: AppTheme.medium,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+        
+        AppTheme.space3.h,
+        
+        // المعلومات الإضافية
+        if (source != null) ...[
+          _buildInfoRow(Icons.library_books, 'المصدر: $source', primaryColor),
+          AppTheme.space1.h,
+        ],
+        
+        if (fadl != null) ...[
+          _buildInfoRow(Icons.star, 'الفضل: $fadl', AppTheme.warning),
+          AppTheme.space2.h,
+        ],
+        
+        // شريط التقدم والعداد
+        Row(
+          children: [
+            // العداد
             Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: AppTheme.space3,
                 vertical: AppTheme.space1,
               ),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: isCompleted ? AppTheme.success : primaryColor,
                 borderRadius: AppTheme.radiusFull.radius,
               ),
-              child: Text(
-                '$count ذكر',
-                style: AppTheme.caption.copyWith(
-                  color: Colors.white,
-                  fontWeight: AppTheme.medium,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isCompleted)
+                    const Icon(
+                      Icons.check,
+                      size: 14,
+                      color: Colors.white,
+                    )
+                  else ...[
+                    Text(
+                      '$currentCount',
+                      style: AppTheme.labelMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: AppTheme.bold,
+                        fontFamily: AppTheme.numbersFont,
+                      ),
+                    ),
+                    Text(
+                      ' / $totalCount',
+                      style: AppTheme.labelMedium.copyWith(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontFamily: AppTheme.numbersFont,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            
+            // شريط التقدم
+            if (showProgress && !isCompleted) ...[
+              AppTheme.space3.w,
+              Expanded(
+                child: Container(
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: primaryColor.withValues(alpha: 0.2),
+                    borderRadius: AppTheme.radiusFull.radius,
+                  ),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: progress,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: primaryColor,
+                        borderRadius: AppTheme.radiusFull.radius,
+                      ),
+                    ),
+                  ),
                 ),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text, Color iconColor) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          icon,
+          size: AppTheme.iconSm,
+          color: iconColor,
+        ),
+        AppTheme.space2.w,
+        Expanded(
+          child: Text(
+            text,
+            style: AppTheme.bodySmall,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// محتوى بطاقة الصلاة الموحدة
+class _PrayerCardContent extends StatelessWidget {
+  final String prayerName;
+  final String time;
+  final bool isCurrent;
+  final bool isNext;
+  final bool isCompleted;
+  final Duration? remainingTime;
+  final bool isCompact;
+
+  const _PrayerCardContent({
+    required this.prayerName,
+    required this.time,
+    required this.isCurrent,
+    required this.isNext,
+    required this.isCompleted,
+    this.remainingTime,
+    required this.isCompact,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final prayerColor = AppTheme.getPrayerColor(prayerName);
+    
+    if (isCompact) {
+      return _buildCompactContent(prayerColor);
+    }
+    
+    return _buildFullContent(prayerColor);
+  }
+
+  Widget _buildCompactContent(Color prayerColor) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          AppTheme.getPrayerIcon(prayerName),
+          size: AppTheme.iconLg,
+          color: isCurrent ? Colors.white : prayerColor,
+        ),
+        AppTheme.space2.h,
+        Text(
+          prayerName,
+          style: AppTheme.titleMedium.copyWith(
+            color: isCurrent ? Colors.white : null,
+            fontWeight: AppTheme.semiBold,
+          ),
+        ),
+        AppTheme.space1.h,
+        Text(
+          time,
+          style: AppTheme.bodyLarge.copyWith(
+            fontFamily: AppTheme.numbersFont,
+            fontWeight: AppTheme.bold,
+            color: isCurrent ? Colors.white : prayerColor,
+          ),
+        ),
+        if (isNext || isCompleted) ...[
+          AppTheme.space1.h,
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.space2,
+              vertical: 2,
+            ),
+            decoration: BoxDecoration(
+              color: (isCurrent ? Colors.white : prayerColor).withValues(alpha: 0.2),
+              borderRadius: AppTheme.radiusFull.radius,
+            ),
+            child: Text(
+              isCompleted ? 'مُؤداة' : 'التالية',
+              style: AppTheme.caption.copyWith(
+                color: isCurrent ? Colors.white : prayerColor,
+                fontWeight: AppTheme.medium,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildFullContent(Color prayerColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  AppTheme.getPrayerIcon(prayerName),
+                  color: isCurrent ? Colors.white : prayerColor,
+                  size: AppTheme.iconMd,
+                ),
+                AppTheme.space3.w,
+                Text(
+                  prayerName,
+                  style: AppTheme.titleMedium.copyWith(
+                    color: isCurrent ? Colors.white : null,
+                    fontWeight: AppTheme.semiBold,
+                  ),
+                ),
+              ],
+            ),
+            Text(
+              time,
+              style: AppTheme.titleMedium.copyWith(
+                fontFamily: AppTheme.numbersFont,
+                fontWeight: AppTheme.bold,
+                color: isCurrent ? Colors.white : prayerColor,
               ),
             ),
           ],
         ),
-      );
+        
+        if (remainingTime != null && isNext) ...[
+          AppTheme.space2.h,
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.space3,
+              vertical: AppTheme.space1,
+            ),
+            decoration: BoxDecoration(
+              color: (isCurrent ? Colors.white : prayerColor).withValues(alpha: 0.1),
+              borderRadius: AppTheme.radiusFull.radius,
+            ),
+            child: Text(
+              'بعد ${AppTheme.formatDuration(remainingTime!)}',
+              style: AppTheme.bodySmall.copyWith(
+                color: isCurrent ? Colors.white : prayerColor,
+                fontWeight: AppTheme.medium,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// محتوى بطاقة الفئة الموحدة
+class _CategoryCardContent extends StatelessWidget {
+  final String categoryId;
+  final String title;
+  final int count;
+  final bool showDescription;
+  final bool isCompact;
+  final String? customDescription;
+
+  const _CategoryCardContent({
+    required this.categoryId,
+    required this.title,
+    required this.count,
+    required this.showDescription,
+    required this.isCompact,
+    this.customDescription,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final categoryColor = AppTheme.getCategoryColor(categoryId);
+    final categoryIcon = AppTheme.getCategoryIcon(categoryId);
+    
+    if (isCompact) {
+      return _buildCompactContent(categoryColor, categoryIcon);
     }
     
-    return AppCard(
-      key: key,
-      icon: categoryIcon,
-      title: title,
-      subtitle: showDescription ? _getCategoryDescription(categoryId) : null,
-      color: categoryColor,
-      onTap: onTap,
-      actions: count > 0 ? [
+    return _buildFullContent(categoryColor, categoryIcon);
+  }
+
+  Widget _buildCompactContent(Color categoryColor, IconData categoryIcon) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          categoryIcon,
+          color: Colors.white,
+          size: AppTheme.iconLg,
+        ),
+        AppTheme.space2.h,
+        Text(
+          title,
+          style: AppTheme.titleMedium.copyWith(
+            color: Colors.white,
+            fontWeight: AppTheme.semiBold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        AppTheme.space1.h,
         Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.space2,
-            vertical: 4,
+            horizontal: AppTheme.space3,
+            vertical: AppTheme.space1,
           ),
           decoration: BoxDecoration(
-            color: categoryColor,
+            color: Colors.white.withValues(alpha: 0.2),
             borderRadius: AppTheme.radiusFull.radius,
           ),
           child: Text(
-            count.toString(),
+            '$count ذكر',
             style: AppTheme.caption.copyWith(
               color: Colors.white,
-              fontWeight: AppTheme.bold,
+              fontWeight: AppTheme.medium,
             ),
           ),
         ),
-      ] : null,
+      ],
     );
   }
 
-  // Helper function for category description
-  static String _getCategoryDescription(String categoryId) {
+  Widget _buildFullContent(Color categoryColor, IconData categoryIcon) {
+    return Row(
+      children: [
+        // الأيقونة
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: categoryColor.withValues(alpha: 0.1),
+            borderRadius: AppTheme.radiusMd.radius,
+          ),
+          child: Icon(
+            categoryIcon,
+            color: categoryColor,
+            size: AppTheme.iconMd,
+          ),
+        ),
+        
+        AppTheme.space3.w,
+        
+        // النص
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: AppTheme.titleMedium.copyWith(
+                  fontWeight: AppTheme.semiBold,
+                ),
+              ),
+              if (showDescription) ...[
+                AppTheme.space1.h,
+                Text(
+                  customDescription ?? _getDefaultDescription(),
+                  style: AppTheme.bodySmall.copyWith(
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        
+        // العدد
+        if (count > 0) ...[
+          AppTheme.space2.w,
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.space2,
+              vertical: 4,
+            ),
+            decoration: BoxDecoration(
+              color: categoryColor,
+              borderRadius: AppTheme.radiusFull.radius,
+            ),
+            child: Text(
+              count.toString(),
+              style: AppTheme.caption.copyWith(
+                color: Colors.white,
+                fontWeight: AppTheme.bold,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  String _getDefaultDescription() {
     switch (categoryId.toLowerCase()) {
       case 'morning':
       case 'الصباح':
@@ -478,93 +914,347 @@ class AppCard extends StatelessWidget {
         return 'أذكار متنوعة';
     }
   }
+}
+
+/// محتوى بطاقة القبلة الموحدة
+class _QiblaCardContent extends StatelessWidget {
+  final double direction;
+  final String? locationName;
+  final double? accuracy;
+  final bool isCalibrated;
+  final VoidCallback? onCalibrate;
+  final bool isSimple;
+
+  const _QiblaCardContent({
+    required this.direction,
+    this.locationName,
+    this.accuracy,
+    required this.isCalibrated,
+    this.onCalibrate,
+    required this.isSimple,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: margin ?? AppTheme.space3.padding,
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: AppTheme.radiusLg.radius,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: AppTheme.radiusLg.radius,
-          child: Container(
-            decoration: CardHelper.getCardDecoration(
-              color: color,
-              useGradient: useGradient,
-            ),
-            padding: padding ?? AppTheme.space4.padding,
-            child: child ?? _buildDefaultContent(),
+    if (isSimple) {
+      return _buildSimpleContent();
+    }
+    
+    return _buildFullContent();
+  }
+
+  Widget _buildSimpleContent() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Transform.rotate(
+          angle: direction * (3.14159 / 180),
+          child: const Icon(
+            Icons.navigation,
+            size: 32,
+            color: Colors.white,
           ),
         ),
-      ),
+        AppTheme.space2.h,
+        Text(
+          'القبلة',
+          style: AppTheme.titleMedium.copyWith(
+            color: Colors.white,
+            fontWeight: AppTheme.semiBold,
+          ),
+        ),
+        AppTheme.space1.h,
+        Text(
+          '${direction.toStringAsFixed(0)}°',
+          style: AppTheme.bodyLarge.copyWith(
+            color: Colors.white,
+            fontFamily: AppTheme.numbersFont,
+            fontWeight: AppTheme.bold,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildDefaultContent() {
-    final isGradient = useGradient;
-    final textColor = isGradient ? Colors.white : null;
-
+  Widget _buildFullContent() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
       children: [
-        if (icon != null || title != null) ...[
-          Row(
-            children: [
-              if (icon != null) ...[
-                Icon(
-                  icon!,
-                  color: textColor ?? color ?? AppTheme.primary,
-                  size: AppTheme.iconLg,
+        // العنوان والحالة
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.explore,
+                  color: AppTheme.tertiary,
+                  size: AppTheme.iconMd,
                 ),
-                AppTheme.space3.w,
-              ],
-              if (title != null)
-                Expanded(
-                  child: Text(
-                    title!,
-                    style: AppTheme.titleMedium.copyWith(
-                      color: textColor,
-                      fontWeight: AppTheme.semiBold,
-                    ),
+                AppTheme.space2.w,
+                Text(
+                  'اتجاه القبلة',
+                  style: AppTheme.titleMedium.copyWith(
+                    fontWeight: AppTheme.semiBold,
                   ),
                 ),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.space2,
+                vertical: 4,
+              ),
+              decoration: BoxDecoration(
+                color: isCalibrated ? AppTheme.success : AppTheme.warning,
+                borderRadius: AppTheme.radiusFull.radius,
+              ),
+              child: Text(
+                isCalibrated ? 'مُعايَر' : 'غير مُعايَر',
+                style: AppTheme.caption.copyWith(
+                  color: Colors.white,
+                  fontWeight: AppTheme.medium,
+                ),
+              ),
+            ),
+          ],
+        ),
+        
+        AppTheme.space4.h,
+        
+        // البوصلة
+        Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            gradient: AppTheme.oliveGoldGradient,
+            shape: BoxShape.circle,
+            boxShadow: AppTheme.shadowMd,
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // خلفية البوصلة
+              Container(
+                width: 100,
+                height: 100,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              // السهم
+              Transform.rotate(
+                angle: direction * (3.14159 / 180),
+                child: const Icon(
+                  Icons.navigation,
+                  size: 40,
+                  color: AppTheme.tertiary,
+                ),
+              ),
+              // النص
+              Positioned(
+                bottom: 25,
+                child: Text(
+                  '${direction.toStringAsFixed(0)}°',
+                  style: AppTheme.bodySmall.copyWith(
+                    color: AppTheme.tertiary,
+                    fontWeight: AppTheme.bold,
+                    fontFamily: AppTheme.numbersFont,
+                  ),
+                ),
+              ),
             ],
           ),
-          if (subtitle != null) AppTheme.space2.h,
+        ),
+        
+        AppTheme.space4.h,
+        
+        // المعلومات الإضافية
+        if (locationName != null) ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.location_on,
+                size: AppTheme.iconSm,
+                color: AppTheme.textSecondary,
+              ),
+              AppTheme.space1.w,
+              Text(
+                locationName!,
+                style: AppTheme.bodySmall.copyWith(
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+            ],
+          ),
+          AppTheme.space2.h,
         ],
         
-        if (subtitle != null) ...[
+        if (accuracy != null) ...[
           Text(
-            subtitle!,
-            style: AppTheme.bodySmall.copyWith(
-              color: textColor?.withValues(alpha: 0.8),
+            'دقة القياس: ${accuracy!.toStringAsFixed(1)}%',
+            style: AppTheme.caption.copyWith(
+              color: AppTheme.textTertiary,
+              fontFamily: AppTheme.numbersFont,
             ),
           ),
+          AppTheme.space2.h,
         ],
         
-        if (actions != null && actions!.isNotEmpty) ...[
-          AppTheme.space4.h,
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: actions!.map((action) => 
-              Padding(
-                padding: const EdgeInsets.only(left: AppTheme.space2),
-                child: action,
-              ),
-            ).toList(),
+        // زر المعايرة
+        if (!isCalibrated && onCalibrate != null)
+          AppButton.outline(
+            text: 'معايرة البوصلة',
+            icon: Icons.tune,
+            onPressed: onCalibrate!,
+            borderColor: AppTheme.tertiary,
           ),
-        ],
       ],
     );
   }
 }
 
-// ==================== الأزرار الموحدة ====================
+/// محتوى بطاقة أوقات الصلاة المتقدمة
+class _PrayerTimesCardContent extends StatelessWidget {
+  final Map<String, String> prayerTimes;
+  final String? currentPrayer;
+  final String? nextPrayer;
+  final Duration? timeToNext;
 
-/// زر موحد شامل
+  const _PrayerTimesCardContent({
+    required this.prayerTimes,
+    this.currentPrayer,
+    this.nextPrayer,
+    this.timeToNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // العنوان والحالة الحالية
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'أوقات الصلاة',
+              style: AppTheme.titleLarge.copyWith(
+                fontWeight: AppTheme.bold,
+              ),
+            ),
+            if (currentPrayer != null)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppTheme.space3,
+                  vertical: AppTheme.space1,
+                ),
+                decoration: BoxDecoration(
+                  color: AppTheme.getPrayerColor(currentPrayer!),
+                  borderRadius: AppTheme.radiusFull.radius,
+                ),
+                child: Text(
+                  currentPrayer!,
+                  style: AppTheme.labelMedium.copyWith(
+                    color: Colors.white,
+                    fontWeight: AppTheme.bold,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        
+        AppTheme.space4.h,
+        
+        // الوقت المتبقي للصلاة التالية
+        if (nextPrayer != null && timeToNext != null) ...[
+          Container(
+            width: double.infinity,
+            padding: AppTheme.space4.padding,
+            decoration: BoxDecoration(
+              gradient: AppTheme.oliveGoldGradient,
+              borderRadius: AppTheme.radiusMd.radius,
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'الصلاة التالية: $nextPrayer',
+                  style: AppTheme.bodyMedium.copyWith(
+                    color: Colors.white,
+                    fontWeight: AppTheme.medium,
+                  ),
+                ),
+                AppTheme.space1.h,
+                Text(
+                  AppTheme.formatDuration(timeToNext!),
+                  style: AppTheme.headlineMedium.copyWith(
+                    color: Colors.white,
+                    fontWeight: AppTheme.bold,
+                    fontFamily: AppTheme.numbersFont,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          AppTheme.space4.h,
+        ],
+        
+        // قائمة أوقات الصلوات
+        ...prayerTimes.entries.map((entry) => _buildPrayerRow(
+          entry.key,
+          entry.value,
+          entry.key == currentPrayer,
+        )),
+      ],
+    );
+  }
+
+  Widget _buildPrayerRow(String prayer, String time, bool isCurrent) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppTheme.space2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: isCurrent 
+                      ? AppTheme.getPrayerColor(prayer)
+                      : AppTheme.textTertiary,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              AppTheme.space3.w,
+              Text(
+                prayer,
+                style: AppTheme.bodyLarge.copyWith(
+                  fontWeight: isCurrent ? AppTheme.semiBold : AppTheme.regular,
+                  color: isCurrent ? AppTheme.getPrayerColor(prayer) : null,
+                ),
+              ),
+            ],
+          ),
+          Text(
+            time,
+            style: AppTheme.bodyLarge.copyWith(
+              fontFamily: AppTheme.numbersFont,
+              fontWeight: isCurrent ? AppTheme.bold : AppTheme.medium,
+              color: isCurrent ? AppTheme.getPrayerColor(prayer) : AppTheme.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ==================== باقي المكونات الموحدة ====================
+
+/// زر موحد شامل - بدون تغيير
 class AppButton extends StatelessWidget {
   final String text;
   final VoidCallback? onPressed;
@@ -589,8 +1279,6 @@ class AppButton extends StatelessWidget {
     this.height,
   });
 
-  // ========== Factory Constructors ==========
-
   factory AppButton.primary({
     Key? key,
     required String text,
@@ -611,24 +1299,6 @@ class AppButton extends StatelessWidget {
     );
   }
 
-  factory AppButton.secondary({
-    Key? key,
-    required String text,
-    VoidCallback? onPressed,
-    IconData? icon,
-    bool isFullWidth = false,
-  }) {
-    return AppButton(
-      key: key,
-      text: text,
-      onPressed: onPressed,
-      icon: icon,
-      backgroundColor: AppTheme.secondary,
-      foregroundColor: Colors.black,
-      isFullWidth: isFullWidth,
-    );
-  }
-
   factory AppButton.outline({
     Key? key,
     required String text,
@@ -644,22 +1314,6 @@ class AppButton extends StatelessWidget {
       icon: icon,
       borderColor: borderColor ?? AppTheme.primary,
       isFullWidth: isFullWidth,
-    );
-  }
-
-  factory AppButton.text({
-    Key? key,
-    required String text,
-    VoidCallback? onPressed,
-    IconData? icon,
-    Color? textColor,
-  }) {
-    return _TextButton(
-      key: key,
-      text: text,
-      onPressed: onPressed,
-      icon: icon,
-      textColor: textColor ?? AppTheme.primary,
     );
   }
 
@@ -706,7 +1360,6 @@ class AppButton extends StatelessWidget {
   }
 }
 
-// الأزرار الخاصة
 class _OutlineButton extends AppButton {
   final Color borderColor;
 
@@ -750,45 +1403,77 @@ class _OutlineButton extends AppButton {
   }
 }
 
-class _TextButton extends AppButton {
-  final Color textColor;
+/// إجراء في البطاقة
+class CardAction extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+  final bool isPrimary;
+  final Color? color;
 
-  const _TextButton({
+  const CardAction({
     super.key,
-    required super.text,
-    super.onPressed,
-    super.icon,
-    required this.textColor,
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.isPrimary = false,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: onPressed,
-      style: TextButton.styleFrom(
-        foregroundColor: textColor,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppTheme.space3,
-          vertical: AppTheme.space2,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onPressed();
+        },
+        borderRadius: AppTheme.radiusMd.radius,
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppTheme.space3,
+            vertical: AppTheme.space2,
+          ),
+          decoration: isPrimary ? BoxDecoration(
+            color: color ?? AppTheme.primary,
+            borderRadius: AppTheme.radiusMd.radius,
+          ) : null,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: AppTheme.iconSm,
+                color: isPrimary 
+                    ? Colors.black
+                    : color ?? AppTheme.textSecondary,
+              ),
+              if (label.isNotEmpty) ...[
+                AppTheme.space1.w,
+                Text(
+                  label,
+                  style: AppTheme.labelMedium.copyWith(
+                    color: isPrimary 
+                        ? Colors.black
+                        : color ?? AppTheme.textSecondary,
+                    fontWeight: isPrimary 
+                        ? AppTheme.semiBold 
+                        : AppTheme.medium,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon!, size: AppTheme.iconSm),
-            AppTheme.space2.w,
-          ],
-          Text(text),
-        ],
       ),
     );
   }
 }
 
-// ==================== بطاقة الإعدادات الوحيدة ====================
+// ==================== بطاقة الإعدادات الموحدة ====================
 
-/// بطاقة إعداد واحد - النسخة الوحيدة المعتمدة
+/// بطاقة إعداد واحد - موحدة
 class SettingCard extends StatelessWidget {
   final String title;
   final String? subtitle;
@@ -808,8 +1493,6 @@ class SettingCard extends StatelessWidget {
     this.color,
     this.showArrow = true,
   });
-
-  // ========== Factory Constructors للإعدادات المختلفة ==========
 
   factory SettingCard.toggle({
     Key? key,
@@ -833,67 +1516,6 @@ class SettingCard extends StatelessWidget {
         activeColor: color ?? AppTheme.primary,
       ),
       onTap: onChanged != null ? () => onChanged(!value) : null,
-    );
-  }
-
-  factory SettingCard.navigation({
-    Key? key,
-    required String title,
-    String? subtitle,
-    required IconData icon,
-    required VoidCallback onTap,
-    Color? color,
-    String? badge,
-  }) {
-    return SettingCard(
-      key: key,
-      title: title,
-      subtitle: subtitle,
-      icon: icon,
-      color: color,
-      onTap: onTap,
-      trailing: badge != null 
-          ? Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.space2,
-                vertical: 2,
-              ),
-              decoration: BoxDecoration(
-                color: AppTheme.error,
-                borderRadius: AppTheme.radiusFull.radius,
-              ),
-              child: Text(
-                badge,
-                style: AppTheme.caption.copyWith(
-                  color: Colors.white,
-                  fontWeight: AppTheme.medium,
-                ),
-              ),
-            )
-          : null,
-    );
-  }
-
-  factory SettingCard.info({
-    Key? key,
-    required String title,
-    required String value,
-    required IconData icon,
-    Color? color,
-  }) {
-    return SettingCard(
-      key: key,
-      title: title,
-      icon: icon,
-      color: color,
-      showArrow: false,
-      trailing: Text(
-        value,
-        style: AppTheme.bodyMedium.copyWith(
-          color: AppTheme.textSecondary,
-          fontFamily: AppTheme.numbersFont,
-        ),
-      ),
     );
   }
 
@@ -966,175 +1588,7 @@ class SettingCard extends StatelessWidget {
   }
 }
 
-// ==================== مجموعة الإعدادات ====================
-
-/// مجموعة إعدادات
-class SettingsGroupCard extends StatelessWidget {
-  final String title;
-  final List<Widget> children;
-  final IconData? icon;
-
-  const SettingsGroupCard({
-    super.key,
-    required this.title,
-    required this.children,
-    this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // عنوان المجموعة
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.space4,
-            vertical: AppTheme.space2,
-          ),
-          child: Row(
-            children: [
-              if (icon != null) ...[
-                Icon(
-                  icon!,
-                  size: AppTheme.iconSm,
-                  color: AppTheme.textSecondary,
-                ),
-                AppTheme.space2.w,
-              ],
-              Text(
-                title.toUpperCase(),
-                style: AppTheme.labelMedium.copyWith(
-                  color: AppTheme.textSecondary,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-        ),
-        
-        // عناصر المجموعة
-        ...children,
-        
-        AppTheme.space3.h,
-      ],
-    );
-  }
-}
-
-// ==================== الشريط العلوي ====================
-
-/// شريط علوي بسيط
-class SimpleAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
-  final List<Widget>? actions;
-  final Widget? leading;
-  final Color? backgroundColor;
-
-  const SimpleAppBar({
-    super.key,
-    required this.title,
-    this.actions,
-    this.leading,
-    this.backgroundColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AppBar(
-      title: Text(
-        title,
-        style: AppTheme.titleLarge.copyWith(
-          fontWeight: AppTheme.semiBold,
-        ),
-      ),
-      backgroundColor: backgroundColor ?? Colors.transparent,
-      elevation: 0,
-      centerTitle: true,
-      leading: leading,
-      actions: actions,
-      systemOverlayStyle: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-      ),
-    );
-  }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(64);
-}
-
-// ==================== إجراءات البطاقات ====================
-
-/// إجراء في البطاقة
-class CardAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-  final bool isPrimary;
-  final Color? color;
-
-  const CardAction({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-    this.isPrimary = false,
-    this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onPressed();
-        },
-        borderRadius: AppTheme.radiusMd.radius,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.space3,
-            vertical: AppTheme.space2,
-          ),
-          decoration: isPrimary ? BoxDecoration(
-            color: color ?? AppTheme.primary,
-            borderRadius: AppTheme.radiusMd.radius,
-          ) : null,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: AppTheme.iconSm,
-                color: isPrimary 
-                    ? Colors.black
-                    : color ?? AppTheme.textSecondary,
-              ),
-              if (label.isNotEmpty) ...[
-                AppTheme.space1.w,
-                Text(
-                  label,
-                  style: AppTheme.labelMedium.copyWith(
-                    color: isPrimary 
-                        ? Colors.black
-                        : color ?? AppTheme.textSecondary,
-                    fontWeight: isPrimary 
-                        ? AppTheme.semiBold 
-                        : AppTheme.medium,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ==================== حالات التحميل والفراغ ====================
+// ==================== مؤشرات الحالة ====================
 
 /// مؤشر التحميل
 class AppLoading extends StatelessWidget {
@@ -1216,18 +1670,6 @@ class AppEmptyState extends StatelessWidget {
     );
   }
 
-  factory AppEmptyState.error({
-    required String message,
-    VoidCallback? onRetry,
-  }) {
-    return AppEmptyState(
-      message: message,
-      icon: Icons.error_outline,
-      actionText: onRetry != null ? 'إعادة المحاولة' : null,
-      onAction: onRetry,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -1274,69 +1716,3 @@ class AppEmptyState extends StatelessWidget {
     );
   }
 }
-
-// ==================== مكون الضغط المتحرك ====================
-
-/// مكون بتأثير الضغط
-class AnimatedPress extends StatefulWidget {
-  final Widget child;
-  final VoidCallback onTap;
-  final double scale;
-
-  const AnimatedPress({
-    super.key,
-    required this.child,
-    required this.onTap,
-    this.scale = 0.95,
-  });
-
-  @override
-  State<AnimatedPress> createState() => _AnimatedPressState();
-}
-
-class _AnimatedPressState extends State<AnimatedPress>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 100),
-      vsync: this,
-    );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: widget.scale,
-    ).animate(_controller);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => _controller.forward(),
-      onTapUp: (_) {
-        _controller.reverse();
-        widget.onTap();
-      },
-      onTapCancel: () => _controller.reverse(),
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: widget.child,
-          );
-        },
-      ),
-    );
-  }
-}
-  
