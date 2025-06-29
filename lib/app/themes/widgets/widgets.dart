@@ -1,11 +1,12 @@
-// lib/app/themes/widgets/widgets.dart - النظام الموحد المحسّن للكروت
+// lib/app/themes/widgets/widgets.dart - النظام الموحد المحسّن مع Glassmorphism
+import 'dart:ui';
 import 'package:athkar_app/app/themes/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// ==================== البطاقة الموحدة الشاملة ====================
+// ==================== البطاقة الموحدة المحسّنة مع Glassmorphism ====================
 
-/// بطاقة موحدة شاملة - النسخة الوحيدة المعتمدة
+/// بطاقة موحدة شاملة مع تأثيرات Glassmorphism
 class AppCard extends StatefulWidget {
   final Widget? child;
   final String? title;
@@ -17,9 +18,12 @@ class AppCard extends StatefulWidget {
   final EdgeInsets? margin;
   final bool useGradient;
   final bool useAnimation;
+  final bool useGlass;
   final List<CardAction>? actions;
   final double? borderRadius;
   final double? elevation;
+  final double glassOpacity;
+  final bool addBlur;
 
   const AppCard({
     super.key,
@@ -33,14 +37,17 @@ class AppCard extends StatefulWidget {
     this.margin,
     this.useGradient = false,
     this.useAnimation = true,
+    this.useGlass = true,
     this.actions,
     this.borderRadius,
     this.elevation,
+    this.glassOpacity = 0.12,
+    this.addBlur = true,
   });
 
-  // ========== Factory Constructors الموحدة ==========
+  // ========== Factory Constructors المحسّنة ==========
 
-  /// بطاقة معلومات أساسية
+  /// بطاقة معلومات أساسية مع Glassmorphism
   factory AppCard.basic({
     Key? key,
     required String title,
@@ -49,6 +56,7 @@ class AppCard extends StatefulWidget {
     Color? color,
     VoidCallback? onTap,
     List<CardAction>? actions,
+    bool useGlass = true,
   }) {
     return AppCard(
       key: key,
@@ -58,10 +66,11 @@ class AppCard extends StatefulWidget {
       color: color,
       onTap: onTap,
       actions: actions,
+      useGlass: useGlass,
     );
   }
 
-  /// بطاقة إحصائية
+  /// بطاقة إحصائية مع تأثيرات متقدمة
   factory AppCard.stat({
     Key? key,
     required String title,
@@ -70,22 +79,26 @@ class AppCard extends StatefulWidget {
     Color? color,
     VoidCallback? onTap,
     String? subtitle,
+    bool useFloating = true,
   }) {
     return AppCard(
       key: key,
       useGradient: true,
+      useGlass: false,
       color: color ?? AppTheme.primary,
       onTap: onTap,
+      borderRadius: AppTheme.radius2xl,
       child: _StatCardContent(
         title: title,
         value: value,
         icon: icon,
         subtitle: subtitle,
+        useFloating: useFloating,
       ),
     );
   }
 
-  /// بطاقة ذكر/دعاء موحدة
+  /// بطاقة ذكر/دعاء محسّنة
   factory AppCard.athkar({
     Key? key,
     required String content,
@@ -106,6 +119,9 @@ class AppCard extends StatefulWidget {
       onTap: onTap,
       actions: actions,
       useAnimation: useAdvancedAnimation,
+      useGlass: true,
+      glassOpacity: isCompleted ? 0.2 : 0.12,
+      borderRadius: AppTheme.radius2xl,
       child: _AthkarCardContent(
         content: content,
         source: source,
@@ -119,7 +135,7 @@ class AppCard extends StatefulWidget {
     );
   }
 
-  /// بطاقة صلاة موحدة
+  /// بطاقة صلاة محسّنة
   factory AppCard.prayer({
     Key? key,
     required String prayerName,
@@ -134,8 +150,11 @@ class AppCard extends StatefulWidget {
     return AppCard(
       key: key,
       useGradient: isCurrent,
-      color: isCurrent ? AppTheme.getPrayerColor(prayerName) : null,
+      useGlass: !isCurrent,
+      color: AppTheme.getPrayerColor(prayerName),
       onTap: onTap,
+      glassOpacity: isNext ? 0.15 : 0.12,
+      borderRadius: isCompact ? AppTheme.radiusXl : AppTheme.radius2xl,
       child: _PrayerCardContent(
         prayerName: prayerName,
         time: time,
@@ -148,7 +167,7 @@ class AppCard extends StatefulWidget {
     );
   }
 
-  /// بطاقة فئة موحدة
+  /// بطاقة فئة محسّنة
   factory AppCard.category({
     Key? key,
     required String categoryId,
@@ -162,8 +181,10 @@ class AppCard extends StatefulWidget {
     return AppCard(
       key: key,
       useGradient: isCompact,
+      useGlass: !isCompact,
       color: AppTheme.getCategoryColor(categoryId),
       onTap: onTap,
+      borderRadius: isCompact ? AppTheme.radiusXl : AppTheme.radius2xl,
       child: _CategoryCardContent(
         categoryId: categoryId,
         title: title,
@@ -175,7 +196,7 @@ class AppCard extends StatefulWidget {
     );
   }
 
-  /// بطاقة القبلة موحدة
+  /// بطاقة القبلة محسّنة
   factory AppCard.qibla({
     Key? key,
     required double direction,
@@ -189,8 +210,10 @@ class AppCard extends StatefulWidget {
     return AppCard(
       key: key,
       useGradient: isSimple,
-      color: isSimple ? AppTheme.tertiary : null,
+      useGlass: !isSimple,
+      color: AppTheme.tertiary,
       onTap: onTap,
+      borderRadius: AppTheme.radius3xl,
       child: _QiblaCardContent(
         direction: direction,
         locationName: locationName,
@@ -213,8 +236,10 @@ class AppCard extends StatefulWidget {
   }) {
     return AppCard(
       key: key,
-      padding: AppTheme.space5.padding,
+      padding: const EdgeInsets.all(AppTheme.space6),
       onTap: onTap,
+      useGlass: true,
+      borderRadius: AppTheme.radius3xl,
       child: _PrayerTimesCardContent(
         prayerTimes: prayerTimes,
         currentPrayer: currentPrayer,
@@ -228,37 +253,48 @@ class AppCard extends StatefulWidget {
   State<AppCard> createState() => _AppCardState();
 }
 
-class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
+class _AppCardState extends State<AppCard> with TickerProviderStateMixin {
   late AnimationController _animationController;
+  late AnimationController _hoverController;
   late Animation<double> _scaleAnimation;
+  late Animation<double> _hoverAnimation;
+  bool _isHovered = false;
 
   @override
   void initState() {
     super.initState();
-    if (widget.useAnimation && widget.onTap != null) {
-      _animationController = AnimationController(
-        duration: const Duration(milliseconds: 150),
-        vsync: this,
-      );
-      _scaleAnimation = Tween<double>(
-        begin: 1.0,
-        end: 0.97,
-      ).animate(CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ));
-    } else {
-      _animationController = AnimationController(
-        duration: Duration.zero,
-        vsync: this,
-      );
-      _scaleAnimation = const AlwaysStoppedAnimation(1.0);
-    }
+    
+    // إعداد animation للضغط
+    _animationController = AnimationController(
+      duration: AppTheme.durationFast,
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: widget.useAnimation ? 0.96 : 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    // إعداد animation للـ hover
+    _hoverController = AnimationController(
+      duration: AppTheme.durationNormal,
+      vsync: this,
+    );
+    _hoverAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.02,
+    ).animate(CurvedAnimation(
+      parent: _hoverController,
+      curve: Curves.easeInOut,
+    ));
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _hoverController.dispose();
     super.dispose();
   }
 
@@ -274,35 +310,68 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
     }
   }
 
+  void _handleHover(bool isHovered) {
+    setState(() {
+      _isHovered = isHovered;
+    });
+    
+    if (isHovered) {
+      _hoverController.forward();
+    } else {
+      _hoverController.reverse();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _scaleAnimation,
+    Widget cardContent = Container(
+      margin: widget.margin ?? const EdgeInsets.all(AppTheme.space3),
+      padding: widget.padding ?? const EdgeInsets.all(AppTheme.space5),
+      decoration: CardHelper.getCardDecoration(
+        color: widget.color,
+        useGradient: widget.useGradient,
+        borderRadius: widget.borderRadius ?? AppTheme.radiusXl,
+        useGlass: widget.useGlass,
+        glassOpacity: widget.glassOpacity,
+      ),
+      child: widget.child ?? _buildDefaultContent(),
+    );
+
+    // إضافة blur effect إذا كان مطلوباً
+    if (widget.useGlass && widget.addBlur) {
+      cardContent = ClipRRect(
+        borderRadius: BorderRadius.circular(widget.borderRadius ?? AppTheme.radiusXl),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: cardContent,
+        ),
+      );
+    }
+
+    // إضافة الـ animations
+    Widget animatedCard = AnimatedBuilder(
+      animation: Listenable.merge([_scaleAnimation, _hoverAnimation]),
       builder: (context, child) {
         return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Container(
-            margin: widget.margin ?? AppTheme.space3.padding,
-            child: Material(
-              color: Colors.transparent,
-              borderRadius: (widget.borderRadius ?? AppTheme.radiusLg).radius,
-              child: InkWell(
-                onTap: _handleTap,
-                borderRadius: (widget.borderRadius ?? AppTheme.radiusLg).radius,
-                child: Container(
-                  decoration: CardHelper.getCardDecoration(
-                    color: widget.color,
-                    useGradient: widget.useGradient,
-                    borderRadius: widget.borderRadius ?? AppTheme.radiusLg,
-                  ),
-                  padding: widget.padding ?? AppTheme.space4.padding,
-                  child: widget.child ?? _buildDefaultContent(),
-                ),
-              ),
-            ),
-          ),
+          scale: _scaleAnimation.value * _hoverAnimation.value,
+          child: child,
         );
       },
+      child: cardContent,
+    );
+
+    // إضافة الـ interaction
+    return MouseRegion(
+      onEnter: (_) => _handleHover(true),
+      onExit: (_) => _handleHover(false),
+      child: GestureDetector(
+        onTap: _handleTap,
+        child: AnimatedContainer(
+          duration: AppTheme.durationNormal,
+          curve: Curves.easeInOut,
+          child: animatedCard,
+        ),
+      ),
     );
   }
 
@@ -318,39 +387,51 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
           Row(
             children: [
               if (widget.icon != null) ...[
-                Icon(
-                  widget.icon!,
-                  color: textColor ?? widget.color ?? AppTheme.primary,
-                  size: AppTheme.iconLg,
+                Container(
+                  padding: const EdgeInsets.all(AppTheme.space2),
+                  decoration: BoxDecoration(
+                    color: isGradient 
+                        ? Colors.white.withValues(alpha: 0.2)
+                        : (widget.color ?? AppTheme.primary).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  ),
+                  child: Icon(
+                    widget.icon!,
+                    color: isGradient 
+                        ? Colors.white
+                        : widget.color ?? AppTheme.primary,
+                    size: AppTheme.iconMd,
+                  ),
                 ),
-                AppTheme.space3.w,
+                AppTheme.space4.w,
               ],
               if (widget.title != null)
                 Expanded(
                   child: Text(
                     widget.title!,
-                    style: AppTheme.titleMedium.copyWith(
+                    style: AppTheme.titleLarge.copyWith(
                       color: textColor,
-                      fontWeight: AppTheme.semiBold,
+                      fontWeight: AppTheme.bold,
                     ),
                   ),
                 ),
             ],
           ),
-          if (widget.subtitle != null) AppTheme.space2.h,
+          if (widget.subtitle != null) AppTheme.space3.h,
         ],
         
         if (widget.subtitle != null) ...[
           Text(
             widget.subtitle!,
-            style: AppTheme.bodySmall.copyWith(
-              color: textColor?.withValues(alpha: 0.8),
+            style: AppTheme.bodyMedium.copyWith(
+              color: textColor?.withValues(alpha: 0.8) ?? AppTheme.textSecondary,
+              height: 1.6,
             ),
           ),
         ],
         
         if (widget.actions != null && widget.actions!.isNotEmpty) ...[
-          AppTheme.space4.h,
+          AppTheme.space5.h,
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: widget.actions!.map((action) => 
@@ -366,53 +447,72 @@ class _AppCardState extends State<AppCard> with SingleTickerProviderStateMixin {
   }
 }
 
-// ==================== محتويات البطاقات المتخصصة ====================
+// ==================== محتويات البطاقات المحسّنة ====================
 
-/// محتوى بطاقة الإحصائية
+/// محتوى بطاقة الإحصائية المحسّن
 class _StatCardContent extends StatelessWidget {
   final String title;
   final String value;
   final IconData? icon;
   final String? subtitle;
+  final bool useFloating;
 
   const _StatCardContent({
     required this.title,
     required this.value,
     this.icon,
     this.subtitle,
+    this.useFloating = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    Widget content = Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (icon != null) ...[
-          Icon(icon!, color: Colors.white, size: AppTheme.iconLg),
-          AppTheme.space2.h,
+          Container(
+            padding: const EdgeInsets.all(AppTheme.space3),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+            ),
+            child: Icon(
+              icon!, 
+              color: Colors.white, 
+              size: AppTheme.iconLg,
+            ),
+          ),
+          AppTheme.space3.h,
         ],
+        
         Text(
           value,
-          style: AppTheme.displayLarge.copyWith(
+          style: AppTheme.displayMedium.copyWith(
             color: Colors.white,
-            fontSize: 28,
+            fontSize: 32,
             fontFamily: AppTheme.numbersFont,
+            fontWeight: AppTheme.extraBold,
           ),
           textAlign: TextAlign.center,
         ),
-        AppTheme.space1.h,
+        
+        AppTheme.space2.h,
+        
         Text(
           title,
-          style: AppTheme.labelMedium.copyWith(
+          style: AppTheme.titleMedium.copyWith(
             color: Colors.white.withValues(alpha: 0.9),
+            fontWeight: AppTheme.semiBold,
           ),
           textAlign: TextAlign.center,
         ),
+        
         if (subtitle != null) ...[
           AppTheme.space1.h,
           Text(
             subtitle!,
-            style: AppTheme.caption.copyWith(
+            style: AppTheme.bodySmall.copyWith(
               color: Colors.white.withValues(alpha: 0.7),
             ),
             textAlign: TextAlign.center,
@@ -420,10 +520,26 @@ class _StatCardContent extends StatelessWidget {
         ],
       ],
     );
+
+    if (useFloating) {
+      return TweenAnimationBuilder<double>(
+        duration: const Duration(seconds: 2),
+        tween: Tween(begin: 0.0, end: 1.0),
+        builder: (context, value, child) {
+          return Transform.translate(
+            offset: Offset(0, -3 + (6 * value)),
+            child: child,
+          );
+        },
+        child: content,
+      );
+    }
+
+    return content;
   }
 }
 
-/// محتوى بطاقة الذكر الموحدة
+/// محتوى بطاقة الذكر المحسّن
 class _AthkarCardContent extends StatelessWidget {
   final String content;
   final String? source;
@@ -452,97 +568,158 @@ class _AthkarCardContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // النص الرئيسي
+        // النص الرئيسي مع تأثيرات متقدمة
         Container(
           width: double.infinity,
-          padding: AppTheme.space4.padding,
+          padding: const EdgeInsets.all(AppTheme.space6),
           decoration: BoxDecoration(
-            color: isCompleted 
-                ? primaryColor.withValues(alpha: 0.2)
-                : primaryColor.withValues(alpha: 0.1),
-            borderRadius: AppTheme.radiusMd.radius,
+            gradient: isCompleted 
+                ? LinearGradient(
+                    colors: [
+                      primaryColor.withValues(alpha: 0.3),
+                      primaryColor.withValues(alpha: 0.1),
+                    ],
+                  )
+                : AppTheme.glassGradient,
+            borderRadius: BorderRadius.circular(AppTheme.radiusXl),
             border: Border.all(
               color: isCompleted
-                  ? primaryColor.withValues(alpha: 0.4)
-                  : primaryColor.withValues(alpha: 0.2),
+                  ? primaryColor.withValues(alpha: 0.5)
+                  : AppTheme.glassStroke,
               width: isCompleted ? 2 : 1,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: primaryColor.withValues(alpha: 0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Column(
             children: [
               Text(
                 content,
                 style: AppTheme.quranStyle.copyWith(
-                  height: 1.8,
+                  height: 2.0,
                   color: isCompleted ? primaryColor : AppTheme.textReligious,
+                  fontSize: 18,
+                  fontWeight: AppTheme.medium,
                 ),
                 textAlign: TextAlign.center,
               ),
               
               if (isCompleted) ...[
-                AppTheme.space2.h,
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.check_circle,
-                      color: primaryColor,
-                      size: AppTheme.iconSm,
+                AppTheme.space3.h,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.space4,
+                    vertical: AppTheme.space2,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.success,
+                        AppTheme.success.withValues(alpha: 0.8),
+                      ],
                     ),
-                    AppTheme.space1.w,
-                    Text(
-                      'مكتمل',
-                      style: AppTheme.caption.copyWith(
-                        color: primaryColor,
-                        fontWeight: AppTheme.medium,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.success.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.check_circle,
+                        color: Colors.white,
+                        size: AppTheme.iconSm,
+                      ),
+                      AppTheme.space2.w,
+                      Text(
+                        'مكتمل ✨',
+                        style: AppTheme.labelMedium.copyWith(
+                          color: Colors.white,
+                          fontWeight: AppTheme.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ],
           ),
         ),
         
-        AppTheme.space3.h,
+        AppTheme.space4.h,
         
-        // المعلومات الإضافية
+        // المعلومات الإضافية مع تصميم محسّن
         if (source != null) ...[
-          _buildInfoRow(Icons.library_books, 'المصدر: $source', primaryColor),
-          AppTheme.space1.h,
-        ],
-        
-        if (fadl != null) ...[
-          _buildInfoRow(Icons.star, 'الفضل: $fadl', AppTheme.warning),
+          _buildInfoRow(
+            Icons.library_books, 
+            'المصدر: $source', 
+            primaryColor,
+          ),
           AppTheme.space2.h,
         ],
         
-        // شريط التقدم والعداد
+        if (fadl != null) ...[
+          _buildInfoRow(
+            Icons.star_border, 
+            'الفضل: $fadl', 
+            AppTheme.warning,
+          ),
+          AppTheme.space3.h,
+        ],
+        
+        // شريط التقدم والعداد المحسّن
         Row(
           children: [
-            // العداد
+            // العداد المحسّن
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.space3,
-                vertical: AppTheme.space1,
+                horizontal: AppTheme.space4,
+                vertical: AppTheme.space2,
               ),
               decoration: BoxDecoration(
-                color: isCompleted ? AppTheme.success : primaryColor,
-                borderRadius: AppTheme.radiusFull.radius,
+                gradient: isCompleted 
+                    ? LinearGradient(colors: [AppTheme.success, AppTheme.success.darken(0.1)])
+                    : LinearGradient(colors: [primaryColor, primaryColor.darken(0.1)]),
+                borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                boxShadow: [
+                  BoxShadow(
+                    color: (isCompleted ? AppTheme.success : primaryColor).withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (isCompleted)
+                  if (isCompleted) ...[
                     const Icon(
-                      Icons.check,
-                      size: 14,
+                      Icons.celebration,
+                      size: 16,
                       color: Colors.white,
-                    )
-                  else ...[
+                    ),
+                    AppTheme.space1.w,
+                    Text(
+                      'مُنجز',
+                      style: AppTheme.labelMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: AppTheme.bold,
+                      ),
+                    ),
+                  ] else ...[
                     Text(
                       '$currentCount',
-                      style: AppTheme.labelMedium.copyWith(
+                      style: AppTheme.titleMedium.copyWith(
                         color: Colors.white,
                         fontWeight: AppTheme.bold,
                         fontFamily: AppTheme.numbersFont,
@@ -550,7 +727,7 @@ class _AthkarCardContent extends StatelessWidget {
                     ),
                     Text(
                       ' / $totalCount',
-                      style: AppTheme.labelMedium.copyWith(
+                      style: AppTheme.bodyMedium.copyWith(
                         color: Colors.white.withValues(alpha: 0.8),
                         fontFamily: AppTheme.numbersFont,
                       ),
@@ -560,25 +737,72 @@ class _AthkarCardContent extends StatelessWidget {
               ),
             ),
             
-            // شريط التقدم
+            // شريط التقدم المحسّن
             if (showProgress && !isCompleted) ...[
-              AppTheme.space3.w,
+              AppTheme.space4.w,
               Expanded(
                 child: Container(
-                  height: 6,
+                  height: 8,
                   decoration: BoxDecoration(
                     color: primaryColor.withValues(alpha: 0.2),
-                    borderRadius: AppTheme.radiusFull.radius,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusFull),
                   ),
-                  child: FractionallySizedBox(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: progress,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: primaryColor,
-                        borderRadius: AppTheme.radiusFull.radius,
+                  child: Stack(
+                    children: [
+                      // الخلفية الزجاجية
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: AppTheme.glassGradient,
+                          borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                        ),
                       ),
-                    ),
+                      // شريط التقدم مع تأثير متحرك
+                      FractionallySizedBox(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: progress,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                primaryColor,
+                                primaryColor.lighten(0.1),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                            boxShadow: [
+                              BoxShadow(
+                                color: primaryColor.withValues(alpha: 0.4),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              AppTheme.space3.w,
+              // نسبة التقدم
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppTheme.space3,
+                  vertical: AppTheme.space1,
+                ),
+                decoration: BoxDecoration(
+                  color: primaryColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                  border: Border.all(
+                    color: primaryColor.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Text(
+                  '${(progress * 100).round()}%',
+                  style: AppTheme.caption.copyWith(
+                    color: primaryColor,
+                    fontWeight: AppTheme.bold,
+                    fontFamily: AppTheme.numbersFont,
                   ),
                 ),
               ),
@@ -590,27 +814,46 @@ class _AthkarCardContent extends StatelessWidget {
   }
 
   Widget _buildInfoRow(IconData icon, String text, Color iconColor) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(
-          icon,
-          size: AppTheme.iconSm,
-          color: iconColor,
+    return Container(
+      padding: const EdgeInsets.all(AppTheme.space3),
+      decoration: BoxDecoration(
+        color: iconColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        border: Border.all(
+          color: iconColor.withValues(alpha: 0.2),
         ),
-        AppTheme.space2.w,
-        Expanded(
-          child: Text(
-            text,
-            style: AppTheme.bodySmall,
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppTheme.space1),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+            ),
+            child: Icon(
+              icon,
+              size: AppTheme.iconSm,
+              color: iconColor,
+            ),
           ),
-        ),
-      ],
+          AppTheme.space3.w,
+          Expanded(
+            child: Text(
+              text,
+              style: AppTheme.bodySmall.copyWith(
+                color: AppTheme.textSecondary,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-/// محتوى بطاقة الصلاة الموحدة
+/// محتوى بطاقة الصلاة المحسّن
 class _PrayerCardContent extends StatelessWidget {
   final String prayerName;
   final String time;
@@ -645,44 +888,72 @@ class _PrayerCardContent extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          AppTheme.getPrayerIcon(prayerName),
-          size: AppTheme.iconLg,
-          color: isCurrent ? Colors.white : prayerColor,
+        // أيقونة الصلاة مع تأثيرات
+        Container(
+          padding: const EdgeInsets.all(AppTheme.space3),
+          decoration: BoxDecoration(
+            gradient: isCurrent 
+                ? LinearGradient(
+                    colors: [
+                      Colors.white.withValues(alpha: 0.3),
+                      Colors.white.withValues(alpha: 0.1),
+                    ],
+                  )
+                : LinearGradient(
+                    colors: [
+                      prayerColor.withValues(alpha: 0.2),
+                      prayerColor.withValues(alpha: 0.1),
+                    ],
+                  ),
+            borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+          ),
+          child: Icon(
+            AppTheme.getPrayerIcon(prayerName),
+            size: AppTheme.iconLg,
+            color: isCurrent ? Colors.white : prayerColor,
+          ),
         ),
-        AppTheme.space2.h,
+        
+        AppTheme.space3.h,
+        
         Text(
           prayerName,
           style: AppTheme.titleMedium.copyWith(
             color: isCurrent ? Colors.white : null,
-            fontWeight: AppTheme.semiBold,
+            fontWeight: AppTheme.bold,
           ),
         ),
-        AppTheme.space1.h,
+        
+        AppTheme.space2.h,
+        
         Text(
           time,
-          style: AppTheme.bodyLarge.copyWith(
+          style: AppTheme.headlineSmall.copyWith(
             fontFamily: AppTheme.numbersFont,
-            fontWeight: AppTheme.bold,
+            fontWeight: AppTheme.extraBold,
             color: isCurrent ? Colors.white : prayerColor,
           ),
         ),
+        
         if (isNext || isCompleted) ...[
-          AppTheme.space1.h,
+          AppTheme.space2.h,
           Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.space2,
-              vertical: 2,
+              horizontal: AppTheme.space3,
+              vertical: AppTheme.space1,
             ),
             decoration: BoxDecoration(
               color: (isCurrent ? Colors.white : prayerColor).withValues(alpha: 0.2),
-              borderRadius: AppTheme.radiusFull.radius,
+              borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+              border: Border.all(
+                color: (isCurrent ? Colors.white : prayerColor).withValues(alpha: 0.3),
+              ),
             ),
             child: Text(
-              isCompleted ? 'مُؤداة' : 'التالية',
+              isCompleted ? 'مُؤداة ✓' : 'التالية ⏳',
               style: AppTheme.caption.copyWith(
                 color: isCurrent ? Colors.white : prayerColor,
-                fontWeight: AppTheme.medium,
+                fontWeight: AppTheme.bold,
               ),
             ),
           ),
@@ -700,26 +971,45 @@ class _PrayerCardContent extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
-                  AppTheme.getPrayerIcon(prayerName),
-                  color: isCurrent ? Colors.white : prayerColor,
-                  size: AppTheme.iconMd,
+                Container(
+                  padding: const EdgeInsets.all(AppTheme.space2),
+                  decoration: BoxDecoration(
+                    gradient: isCurrent 
+                        ? LinearGradient(
+                            colors: [
+                              Colors.white.withValues(alpha: 0.3),
+                              Colors.white.withValues(alpha: 0.1),
+                            ],
+                          )
+                        : LinearGradient(
+                            colors: [
+                              prayerColor.withValues(alpha: 0.2),
+                              prayerColor.withValues(alpha: 0.1),
+                            ],
+                          ),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  ),
+                  child: Icon(
+                    AppTheme.getPrayerIcon(prayerName),
+                    color: isCurrent ? Colors.white : prayerColor,
+                    size: AppTheme.iconMd,
+                  ),
                 ),
-                AppTheme.space3.w,
+                AppTheme.space4.w,
                 Text(
                   prayerName,
-                  style: AppTheme.titleMedium.copyWith(
+                  style: AppTheme.titleLarge.copyWith(
                     color: isCurrent ? Colors.white : null,
-                    fontWeight: AppTheme.semiBold,
+                    fontWeight: AppTheme.bold,
                   ),
                 ),
               ],
             ),
             Text(
               time,
-              style: AppTheme.titleMedium.copyWith(
+              style: AppTheme.headlineSmall.copyWith(
                 fontFamily: AppTheme.numbersFont,
-                fontWeight: AppTheme.bold,
+                fontWeight: AppTheme.extraBold,
                 color: isCurrent ? Colors.white : prayerColor,
               ),
             ),
@@ -727,22 +1017,34 @@ class _PrayerCardContent extends StatelessWidget {
         ),
         
         if (remainingTime != null && isNext) ...[
-          AppTheme.space2.h,
+          AppTheme.space4.h,
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.space3,
-              vertical: AppTheme.space1,
-            ),
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppTheme.space4),
             decoration: BoxDecoration(
-              color: (isCurrent ? Colors.white : prayerColor).withValues(alpha: 0.1),
-              borderRadius: AppTheme.radiusFull.radius,
-            ),
-            child: Text(
-              'بعد ${AppTheme.formatDuration(remainingTime!)}',
-              style: AppTheme.bodySmall.copyWith(
-                color: isCurrent ? Colors.white : prayerColor,
-                fontWeight: AppTheme.medium,
+              gradient: AppTheme.glassGradient,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              border: Border.all(
+                color: AppTheme.glassStroke,
               ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.schedule,
+                  color: isCurrent ? Colors.white : prayerColor,
+                  size: AppTheme.iconSm,
+                ),
+                AppTheme.space2.w,
+                Text(
+                  'بعد ${AppTheme.formatDuration(remainingTime!)}',
+                  style: AppTheme.bodyMedium.copyWith(
+                    color: isCurrent ? Colors.white : prayerColor,
+                    fontWeight: AppTheme.semiBold,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -751,7 +1053,7 @@ class _PrayerCardContent extends StatelessWidget {
   }
 }
 
-/// محتوى بطاقة الفئة الموحدة
+/// محتوى بطاقة الفئة المحسّن
 class _CategoryCardContent extends StatelessWidget {
   final String categoryId;
   final String title;
@@ -785,35 +1087,62 @@ class _CategoryCardContent extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(
-          categoryIcon,
-          color: Colors.white,
-          size: AppTheme.iconLg,
+        // أيقونة الفئة مع تأثيرات
+        Container(
+          padding: const EdgeInsets.all(AppTheme.space4),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.white.withValues(alpha: 0.3),
+                Colors.white.withValues(alpha: 0.1),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Icon(
+            categoryIcon,
+            color: Colors.white,
+            size: AppTheme.iconLg,
+          ),
         ),
-        AppTheme.space2.h,
+        
+        AppTheme.space3.h,
+        
         Text(
           title,
           style: AppTheme.titleMedium.copyWith(
             color: Colors.white,
-            fontWeight: AppTheme.semiBold,
+            fontWeight: AppTheme.bold,
           ),
           textAlign: TextAlign.center,
         ),
-        AppTheme.space1.h,
+        
+        AppTheme.space2.h,
+        
         Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.space3,
+            horizontal: AppTheme.space4,
             vertical: AppTheme.space1,
           ),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: AppTheme.radiusFull.radius,
+            borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.3),
+            ),
           ),
           child: Text(
             '$count ذكر',
-            style: AppTheme.caption.copyWith(
+            style: AppTheme.labelMedium.copyWith(
               color: Colors.white,
-              fontWeight: AppTheme.medium,
+              fontWeight: AppTheme.bold,
             ),
           ),
         ),
@@ -824,13 +1153,21 @@ class _CategoryCardContent extends StatelessWidget {
   Widget _buildFullContent(Color categoryColor, IconData categoryIcon) {
     return Row(
       children: [
-        // الأيقونة
+        // الأيقونة المحسّنة
         Container(
-          width: 48,
-          height: 48,
+          width: 56,
+          height: 56,
           decoration: BoxDecoration(
-            color: categoryColor.withValues(alpha: 0.1),
-            borderRadius: AppTheme.radiusMd.radius,
+            gradient: LinearGradient(
+              colors: [
+                categoryColor.withValues(alpha: 0.2),
+                categoryColor.withValues(alpha: 0.1),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+            border: Border.all(
+              color: categoryColor.withValues(alpha: 0.3),
+            ),
           ),
           child: Icon(
             categoryIcon,
@@ -839,7 +1176,7 @@ class _CategoryCardContent extends StatelessWidget {
           ),
         ),
         
-        AppTheme.space3.w,
+        AppTheme.space4.w,
         
         // النص
         Expanded(
@@ -848,16 +1185,17 @@ class _CategoryCardContent extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: AppTheme.titleMedium.copyWith(
-                  fontWeight: AppTheme.semiBold,
+                style: AppTheme.titleLarge.copyWith(
+                  fontWeight: AppTheme.bold,
                 ),
               ),
               if (showDescription) ...[
-                AppTheme.space1.h,
+                AppTheme.space2.h,
                 Text(
                   customDescription ?? _getDefaultDescription(),
-                  style: AppTheme.bodySmall.copyWith(
+                  style: AppTheme.bodyMedium.copyWith(
                     color: AppTheme.textSecondary,
+                    height: 1.5,
                   ),
                 ),
               ],
@@ -865,23 +1203,36 @@ class _CategoryCardContent extends StatelessWidget {
           ),
         ),
         
-        // العدد
+        // العدد المحسّن
         if (count > 0) ...[
-          AppTheme.space2.w,
+          AppTheme.space3.w,
           Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.space2,
-              vertical: 4,
+              horizontal: AppTheme.space3,
+              vertical: AppTheme.space2,
             ),
             decoration: BoxDecoration(
-              color: categoryColor,
-              borderRadius: AppTheme.radiusFull.radius,
+              gradient: LinearGradient(
+                colors: [
+                  categoryColor,
+                  categoryColor.darken(0.1),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+              boxShadow: [
+                BoxShadow(
+                  color: categoryColor.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Text(
               count.toString(),
-              style: AppTheme.caption.copyWith(
+              style: AppTheme.titleMedium.copyWith(
                 color: Colors.white,
-                fontWeight: AppTheme.bold,
+                fontWeight: AppTheme.extraBold,
+                fontFamily: AppTheme.numbersFont,
               ),
             ),
           ),
@@ -894,29 +1245,29 @@ class _CategoryCardContent extends StatelessWidget {
     switch (categoryId.toLowerCase()) {
       case 'morning':
       case 'الصباح':
-        return 'أذكار الصباح والاستيقاظ';
+        return 'أذكار الصباح والاستيقاظ - تُقرأ بعد صلاة الفجر';
       case 'evening':
       case 'المساء':
-        return 'أذكار المساء والمغرب';
+        return 'أذكار المساء والمغرب - تُقرأ بعد صلاة العصر';
       case 'sleep':
       case 'النوم':
-        return 'أذكار النوم والاضطجاع';
+        return 'أذكار النوم والاضطجاع - عند النوم والاستيقاظ';
       case 'prayer':
       case 'الصلاة':
-        return 'أذكار الصلاة والوضوء';
+        return 'أذكار الصلاة والوضوء - عند الوضوء وبعد الصلوات';
       case 'eating':
       case 'الطعام':
-        return 'أذكار الطعام والشراب';
+        return 'أذكار الطعام والشراب - قبل وبعد الأكل';
       case 'travel':
       case 'السفر':
-        return 'أذكار السفر والطريق';
+        return 'أذكار السفر والطريق - عند السفر والركوب';
       default:
-        return 'أذكار متنوعة';
+        return 'أذكار وأدعية متنوعة لجميع الأوقات';
     }
   }
 }
 
-/// محتوى بطاقة القبلة الموحدة
+/// محتوى بطاقة القبلة المحسّن
 class _QiblaCardContent extends StatelessWidget {
   final double direction;
   final String? locationName;
@@ -947,29 +1298,56 @@ class _QiblaCardContent extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Transform.rotate(
-          angle: direction * (3.14159 / 180),
-          child: const Icon(
-            Icons.navigation,
-            size: 32,
-            color: Colors.white,
+        // البوصلة المبسطة
+        Container(
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.white.withValues(alpha: 0.3),
+                Colors.white.withValues(alpha: 0.1),
+              ],
+            ),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.2),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Transform.rotate(
+              angle: direction * (3.14159 / 180),
+              child: const Icon(
+                Icons.navigation,
+                size: 36,
+                color: Colors.white,
+              ),
+            ),
           ),
         ),
-        AppTheme.space2.h,
+        
+        AppTheme.space3.h,
+        
         Text(
           'القبلة',
-          style: AppTheme.titleMedium.copyWith(
+          style: AppTheme.titleLarge.copyWith(
             color: Colors.white,
-            fontWeight: AppTheme.semiBold,
+            fontWeight: AppTheme.bold,
           ),
         ),
+        
         AppTheme.space1.h,
+        
         Text(
           '${direction.toStringAsFixed(0)}°',
-          style: AppTheme.bodyLarge.copyWith(
+          style: AppTheme.headlineSmall.copyWith(
             color: Colors.white,
             fontFamily: AppTheme.numbersFont,
-            fontWeight: AppTheme.bold,
+            fontWeight: AppTheme.extraBold,
           ),
         ),
       ],
@@ -985,81 +1363,145 @@ class _QiblaCardContent extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(
-                  Icons.explore,
-                  color: AppTheme.tertiary,
-                  size: AppTheme.iconMd,
+                Container(
+                  padding: const EdgeInsets.all(AppTheme.space2),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.tertiary.withValues(alpha: 0.2),
+                        AppTheme.tertiary.withValues(alpha: 0.1),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                  ),
+                  child: const Icon(
+                    Icons.explore,
+                    color: AppTheme.tertiary,
+                    size: AppTheme.iconMd,
+                  ),
                 ),
-                AppTheme.space2.w,
+                AppTheme.space3.w,
                 Text(
                   'اتجاه القبلة',
-                  style: AppTheme.titleMedium.copyWith(
-                    fontWeight: AppTheme.semiBold,
+                  style: AppTheme.titleLarge.copyWith(
+                    fontWeight: AppTheme.bold,
                   ),
                 ),
               ],
             ),
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppTheme.space2,
-                vertical: 4,
+                horizontal: AppTheme.space3,
+                vertical: AppTheme.space1,
               ),
               decoration: BoxDecoration(
-                color: isCalibrated ? AppTheme.success : AppTheme.warning,
-                borderRadius: AppTheme.radiusFull.radius,
+                gradient: LinearGradient(
+                  colors: isCalibrated 
+                      ? [AppTheme.success, AppTheme.success.darken(0.1)]
+                      : [AppTheme.warning, AppTheme.warning.darken(0.1)],
+                ),
+                borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                boxShadow: [
+                  BoxShadow(
+                    color: (isCalibrated ? AppTheme.success : AppTheme.warning)
+                        .withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Text(
-                isCalibrated ? 'مُعايَر' : 'غير مُعايَر',
-                style: AppTheme.caption.copyWith(
+                isCalibrated ? 'مُعايَر ✓' : 'غير مُعايَر ⚠️',
+                style: AppTheme.labelMedium.copyWith(
                   color: Colors.white,
-                  fontWeight: AppTheme.medium,
+                  fontWeight: AppTheme.bold,
                 ),
               ),
             ),
           ],
         ),
         
-        AppTheme.space4.h,
+        AppTheme.space6.h,
         
-        // البوصلة
+        // البوصلة المتقدمة
         Container(
-          width: 120,
-          height: 120,
+          width: 140,
+          height: 140,
           decoration: BoxDecoration(
             gradient: AppTheme.oliveGoldGradient,
             shape: BoxShape.circle,
-            boxShadow: AppTheme.shadowMd,
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primary.withValues(alpha: 0.3),
+                blurRadius: 25,
+                offset: const Offset(0, 12),
+              ),
+              BoxShadow(
+                color: AppTheme.secondary.withValues(alpha: 0.2),
+                blurRadius: 15,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
           child: Stack(
             alignment: Alignment.center,
             children: [
               // خلفية البوصلة
               Container(
-                width: 100,
-                height: 100,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
+                width: 110,
+                height: 110,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.95),
                   shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
               ),
-              // السهم
+              // السهم المتحرك
               Transform.rotate(
                 angle: direction * (3.14159 / 180),
-                child: const Icon(
-                  Icons.navigation,
-                  size: 40,
-                  color: AppTheme.tertiary,
+                child: Container(
+                  padding: const EdgeInsets.all(AppTheme.space2),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.tertiary,
+                        AppTheme.tertiary.darken(0.2),
+                      ],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.navigation,
+                    size: 40,
+                    color: Colors.white,
+                  ),
                 ),
               ),
               // النص
               Positioned(
-                bottom: 25,
-                child: Text(
-                  '${direction.toStringAsFixed(0)}°',
-                  style: AppTheme.bodySmall.copyWith(
-                    color: AppTheme.tertiary,
-                    fontWeight: AppTheme.bold,
-                    fontFamily: AppTheme.numbersFont,
+                bottom: 15,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.space2,
+                    vertical: AppTheme.space1,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.tertiary.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                  ),
+                  child: Text(
+                    '${direction.toStringAsFixed(0)}°',
+                    style: AppTheme.bodySmall.copyWith(
+                      color: Colors.white,
+                      fontWeight: AppTheme.bold,
+                      fontFamily: AppTheme.numbersFont,
+                    ),
                   ),
                 ),
               ),
@@ -1067,42 +1509,51 @@ class _QiblaCardContent extends StatelessWidget {
           ),
         ),
         
-        AppTheme.space4.h,
+        AppTheme.space5.h,
         
         // المعلومات الإضافية
         if (locationName != null) ...[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.location_on,
-                size: AppTheme.iconSm,
-                color: AppTheme.textSecondary,
-              ),
-              AppTheme.space1.w,
-              Text(
-                locationName!,
-                style: AppTheme.bodySmall.copyWith(
-                  color: AppTheme.textSecondary,
+          Container(
+            padding: const EdgeInsets.all(AppTheme.space3),
+            decoration: BoxDecoration(
+              gradient: AppTheme.glassGradient,
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+              border: Border.all(color: AppTheme.glassStroke),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.location_on,
+                  size: AppTheme.iconSm,
+                  color: AppTheme.info,
                 ),
-              ),
-            ],
+                AppTheme.space2.w,
+                Text(
+                  locationName!,
+                  style: AppTheme.bodyMedium.copyWith(
+                    color: AppTheme.textPrimary,
+                    fontWeight: AppTheme.medium,
+                  ),
+                ),
+              ],
+            ),
           ),
-          AppTheme.space2.h,
+          AppTheme.space3.h,
         ],
         
         if (accuracy != null) ...[
           Text(
             'دقة القياس: ${accuracy!.toStringAsFixed(1)}%',
-            style: AppTheme.caption.copyWith(
+            style: AppTheme.bodySmall.copyWith(
               color: AppTheme.textTertiary,
               fontFamily: AppTheme.numbersFont,
             ),
           ),
-          AppTheme.space2.h,
+          AppTheme.space3.h,
         ],
         
-        // زر المعايرة
+        // زر المعايرة المحسّن
         if (!isCalibrated && onCalibrate != null)
           AppButton.outline(
             text: 'معايرة البوصلة',
@@ -1140,23 +1591,36 @@ class _PrayerTimesCardContent extends StatelessWidget {
           children: [
             Text(
               'أوقات الصلاة',
-              style: AppTheme.titleLarge.copyWith(
-                fontWeight: AppTheme.bold,
+              style: AppTheme.headlineMedium.copyWith(
+                fontWeight: AppTheme.extraBold,
               ),
             ),
             if (currentPrayer != null)
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppTheme.space3,
-                  vertical: AppTheme.space1,
+                  horizontal: AppTheme.space4,
+                  vertical: AppTheme.space2,
                 ),
                 decoration: BoxDecoration(
-                  color: AppTheme.getPrayerColor(currentPrayer!),
-                  borderRadius: AppTheme.radiusFull.radius,
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.getPrayerColor(currentPrayer!),
+                      AppTheme.getPrayerColor(currentPrayer!).darken(0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.getPrayerColor(currentPrayer!)
+                          .withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Text(
                   currentPrayer!,
-                  style: AppTheme.labelMedium.copyWith(
+                  style: AppTheme.titleMedium.copyWith(
                     color: Colors.white,
                     fontWeight: AppTheme.bold,
                   ),
@@ -1165,85 +1629,156 @@ class _PrayerTimesCardContent extends StatelessWidget {
           ],
         ),
         
-        AppTheme.space4.h,
+        AppTheme.space5.h,
         
         // الوقت المتبقي للصلاة التالية
         if (nextPrayer != null && timeToNext != null) ...[
           Container(
             width: double.infinity,
-            padding: AppTheme.space4.padding,
+            padding: const EdgeInsets.all(AppTheme.space5),
             decoration: BoxDecoration(
               gradient: AppTheme.oliveGoldGradient,
-              borderRadius: AppTheme.radiusMd.radius,
+              borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+              boxShadow: AppTheme.glassShadowMd,
             ),
             child: Column(
               children: [
-                Text(
-                  'الصلاة التالية: $nextPrayer',
-                  style: AppTheme.bodyMedium.copyWith(
-                    color: Colors.white,
-                    fontWeight: AppTheme.medium,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      AppTheme.getPrayerIcon(nextPrayer!),
+                      color: Colors.white,
+                      size: AppTheme.iconMd,
+                    ),
+                    AppTheme.space2.w,
+                    Text(
+                      'الصلاة التالية: $nextPrayer',
+                      style: AppTheme.titleMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: AppTheme.semiBold,
+                      ),
+                    ),
+                  ],
                 ),
-                AppTheme.space1.h,
+                AppTheme.space2.h,
                 Text(
                   AppTheme.formatDuration(timeToNext!),
-                  style: AppTheme.headlineMedium.copyWith(
+                  style: AppTheme.displayMedium.copyWith(
                     color: Colors.white,
-                    fontWeight: AppTheme.bold,
+                    fontWeight: AppTheme.extraBold,
                     fontFamily: AppTheme.numbersFont,
+                    fontSize: 36,
                   ),
                 ),
               ],
             ),
           ),
-          AppTheme.space4.h,
+          AppTheme.space5.h,
         ],
         
-        // قائمة أوقات الصلوات
+        // قائمة أوقات الصلوات المحسّنة
         ...prayerTimes.entries.map((entry) => _buildPrayerRow(
           entry.key,
           entry.value,
           entry.key == currentPrayer,
+          entry.key == nextPrayer,
         )),
       ],
     );
   }
 
-  Widget _buildPrayerRow(String prayer, String time, bool isCurrent) {
+  Widget _buildPrayerRow(String prayer, String time, bool isCurrent, bool isNext) {
+    final prayerColor = AppTheme.getPrayerColor(prayer);
+    
     return Container(
-      margin: const EdgeInsets.only(bottom: AppTheme.space2),
+      margin: const EdgeInsets.only(bottom: AppTheme.space3),
+      padding: const EdgeInsets.all(AppTheme.space4),
+      decoration: BoxDecoration(
+        gradient: isCurrent 
+            ? LinearGradient(
+                colors: [
+                  prayerColor.withValues(alpha: 0.2),
+                  prayerColor.withValues(alpha: 0.1),
+                ],
+              )
+            : AppTheme.glassGradient,
+        borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+        border: Border.all(
+          color: isCurrent 
+              ? prayerColor.withValues(alpha: 0.4)
+              : AppTheme.glassStroke,
+          width: isCurrent ? 2 : 1,
+        ),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: isCurrent 
-                      ? AppTheme.getPrayerColor(prayer)
-                      : AppTheme.textTertiary,
-                  shape: BoxShape.circle,
+          // مؤشر الحالة
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              gradient: isCurrent 
+                  ? LinearGradient(colors: [prayerColor, prayerColor.darken(0.1)])
+                  : null,
+              color: isCurrent ? null : (isNext ? prayerColor.withValues(alpha: 0.6) : AppTheme.textTertiary),
+              shape: BoxShape.circle,
+              boxShadow: isCurrent ? [
+                BoxShadow(
+                  color: prayerColor.withValues(alpha: 0.4),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
-              ),
-              AppTheme.space3.w,
-              Text(
-                prayer,
-                style: AppTheme.bodyLarge.copyWith(
-                  fontWeight: isCurrent ? AppTheme.semiBold : AppTheme.regular,
-                  color: isCurrent ? AppTheme.getPrayerColor(prayer) : null,
-                ),
-              ),
-            ],
+              ] : null,
+            ),
           ),
-          Text(
-            time,
-            style: AppTheme.bodyLarge.copyWith(
-              fontFamily: AppTheme.numbersFont,
-              fontWeight: isCurrent ? AppTheme.bold : AppTheme.medium,
-              color: isCurrent ? AppTheme.getPrayerColor(prayer) : AppTheme.textSecondary,
+          
+          AppTheme.space4.w,
+          
+          // أيقونة الصلاة
+          Container(
+            padding: const EdgeInsets.all(AppTheme.space2),
+            decoration: BoxDecoration(
+              color: prayerColor.withValues(alpha: isCurrent ? 0.2 : 0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+            ),
+            child: Icon(
+              AppTheme.getPrayerIcon(prayer),
+              color: prayerColor,
+              size: AppTheme.iconSm,
+            ),
+          ),
+          
+          AppTheme.space3.w,
+          
+          // اسم الصلاة
+          Expanded(
+            child: Text(
+              prayer,
+              style: AppTheme.titleMedium.copyWith(
+                fontWeight: isCurrent ? AppTheme.bold : AppTheme.medium,
+                color: isCurrent ? prayerColor : AppTheme.textPrimary,
+              ),
+            ),
+          ),
+          
+          // الوقت
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.space3,
+              vertical: AppTheme.space1,
+            ),
+            decoration: BoxDecoration(
+              color: prayerColor.withValues(alpha: isCurrent ? 0.2 : 0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusFull),
+            ),
+            child: Text(
+              time,
+              style: AppTheme.titleMedium.copyWith(
+                fontFamily: AppTheme.numbersFont,
+                fontWeight: isCurrent ? AppTheme.bold : AppTheme.semiBold,
+                color: prayerColor,
+              ),
             ),
           ),
         ],
@@ -1252,10 +1787,10 @@ class _PrayerTimesCardContent extends StatelessWidget {
   }
 }
 
-// ==================== باقي المكونات الموحدة ====================
+// ==================== باقي المكونات المحسّنة ====================
 
-/// زر موحد شامل - بدون تغيير
-class AppButton extends StatelessWidget {
+/// زر موحد محسّن مع Glassmorphism
+class AppButton extends StatefulWidget {
   final String text;
   final VoidCallback? onPressed;
   final IconData? icon;
@@ -1265,6 +1800,7 @@ class AppButton extends StatelessWidget {
   final bool isFullWidth;
   final double? width;
   final double? height;
+  final bool useGlass;
 
   const AppButton({
     super.key,
@@ -1277,6 +1813,7 @@ class AppButton extends StatelessWidget {
     this.isFullWidth = false,
     this.width,
     this.height,
+    this.useGlass = false,
   });
 
   factory AppButton.primary({
@@ -1299,6 +1836,23 @@ class AppButton extends StatelessWidget {
     );
   }
 
+  factory AppButton.glass({
+    Key? key,
+    required String text,
+    VoidCallback? onPressed,
+    IconData? icon,
+    bool isFullWidth = false,
+  }) {
+    return AppButton(
+      key: key,
+      text: text,
+      onPressed: onPressed,
+      icon: icon,
+      isFullWidth: isFullWidth,
+      useGlass: true,
+    );
+  }
+
   factory AppButton.outline({
     Key? key,
     required String text,
@@ -1318,44 +1872,129 @@ class AppButton extends StatelessWidget {
   }
 
   @override
+  State<AppButton> createState() => _AppButtonState();
+}
+
+class _AppButtonState extends State<AppButton> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: AppTheme.durationFast,
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleTapDown() {
+    _controller.forward();
+  }
+
+  void _handleTapUp() {
+    _controller.reverse();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: isFullWidth ? double.infinity : width,
-      height: height ?? AppTheme.buttonHeight,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? AppTheme.primary,
-          foregroundColor: foregroundColor ?? Colors.black,
-          shape: RoundedRectangleBorder(
-            borderRadius: AppTheme.radiusMd.radius,
-          ),
-          padding: AppTheme.space4.paddingH,
-          elevation: AppTheme.elevationSm,
-        ),
-        child: isLoading
-            ? SizedBox(
-                width: AppTheme.iconMd,
-                height: AppTheme.iconMd,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    foregroundColor ?? Colors.black,
-                  ),
+    Widget buttonChild = widget.isLoading
+        ? SizedBox(
+            width: AppTheme.iconMd,
+            height: AppTheme.iconMd,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                widget.foregroundColor ?? AppTheme.textPrimary,
+              ),
+            ),
+          )
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (widget.icon != null) ...[
+                Icon(widget.icon!, size: AppTheme.iconMd),
+                AppTheme.space2.w,
+              ],
+              Text(
+                widget.text,
+                style: AppTheme.titleMedium.copyWith(
+                  fontWeight: AppTheme.semiBold,
                 ),
-              )
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (icon != null) ...[
-                    Icon(icon!, size: AppTheme.iconMd),
-                    AppTheme.space2.w,
-                  ],
-                  Text(text),
+              ),
+            ],
+          );
+
+    Widget button = Container(
+      width: widget.isFullWidth ? double.infinity : widget.width,
+      height: widget.height ?? AppTheme.buttonHeight,
+      decoration: widget.useGlass 
+          ? AppTheme.createGlassEffect(
+              borderRadius: AppTheme.radiusXl,
+              opacity: 0.15,
+            )
+          : BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  widget.backgroundColor ?? AppTheme.primary,
+                  (widget.backgroundColor ?? AppTheme.primary).darken(0.1),
                 ],
               ),
+              borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+              boxShadow: [
+                BoxShadow(
+                  color: (widget.backgroundColor ?? AppTheme.primary)
+                      .withValues(alpha: 0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.isLoading ? null : widget.onPressed,
+          onTapDown: (_) => _handleTapDown(),
+          onTapUp: (_) => _handleTapUp(),
+          onTapCancel: _handleTapUp,
+          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.space6,
+              vertical: AppTheme.space4,
+            ),
+            child: DefaultTextStyle(
+              style: TextStyle(
+                color: widget.useGlass 
+                    ? AppTheme.textPrimary
+                    : (widget.foregroundColor ?? Colors.black),
+              ),
+              child: buttonChild,
+            ),
+          ),
+        ),
       ),
+    );
+
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: child,
+        );
+      },
+      child: button,
     );
   }
 }
@@ -1374,36 +2013,56 @@ class _OutlineButton extends AppButton {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
       width: isFullWidth ? double.infinity : width,
       height: height ?? AppTheme.buttonHeight,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: borderColor,
-          side: BorderSide(color: borderColor, width: 1),
-          shape: RoundedRectangleBorder(
-            borderRadius: AppTheme.radiusMd.radius,
-          ),
-          padding: AppTheme.space4.paddingH,
+      decoration: BoxDecoration(
+        gradient: AppTheme.glassGradient,
+        borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+        border: Border.all(
+          color: borderColor.withValues(alpha: 0.6),
+          width: 2,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (icon != null) ...[
-              Icon(icon!, size: AppTheme.iconMd),
-              AppTheme.space2.w,
-            ],
-            Text(text),
-          ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.space6,
+              vertical: AppTheme.space4,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (icon != null) ...[
+                  Icon(
+                    icon!, 
+                    size: AppTheme.iconMd,
+                    color: borderColor,
+                  ),
+                  AppTheme.space2.w,
+                ],
+                Text(
+                  text,
+                  style: AppTheme.titleMedium.copyWith(
+                    color: borderColor,
+                    fontWeight: AppTheme.semiBold,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
-/// إجراء في البطاقة
+/// إجراء في البطاقة محسّن
 class CardAction extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -1422,48 +2081,65 @@ class CardAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onPressed();
-        },
-        borderRadius: AppTheme.radiusMd.radius,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppTheme.space3,
-            vertical: AppTheme.space2,
+    return Container(
+      decoration: isPrimary ? BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            color ?? AppTheme.primary,
+            (color ?? AppTheme.primary).darken(0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        boxShadow: [
+          BoxShadow(
+            color: (color ?? AppTheme.primary).withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
-          decoration: isPrimary ? BoxDecoration(
-            color: color ?? AppTheme.primary,
-            borderRadius: AppTheme.radiusMd.radius,
-          ) : null,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: AppTheme.iconSm,
-                color: isPrimary 
-                    ? Colors.black
-                    : color ?? AppTheme.textSecondary,
-              ),
-              if (label.isNotEmpty) ...[
-                AppTheme.space1.w,
-                Text(
-                  label,
-                  style: AppTheme.labelMedium.copyWith(
-                    color: isPrimary 
-                        ? Colors.black
-                        : color ?? AppTheme.textSecondary,
-                    fontWeight: isPrimary 
-                        ? AppTheme.semiBold 
-                        : AppTheme.medium,
-                  ),
+        ],
+      ) : AppTheme.createGlassEffect(
+        borderRadius: AppTheme.radiusMd,
+        opacity: 0.1,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            onPressed();
+          },
+          borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.space3,
+              vertical: AppTheme.space2,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: AppTheme.iconSm,
+                  color: isPrimary 
+                      ? Colors.white
+                      : color ?? AppTheme.textSecondary,
                 ),
+                if (label.isNotEmpty) ...[
+                  AppTheme.space1.w,
+                  Text(
+                    label,
+                    style: AppTheme.labelMedium.copyWith(
+                      color: isPrimary 
+                          ? Colors.white
+                          : color ?? AppTheme.textSecondary,
+                      fontWeight: isPrimary 
+                          ? AppTheme.bold 
+                          : AppTheme.medium,
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -1471,9 +2147,9 @@ class CardAction extends StatelessWidget {
   }
 }
 
-// ==================== بطاقة الإعدادات الموحدة ====================
+// ==================== بطاقة الإعدادات المحسّنة ====================
 
-/// بطاقة إعداد واحد - موحدة
+/// بطاقة إعداد واحد محسّنة
 class SettingCard extends StatelessWidget {
   final String title;
   final String? subtitle;
@@ -1521,76 +2197,105 @@ class SettingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      onTap: onTap,
+    return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppTheme.space4,
-        vertical: AppTheme.space1,
+        vertical: AppTheme.space2,
       ),
-      child: Row(
-        children: [
-          // الأيقونة
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: (color ?? AppTheme.primary).withValues(alpha: 0.1),
-              borderRadius: AppTheme.radiusMd.radius,
-            ),
-            child: Icon(
-              icon,
-              color: color ?? AppTheme.primary,
-              size: AppTheme.iconMd,
-            ),
-          ),
-          
-          AppTheme.space3.w,
-          
-          // النص
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      decoration: AppTheme.createGlassEffect(
+        borderRadius: AppTheme.radiusXl,
+        opacity: 0.1,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppTheme.radiusXl),
+          child: Container(
+            padding: const EdgeInsets.all(AppTheme.space5),
+            child: Row(
               children: [
-                Text(
-                  title,
-                  style: AppTheme.bodyLarge.copyWith(
-                    fontWeight: AppTheme.medium,
+                // الأيقونة المحسّنة
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        (color ?? AppTheme.primary).withValues(alpha: 0.2),
+                        (color ?? AppTheme.primary).withValues(alpha: 0.1),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+                    border: Border.all(
+                      color: (color ?? AppTheme.primary).withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: color ?? AppTheme.primary,
+                    size: AppTheme.iconMd,
                   ),
                 ),
-                if (subtitle != null) ...[
-                  AppTheme.space1.h,
-                  Text(
-                    subtitle!,
-                    style: AppTheme.bodySmall.copyWith(
-                      color: AppTheme.textSecondary,
+                
+                AppTheme.space4.w,
+                
+                // النص
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: AppTheme.titleMedium.copyWith(
+                          fontWeight: AppTheme.semiBold,
+                        ),
+                      ),
+                      if (subtitle != null) ...[
+                        AppTheme.space1.h,
+                        Text(
+                          subtitle!,
+                          style: AppTheme.bodySmall.copyWith(
+                            color: AppTheme.textSecondary,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                
+                // العنصر الجانبي
+                if (trailing != null) ...[
+                  AppTheme.space3.w,
+                  trailing!,
+                ] else if (showArrow) ...[
+                  AppTheme.space3.w,
+                  Container(
+                    padding: const EdgeInsets.all(AppTheme.space1),
+                    decoration: BoxDecoration(
+                      color: AppTheme.textTertiary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+                    ),
+                    child: const Icon(
+                      Icons.chevron_right,
+                      color: AppTheme.textTertiary,
+                      size: AppTheme.iconMd,
                     ),
                   ),
                 ],
               ],
             ),
           ),
-          
-          // العنصر الجانبي
-          if (trailing != null) ...[
-            AppTheme.space2.w,
-            trailing!,
-          ] else if (showArrow) ...[
-            AppTheme.space2.w,
-            const Icon(
-              Icons.chevron_right,
-              color: AppTheme.textTertiary,
-              size: AppTheme.iconMd,
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
 }
 
-// ==================== مؤشرات الحالة ====================
+// ==================== مؤشرات الحالة المحسّنة ====================
 
-/// مؤشر التحميل
+/// مؤشر التحميل المحسّن
 class AppLoading extends StatelessWidget {
   final String? message;
   final Color? color;
@@ -1613,37 +2318,52 @@ class AppLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: size ?? AppTheme.iconMd,
-            height: size ?? AppTheme.iconMd,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                color ?? AppTheme.primary,
+      child: Container(
+        padding: const EdgeInsets.all(AppTheme.space6),
+        decoration: AppTheme.createGlassEffect(
+          borderRadius: AppTheme.radius2xl,
+          opacity: 0.1,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: size ?? AppTheme.iconMd,
+              height: size ?? AppTheme.iconMd,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    color ?? AppTheme.primary,
+                    (color ?? AppTheme.primary).withValues(alpha: 0.7),
+                  ],
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
               ),
             ),
-          ),
-          
-          if (message != null) ...[
-            AppTheme.space4.h,
-            Text(
-              message!,
-              style: AppTheme.bodyMedium.copyWith(
-                color: AppTheme.textSecondary,
+            
+            if (message != null) ...[
+              AppTheme.space4.h,
+              Text(
+                message!,
+                style: AppTheme.bodyMedium.copyWith(
+                  color: AppTheme.textSecondary,
+                  fontWeight: AppTheme.medium,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
 }
 
-/// حالة الفراغ
+/// حالة الفراغ المحسّنة
 class AppEmptyState extends StatelessWidget {
   final String message;
   final IconData? icon;
@@ -1673,41 +2393,53 @@ class AppEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Padding(
-        padding: AppTheme.space6.padding,
+      child: Container(
+        margin: const EdgeInsets.all(AppTheme.space6),
+        padding: const EdgeInsets.all(AppTheme.space8),
+        decoration: AppTheme.createGlassEffect(
+          borderRadius: AppTheme.radius3xl,
+          opacity: 0.08,
+        ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             if (icon != null) ...[
               Container(
-                width: 80,
-                height: 80,
+                width: 100,
+                height: 100,
                 decoration: BoxDecoration(
-                  color: AppTheme.textTertiary.withValues(alpha: 0.1),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.textTertiary.withValues(alpha: 0.2),
+                      AppTheme.textTertiary.withValues(alpha: 0.1),
+                    ],
+                  ),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   icon!,
-                  size: 40,
+                  size: 48,
                   color: AppTheme.textTertiary,
                 ),
               ),
-              AppTheme.space4.h,
+              AppTheme.space5.h,
             ],
             
             Text(
               message,
-              style: AppTheme.bodyLarge.copyWith(
+              style: AppTheme.titleLarge.copyWith(
                 color: AppTheme.textSecondary,
+                fontWeight: AppTheme.medium,
               ),
               textAlign: TextAlign.center,
             ),
             
             if (actionText != null && onAction != null) ...[
               AppTheme.space6.h,
-              AppButton.outline(
+              AppButton.glass(
                 text: actionText!,
                 onPressed: onAction!,
+                icon: Icons.refresh,
               ),
             ],
           ],
