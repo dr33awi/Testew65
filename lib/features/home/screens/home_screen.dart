@@ -1,4 +1,4 @@
-// lib/features/home/screens/home_screen.dart - بدون Animations
+// lib/features/home/screens/home_screen.dart - مع استخدام CustomAppBar الموحد
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
@@ -14,7 +14,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      appBar: _buildAppBar(context),
+      appBar: _buildCustomAppBar(context),
       body: RefreshIndicator(
         onRefresh: () => _handleRefresh(context),
         color: context.primaryColor,
@@ -55,19 +55,18 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
+  PreferredSizeWidget _buildCustomAppBar(BuildContext context) {
+    return CustomAppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
       toolbarHeight: 70,
+      automaticallyImplyLeading: false,
       systemOverlayStyle: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: context.isDarkMode 
             ? Brightness.light 
             : Brightness.dark,
       ),
-      leading: const SizedBox.shrink(),
-      leadingWidth: 0,
       flexibleSpace: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -81,7 +80,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      title: Row(
+      titleWidget: Row(
         children: [
           // أيقونة التطبيق
           Container(
