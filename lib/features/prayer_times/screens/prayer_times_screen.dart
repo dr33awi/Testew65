@@ -1,10 +1,14 @@
-// lib/features/prayer_times/screens/prayer_times_screen.dart - محدث بالنظام الموحد الكامل
+// lib/features/prayer_times/screens/prayer_times_screen.dart - محدث بالنظام الموحد الإسلامي الكامل
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+
+// ✅ استيراد النظام الموحد الإسلامي - محدث
 import '../../../app/themes/app_theme.dart';
 import '../../../app/themes/widgets/widgets.dart';
+import '../../../app/themes/widgets/extended_cards.dart';
+import '../../../app/themes/utils/prayer_utils.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
 import '../services/prayer_times_service.dart';
@@ -21,7 +25,7 @@ class PrayerTimesScreen extends StatefulWidget {
 }
 
 class _PrayerTimesScreenState extends State<PrayerTimesScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   
   // Services
   late final LoggerService _logger;
@@ -30,7 +34,9 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
   // Controllers
   final _scrollController = ScrollController();
   late AnimationController _animationController;
+  late AnimationController _statsController;
   late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
   
   // State
   DailyPrayerTimes? _dailyTimes;
@@ -56,6 +62,12 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
       duration: AppTheme.durationSlow,
       vsync: this,
     );
+    
+    _statsController = AnimationController(
+      duration: AppTheme.durationNormal,
+      vsync: this,
+    );
+    
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -63,7 +75,17 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
       parent: _animationController,
       curve: Curves.easeOut,
     ));
+    
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.elasticOut,
+    ));
+    
     _animationController.forward();
+    _statsController.forward();
   }
 
   void _initializeServices() {
@@ -200,6 +222,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
   @override
   void dispose() {
     _animationController.dispose();
+    _statsController.dispose();
     _scrollController.dispose();
     _timesSubscription?.cancel();
     _nextPrayerSubscription?.cancel();
@@ -272,9 +295,12 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
               // معلومات الموقع
               if (_dailyTimes?.location != null)
                 SliverToBoxAdapter(
-                  child: LocationHeader(
-                    location: _dailyTimes!.location,
-                    onTap: _requestLocation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: LocationHeader(
+                      location: _dailyTimes!.location,
+                      onTap: _requestLocation,
+                    ),
                   ),
                 ),
               
@@ -302,15 +328,21 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
       // العد التنازلي للصلاة التالية
       if (_nextPrayer != null)
         SliverToBoxAdapter(
-          child: NextPrayerCountdown(
-            nextPrayer: _nextPrayer!,
-            currentPrayer: _dailyTimes!.currentPrayer,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: NextPrayerCountdown(
+              nextPrayer: _nextPrayer!,
+              currentPrayer: _dailyTimes!.currentPrayer,
+            ),
           ),
         ),
       
       // إحصائيات سريعة
       SliverToBoxAdapter(
-        child: _buildQuickStats(),
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: _buildQuickStats(),
+        ),
       ),
       
       // قائمة الصلوات
@@ -369,11 +401,10 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
         children: [
           // إحصائية الصلوات المؤداة
           Expanded(
-            child: AppCard.stat(
-              title: 'الصلوات المؤداة',
-              value: '$passedCount من $totalCount',
-              icon: Icons.check_circle,
-              color: AppTheme.success,
+            child: PrayerUtils.buildPrayerStatsCard(
+              completedToday: passedCount,
+              totalDaily: totalCount,
+              streak: 1, // يمكن تمرير القيمة الحقيقية
             ),
           ),
           
@@ -446,7 +477,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
     
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppTheme.surface,
+      backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppTheme.radiusXl),
@@ -457,7 +488,12 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
   }
 
   Widget _buildPrayerDetailsSheet(PrayerTime prayer) {
-    return Container(
+    final prayerColor = context.getPrayerColor(prayer.nameAr);
+    
+    return AppCard(
+      useGradient: true,
+      color: prayerColor,
+      margin: EdgeInsets.zero,
       padding: AppTheme.space4.padding,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -468,7 +504,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
             height: 4,
             margin: const EdgeInsets.only(bottom: AppTheme.space4),
             decoration: BoxDecoration(
-              color: AppTheme.divider,
+              color: Colors.white.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -479,12 +515,12 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
               Container(
                 padding: AppTheme.space3.padding,
                 decoration: BoxDecoration(
-                  color: AppTheme.getPrayerColor(prayer.nameAr).withValues(alpha: 0.1),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: AppTheme.radiusMd.radius,
                 ),
                 child: Icon(
-                  AppTheme.getCategoryColor(prayer.nameAr) as IconData? ?? Icons.mosque,
-                  color: AppTheme.getPrayerColor(prayer.nameAr),
+                  CardHelper.getPrayerIcon(prayer.nameAr),
+                  color: Colors.white,
                   size: AppTheme.iconLg,
                 ),
               ),
@@ -497,14 +533,15 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                   children: [
                     Text(
                       prayer.nameAr,
-                      style: AppTheme.titleLarge.copyWith(
+                      style: context.titleLarge.copyWith(
                         fontWeight: AppTheme.bold,
+                        color: Colors.white,
                       ),
                     ),
                     Text(
                       prayer.nameEn,
-                      style: AppTheme.bodyMedium.copyWith(
-                        color: AppTheme.textSecondary,
+                      style: context.bodyMedium.copyWith(
+                        color: Colors.white.withValues(alpha: 0.8),
                       ),
                     ),
                   ],
@@ -517,6 +554,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
           
           // معلومات الوقت
           AppCard(
+            color: Colors.white.withValues(alpha: 0.15),
             child: Column(
               children: [
                 _buildDetailRow('الوقت', _formatTime(prayer.time)),
@@ -543,13 +581,14 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
                 child: AppButton.outline(
                   text: 'إغلاق',
                   onPressed: () => Navigator.pop(context),
+                  borderColor: Colors.white,
                 ),
               ),
               
               AppTheme.space3.w,
               
               Expanded(
-                child: AppButton.primary(
+                child: AppButton.secondary(
                   text: 'الإعدادات',
                   icon: Icons.settings,
                   onPressed: () {
@@ -573,14 +612,15 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen>
       children: [
         Text(
           label,
-          style: AppTheme.bodyMedium.copyWith(
-            color: AppTheme.textSecondary,
+          style: context.bodyMedium.copyWith(
+            color: Colors.white.withValues(alpha: 0.8),
           ),
         ),
         Text(
           value,
-          style: AppTheme.bodyMedium.copyWith(
+          style: context.bodyMedium.copyWith(
             fontWeight: AppTheme.semiBold,
+            color: Colors.white,
           ),
         ),
       ],

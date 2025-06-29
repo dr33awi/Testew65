@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 // ✅ استيراد النظام الموحد الإسلامي - إجباري
 import 'package:athkar_app/app/themes/app_theme.dart';
 import 'package:athkar_app/app/themes/widgets/widgets.dart';
+import 'package:athkar_app/app/themes/widgets/extended_cards.dart';
 
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
@@ -35,6 +36,7 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
   AthkarCategory? _category;
   final Map<int, int> _counts = {};
   final Set<int> _completedItems = {};
+  final Set<int> _favoriteItems = {};
   List<AthkarItem> _visibleItems = [];
   bool _loading = true;
   bool _allCompleted = false;
@@ -74,18 +76,23 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
       if (!mounted) return;
       
       final savedProgress = _isFirstLoad ? _loadSavedProgress() : <int, int>{};
+      final savedFavorites = _loadSavedFavorites();
       
       setState(() {
         _category = cat;
         if (cat != null) {
           _counts.clear();
           _completedItems.clear();
+          _favoriteItems.clear();
           
           for (var i = 0; i < cat.athkar.length; i++) {
             final item = cat.athkar[i];
             _counts[item.id] = savedProgress[item.id] ?? 0;
             if (_counts[item.id]! >= item.count) {
               _completedItems.add(item.id);
+            }
+            if (savedFavorites.contains(item.id)) {
+              _favoriteItems.add(item.id);
             }
           }
           _updateVisibleItems();
@@ -137,10 +144,22 @@ class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
     return data.map((k, v) => MapEntry(int.parse(k), v as int));
   }
 
+  Set<int> _loadSavedFavorites() {
+    final key = 'athkar_favorites_${widget.categoryId}';
+    final data = _storage.getStringList(key) ?? [];
+    return data.map((id) => int.parse(id)).toSet();
+  }
+
   Future<void> _saveProgress() async {
     final key = 'athkar_progress_${widget.categoryId}';
     final data = _counts.map((k, v) => MapEntry(k.toString(), v));
     await _storage.setMap(key, data);
+  }
+
+  Future<void> _saveFavorites() async {
+    final key = 'athkar_favorites_${widget.categoryId}';
+    final data = _favoriteItems.map((id) => id.toString()).toList();
+    await _storage.setStringList(key, data);
   }
 
   void _calculateCompletion() {
@@ -233,6 +252,58 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     await Share.share(text);
   }
 
+  void _toggleFavorite(AthkarItem item) {
+    HapticFeedback.lightImpact();
+    
+    setState(() {
+      if (_favoriteItems.contains(item.id)) {
+        _favoriteItems.remove(item.id);
+      } else {
+        _favoriteItems.add(item.id);
+      }
+    });
+    
+    _saveFavorites();
+    
+    // إظهار رسالة للمستخدم
+    final message = _favoriteItems.contains(item.id) 
+        ? 'تمت إضافة الذكر للمفضلة'
+        : 'تمت إزالة الذكر من المفضلة';
+        
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.success,
+        duration: AppTheme.durationNormal,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppTheme.radiusMd.radius,
+        ),
+      ),
+    );
+  }
+
+  void _copyToClipboard(AthkarItem item) {
+    final text = '''${item.text}
+
+${item.source != null ? 'المصدر: ${item.source}' : ''}''';
+    
+    Clipboard.setData(ClipboardData(text: text));
+    HapticFeedback.selectionClick();
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('تم نسخ النص بنجاح'),
+        backgroundColor: AppTheme.success,
+        duration: AppTheme.durationNormal,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppTheme.radiusMd.radius,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -280,7 +351,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
           ),
           actions: [
             IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.notifications_outlined,
                 color: AppTheme.textSecondary,
               ),
@@ -403,7 +474,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
               itemBuilder: (context, index) {
                 final item = _visibleItems[index];
                 final currentCount = _counts[item.id] ?? 0;
-                final isCompleted = _completedItems.contains(item.id);
+                final isFavorite = _favoriteItems.contains(item.id);
                 
                 return Padding(
                   padding: EdgeInsets.only(
@@ -411,27 +482,21 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                         ? AppTheme.space4
                         : 0,
                   ),
-                  // ✅ استخدام AppCard.athkar الموحد
-                  child: AppCard.athkar(
+                  // ✅ استخدام AdvancedAthkarCard الموحد
+                  child: AdvancedAthkarCard(
                     content: item.text,
                     source: item.source,
                     fadl: item.fadl,
                     currentCount: currentCount,
                     totalCount: item.count,
                     primaryColor: AppTheme.primary,
+                    isCompleted: _completedItems.contains(item.id),
+                    isFavorite: isFavorite,
                     onTap: () => _onItemTap(item),
-                    actions: [
-                      CardAction(
-                        icon: Icons.favorite_outline,
-                        label: 'مفضلة',
-                        onPressed: () => _toggleFavorite(item),
-                      ),
-                      CardAction(
-                        icon: Icons.share_rounded,
-                        label: 'مشاركة',
-                        onPressed: () => _shareItem(item),
-                      ),
-                    ],
+                    onFavorite: () => _toggleFavorite(item),
+                    onShare: () => _shareItem(item),
+                    onCopy: () => _copyToClipboard(item),
+                    onReset: () => _onItemLongPress(item),
                   ),
                 );
               },
@@ -495,34 +560,28 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
               
               AppTheme.space6.h,
               
-              // ✅ استخدام AppButton.outline الموحد
-              AppButton.outline(
-                text: 'إعادة القراءة',
-                onPressed: _rereadAthkar,
-                borderColor: Colors.white,
+              Row(
+                children: [
+                  Expanded(
+                    child: AppButton.outline(
+                      text: 'إعادة القراءة',
+                      onPressed: _rereadAthkar,
+                      borderColor: Colors.white,
+                    ),
+                  ),
+                  
+                  AppTheme.space3.w,
+                  
+                  Expanded(
+                    child: AppButton.secondary(
+                      text: 'مشاركة',
+                      onPressed: _shareProgress,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-  
-  void _toggleFavorite(AthkarItem item) {
-    HapticFeedback.lightImpact();
-    
-    // يمكن إضافة منطق حفظ/إزالة من المفضلة هنا
-    // مثلاً: حفظ معرف الذكر في قائمة المفضلة في التخزين المحلي
-    
-    // إظهار رسالة للمستخدم
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('تمت إضافة الذكر للمفضلة'),
-        backgroundColor: AppTheme.success,
-        duration: AppTheme.durationNormal,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppTheme.radiusMd.radius,
         ),
       ),
     );

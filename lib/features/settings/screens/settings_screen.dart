@@ -7,6 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 // ✅ استيراد النظام الموحد
 import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/widgets/widgets.dart';
+import '../../../app/themes/widgets/extended_cards.dart';
 
 import '../../../app/di/service_locator.dart';
 import '../../../app/routes/app_router.dart';
@@ -197,7 +199,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          context.showErrorSnackBar('فشل تحميل الإعدادات. تم استخدام القيم الافتراضية.');
+          _showErrorSnackBar('فشل تحميل الإعدادات. تم استخدام القيم الافتراضية.');
         }
       });
     }
@@ -212,17 +214,17 @@ class _SettingsScreenState extends State<SettingsScreen>
     try {
       if (_servicesManager != null) {
         await _servicesManager!.refreshAllServices();
-        context.showSuccessSnackBar('تم تحديث الإعدادات');
+        _showSuccessSnackBar('تم تحديث الإعدادات');
       } else {
         _initializeServices();
-        context.showSuccessSnackBar('تم إعادة تهيئة الخدمات');
+        _showSuccessSnackBar('تم إعادة تهيئة الخدمات');
       }
     } catch (e) {
       _logger?.error(
         message: '[Settings] فشل في تحديث الإعدادات',
         error: e,
       );
-      context.showErrorSnackBar('فشل في تحديث الإعدادات: ${e.toString()}');
+      _showErrorSnackBar('فشل في تحديث الإعدادات: ${e.toString()}');
     } finally {
       if (mounted) {
         setState(() => _isRefreshing = false);
@@ -236,7 +238,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     HapticFeedback.mediumImpact();
     
     if (_servicesManager == null) {
-      context.showErrorSnackBar('مدير الإعدادات غير متوفر');
+      _showErrorSnackBar('مدير الإعدادات غير متوفر');
       return;
     }
     
@@ -245,16 +247,16 @@ class _SettingsScreenState extends State<SettingsScreen>
       final success = await _servicesManager!.saveSettings(newSettings);
       
       if (success) {
-        context.showSuccessSnackBar(
+        _showSuccessSnackBar(
           value ? 'تم تفعيل الوضع الليلي' : 'تم تفعيل الوضع النهاري'
         );
         _logger?.logEvent('theme_changed', parameters: {'isDarkMode': value});
       } else {
-        context.showErrorSnackBar('فشل تغيير المظهر');
+        _showErrorSnackBar('فشل تغيير المظهر');
       }
     } catch (e) {
       _logger?.error(message: '[Settings] فشل تغيير الثيم', error: e);
-      context.showErrorSnackBar('فشل تغيير المظهر: ${e.toString()}');
+      _showErrorSnackBar('فشل تغيير المظهر: ${e.toString()}');
     }
   }
   
@@ -262,7 +264,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     HapticFeedback.lightImpact();
     
     if (_servicesManager == null) {
-      context.showErrorSnackBar('مدير الإعدادات غير متوفر');
+      _showErrorSnackBar('مدير الإعدادات غير متوفر');
       return;
     }
     
@@ -275,7 +277,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       }
     } catch (e) {
       _logger?.error(message: '[Settings] فشل تحديث الاهتزاز', error: e);
-      context.showErrorSnackBar('فشل تحديث إعدادات الاهتزاز: ${e.toString()}');
+      _showErrorSnackBar('فشل تحديث إعدادات الاهتزاز: ${e.toString()}');
     }
   }
   
@@ -283,7 +285,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     HapticFeedback.lightImpact();
     
     if (_servicesManager == null) {
-      context.showErrorSnackBar('مدير الإعدادات غير متوفر');
+      _showErrorSnackBar('مدير الإعدادات غير متوفر');
       return;
     }
     
@@ -292,7 +294,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       await _servicesManager!.saveSettings(newSettings);
     } catch (e) {
       _logger?.error(message: '[Settings] فشل تحديث الصوت', error: e);
-      context.showErrorSnackBar('فشل تحديث إعدادات الصوت: ${e.toString()}');
+      _showErrorSnackBar('فشل تحديث إعدادات الصوت: ${e.toString()}');
     }
   }
   
@@ -300,7 +302,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     HapticFeedback.lightImpact();
     
     if (_servicesManager == null) {
-      context.showErrorSnackBar('مدير الإعدادات غير متوفر');
+      _showErrorSnackBar('مدير الإعدادات غير متوفر');
       return;
     }
     
@@ -313,7 +315,7 @@ class _SettingsScreenState extends State<SettingsScreen>
         );
         
         if (result.isSuccess && result.status == AppPermissionStatus.granted) {
-          context.showSuccessSnackBar('تم منح إذن الإشعارات');
+          _showSuccessSnackBar('تم منح إذن الإشعارات');
           _logger?.logEvent('notification_permission_granted');
         } else {
           _showPermissionDeniedDialog('الإشعارات');
@@ -321,7 +323,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       }
     } catch (e) {
       _logger?.error(message: '[Settings] فشل في معالجة إذن الإشعارات', error: e);
-      context.showErrorSnackBar('فشل في معالجة إذن الإشعارات: ${e.toString()}');
+      _showErrorSnackBar('فشل في معالجة إذن الإشعارات: ${e.toString()}');
     }
   }
   
@@ -329,7 +331,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     HapticFeedback.lightImpact();
     
     if (_servicesManager == null) {
-      context.showErrorSnackBar('مدير الإعدادات غير متوفر');
+      _showErrorSnackBar('مدير الإعدادات غير متوفر');
       return;
     }
     
@@ -337,12 +339,12 @@ class _SettingsScreenState extends State<SettingsScreen>
     setState(() => _isRefreshing = true);
     
     try {
-      context.showInfoSnackBar('جاري تحديث الموقع...');
+      _showInfoSnackBar('جاري تحديث الموقع...');
       
       final result = await _servicesManager!.updatePrayerLocation();
       
       if (result.isSuccess) {
-        context.showSuccessSnackBar('تم تحديث الموقع بنجاح');
+        _showSuccessSnackBar('تم تحديث الموقع بنجاح');
         
         _logger?.info(
           message: '[Settings] تم تحديث الموقع',
@@ -377,12 +379,12 @@ class _SettingsScreenState extends State<SettingsScreen>
     HapticFeedback.lightImpact();
     
     if (_servicesManager == null) {
-      context.showErrorSnackBar('مدير الإعدادات غير متوفر');
+      _showErrorSnackBar('مدير الإعدادات غير متوفر');
       return;
     }
     
     if (_settings.batteryOptimizationDisabled) {
-      context.showInfoSnackBar('إعدادات البطارية محسنة بالفعل');
+      _showInfoSnackBar('إعدادات البطارية محسنة بالفعل');
       return;
     }
     
@@ -398,14 +400,14 @@ class _SettingsScreenState extends State<SettingsScreen>
         final result = await _servicesManager!.optimizeBatterySettings();
         
         if (result.isSuccess && result.isOptimized) {
-          context.showSuccessSnackBar('تم تحسين إعدادات البطارية');
+          _showSuccessSnackBar('تم تحسين إعدادات البطارية');
         } else {
           _showBatteryOptimizationFailedDialog();
         }
       }
     } catch (e) {
       _logger?.error(message: '[Settings] فشل تحسين البطارية', error: e);
-      context.showErrorSnackBar('فشل تحسين إعدادات البطارية: ${e.toString()}');
+      _showErrorSnackBar('فشل تحسين إعدادات البطارية: ${e.toString()}');
     }
   }
   
@@ -413,7 +415,7 @@ class _SettingsScreenState extends State<SettingsScreen>
     HapticFeedback.mediumImpact();
     
     if (_servicesManager == null) {
-      context.showErrorSnackBar('مدير الإعدادات غير متوفر');
+      _showErrorSnackBar('مدير الإعدادات غير متوفر');
       return;
     }
     
@@ -454,19 +456,19 @@ class _SettingsScreenState extends State<SettingsScreen>
             .length;
         
         if (grantedCount == permissions.length) {
-          context.showSuccessSnackBar('تم منح جميع الأذونات بنجاح!');
+          _showSuccessSnackBar('تم منح جميع الأذونات بنجاح!');
         } else {
           _showPartialPermissionDialog(result);
         }
       } else {
-        context.showErrorSnackBar('فشل في طلب الأذونات: ${result.error ?? "خطأ غير معروف"}');
+        _showErrorSnackBar('فشل في طلب الأذونات: ${result.error ?? "خطأ غير معروف"}');
       }
     } catch (e) {
       if (mounted) {
         Navigator.pop(context);
       }
       _logger?.error(message: '[Settings] فشل طلب الأذونات', error: e);
-      context.showErrorSnackBar('حدث خطأ أثناء طلب الأذونات: ${e.toString()}');
+      _showErrorSnackBar('حدث خطأ أثناء طلب الأذونات: ${e.toString()}');
     }
   }
   
@@ -490,7 +492,7 @@ $appUrl
       _logger?.logEvent('app_shared');
     } catch (e) {
       _logger?.error(message: '[Settings] فشل مشاركة التطبيق', error: e);
-      context.showErrorSnackBar('فشل في مشاركة التطبيق');
+      _showErrorSnackBar('فشل في مشاركة التطبيق');
     }
   }
   
@@ -501,11 +503,11 @@ $appUrl
         await launchUrl(Uri.parse(appUrl));
         _logger?.logEvent('app_rated');
       } else {
-        context.showErrorSnackBar('لا يمكن فتح متجر التطبيقات');
+        _showErrorSnackBar('لا يمكن فتح متجر التطبيقات');
       }
     } catch (e) {
       _logger?.error(message: '[Settings] فشل فتح تقييم التطبيق', error: e);
-      context.showErrorSnackBar('فشل في فتح صفحة التقييم');
+      _showErrorSnackBar('فشل في فتح صفحة التقييم');
     }
   }
   
@@ -522,11 +524,11 @@ $appUrl
         _logger?.logEvent('support_contacted');
       } else {
         await Clipboard.setData(const ClipboardData(text: AppConstants.supportEmail));
-        context.showSuccessSnackBar('تم نسخ البريد الإلكتروني للدعم');
+        _showSuccessSnackBar('تم نسخ البريد الإلكتروني للدعم');
       }
     } catch (e) {
       _logger?.error(message: '[Settings] فشل فتح الدعم', error: e);
-      context.showErrorSnackBar('فشل في فتح البريد الإلكتروني');
+      _showErrorSnackBar('فشل في فتح البريد الإلكتروني');
     }
   }
   
@@ -567,65 +569,94 @@ $appUrl
     IconData? icon,
     bool destructive = false,
   }) async {
-    return await AppInfoDialog.showConfirmation(
+    return await showDialog<bool>(
       context: context,
-      title: title,
-      content: content,
-      confirmText: confirmText,
-      cancelText: cancelText,
-      confirmColor: destructive ? context.errorColor : null,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            if (icon != null) ...[
+              Icon(icon, color: destructive ? AppTheme.error : AppTheme.primary),
+              AppTheme.space2.w,
+            ],
+            Expanded(child: Text(title)),
+          ],
+        ),
+        content: Text(content),
+        shape: RoundedRectangleBorder(
+          borderRadius: AppTheme.radiusLg.radius,
+        ),
+        actions: [
+          AppButton.text(
+            text: cancelText,
+            onPressed: () => Navigator.of(context).pop(false),
+          ),
+          AppButton.primary(
+            text: confirmText,
+            onPressed: () => Navigator.of(context).pop(true),
+            backgroundColor: destructive ? AppTheme.error : null,
+          ),
+        ],
+      ),
     ) ?? false;
   }
   
   void _showPermissionDeniedDialog(String permissionName) {
-    AppInfoDialog.show(
+    showDialog(
       context: context,
-      title: 'إذن $permissionName مطلوب',
-      content: 'لاستخدام هذه الميزة، يجب منح إذن $permissionName. يمكنك تفعيله من إعدادات التطبيق.',
-      icon: Icons.warning,
-      accentColor: context.warningColor,
-      actions: [
-        DialogAction(
-          label: 'لاحقاً',
-          onPressed: () => Navigator.pop(context),
+      builder: (context) => AlertDialog(
+        title: Text('إذن $permissionName مطلوب'),
+        content: Text(
+          'لاستخدام هذه الميزة، يجب منح إذن $permissionName. يمكنك تفعيله من إعدادات التطبيق.',
         ),
-        DialogAction(
-          label: 'فتح الإعدادات',
-          onPressed: () async {
-            Navigator.pop(context);
-            if (_servicesManager != null) {
-              await _servicesManager!.openAppSettings();
-            }
-          },
-          isPrimary: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppTheme.radiusLg.radius,
         ),
-      ],
+        actions: [
+          AppButton.text(
+            text: 'لاحقاً',
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          AppButton.primary(
+            text: 'فتح الإعدادات',
+            onPressed: () async {
+              Navigator.of(context).pop();
+              if (_servicesManager != null) {
+                await _servicesManager!.openAppSettings();
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
   
   void _showBatteryOptimizationFailedDialog() {
-    AppInfoDialog.show(
+    showDialog(
       context: context,
-      title: 'تحسين البطارية',
-      content: 'لم نتمكن من تحسين إعدادات البطارية تلقائياً. يرجى فتح إعدادات النظام وإيقاف تحسين البطارية لهذا التطبيق يدوياً.',
-      icon: Icons.battery_saver,
-      accentColor: context.warningColor,
-      actions: [
-        DialogAction(
-          label: 'لاحقاً',
-          onPressed: () => Navigator.pop(context),
+      builder: (context) => AlertDialog(
+        title: const Text('تحسين البطارية'),
+        content: const Text(
+          'لم نتمكن من تحسين إعدادات البطارية تلقائياً. يرجى فتح إعدادات النظام وإيقاف تحسين البطارية لهذا التطبيق يدوياً.',
         ),
-        DialogAction(
-          label: 'فتح الإعدادات',
-          onPressed: () async {
-            Navigator.pop(context);
-            if (_servicesManager != null) {
-              await _servicesManager!.openAppSettings(AppSettingsType.battery);
-            }
-          },
-          isPrimary: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppTheme.radiusLg.radius,
         ),
-      ],
+        actions: [
+          AppButton.text(
+            text: 'لاحقاً',
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          AppButton.primary(
+            text: 'فتح الإعدادات',
+            onPressed: () async {
+              Navigator.of(context).pop();
+              if (_servicesManager != null) {
+                await _servicesManager!.openAppSettings(AppSettingsType.battery);
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
   
@@ -634,28 +665,32 @@ $appUrl
         .map((p) => _getPermissionDisplayName(p))
         .join('، ');
     
-    AppInfoDialog.show(
+    showDialog(
       context: context,
-      title: 'أذونات مفقودة',
-      content: 'تم منح بعض الأذونات بنجاح، لكن الأذونات التالية لم يتم منحها:\n\n$deniedPermissions\n\nيمكنك منحها لاحقاً من إعدادات التطبيق.',
-      icon: Icons.warning,
-      accentColor: context.warningColor,
-      actions: [
-        DialogAction(
-          label: 'موافق',
-          onPressed: () => Navigator.pop(context),
+      builder: (context) => AlertDialog(
+        title: const Text('أذونات مفقودة'),
+        content: Text(
+          'تم منح بعض الأذونات بنجاح، لكن الأذونات التالية لم يتم منحها:\n\n$deniedPermissions\n\nيمكنك منحها لاحقاً من إعدادات التطبيق.',
         ),
-        DialogAction(
-          label: 'فتح الإعدادات',
-          onPressed: () async {
-            Navigator.pop(context);
-            if (_servicesManager != null) {
-              await _servicesManager!.openAppSettings();
-            }
-          },
-          isPrimary: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppTheme.radiusLg.radius,
         ),
-      ],
+        actions: [
+          AppButton.text(
+            text: 'موافق',
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          AppButton.primary(
+            text: 'فتح الإعدادات',
+            onPressed: () async {
+              Navigator.of(context).pop();
+              if (_servicesManager != null) {
+                await _servicesManager!.openAppSettings();
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -665,12 +700,12 @@ $appUrl
     
     if (_errorMessage != null && _servicesManager == null) {
       return Scaffold(
-        backgroundColor: context.backgroundColor,
-        appBar: CustomAppBar.simple(
+        backgroundColor: AppTheme.background,
+        appBar: SimpleAppBar(
           title: 'الإعدادات',
           actions: [
-            AppBarAction(
-              icon: Icons.refresh,
+            IconButton(
+              icon: const Icon(Icons.refresh),
               onPressed: () {
                 setState(() => _errorMessage = null);
                 _initializeServices();
@@ -685,19 +720,19 @@ $appUrl
     
     if (_loading) {
       return Scaffold(
-        backgroundColor: context.backgroundColor,
-        appBar: CustomAppBar.simple(title: 'الإعدادات'),
+        backgroundColor: AppTheme.background,
+        appBar: const SimpleAppBar(title: 'الإعدادات'),
         body: AppLoading.page(message: 'جاري تحميل الإعدادات...'),
       );
     }
 
     return Scaffold(
-      backgroundColor: context.backgroundColor,
-      appBar: CustomAppBar.simple(
+      backgroundColor: AppTheme.background,
+      appBar: SimpleAppBar(
         title: 'الإعدادات',
         actions: [
-          AppBarAction(
-            icon: Icons.refresh,
+          IconButton(
+            icon: const Icon(Icons.refresh),
             onPressed: _refreshSettings,
             tooltip: 'تحديث',
           ),
@@ -705,7 +740,7 @@ $appUrl
       ),
       body: RefreshIndicator(
         onRefresh: _refreshSettings,
-        color: context.primaryColor,
+        color: AppTheme.primary,
         child: _buildContent(),
       ),
     );
@@ -724,10 +759,10 @@ $appUrl
   Widget _buildContent() {
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.only(bottom: ThemeConstants.space8),
+      padding: EdgeInsets.only(bottom: AppTheme.space8),
       child: Column(
         children: [
-          ThemeConstants.space4.h,
+          AppTheme.space4.h,
           
           if (_errorMessage != null) _buildErrorBanner(),
           
@@ -742,7 +777,7 @@ $appUrl
             title: 'الأذونات والصلاحيات',
             icon: Icons.security_outlined,
             children: [
-              SettingsTile(
+              SettingCard(
                 icon: Icons.notifications_active_outlined,
                 title: 'الإشعارات',
                 subtitle: _settings.notificationsEnabled 
@@ -750,17 +785,13 @@ $appUrl
                     : 'الإشعارات معطلة - اضغط للتفعيل',
                 onTap: _handleNotificationPermission,
                 trailing: _settings.notificationsEnabled
-                    ? Icon(Icons.settings, color: context.primaryColor)
-                    : Icon(Icons.add_circle, color: context.warningColor),
-                iconColor: _settings.notificationsEnabled 
-                    ? context.successColor 
-                    : context.warningColor,
-                badge: !_settings.notificationsEnabled 
-                    ? SettingsBadge.warning()
-                    : null,
-                enabled: _servicesManager != null,
+                    ? const Icon(Icons.settings, color: AppTheme.primary)
+                    : const Icon(Icons.add_circle, color: AppTheme.warning),
+                color: _settings.notificationsEnabled 
+                    ? AppTheme.success 
+                    : AppTheme.warning,
               ),
-              SettingsTile(
+              SettingCard(
                 icon: Icons.location_on_outlined,
                 title: 'الموقع للصلاة',
                 subtitle: _serviceStatus.locationAvailable
@@ -768,51 +799,42 @@ $appUrl
                     : 'لم يتم تحديد الموقع',
                 onTap: _handleLocationUpdate,
                 trailing: _isRefreshing
-                    ? SizedBox(
+                    ? const SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation(context.primaryColor),
+                          valueColor: AlwaysStoppedAnimation(AppTheme.primary),
                         ),
                       )
                     : _serviceStatus.locationAvailable
-                        ? Icon(Icons.refresh, color: context.primaryColor)
-                        : Icon(Icons.add_location, color: context.warningColor),
-                enabled: !_isRefreshing && _servicesManager != null,
-                iconColor: _serviceStatus.locationAvailable
-                    ? context.successColor
-                    : context.warningColor,
-                badge: !_serviceStatus.locationAvailable 
-                    ? SettingsBadge.warning()
-                    : null,
+                        ? const Icon(Icons.refresh, color: AppTheme.primary)
+                        : const Icon(Icons.add_location, color: AppTheme.warning),
+                color: _serviceStatus.locationAvailable
+                    ? AppTheme.success
+                    : AppTheme.warning,
               ),
-              SettingsTile(
+              SettingCard(
                 icon: Icons.battery_saver_outlined,
                 title: 'تحسين البطارية',
                 subtitle: _settings.batteryOptimizationDisabled
                     ? 'تم تحسين إعدادات البطارية'
                     : 'يُنصح بتحسين إعدادات البطارية',
                 onTap: _handleBatteryOptimization,
-                iconColor: _settings.batteryOptimizationDisabled 
-                    ? context.successColor 
-                    : context.warningColor,
+                color: _settings.batteryOptimizationDisabled 
+                    ? AppTheme.success 
+                    : AppTheme.warning,
                 trailing: _settings.batteryOptimizationDisabled
-                    ? Icon(Icons.check_circle, color: context.successColor)
-                    : Icon(Icons.warning, color: context.warningColor),
-                badge: !_settings.batteryOptimizationDisabled 
-                    ? SettingsBadge.warning()
-                    : null,
-                enabled: _servicesManager != null,
+                    ? const Icon(Icons.check_circle, color: AppTheme.success)
+                    : const Icon(Icons.warning, color: AppTheme.warning),
               ),
-              SettingsTile(
+              SettingCard(
                 icon: Icons.admin_panel_settings_outlined,
                 title: 'طلب جميع الأذونات',
                 subtitle: 'تفعيل جميع الأذونات دفعة واحدة',
                 onTap: _requestAllPermissions,
-                iconColor: context.primaryColor,
-                trailing: Icon(Icons.security_update_good, color: context.primaryColor),
-                enabled: _servicesManager != null,
+                color: AppTheme.primary,
+                trailing: const Icon(Icons.security_update_good, color: AppTheme.primary),
               ),
             ],
           ),
@@ -821,7 +843,7 @@ $appUrl
             title: 'الإشعارات والتنبيهات',
             icon: Icons.notifications_outlined,
             children: [
-              SettingsTile(
+              SettingCard.navigation(
                 icon: Icons.menu_book_outlined,
                 title: 'إشعارات الأذكار',
                 subtitle: 'تخصيص تذكيرات الأذكار اليومية',
@@ -829,36 +851,26 @@ $appUrl
                   context, 
                   AppRouter.athkarNotificationsSettings,
                 ),
-                enabled: _settings.notificationsEnabled,
               ),
-              SettingsTile(
+              SettingCard.navigation(
                 icon: Icons.mosque_outlined,
                 title: 'إشعارات الصلاة',
                 subtitle: 'تخصيص تنبيهات أوقات الصلاة',
                 onTap: () => Navigator.pushNamed(context, AppRouter.prayerNotificationsSettings),
-                enabled: _settings.notificationsEnabled,
               ),
-              SettingsTile(
+              SettingCard.toggle(
                 icon: Icons.volume_up_outlined,
                 title: 'الصوت',
                 subtitle: 'تفعيل الأصوات مع الإشعارات',
-                trailing: SettingsSwitch(
-                  value: _settings.soundEnabled,
-                  onChanged: _servicesManager != null ? _toggleSound : null,
-                  enabled: _settings.notificationsEnabled && _servicesManager != null,
-                ),
-                enabled: _settings.notificationsEnabled,
+                value: _settings.soundEnabled,
+                onChanged: _servicesManager != null ? _toggleSound : null,
               ),
-              SettingsTile(
+              SettingCard.toggle(
                 icon: Icons.vibration_outlined,
                 title: 'الاهتزاز',
                 subtitle: 'تفعيل الاهتزاز مع الإشعارات',
-                trailing: SettingsSwitch(
-                  value: _settings.vibrationEnabled,
-                  onChanged: _servicesManager != null ? _toggleVibration : null,
-                  activeColor: context.primaryColor,
-                  enabled: _servicesManager != null,
-                ),
+                value: _settings.vibrationEnabled,
+                onChanged: _servicesManager != null ? _toggleVibration : null,
               ),
             ],
           ),
@@ -867,17 +879,13 @@ $appUrl
             title: 'المظهر والعرض',
             icon: Icons.palette_outlined,
             children: [
-              SettingsTile(
+              SettingCard.toggle(
                 icon: _settings.isDarkMode ? Icons.dark_mode : Icons.light_mode,
                 title: 'وضع العرض',
                 subtitle: _settings.isDarkMode ? 'الوضع الليلي مفعل' : 'الوضع النهاري مفعل',
-                trailing: SettingsSwitch(
-                  value: _settings.isDarkMode,
-                  onChanged: _servicesManager != null ? _toggleTheme : null,
-                  activeColor: context.primaryColor,
-                  enabled: _servicesManager != null,
-                ),
-                iconColor: _settings.isDarkMode ? Colors.orange : Colors.blue,
+                value: _settings.isDarkMode,
+                onChanged: _servicesManager != null ? _toggleTheme : null,
+                color: _settings.isDarkMode ? Colors.orange : Colors.blue,
               ),
             ],
           ),
@@ -886,25 +894,25 @@ $appUrl
             title: 'الدعم والمعلومات',
             icon: Icons.help_outline,
             children: [
-              SettingsTile(
+              SettingCard.navigation(
                 icon: Icons.share_outlined,
                 title: 'مشاركة التطبيق',
                 subtitle: 'شارك التطبيق مع الأصدقاء والعائلة',
                 onTap: _shareApp,
               ),
-              SettingsTile(
+              SettingCard.navigation(
                 icon: Icons.star_outline,
                 title: 'تقييم التطبيق',
                 subtitle: 'قيم التطبيق على المتجر وادعمنا',
                 onTap: _rateApp,
               ),
-              SettingsTile(
+              SettingCard.navigation(
                 icon: Icons.support_agent_outlined,
                 title: 'تواصل معنا',
                 subtitle: 'أرسل استفساراتك ومقترحاتك',
                 onTap: _contactSupport,
               ),
-              SettingsTile(
+              SettingCard.navigation(
                 icon: Icons.info_outline,
                 title: 'عن التطبيق',
                 subtitle: 'معلومات الإصدار والمطور',
@@ -919,43 +927,87 @@ $appUrl
   
   Widget _buildErrorBanner() {
     return Container(
-      margin: EdgeInsets.all(ThemeConstants.space4),
-      padding: EdgeInsets.all(ThemeConstants.space4),
+      margin: AppTheme.space4.padding,
+      padding: AppTheme.space4.padding,
       decoration: BoxDecoration(
-        color: context.errorColor.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-        border: Border.all(color: context.errorColor.withValues(alpha: 0.3)),
+        color: AppTheme.error.withValues(alpha: 0.1),
+        borderRadius: AppTheme.radiusMd.radius,
+        border: Border.all(color: AppTheme.error.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.warning,
-            color: context.errorColor,
+            color: AppTheme.error,
             size: 20,
           ),
-          ThemeConstants.space2.w,
+          AppTheme.space2.w,
           Expanded(
             child: Text(
               _errorMessage!,
-              style: context.bodySmall?.copyWith(
-                color: context.errorColor,
+              style: AppTheme.bodySmall.copyWith(
+                color: AppTheme.error,
               ),
             ),
           ),
           IconButton(
             onPressed: () => setState(() => _errorMessage = null),
-            icon: Icon(
+            icon: const Icon(
               Icons.close,
-              color: context.errorColor,
+              color: AppTheme.error,
               size: 20,
             ),
-            constraints: BoxConstraints(
+            constraints: const BoxConstraints(
               minWidth: 32,
               minHeight: 32,
             ),
             padding: EdgeInsets.zero,
           ),
         ],
+      ),
+    );
+  }
+
+  // ==================== Helper Methods ====================
+  
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.success,
+        duration: AppTheme.durationNormal,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppTheme.radiusMd.radius,
+        ),
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.error,
+        duration: AppTheme.durationNormal,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppTheme.radiusMd.radius,
+        ),
+      ),
+    );
+  }
+
+  void _showInfoSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppTheme.info,
+        duration: AppTheme.durationNormal,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppTheme.radiusMd.radius,
+        ),
       ),
     );
   }
@@ -976,20 +1028,20 @@ class _AboutDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        borderRadius: AppTheme.radiusXl.radius,
       ),
       child: Container(
-        constraints: BoxConstraints(maxWidth: 400),
+        constraints: const BoxConstraints(maxWidth: 400),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: EdgeInsets.all(ThemeConstants.space6),
+              padding: AppTheme.space6.padding,
               decoration: BoxDecoration(
-                gradient: context.primaryGradient,
+                gradient: AppTheme.primaryGradient,
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(ThemeConstants.radiusXl),
-                  topRight: Radius.circular(ThemeConstants.radiusXl),
+                  topLeft: Radius.circular(AppTheme.radiusXl),
+                  topRight: Radius.circular(AppTheme.radiusXl),
                 ),
               ),
               child: Column(
@@ -999,25 +1051,25 @@ class _AboutDialog extends StatelessWidget {
                     height: 64,
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                      borderRadius: AppTheme.radiusMd.radius,
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.auto_awesome,
                       color: Colors.white,
                       size: 32,
                     ),
                   ),
-                  ThemeConstants.space3.h,
+                  AppTheme.space3.h,
                   Text(
                     AppConstants.appName,
-                    style: context.headlineSmall?.copyWith(
+                    style: AppTheme.headlineSmall.copyWith(
                       color: Colors.white,
-                      fontWeight: ThemeConstants.bold,
+                      fontWeight: AppTheme.bold,
                     ),
                   ),
                   Text(
                     'حصن المسلم',
-                    style: context.bodyMedium?.copyWith(
+                    style: AppTheme.bodyMedium.copyWith(
                       color: Colors.white.withValues(alpha: 0.9),
                     ),
                   ),
@@ -1026,7 +1078,7 @@ class _AboutDialog extends StatelessWidget {
             ),
             
             Padding(
-              padding: EdgeInsets.all(ThemeConstants.space6),
+              padding: AppTheme.space6.padding,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1035,51 +1087,51 @@ class _AboutDialog extends StatelessWidget {
                     label: 'الإصدار',
                     value: AppConstants.appVersion,
                   ),
-                  ThemeConstants.space2.h,
+                  AppTheme.space2.h,
                   _InfoRow(
                     icon: Icons.build_outlined,
                     label: 'رقم البناء',
                     value: AppConstants.appBuildNumber,
                   ),
-                  ThemeConstants.space4.h,
+                  AppTheme.space4.h,
                   Text(
                     'تطبيق شامل للمسلم يحتوي على الأذكار اليومية ومواقيت الصلاة واتجاه القبلة والمزيد من الميزات الإسلامية المفيدة.',
-                    style: context.bodyMedium?.copyWith(height: 1.6),
+                    style: AppTheme.bodyMedium.copyWith(height: 1.6),
                     textAlign: TextAlign.justify,
                   ),
-                  ThemeConstants.space4.h,
+                  AppTheme.space4.h,
                   Container(
-                    padding: EdgeInsets.all(ThemeConstants.space4),
+                    padding: AppTheme.space4.padding,
                     decoration: BoxDecoration(
-                      color: context.primaryColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                      color: AppTheme.primary.withValues(alpha: 0.1),
+                      borderRadius: AppTheme.radiusMd.radius,
                     ),
                     child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.favorite,
-                          color: context.errorColor,
-                          size: ThemeConstants.iconSm,
+                          color: AppTheme.error,
+                          size: AppTheme.iconSm,
                         ),
-                        ThemeConstants.space2.w,
+                        AppTheme.space2.w,
                         Expanded(
                           child: Text(
                             'صُنع بحب لخدمة المسلمين في جميع أنحاء العالم',
-                            style: context.labelMedium?.copyWith(
-                              color: context.primaryColor,
-                              fontWeight: ThemeConstants.semiBold,
+                            style: AppTheme.labelMedium.copyWith(
+                              color: AppTheme.primary,
+                              fontWeight: AppTheme.semiBold,
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  ThemeConstants.space4.h,
+                  AppTheme.space4.h,
                   Center(
                     child: Text(
                       '© 2024 جميع الحقوق محفوظة',
-                      style: context.labelSmall?.copyWith(
-                        color: context.textSecondaryColor,
+                      style: AppTheme.labelSmall.copyWith(
+                        color: AppTheme.textSecondary,
                       ),
                     ),
                   ),
@@ -1088,7 +1140,7 @@ class _AboutDialog extends StatelessWidget {
             ),
             
             Padding(
-              padding: EdgeInsets.all(ThemeConstants.space4),
+              padding: AppTheme.space4.padding,
               child: Row(
                 children: [
                   Expanded(
@@ -1097,7 +1149,7 @@ class _AboutDialog extends StatelessWidget {
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
-                  ThemeConstants.space3.w,
+                  AppTheme.space3.w,
                   Expanded(
                     child: AppButton.primary(
                       text: 'تواصل معنا',
@@ -1125,11 +1177,11 @@ class _PermissionProgressDialog extends StatelessWidget {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          AppLoading.circular(size: LoadingSize.medium),
-          ThemeConstants.space4.h,
+          AppLoading(size: 24),
+          AppTheme.space4.h,
           Text(
             'جاري طلب الأذونات...',
-            style: context.bodyMedium,
+            style: AppTheme.bodyMedium,
           ),
         ],
       ),
@@ -1156,22 +1208,22 @@ class _InfoRow extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: ThemeConstants.iconSm,
-            color: context.textSecondaryColor,
+            size: AppTheme.iconSm,
+            color: AppTheme.textSecondary,
           ),
-          ThemeConstants.space2.w,
+          AppTheme.space2.w,
           Expanded(
             child: Text(
               '$label: ',
-              style: context.labelMedium?.copyWith(
-                color: context.textSecondaryColor,
+              style: AppTheme.labelMedium.copyWith(
+                color: AppTheme.textSecondary,
               ),
             ),
           ),
           Text(
             value,
-            style: context.labelMedium?.copyWith(
-              fontWeight: ThemeConstants.semiBold,
+            style: AppTheme.labelMedium.copyWith(
+              fontWeight: AppTheme.semiBold,
             ),
           ),
         ],

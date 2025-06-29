@@ -1,10 +1,14 @@
-// lib/features/prayer_times/widgets/home_prayer_times_card.dart - محدث بالنظام الموحد
+// lib/features/prayer_times/widgets/home_prayer_times_card.dart - محدث بالنظام الموحد الإسلامي الكامل
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+
+// ✅ استيراد النظام الموحد الإسلامي - محدث
 import '../../../app/themes/app_theme.dart';
 import '../../../app/themes/widgets/widgets.dart';
+import '../../../app/themes/widgets/extended_cards.dart';
+import '../../../app/themes/utils/prayer_utils.dart';
 import '../../../app/di/service_locator.dart';
 import '../services/prayer_times_service.dart';
 import '../models/prayer_time_model.dart';
@@ -21,9 +25,11 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
   
   // Animation Controllers
   late AnimationController _fadeController;
+  late AnimationController _pulseController;
   
   // Animations
   late Animation<double> _fadeAnimation;
+  late Animation<double> _pulseAnimation;
   
   // Service
   late PrayerTimesService _prayerService;
@@ -54,6 +60,11 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       duration: AppTheme.durationNormal,
       vsync: this,
     );
+    
+    _pulseController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
 
     _fadeAnimation = Tween<double>(
       begin: 0.0,
@@ -62,8 +73,17 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       parent: _fadeController,
       curve: Curves.easeOut,
     ));
+    
+    _pulseAnimation = Tween<double>(
+      begin: 0.95,
+      end: 1.05,
+    ).animate(CurvedAnimation(
+      parent: _pulseController,
+      curve: Curves.easeInOut,
+    ));
 
     _fadeController.forward();
+    _pulseController.repeat(reverse: true);
   }
 
   void _startClockTimer() {
@@ -186,6 +206,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
   @override
   void dispose() {
     _fadeController.dispose();
+    _pulseController.dispose();
     _timesSubscription?.cancel();
     _nextPrayerSubscription?.cancel();
     _clockTimer?.cancel();
@@ -196,7 +217,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isTablet = constraints.maxWidth > 600;
+        final isTablet = context.isTablet;
         
         return FadeTransition(
           opacity: _fadeAnimation,
@@ -234,7 +255,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
   }
 
   Widget _buildPrayerCard(BuildContext context, PrayerTime nextPrayer, bool isTablet) {
-    final prayerColor = AppTheme.getPrayerColor(nextPrayer.nameAr);
+    final prayerColor = context.getPrayerColor(nextPrayer.nameAr);
     
     return AnimatedPress(
       onTap: _navigateToPrayerTimes,
@@ -262,23 +283,38 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
   Widget _buildMainHeader(BuildContext context, PrayerTime nextPrayer, bool isTablet) {
     return Row(
       children: [
-        // أيقونة المسجد
-        Container(
-          width: isTablet ? 50 : 40,
-          height: isTablet ? 50 : 40,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.white.withValues(alpha: 0.2),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.4),
-              width: 1.5,
-            ),
-          ),
-          child: Icon(
-            Icons.mosque_rounded,
-            color: Colors.white,
-            size: isTablet ? 24 : 20,
-          ),
+        // أيقونة المسجد مع تأثير النبضة
+        AnimatedBuilder(
+          animation: _pulseAnimation,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _pulseAnimation.value,
+              child: Container(
+                width: isTablet ? 50 : 40,
+                height: isTablet ? 50 : 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.2),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      blurRadius: 15,
+                      spreadRadius: 3,
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.mosque_rounded,
+                  color: Colors.white,
+                  size: isTablet ? 24 : 20,
+                ),
+              ),
+            );
+          },
         ),
         
         SizedBox(width: isTablet ? AppTheme.space3 : AppTheme.space2),
@@ -293,7 +329,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                 alignment: Alignment.centerRight,
                 child: Text(
                   'مواقيت الصلاة',
-                  style: (isTablet ? AppTheme.titleMedium : AppTheme.titleMedium).copyWith(
+                  style: (isTablet ? context.titleMedium : context.titleMedium).copyWith(
                     color: Colors.white,
                     fontWeight: AppTheme.bold,
                     shadows: [
@@ -322,7 +358,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                   Expanded(
                     child: Text(
                       _location?.displayName ?? 'جاري تحديد الموقع...',
-                      style: AppTheme.bodySmall.copyWith(
+                      style: context.bodySmall.copyWith(
                         color: Colors.white.withValues(alpha: 0.8),
                         fontSize: isTablet ? 11 : 10,
                       ),
@@ -411,11 +447,11 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
               ),
               child: Center(
                 child: Icon(
-                  AppTheme.getCategoryColor(prayer.nameAr) as IconData? ?? Icons.mosque,
+                  CardHelper.getPrayerIcon(prayer.nameAr),
                   color: isActive
-                      ? AppTheme.getPrayerColor(prayer.nameAr)
+                      ? context.getPrayerColor(prayer.nameAr)
                       : isPassed 
-                          ? AppTheme.getPrayerColor(prayer.nameAr).withValues(alpha: 0.9)
+                          ? context.getPrayerColor(prayer.nameAr).withValues(alpha: 0.9)
                           : Colors.white.withValues(alpha: 0.7),
                   size: iconSize * 0.6,
                 ),
@@ -428,7 +464,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
               fit: BoxFit.scaleDown,
               child: Text(
                 prayer.nameAr,
-                style: AppTheme.bodyMedium.copyWith(
+                style: context.bodyMedium.copyWith(
                   color: Colors.white.withValues(alpha: isActive ? 1.0 : 0.8),
                   fontWeight: isActive ? AppTheme.bold : AppTheme.semiBold,
                   fontSize: isTablet ? 16 : 14,
@@ -442,11 +478,12 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
             FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
-                _formatTimeShort(prayer.time),
-                style: AppTheme.bodyMedium.copyWith(
+                PrayerUtils.formatPrayerTime(prayer.time, showPeriod: false),
+                style: context.bodyMedium.copyWith(
                   color: Colors.white.withValues(alpha: isActive ? 0.95 : 0.7),
                   fontSize: isTablet ? 14 : 12,
                   fontWeight: AppTheme.medium,
+                  fontFamily: AppTheme.numbersFont,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -505,14 +542,6 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       }
       return null;
     });
-  }
-
-  String _formatTimeShort(DateTime time) {
-    final hour = time.hour;
-    final minute = time.minute.toString().padLeft(2, '0');
-    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-    
-    return '$displayHour:$minute';
   }
 }
 

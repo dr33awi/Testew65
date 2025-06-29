@@ -1,11 +1,13 @@
-// lib/features/daily_quote/widgets/daily_quotes_card.dart - محدث بالنظام الموحد الإسلامي
+// lib/features/daily_quote/widgets/daily_quotes_card.dart - محدث بالنظام الموحد الإسلامي الكامل
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
-// ✅ استيراد النظام الموحد الإسلامي - إجباري
+// ✅ استيراد النظام الموحد الإسلامي - محدث
 import 'package:athkar_app/app/themes/app_theme.dart';
 import 'package:athkar_app/app/themes/widgets/widgets.dart';
+import 'package:athkar_app/app/themes/widgets/extended_cards.dart';
+import 'package:athkar_app/app/themes/utils/category_utils.dart';
 
 import '../../../app/di/service_locator.dart';
 import '../services/daily_quote_service.dart';
@@ -23,7 +25,9 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
   late PageController _pageController;
   late DailyQuoteService _quoteService;
   late AnimationController _shimmerController;
+  late AnimationController _cardController;
   late Animation<double> _shimmerAnimation;
+  late Animation<double> _slideAnimation;
   
   int _currentPage = 0;
   List<QuoteData> quotes = [];
@@ -34,15 +38,30 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
     super.initState();
     _pageController = PageController();
     _quoteService = getIt<DailyQuoteService>();
-    _setupShimmerAnimation();
+    _setupAnimations();
     _loadQuotes();
   }
 
-  void _setupShimmerAnimation() {
+  void _setupAnimations() {
     _shimmerController = AnimationController(
       duration: AppTheme.durationSlow,
       vsync: this,
     );
+    
+    _cardController = AnimationController(
+      duration: AppTheme.durationNormal,
+      vsync: this,
+    );
+    
+    _slideAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _cardController,
+      curve: Curves.easeOut,
+    ));
+    
+    _cardController.forward();
   }
 
   Future<void> _loadQuotes() async {
@@ -116,292 +135,159 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
   void dispose() {
     _pageController.dispose();
     _shimmerController.dispose();
+    _cardController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return _buildLoadingState();
-    }
-
-    return Column(
-      children: [
-        SizedBox(
-          height: 200,
-          child: PageView.builder(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
-              HapticFeedback.selectionClick();
-            },
-            itemCount: quotes.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppTheme.space1),
-                child: _buildQuoteCard(quotes[index]),
-              );
-            },
-          ),
-        ),
-        
-        AppTheme.space3.h,
-        
-        _buildPageIndicator(),
-      ],
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return SizedBox(
-      height: 200,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: AppTheme.space1),
-        decoration: BoxDecoration(
-          borderRadius: AppTheme.radius2xl.radius,
-          boxShadow: AppTheme.shadowLg,
-        ),
-        child: ClipRRect(
-          borderRadius: AppTheme.radius2xl.radius,
-          child: Stack(
-            children: [
-              // الخلفية المتدرجة
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppTheme.primary.withValues(alpha: 0.8),
-                      AppTheme.primary.darken(0.2).withValues(alpha: 0.8),
-                    ],
-                  ),
-                ),
-              ),
-              
-              // الطبقة الزجاجية
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1,
-                  ),
-                ),
-              ),
-              
-              // محتوى التحميل
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(
-                      width: 32,
-                      height: 32,
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        strokeWidth: 3,
-                      ),
-                    ),
-                    AppTheme.space3.h,
-                    Text(
-                      'جاري تحميل الاقتباسات...',
-                      style: AppTheme.bodyMedium.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontWeight: AppTheme.medium,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuoteCard(QuoteData quote) {
-    final gradientColors = _getQuoteColors(quote.type);
-    
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isTablet = constraints.maxWidth > 600;
+        final isTablet = context.isTablet;
         
-        return AnimatedPress(
-          onTap: () => _showQuoteDetails(quote),
-          child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: AppTheme.radius2xl.radius,
-              boxShadow: [
-                BoxShadow(
-                  color: gradientColors.first.withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                  spreadRadius: -5,
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: AppTheme.radius2xl.radius,
-              child: Stack(
-                children: [
-                  // الخلفية المتدرجة
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: gradientColors.map((c) => 
-                          c.withValues(alpha: 0.95)
-                        ).toList(),
-                      ),
-                    ),
-                  ),
-                  
-                  // الطبقة الزجاجية
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                  
-                  // المحتوى الرئيسي
-                  Padding(
-                    padding: EdgeInsets.all(
-                      isTablet ? AppTheme.space6 : AppTheme.space4,
-                    ),
-                    child: _buildQuoteContent(context, quote, isTablet),
-                  ),
-                ],
+        return FadeTransition(
+          opacity: _slideAnimation,
+          child: Column(
+            children: [
+              SizedBox(
+                height: isTablet ? 220 : 200,
+                child: _isLoading ? _buildLoadingState() : _buildQuotesView(),
               ),
-            ),
+              
+              AppTheme.space3.h,
+              
+              _buildPageIndicator(),
+            ],
           ),
         );
       },
     );
   }
 
-  Widget _buildQuoteContent(BuildContext context, QuoteData quote, bool isTablet) {
-    final isShortText = quote.content.length < 80;
+  Widget _buildLoadingState() {
+    return AppCard(
+      useGradient: true,
+      color: AppTheme.primary,
+      child: AppLoading.page(message: 'جاري تحميل الاقتباسات...'),
+    );
+  }
+
+  Widget _buildQuotesView() {
+    return PageView.builder(
+      controller: _pageController,
+      onPageChanged: (index) {
+        setState(() {
+          _currentPage = index;
+        });
+        HapticFeedback.selectionClick();
+      },
+      itemCount: quotes.length,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: AppTheme.space1.paddingH,
+          child: _buildQuoteCard(quotes[index]),
+        );
+      },
+    );
+  }
+
+  Widget _buildQuoteCard(QuoteData quote) {
+    final gradientColors = _getQuoteColors(quote.type);
     
-    return Stack(
-      children: [
-        // عنوان الفئة في الزاوية اليمنى العلوية
-        Positioned(
-          top: 0,
-          right: 0,
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppTheme.space3,
-              vertical: AppTheme.space1,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: AppTheme.radiusMd.radius,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.25),
-                width: 1,
-              ),
-            ),
-            child: Text(
-              _getQuoteTitle(quote.type),
-              style: AppTheme.labelMedium.copyWith(
-                color: Colors.white,
-                fontWeight: AppTheme.medium,
-                fontSize: isTablet ? 14 : 12,
-              ),
-            ),
-          ),
-        ),
-        
-        // المصدر في الزاوية اليسرى السفلية
-        Positioned(
-          bottom: 0,
-          left: 0,
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: isTablet ? AppTheme.space3 : AppTheme.space2,
-              vertical: isTablet ? AppTheme.space2 : AppTheme.space1,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: AppTheme.radiusFull.radius,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.library_books_rounded,
-                  color: Colors.white.withValues(alpha: 0.9),
-                  size: isTablet ? 16 : 14,
+    return AnimatedPress(
+      onTap: () => _showQuoteDetails(quote),
+      child: AppCard(
+        useGradient: true,
+        color: gradientColors.first,
+        child: Stack(
+          children: [
+            // عنوان الفئة في الزاوية اليمنى العلوية
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Container(
+                padding: AppTheme.space2.paddingH.add(AppTheme.space1.paddingV),
+                decoration: CardHelper.getCardDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: AppTheme.radiusMd,
                 ),
-                
-                SizedBox(width: isTablet ? AppTheme.space2 : AppTheme.space1),
-                
-                Text(
-                  quote.source,
+                child: Text(
+                  _getQuoteTitle(quote.type),
                   style: AppTheme.labelMedium.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontWeight: AppTheme.medium,
+                    color: Colors.white,
+                    fontWeight: AppTheme.semiBold,
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ],
-            ),
-          ),
-        ),
-        
-        // النص الرئيسي في المنتصف مع خلفية شفافة
-        Center(
-          child: Container(
-            padding: EdgeInsets.all(isTablet ? AppTheme.space4 : AppTheme.space3),
-            margin: EdgeInsets.symmetric(
-              horizontal: isTablet ? AppTheme.space6 : AppTheme.space4,
-              vertical: isTablet ? AppTheme.space5 : AppTheme.space4,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
-              borderRadius: AppTheme.radiusLg.radius,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-                width: 1,
               ),
             ),
-            child: Text(
-              quote.content,
-              style: AppTheme.quranStyle.copyWith(
-                color: Colors.white,
-                height: 1.7,
-                fontWeight: AppTheme.semiBold,
-                fontSize: isShortText ? (isTablet ? 22 : 18) : (isTablet ? 20 : 16),
-                letterSpacing: 0.5,
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withValues(alpha: 0.4),
-                    offset: const Offset(0, 2),
-                    blurRadius: 4,
+            
+            // المصدر في الزاوية اليسرى السفلية
+            Positioned(
+              bottom: 0,
+              left: 0,
+              child: Container(
+                padding: AppTheme.space2.paddingH.add(AppTheme.space1.paddingV),
+                decoration: CardHelper.getCardDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: AppTheme.radiusFull,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      CategoryUtils.getCategoryIcon('quran'),
+                      color: Colors.white.withValues(alpha: 0.9),
+                      size: AppTheme.iconSm,
+                    ),
+                    
+                    AppTheme.space1.w,
+                    
+                    Text(
+                      quote.source,
+                      style: AppTheme.labelMedium.copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontWeight: AppTheme.medium,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            // النص الرئيسي في المنتصف
+            Center(
+              child: Container(
+                padding: AppTheme.space4.padding,
+                margin: AppTheme.space4.paddingH.add(AppTheme.space3.paddingV),
+                decoration: CardHelper.getCardDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: AppTheme.radiusLg,
+                ),
+                child: Text(
+                  quote.content,
+                  style: CardHelper.getTextStyle('quran').copyWith(
+                    color: Colors.white,
+                    height: 1.7,
+                    fontWeight: AppTheme.semiBold,
+                    letterSpacing: 0.5,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        offset: const Offset(0, 2),
+                        blurRadius: 4,
+                      ),
+                    ],
                   ),
-                ],
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
               ),
-              maxLines: 4,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -416,7 +302,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
             
         return AnimatedContainer(
           duration: AppTheme.durationNormal,
-          margin: const EdgeInsets.symmetric(horizontal: 4),
+          margin: AppTheme.space1.paddingH,
           width: isActive ? 24 : 8,
           height: 8,
           decoration: BoxDecoration(
@@ -459,7 +345,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
     );
   }
 
-  // ✅ دوال مساعدة للألوان حسب النوع
+  // ✅ دوال مساعدة للألوان حسب النوع - محدثة
   List<Color> _getQuoteColors(String type) {
     switch (type) {
       case 'verse':
@@ -513,173 +399,109 @@ class _QuoteDetailsModal extends StatelessWidget {
     
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.8,
+        maxHeight: context.screenHeight * 0.8,
       ),
-      decoration: BoxDecoration(
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppTheme.radius2xl),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: gradientColors.first.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
-            spreadRadius: -5,
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppTheme.radius2xl),
-        ),
-        child: Stack(
+      child: AppCard(
+        useGradient: true,
+        color: gradientColors.first,
+        margin: EdgeInsets.zero,
+        padding: EdgeInsets.zero,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // الخلفية المتدرجة
+            // مقبض السحب
             Container(
+              margin: AppTheme.space3.paddingV.copyWith(top: AppTheme.space3),
+              width: 50,
+              height: 5,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: gradientColors.map((c) => 
-                    c.withValues(alpha: 0.95)
-                  ).toList(),
-                ),
+                color: Colors.white.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(2.5),
               ),
             ),
             
-            // الطبقة الزجاجية
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-              ),
-            ),
-            
-            // المحتوى
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // مقبض السحب
-                Container(
-                  margin: const EdgeInsets.only(top: AppTheme.space3),
-                  width: 50,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(2.5),
-                  ),
-                ),
-                
-                Flexible(
-                  child: SingleChildScrollView(
-                    padding: AppTheme.space5.padding,
-                    child: Column(
+            Flexible(
+              child: SingleChildScrollView(
+                padding: AppTheme.space5.padding,
+                child: Column(
+                  children: [
+                    // عنوان مع أيقونة
+                    AppCard(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      child: Text(
+                        getTitle(quote.type),
+                        style: context.headlineMedium.copyWith(
+                          fontWeight: AppTheme.bold,
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    
+                    AppTheme.space5.h,
+                    
+                    // النص الرئيسي
+                    AppCard(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      child: Text(
+                        quote.content,
+                        style: CardHelper.getTextStyle('quran').copyWith(
+                          height: 1.8,
+                          fontSize: 17,
+                          color: Colors.white,
+                          fontWeight: AppTheme.medium,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    
+                    AppTheme.space4.h,
+                    
+                    // المصدر
+                    Container(
+                      padding: AppTheme.space4.paddingH.add(AppTheme.space3.paddingV),
+                      decoration: CardHelper.getCardDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: AppTheme.radiusFull,
+                      ),
+                      child: Text(
+                        quote.source,
+                        style: context.titleMedium.copyWith(
+                          color: Colors.white,
+                          fontWeight: AppTheme.semiBold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    
+                    AppTheme.space6.h,
+                    
+                    // أزرار العمليات
+                    Row(
                       children: [
-                        // عنوان مع أيقونة
-                        Container(
-                          width: double.infinity,
-                          padding: AppTheme.space4.padding,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            borderRadius: AppTheme.radiusLg.radius,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            getTitle(quote.type),
-                            style: AppTheme.headlineMedium.copyWith(
-                              fontWeight: AppTheme.bold,
-                              color: Colors.white,
-                            ),
-                            textAlign: TextAlign.center,
+                        Expanded(
+                          child: AppButton.outline(
+                            text: 'نسخ',
+                            icon: Icons.copy,
+                            onPressed: () => _copyQuote(context),
+                            borderColor: Colors.white,
                           ),
                         ),
                         
-                        AppTheme.space5.h,
+                        AppTheme.space3.w,
                         
-                        // النص الرئيسي
-                        Container(
-                          width: double.infinity,
-                          padding: AppTheme.space5.padding,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            borderRadius: AppTheme.radiusLg.radius,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              width: 1,
-                            ),
+                        Expanded(
+                          child: AppButton.secondary(
+                            text: 'مشاركة',
+                            icon: Icons.share,
+                            onPressed: () => _shareQuote(context),
                           ),
-                          child: Text(
-                            quote.content,
-                            style: AppTheme.quranStyle.copyWith(
-                              height: 1.8,
-                              fontSize: 17,
-                              color: Colors.white,
-                              fontWeight: AppTheme.medium,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        
-                        AppTheme.space4.h,
-                        
-                        // المصدر
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppTheme.space4,
-                            vertical: AppTheme.space3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: AppTheme.radiusFull.radius,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            quote.source,
-                            style: AppTheme.titleMedium.copyWith(
-                              color: Colors.white,
-                              fontWeight: AppTheme.semiBold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                        
-                        AppTheme.space6.h,
-                        
-                        // أزرار العمليات
-                        Row(
-                          children: [
-                            Expanded(
-                              child: AppButton.outline(
-                                text: 'نسخ',
-                                onPressed: () => _copyQuote(context),
-                                borderColor: Colors.white,
-                              ),
-                            ),
-                            
-                            AppTheme.space3.w,
-                            
-                            Expanded(
-                              child: AppButton.secondary(
-                                text: 'مشاركة',
-                                onPressed: () => _shareQuote(context),
-                              ),
-                            ),
-                          ],
                         ),
                       ],
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ],
         ),

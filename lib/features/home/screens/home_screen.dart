@@ -4,11 +4,12 @@ import 'package:flutter/services.dart';
 
 // ✅ استيراد النظام الموحد الإسلامي - إجباري
 import 'package:athkar_app/app/themes/app_theme.dart';
+import 'package:athkar_app/app/themes/widgets/widgets.dart';
+import 'package:athkar_app/app/themes/widgets/extended_cards.dart';
 
 import '../widgets/welcome_message.dart';
 import '../widgets/category_grid.dart';
 import '../../daily_quote/widgets/daily_quotes_card.dart';
-import '../../prayer_times/widgets/home_prayer_times_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -22,35 +23,32 @@ class HomeScreen extends StatelessWidget {
         onRefresh: () => _handleRefresh(context),
         color: AppTheme.primary,
         backgroundColor: AppTheme.card,
-        child: const SingleChildScrollView(
-          physics: BouncingScrollPhysics(),
-          padding: EdgeInsets.symmetric(
-            horizontal: AppTheme.space4,
-            vertical: AppTheme.space2,
-          ),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: AppTheme.space4.paddingH + AppTheme.space2.paddingV,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // رسالة الترحيب
-              WelcomeMessage(),
+              const WelcomeMessage(),
               
-              SizedBox(height: AppTheme.space4),
+              AppTheme.space4.h,
               
               // مواقيت الصلاة
-              PrayerTimesCard(),
+              _buildPrayerTimesCard(context),
               
-              SizedBox(height: AppTheme.space4),
+              AppTheme.space4.h,
               
               // الاقتباسات اليومية
-              DailyQuotesCard(),
+              const DailyQuotesCard(),
               
-              SizedBox(height: AppTheme.space6),
+              AppTheme.space6.h,
               
               // شبكة الفئات مع العنوان المدمج
-              SimpleCategoryGrid(),
+              const SimpleCategoryGrid(),
               
               // مساحة إضافية للأسفل
-              SizedBox(height: AppTheme.space8),
+              AppTheme.space8.h,
             ],
           ),
         ),
@@ -86,10 +84,10 @@ class HomeScreen extends StatelessWidget {
         children: [
           // أيقونة التطبيق
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: AppTheme.space2.padding,
             decoration: BoxDecoration(
               gradient: AppTheme.primaryGradient,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: AppTheme.radiusMd.radius,
               boxShadow: [
                 BoxShadow(
                   color: AppTheme.primary.withValues(alpha: 0.3),
@@ -141,7 +139,7 @@ class HomeScreen extends StatelessWidget {
           margin: const EdgeInsets.only(left: AppTheme.space4),
           decoration: BoxDecoration(
             color: AppTheme.card.withValues(alpha: 0.8),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: AppTheme.radiusMd.radius,
             border: Border.all(
               color: AppTheme.divider.withValues(alpha: 0.3),
               width: 1,
@@ -171,6 +169,36 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPrayerTimesCard(BuildContext context) {
+    // محاكاة بيانات أوقات الصلاة
+    final prayerTimes = {
+      'الفجر': '05:30',
+      'الشروق': '06:45',
+      'الظهر': '12:15',
+      'العصر': '15:30',
+      'المغرب': '18:00',
+      'العشاء': '19:30',
+    };
+
+    const currentPrayer = 'الظهر';
+    const nextPrayer = 'العصر';
+    const timeToNext = Duration(hours: 3, minutes: 15);
+
+    return PrayerTimesCard(
+      prayerTimes: prayerTimes,
+      currentPrayer: currentPrayer,
+      nextPrayer: nextPrayer,
+      timeToNext: timeToNext,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        Navigator.pushNamed(context, '/prayer-times').catchError((error) {
+          _showInfoSnackBar(context, 'هذه الميزة قيد التطوير');
+          return null;
+        });
+      },
     );
   }
 

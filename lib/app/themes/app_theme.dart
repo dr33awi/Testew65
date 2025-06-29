@@ -687,31 +687,31 @@ class CardHelper {
     }
   }
   
-  /// الحصول على أيقونة مناسبة للصلوات
-  static IconData getPrayerIcon(String prayer) {
-    switch (prayer.toLowerCase()) {
-      case 'الفجر':
-      case 'fajr':
-        return Icons.wb_twilight;
-      case 'الشروق':
-      case 'sunrise':
-        return Icons.wb_sunny;
-      case 'الظهر':
-      case 'dhuhr':
-        return Icons.light_mode;
-      case 'العصر':
-      case 'asr':
-        return Icons.wb_cloudy;
-      case 'المغرب':
-      case 'maghrib':
-        return Icons.wb_incandescent;
-      case 'العشاء':
-      case 'isha':
-        return Icons.nightlight_round;
-      default:
-        return Icons.access_time;
-    }
+/// الحصول على أيقونة مناسبة للصلوات
+static IconData getPrayerIcon(String prayer) {
+  switch (prayer.toLowerCase()) {
+    case 'الفجر':
+    case 'fajr':
+      return Icons.wb_twilight;
+    case 'الشروق':
+    case 'sunrise':
+      return Icons.wb_sunny;
+    case 'الظهر':
+    case 'dhuhr':
+      return Icons.light_mode;
+    case 'العصر':
+    case 'asr':
+      return Icons.wb_cloudy;
+    case 'المغرب':
+    case 'maghrib':
+      return Icons.wb_incandescent;
+    case 'العشاء':
+    case 'isha':
+      return Icons.nightlight_round;
+    default:
+      return Icons.access_time;
   }
+}
   
   /// تنسيق الأرقام الكبيرة
   static String formatLargeNumber(int number) {

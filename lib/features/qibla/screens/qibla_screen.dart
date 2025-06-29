@@ -6,7 +6,8 @@ import 'dart:ui';
 
 // ✅ استيراد النظام الموحد
 import '../../../app/themes/app_theme.dart';
-import 'package:athkar_app/app/themes/widgets/widgets.dart';
+import '../../../app/themes/widgets/widgets.dart';
+import '../../../app/themes/widgets/extended_cards.dart';
 
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
@@ -88,9 +89,9 @@ class _QiblaScreenState extends State<QiblaScreen>
             borderRadius: AppTheme.radiusLg.radius,
           ),
           actions: [
-            TextButton(
+            AppButton.text(
+              text: 'إلغاء',
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('إلغاء'),
             ),
             AppButton.primary(
               text: 'بدء المعايرة',
@@ -115,7 +116,7 @@ class _QiblaScreenState extends State<QiblaScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.backgroundColor,
+      backgroundColor: AppTheme.background,
       // ✅ استخدام SimpleAppBar الموحد
       appBar: SimpleAppBar(
         title: 'اتجاه القبلة',
@@ -123,7 +124,7 @@ class _QiblaScreenState extends State<QiblaScreen>
           IconButton(
             icon: Icon(
               Icons.help_outline,
-              color: context.primaryColor,
+              color: AppTheme.primary,
             ),
             onPressed: _showInstructions,
             tooltip: 'التعليمات',
@@ -157,7 +158,7 @@ class _QiblaScreenState extends State<QiblaScreen>
   }
 
   Widget _buildWelcomeCard(BuildContext context) {
-    final qiblaColor = context.getCategoryColor('القبلة');
+    final qiblaColor = AppTheme.getCategoryColor('قبلة');
     
     return Container(
       margin: AppTheme.space4.padding,
@@ -210,7 +211,7 @@ class _QiblaScreenState extends State<QiblaScreen>
                     children: [
                       Text(
                         '"وَحَيْثُ مَا كُنتُمْ فَوَلُّوا وُجُوهَكُمْ شَطْرَهُ"',
-                        style: context.titleLarge.copyWith(
+                        style: AppTheme.titleLarge.copyWith(
                           color: Colors.white,
                           fontWeight: AppTheme.bold,
                           fontSize: 16,
@@ -232,7 +233,7 @@ class _QiblaScreenState extends State<QiblaScreen>
                       
                       Text(
                         'توجه نحو الكعبة المشرفة واستقبل القبلة',
-                        style: context.bodyMedium.copyWith(
+                        style: AppTheme.bodyMedium.copyWith(
                           color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 13,
                           height: 1.2,
@@ -318,7 +319,7 @@ class _QiblaScreenState extends State<QiblaScreen>
               AppTheme.space3.h,
               Text(
                 'البوصلة غير متوفرة',
-                style: context.titleLarge.copyWith(
+                style: AppTheme.titleLarge.copyWith(
                   fontWeight: AppTheme.bold,
                   color: Colors.white,
                 ),
@@ -326,7 +327,7 @@ class _QiblaScreenState extends State<QiblaScreen>
               AppTheme.space2.h,
               Text(
                 'جهازك لا يدعم البوصلة أو أنها معطلة حالياً',
-                style: context.bodyMedium.copyWith(
+                style: AppTheme.bodyMedium.copyWith(
                   color: Colors.white.withValues(alpha: 0.9),
                 ),
                 textAlign: TextAlign.center,
@@ -344,18 +345,19 @@ class _QiblaScreenState extends State<QiblaScreen>
   }
 
   Widget _buildStaticQiblaInfo(QiblaService service) {
-    return AppCard.info(
-      title: 'اتجاه القبلة من موقعك',
-      subtitle: '${service.qiblaData!.qiblaDirection.toStringAsFixed(1)}°',
-      icon: Icons.explore,
-      color: context.getCategoryColor('القبلة'),
+    return QiblaInfoCard(
+      qiblaDirection: service.qiblaData!.qiblaDirection,
+      locationName: 'الموقع الحالي',
+      accuracy: service.compassAccuracy,
+      isCalibrated: service.isCalibrated,
+      onCalibrate: () => service.startCalibration(),
     );
   }
 
   Widget _buildInitialState() {
     return AppCard(
       useGradient: true,
-      color: context.getCategoryColor('القبلة'),
+      color: AppTheme.getCategoryColor('قبلة'),
       child: Column(
         children: [
           const Icon(
@@ -366,7 +368,7 @@ class _QiblaScreenState extends State<QiblaScreen>
           AppTheme.space3.h,
           Text(
             'حدد موقعك',
-            style: context.titleLarge.copyWith(
+            style: AppTheme.titleLarge.copyWith(
               fontWeight: AppTheme.bold,
               color: Colors.white,
             ),
@@ -374,7 +376,7 @@ class _QiblaScreenState extends State<QiblaScreen>
           AppTheme.space2.h,
           Text(
             'اضغط هنا لتحديد موقعك وعرض اتجاه القبلة',
-            style: context.bodyMedium.copyWith(
+            style: AppTheme.bodyMedium.copyWith(
               color: Colors.white.withValues(alpha: 0.9),
             ),
             textAlign: TextAlign.center,
@@ -384,6 +386,7 @@ class _QiblaScreenState extends State<QiblaScreen>
             text: 'تحديد الموقع',
             onPressed: _updateQiblaData,
             icon: Icons.location_on,
+            borderColor: Colors.white,
           ),
         ],
       ),
@@ -434,7 +437,7 @@ class _QiblaScreenState extends State<QiblaScreen>
           children: [
             Icon(
               Icons.help_outline,
-              color: context.getCategoryColor('القبلة'),
+              color: AppTheme.getCategoryColor('قبلة'),
               size: 24,
             ),
             AppTheme.space2.w,
@@ -477,7 +480,7 @@ class _QiblaScreenState extends State<QiblaScreen>
           AppButton.text(
             text: 'فهمت',
             onPressed: () => Navigator.of(context).pop(),
-            textColor: context.getCategoryColor('القبلة'),
+            textColor: AppTheme.getCategoryColor('قبلة'),
           ),
         ],
       ),
@@ -496,12 +499,12 @@ class _QiblaScreenState extends State<QiblaScreen>
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: context.getCategoryColor('القبلة').withValues(alpha: 0.1),
+            color: AppTheme.getCategoryColor('قبلة').withValues(alpha: 0.1),
             borderRadius: AppTheme.radiusMd.radius,
           ),
           child: Icon(
             icon,
-            color: context.getCategoryColor('القبلة'),
+            color: AppTheme.getCategoryColor('قبلة'),
             size: 20,
           ),
         ),
@@ -512,16 +515,15 @@ class _QiblaScreenState extends State<QiblaScreen>
             children: [
               Text(
                 title,
-                style: context.titleSmall.copyWith(
-                  fontWeight: AppTheme.semiBold,
-                  color: context.textPrimaryColor,
-                ),
-              ),
+  style: AppTheme.bodySmall.copyWith(
+    color: AppTheme.textSecondary,
+  ),
+),
               AppTheme.space1.h,
               Text(
                 description,
-                style: context.bodySmall.copyWith(
-                  color: context.textSecondaryColor,
+                style: AppTheme.bodySmall.copyWith(
+                  color: AppTheme.textSecondary,
                   height: 1.3,
                 ),
               ),
@@ -531,3 +533,4 @@ class _QiblaScreenState extends State<QiblaScreen>
       ],
     );
   }
+}

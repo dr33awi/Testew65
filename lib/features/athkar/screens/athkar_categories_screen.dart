@@ -6,6 +6,7 @@ import 'dart:ui';
 // ✅ استيراد النظام الموحد الإسلامي - إجباري
 import 'package:athkar_app/app/themes/app_theme.dart';
 import 'package:athkar_app/app/themes/widgets/widgets.dart';
+import 'package:athkar_app/app/themes/utils/category_utils.dart';
 
 import '../../../app/di/service_locator.dart';
 import '../../../app/routes/app_router.dart';
@@ -499,8 +500,8 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
   }
 
   Widget _buildCategoryCard(BuildContext context, AthkarCategory category, int progress, int index) {
-    final categoryColor = AppTheme.getCategoryColor(category.id);
-    final categoryIcon = _getCategoryIcon(category.id);
+    final categoryColor = CategoryUtils.getCategoryThemeColor(category.id);
+    final categoryIcon = CategoryUtils.getCategoryIcon(category.id);
     
     return AnimatedPress(
       onTap: () => _openCategoryDetails(category),
@@ -653,29 +654,5 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
         ],
       ),
     );
-  }
-
-  // ✅ دالة مساعدة للحصول على أيقونة الفئة
-  IconData _getCategoryIcon(String categoryId) {
-    switch (categoryId) {
-      case 'اوقات_الصلاة':
-        return Icons.access_time;
-      case 'الاذكار':
-        return Icons.auto_awesome;
-      case 'القبلة':
-        return Icons.explore;
-      case 'التسبيح':
-        return Icons.favorite;
-      case 'القران':
-        return Icons.menu_book;
-      case 'الادعية':
-        return Icons.volunteer_activism;
-      case 'المفضلة':
-        return Icons.bookmark;
-      case 'الاعدادات':
-        return Icons.settings;
-      default:
-        return Icons.auto_awesome;
-    }
   }
 }

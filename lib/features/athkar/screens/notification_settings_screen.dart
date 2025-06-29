@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 // ✅ استيراد النظام الموحد الإسلامي - إجباري
 import 'package:athkar_app/app/themes/app_theme.dart';
 import 'package:athkar_app/app/themes/widgets/widgets.dart';
+import 'package:athkar_app/app/themes/widgets/extended_cards.dart';
+import 'package:athkar_app/app/themes/utils/category_utils.dart';
 
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
@@ -314,46 +316,30 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
               ),
             ),
             AppTheme.space4.h,
-            ListTile(
-              leading: Container(
-                padding: AppTheme.space2.padding,
-                decoration: BoxDecoration(
-                  color: AppTheme.success.withValues(alpha: 0.1),
-                  borderRadius: AppTheme.radiusMd.radius,
-                ),
-                child: const Icon(
-                  Icons.notifications_active,
-                  color: AppTheme.success,
-                  size: 20,
-                ),
-              ),
-              title: const Text('تفعيل الكل'),
-              subtitle: const Text('تفعيل جميع تذكيرات الأذكار'),
+            
+            // ✅ استخدام SettingCard للخيارات
+            SettingCard.navigation(
+              title: 'تفعيل الكل',
+              subtitle: 'تفعيل جميع تذكيرات الأذكار',
+              icon: Icons.notifications_active,
+              color: AppTheme.success,
               onTap: () {
                 Navigator.pop(context);
                 _enableAllReminders();
               },
             ),
-            ListTile(
-              leading: Container(
-                padding: AppTheme.space2.padding,
-                decoration: BoxDecoration(
-                  color: AppTheme.error.withValues(alpha: 0.1),
-                  borderRadius: AppTheme.radiusMd.radius,
-                ),
-                child: const Icon(
-                  Icons.notifications_off,
-                  color: AppTheme.error,
-                  size: 20,
-                ),
-              ),
-              title: const Text('إيقاف الكل'),
-              subtitle: const Text('إيقاف جميع تذكيرات الأذكار'),
+            
+            SettingCard.navigation(
+              title: 'إيقاف الكل',
+              subtitle: 'إيقاف جميع تذكيرات الأذكار',
+              icon: Icons.notifications_off,
+              color: AppTheme.error,
               onTap: () {
                 Navigator.pop(context);
                 _disableAllReminders();
               },
             ),
+            
             AppTheme.space2.h,
           ],
         ),
@@ -579,9 +565,9 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     final originalTime = _originalTimes[category.id];
     final hasCustomTime = originalTime != null && currentTime != originalTime;
     
-    final categoryIcon = _getCategoryIcon(category.id);
-    final categoryDescription = _getCategoryDescription(category.id);
-    final categoryColor = AppTheme.getCategoryColor(category.id);
+    final categoryIcon = CategoryUtils.getCategoryIcon(category.id);
+    final categoryDescription = CategoryUtils.getCategoryDescription(category.id);
+    final categoryColor = CategoryUtils.getCategoryThemeColor(category.id);
 
     return Padding(
       padding: EdgeInsets.only(bottom: AppTheme.space3),
@@ -712,51 +698,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     );
   }
 
-  // ✅ دوال مساعدة محلية للفئات
-  IconData _getCategoryIcon(String categoryId) {
-    switch (categoryId) {
-      case 'اوقات_الصلاة':
-        return Icons.access_time;
-      case 'الاذكار':
-        return Icons.auto_awesome;
-      case 'القبلة':
-        return Icons.explore;
-      case 'التسبيح':
-        return Icons.favorite;
-      case 'القران':
-        return Icons.menu_book;
-      case 'الادعية':
-        return Icons.volunteer_activism;
-      case 'المفضلة':
-        return Icons.bookmark;
-      case 'الاعدادات':
-        return Icons.settings;
-      default:
-        return Icons.auto_awesome;
-    }
-  }
-
-  String _getCategoryDescription(String categoryId) {
-    switch (categoryId) {
-      case 'اوقات_الصلاة':
-        return 'أذكار ما بعد الصلاة';
-      case 'الاذكار':
-        return 'أذكار الصباح والمساء';
-      case 'القبلة':
-        return 'تذكيرات اتجاه القبلة';
-      case 'التسبيح':
-        return 'التسبيح والتهليل';
-      case 'القران':
-        return 'تذكيرات قراءة القرآن';
-      case 'الادعية':
-        return 'الأدعية المأثورة';
-      case 'المفضلة':
-        return 'أذكارك المفضلة';
-      default:
-        return '';
-    }
-  }
-
+  // ✅ دوال مساعدة محلية
   TimeOfDay _getDefaultReminderTime(String categoryId) {
     switch (categoryId) {
       case 'اوقات_الصلاة':
