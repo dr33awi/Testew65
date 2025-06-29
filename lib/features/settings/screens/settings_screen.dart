@@ -16,7 +16,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
 import '../services/settings_services_manager.dart';
-import '../widgets/service_status_widgets.dart';
+import '../widgets/service_status_widgets.dart' hide ServiceStatus;
 import '../widgets/settings_section.dart';
 import '../widgets/settings_tile.dart';
 import '../models/app_settings.dart';

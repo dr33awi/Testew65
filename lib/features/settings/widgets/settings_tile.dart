@@ -67,7 +67,7 @@ class SettingsTile extends StatelessWidget {
     String? subtitle,
     IconData? icon,
     required bool value,
-    required ValueChanged<bool> onChanged,
+    required ValueChanged<bool>? onChanged, // ✅ إضافة nullable
     Color? iconColor,
     bool enabled = true,
   }) {
@@ -80,17 +80,18 @@ class SettingsTile extends StatelessWidget {
       enabled: enabled,
       trailing: Switch(
         value: value,
-        onChanged: enabled ? onChanged : null,
+        onChanged: enabled && onChanged != null ? onChanged : null,
         activeColor: iconColor ?? AppTheme.primary,
       ),
-      onTap: enabled ? () => onChanged(!value) : null,
+      onTap: enabled && onChanged != null ? () => onChanged(!value) : null,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    // ✅ إصلاح مشكلة onTap nullable
     return AnimatedPress(
-      onTap: enabled && onTap != null ? onTap! : null,
+      onTap: (enabled && onTap != null) ? onTap! : () {}, // تقديم دالة فارغة بدلاً من null
       child: Container(
         padding: padding ?? const EdgeInsets.symmetric(
           horizontal: AppTheme.space4,

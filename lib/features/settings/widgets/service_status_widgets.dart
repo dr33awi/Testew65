@@ -7,9 +7,43 @@ import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/themes/widgets/widgets.dart';
 import '../../../app/themes/widgets/extended_cards.dart';
+import '../services/settings_services_manager.dart';
 
+// ✅ إضافة ServiceStatus class المفقود
+class ServiceStatus {
+  final bool notificationsEnabled;
+  final bool locationAvailable;
+  final bool batteryOptimized;
+  final Map<String, dynamic> details;
+
+  const ServiceStatus({
+    required this.notificationsEnabled,
+    required this.locationAvailable,
+    required this.batteryOptimized,
+    this.details = const {},
+  });
+
+  factory ServiceStatus.initial() {
+    return const ServiceStatus(
+      notificationsEnabled: false,
+      locationAvailable: false,
+      batteryOptimized: false,
+    );
+  }
+}
+
+// ✅ إصلاح ServiceStatusOverview constructor
 class ServiceStatusOverview extends StatefulWidget {
-  const ServiceStatusOverview({super.key});
+  final ServiceStatus status; // ✅ إضافة المعامل المطلوب
+  final SettingsServicesManager servicesManager; // ✅ إضافة المعامل المطلوب
+  final VoidCallback? onRefresh; // ✅ إضافة المعامل المطلوب
+
+  const ServiceStatusOverview({
+    super.key,
+    required this.status,
+    required this.servicesManager,
+    this.onRefresh,
+  });
 
   @override
   State<ServiceStatusOverview> createState() => _ServiceStatusOverviewState();
@@ -24,13 +58,13 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview>
   bool _notificationsEnabled = true;
   bool _locationEnabled = true;
   bool _batteryOptimized = false;
-  double _storageUsed = 45.2;
 
   @override
   void initState() {
     super.initState();
     _setupAnimations();
     _checkServiceStatus();
+    _updateFromWidget();
   }
 
   void _setupAnimations() {
@@ -50,14 +84,28 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview>
     _animationController.forward();
   }
 
+  void _updateFromWidget() {
+    setState(() {
+      _notificationsEnabled = widget.status.notificationsEnabled;
+      _locationEnabled = widget.status.locationAvailable;
+      _batteryOptimized = widget.status.batteryOptimized;
+    });
+  }
+
+  @override
+  void didUpdateWidget(ServiceStatusOverview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.status != widget.status) {
+      _updateFromWidget();
+    }
+  }
+
   Future<void> _checkServiceStatus() async {
     // هنا يمكن إضافة فحص حقيقي للخدمات
     await Future.delayed(const Duration(milliseconds: 500));
     
     if (mounted) {
-      setState(() {
-        // تحديث حالة الخدمات
-      });
+      _updateFromWidget();
     }
   }
 
@@ -170,7 +218,8 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview>
     );
   }
 
-  Widget _buildServiceIndicators(Context context) {
+  // ✅ إصلاح نوع المعامل من Context إلى BuildContext
+  Widget _buildServiceIndicators(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
@@ -255,7 +304,7 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview>
 
   void _toggleLocation() async {
     HapticFeedback.lightImpact();
-    // فتح إعدادات الموقع
+    widget.onRefresh?.call();
   }
 
   void _optimizeBattery() async {

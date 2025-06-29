@@ -88,6 +88,15 @@ class AppTheme {
     height: 1.4,
     color: textPrimary,
   );
+
+  // ✅ إضافة headlineSmall المفقود
+  static const TextStyle headlineSmall = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 28,
+    fontWeight: semiBold,
+    height: 1.3,
+    color: textPrimary,
+  );
   
   static const TextStyle titleLarge = TextStyle(
     fontFamily: primaryFont,
@@ -136,6 +145,16 @@ class AppTheme {
     height: 1.3,
     letterSpacing: 0.3,
     color: textPrimary,
+  );
+
+  // ✅ إضافة labelSmall المفقود
+  static const TextStyle labelSmall = TextStyle(
+    fontFamily: primaryFont,
+    fontSize: 11,
+    fontWeight: regular,
+    height: 1.3,
+    letterSpacing: 0.5,
+    color: textSecondary,
   );
   
   static const TextStyle caption = TextStyle(
@@ -299,12 +318,14 @@ class AppTheme {
       displayMedium: displayMedium,
       headlineLarge: headlineLarge,
       headlineMedium: headlineMedium,
+      headlineSmall: headlineSmall, // ✅ إضافة headlineSmall
       titleLarge: titleLarge,
       titleMedium: titleMedium,
       bodyLarge: bodyLarge,
       bodyMedium: bodyMedium,
       bodySmall: bodySmall,
       labelMedium: labelMedium,
+      labelSmall: labelSmall, // ✅ إضافة labelSmall
     ),
     
     // ثيم الشريط العلوي
@@ -502,7 +523,9 @@ class AppTheme {
     'اوقات_الصلاة': primary,
     'الاذكار': accent,
     'القبلة': tertiary,
+    'قبلة': tertiary,
     'التسبيح': secondary,
+    'تسبيح': secondary,
     'القران': Color(0xFF4A6B4A),
     'الادعية': Color(0xFF8B7355),
     'المفضلة': Color(0xFFCC8E35),
@@ -566,11 +589,14 @@ extension AppThemeExtensions on BuildContext {
   /// النصوص السريعة
   TextStyle get headlineLarge => AppTheme.headlineLarge;
   TextStyle get headlineMedium => AppTheme.headlineMedium;
+  TextStyle get headlineSmall => AppTheme.headlineSmall; // ✅ إضافة headlineSmall
   TextStyle get titleLarge => AppTheme.titleLarge;
   TextStyle get titleMedium => AppTheme.titleMedium;
   TextStyle get bodyLarge => AppTheme.bodyLarge;
   TextStyle get bodyMedium => AppTheme.bodyMedium;
   TextStyle get bodySmall => AppTheme.bodySmall;
+  TextStyle get labelMedium => AppTheme.labelMedium;
+  TextStyle get labelSmall => AppTheme.labelSmall; // ✅ إضافة labelSmall
   
   /// النصوص الدينية
   TextStyle get quranStyle => AppTheme.quranStyle;
@@ -687,31 +713,31 @@ class CardHelper {
     }
   }
   
-/// الحصول على أيقونة مناسبة للصلوات
-static IconData getPrayerIcon(String prayer) {
-  switch (prayer.toLowerCase()) {
-    case 'الفجر':
-    case 'fajr':
-      return Icons.wb_twilight;
-    case 'الشروق':
-    case 'sunrise':
-      return Icons.wb_sunny;
-    case 'الظهر':
-    case 'dhuhr':
-      return Icons.light_mode;
-    case 'العصر':
-    case 'asr':
-      return Icons.wb_cloudy;
-    case 'المغرب':
-    case 'maghrib':
-      return Icons.wb_incandescent;
-    case 'العشاء':
-    case 'isha':
-      return Icons.nightlight_round;
-    default:
-      return Icons.access_time;
+  /// الحصول على أيقونة مناسبة للصلوات
+  static IconData getPrayerIcon(String prayer) {
+    switch (prayer.toLowerCase()) {
+      case 'الفجر':
+      case 'fajr':
+        return Icons.wb_twilight;
+      case 'الشروق':
+      case 'sunrise':
+        return Icons.wb_sunny;
+      case 'الظهر':
+      case 'dhuhr':
+        return Icons.light_mode;
+      case 'العصر':
+      case 'asr':
+        return Icons.wb_cloudy;
+      case 'المغرب':
+      case 'maghrib':
+        return Icons.wb_incandescent;
+      case 'العشاء':
+      case 'isha':
+        return Icons.nightlight_round;
+      default:
+        return Icons.access_time;
+    }
   }
-}
   
   /// تنسيق الأرقام الكبيرة
   static String formatLargeNumber(int number) {

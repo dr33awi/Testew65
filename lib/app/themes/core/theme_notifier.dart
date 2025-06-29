@@ -1,4 +1,4 @@
-// lib/app/themes/core/theme_notifier.dart - عربي وداكن فقط
+// lib/app/themes/core/theme_notifier.dart - عربي وداكن فقط مع إصلاح setTheme
 import 'package:flutter/material.dart';
 import 'package:athkar_app/core/infrastructure/services/storage/storage_service.dart';
 
@@ -48,6 +48,20 @@ class ThemeNotifier extends ChangeNotifier {
       debugPrint('ThemeNotifier: تم تحميل الإعدادات - تلقائي: $_autoThemeEnabled، حسب الصلاة: $_prayerBasedTheme');
     } catch (e) {
       debugPrint('خطأ في تحميل إعدادات الثيم: $e');
+    }
+  }
+  
+  /// تحديث الثيم (للتوافق مع الكود القديم) - الإصلاح المطلوب
+  Future<void> setTheme(bool isDarkMode) async {
+    // الثيم دائماً داكن، لكن يمكن تسجيل التغيير
+    debugPrint('ThemeNotifier: محاولة تغيير الثيم إلى ${isDarkMode ? "داكن" : "فاتح"} - الثيم دائماً داكن');
+    
+    // يمكن حفظ التفضيل حتى لو لم يتم تطبيقه
+    try {
+      await _storage.setBool('user_preferred_dark_mode', isDarkMode);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('خطأ في حفظ تفضيل الثيم: $e');
     }
   }
   

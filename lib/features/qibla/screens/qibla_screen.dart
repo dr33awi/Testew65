@@ -122,7 +122,7 @@ class _QiblaScreenState extends State<QiblaScreen>
         title: 'اتجاه القبلة',
         actions: [
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.help_outline,
               color: AppTheme.primary,
             ),
@@ -277,12 +277,12 @@ class _QiblaScreenState extends State<QiblaScreen>
   }
 
   Widget _buildCompassView(QiblaService service) {
-    return Container(
+    return SizedBox(
       width: 320,
       height: 320,
       child: QiblaCompass(
         qiblaDirection: service.qiblaData!.qiblaDirection,
-        currentDirection: service.currentDirection,
+        currentDirection: service.currentDirection, // ✅ استخدام currentDirection المصحح
         accuracy: service.compassAccuracy,
         isCalibrated: service.isCalibrated,
         onCalibrate: () => service.startCalibration(),
@@ -515,10 +515,10 @@ class _QiblaScreenState extends State<QiblaScreen>
             children: [
               Text(
                 title,
-  style: AppTheme.bodySmall.copyWith(
-    color: AppTheme.textSecondary,
-  ),
-),
+                style: AppTheme.bodyMedium.copyWith(
+                  fontWeight: AppTheme.semiBold,
+                ),
+              ),
               AppTheme.space1.h,
               Text(
                 description,
