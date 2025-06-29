@@ -1,13 +1,9 @@
-// lib/features/athkar/screens/notification_settings_screen.dart - محدث بالنظام الموحد الإسلامي
-
+// lib/features/athkar/screens/notification_settings_screen.dart - محدث بالثيم الإسلامي الموحد
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// ✅ استيراد النظام الموحد الإسلامي - إجباري
-import 'package:athkar_app/app/themes/app_theme.dart';
-import 'package:athkar_app/app/themes/widgets/widgets.dart';
-import 'package:athkar_app/app/themes/widgets/extended_cards.dart';
-import 'package:athkar_app/app/themes/utils/category_utils.dart';
+// ✅ استيراد النظام الموحد الإسلامي - الوحيد المسموح
+import 'package:athkar_app/app/themes/index.dart';
 
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
@@ -301,11 +297,11 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40,
-              height: 4,
+              width: AppTheme.space8 + AppTheme.space2,
+              height: AppTheme.radiusXs,
               decoration: BoxDecoration(
                 color: AppTheme.divider,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(AppTheme.radiusXs / 2),
               ),
             ),
             AppTheme.space4.h,
@@ -318,18 +314,17 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
             AppTheme.space4.h,
             
             // ✅ استخدام SettingCard للخيارات
-            SettingCard.navigation(
+            SettingCard(
               title: 'تفعيل الكل',
               subtitle: 'تفعيل جميع تذكيرات الأذكار',
               icon: Icons.notifications_active,
-              color: AppTheme.success,
               onTap: () {
                 Navigator.pop(context);
                 _enableAllReminders();
               },
             ),
             
-            SettingCard.navigation(
+            SettingCard(
               title: 'إيقاف الكل',
               subtitle: 'إيقاف جميع تذكيرات الأذكار',
               icon: Icons.notifications_off,
@@ -351,13 +346,13 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      // ✅ استخدام SimpleAppBar الموحد
-      appBar: SimpleAppBar(
+      // ✅ استخدام AppAppBar الموحد
+      appBar: AppAppBar.basic(
         title: 'إعدادات التذكيرات',
         actions: [
           if (_hasPermission && (_categories?.isNotEmpty ?? false))
             IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.more_vert,
                 color: AppTheme.textSecondary,
               ),
@@ -376,7 +371,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     }
 
     if (_errorMessage != null) {
-      return AppEmptyState.error(
+      return AppEmptyState.noData(
         message: _errorMessage!,
         onRetry: _loadData,
       );
@@ -489,9 +484,9 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     return AppCard(
       child: Column(
         children: [
-          Icon(
+          const Icon(
             Icons.notifications_off_outlined,
-            size: 64,
+            size: AppTheme.iconXl + AppTheme.space6,
             color: AppTheme.warning,
           ),
           AppTheme.space3.h,
@@ -565,134 +560,125 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     final originalTime = _originalTimes[category.id];
     final hasCustomTime = originalTime != null && currentTime != originalTime;
     
-    final categoryIcon = CategoryUtils.getCategoryIcon(category.id);
-    final categoryDescription = CategoryUtils.getCategoryDescription(category.id);
-    final categoryColor = CategoryUtils.getCategoryThemeColor(category.id);
+    final categoryIcon = AppTheme.getCategoryIcon(category.id);
+    final categoryDescription = CategoryUtils.getDescription(category.id);
+    final categoryColor = AppTheme.getCategoryColor(category.id);
 
     return Padding(
-      padding: EdgeInsets.only(bottom: AppTheme.space3),
-      child: AnimatedPress(
+      padding: const EdgeInsets.only(bottom: AppTheme.space3),
+      child: AppCard(
+        useGradient: true,
+        color: categoryColor,
+        margin: EdgeInsets.zero,
         onTap: isEnabled ? () => _selectTime(category.id, currentTime) : () {},
-        child: AppCard(
-          useGradient: true,
-          color: categoryColor,
-          margin: EdgeInsets.zero,
-          child: Row(
-            children: [
-              // أيقونة دائرية
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.25),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.4),
-                    width: 2,
-                  ),
-                ),
-                child: Icon(
-                  categoryIcon,
-                  color: Colors.white,
-                  size: AppTheme.iconLg,
+        child: Row(
+          children: [
+            // أيقونة دائرية
+            Container(
+              width: AppTheme.iconXl + AppTheme.space3,
+              height: AppTheme.iconXl + AppTheme.space3,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.25),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  width: 2,
                 ),
               ),
-              
-              AppTheme.space3.w,
-              
-              // النص والمعلومات
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+              child: Icon(
+                categoryIcon,
+                color: Colors.white,
+                size: AppTheme.iconLg,
+              ),
+            ),
+            
+            AppTheme.space3.w,
+            
+            // النص والمعلومات
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    category.title,
+                    style: AppTheme.titleMedium.copyWith(
+                      color: Colors.white,
+                      fontWeight: AppTheme.bold,
+                    ),
+                  ),
+                  if (categoryDescription.isNotEmpty) ...[
+                    AppTheme.space1.h,
                     Text(
-                      category.title,
-                      style: AppTheme.titleMedium.copyWith(
-                        color: Colors.white,
-                        fontWeight: AppTheme.bold,
-                        shadows: const [
-                          Shadow(
-                            color: Colors.black26,
-                            offset: Offset(0, 1),
-                            blurRadius: 2,
+                      categoryDescription,
+                      style: AppTheme.bodySmall.copyWith(
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                  if (isEnabled) ...[
+                    AppTheme.space1.h,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppTheme.space2,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: AppTheme.radiusMd.radius,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            size: AppTheme.iconSm - 2,
+                            color: Colors.white.withValues(alpha: 0.9),
                           ),
+                          const SizedBox(width: AppTheme.radiusXs),
+                          Text(
+                            currentTime.format(context),
+                            style: AppTheme.labelMedium.copyWith(
+                              color: Colors.white,
+                              fontWeight: hasCustomTime 
+                                  ? AppTheme.bold 
+                                  : AppTheme.regular,
+                            ),
+                          ),
+                          if (hasCustomTime) ...[
+                            const SizedBox(width: AppTheme.radiusXs),
+                            Icon(
+                              Icons.edit,
+                              size: AppTheme.iconSm - 4,
+                              color: Colors.white.withValues(alpha: 0.8),
+                            ),
+                          ],
                         ],
                       ),
                     ),
-                    if (categoryDescription.isNotEmpty) ...[
-                      AppTheme.space1.h,
-                      Text(
-                        categoryDescription,
-                        style: AppTheme.bodySmall.copyWith(
-                          color: Colors.white.withValues(alpha: 0.8),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                    if (isEnabled) ...[
-                      AppTheme.space1.h,
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppTheme.space2,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: AppTheme.radiusMd.radius,
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.access_time,
-                              size: 12,
-                              color: Colors.white.withValues(alpha: 0.9),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              currentTime.format(context),
-                              style: AppTheme.labelMedium.copyWith(
-                                color: Colors.white,
-                                fontWeight: hasCustomTime 
-                                    ? AppTheme.bold 
-                                    : AppTheme.regular,
-                              ),
-                            ),
-                            if (hasCustomTime) ...[
-                              const SizedBox(width: 4),
-                              Icon(
-                                Icons.edit,
-                                size: 10,
-                                color: Colors.white.withValues(alpha: 0.8),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
-              
-              // مفتاح التشغيل
-              Switch(
-                value: isEnabled,
-                onChanged: _hasPermission 
-                    ? (value) => _toggleCategory(category.id, value) 
-                    : null,
-                activeColor: Colors.white,
-                activeTrackColor: Colors.white.withValues(alpha: 0.3),
-                inactiveThumbColor: AppTheme.textSecondary,
-                inactiveTrackColor: AppTheme.divider,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ],
-          ),
+            ),
+            
+            // مفتاح التشغيل
+            Switch(
+              value: isEnabled,
+              onChanged: _hasPermission 
+                  ? (value) => _toggleCategory(category.id, value) 
+                  : null,
+              activeColor: Colors.white,
+              activeTrackColor: Colors.white.withValues(alpha: 0.3),
+              inactiveThumbColor: AppTheme.textSecondary,
+              inactiveTrackColor: AppTheme.divider,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ],
         ),
       ),
     );
@@ -701,20 +687,33 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
   // ✅ دوال مساعدة محلية
   TimeOfDay _getDefaultReminderTime(String categoryId) {
     switch (categoryId) {
-      case 'اوقات_الصلاة':
-        return const TimeOfDay(hour: 6, minute: 0); // الفجر
-      case 'الاذكار':
-        return const TimeOfDay(hour: 7, minute: 0); // الصباح
-      case 'القبلة':
-        return const TimeOfDay(hour: 12, minute: 0); // الظهر
+      case 'morning':
+      case 'الصباح':
+        return const TimeOfDay(hour: 7, minute: 0);
+      case 'evening':
+      case 'المساء':
+        return const TimeOfDay(hour: 18, minute: 0);
+      case 'sleep':
+      case 'النوم':
+        return const TimeOfDay(hour: 22, minute: 0);
+      case 'prayer':
+      case 'الصلاة':
+        return const TimeOfDay(hour: 6, minute: 0);
+      case 'eating':
+      case 'الطعام':
+        return const TimeOfDay(hour: 12, minute: 0);
+      case 'travel':
+      case 'السفر':
+        return const TimeOfDay(hour: 8, minute: 0);
+      case 'quran':
+      case 'القرآن':
+        return const TimeOfDay(hour: 21, minute: 0);
+      case 'tasbih':
       case 'التسبيح':
-        return const TimeOfDay(hour: 20, minute: 0); // المساء
-      case 'القران':
-        return const TimeOfDay(hour: 21, minute: 0); // بعد المغرب
-      case 'الادعية':
-        return const TimeOfDay(hour: 22, minute: 0); // الليل
-      case 'المفضلة':
-        return const TimeOfDay(hour: 8, minute: 0); // الصباح
+        return const TimeOfDay(hour: 20, minute: 0);
+      case 'dua':
+      case 'الدعاء':
+        return const TimeOfDay(hour: 22, minute: 30);
       default:
         return const TimeOfDay(hour: 8, minute: 0);
     }
@@ -722,8 +721,12 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
 
   bool _shouldAutoEnable(String categoryId) {
     switch (categoryId) {
-      case 'اوقات_الصلاة':
-      case 'الاذكار':
+      case 'morning':
+      case 'الصباح':
+      case 'evening':
+      case 'المساء':
+      case 'prayer':
+      case 'الصلاة':
         return true; // الفئات الأساسية تُفعل تلقائياً
       default:
         return false;

@@ -1,13 +1,10 @@
-// lib/features/daily_quote/widgets/daily_quotes_card.dart - محدث بالنظام الموحد الإسلامي الكامل
+// lib/features/daily_quote/widgets/daily_quotes_card.dart - محدث بالثيم الإسلامي الموحد 100%
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
-// ✅ استيراد النظام الموحد الإسلامي - محدث
-import 'package:athkar_app/app/themes/app_theme.dart';
-import 'package:athkar_app/app/themes/widgets/widgets.dart';
-import 'package:athkar_app/app/themes/widgets/extended_cards.dart';
-import 'package:athkar_app/app/themes/utils/category_utils.dart';
+// ✅ استيراد النظام الموحد الإسلامي - الوحيد المسموح
+import 'package:athkar_app/app/themes/index.dart';
 
 import '../../../app/di/service_locator.dart';
 import '../services/daily_quote_service.dart';
@@ -192,13 +189,13 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
   }
 
   Widget _buildQuoteCard(QuoteData quote) {
-    final gradientColors = _getQuoteColors(quote.type);
+    final cardColor = _getQuotePrimaryColor(quote.type);
     
     return AnimatedPress(
       onTap: () => _showQuoteDetails(quote),
       child: AppCard(
         useGradient: true,
-        color: gradientColors.first,
+        color: cardColor,
         child: Stack(
           children: [
             // عنوان الفئة في الزاوية اليمنى العلوية
@@ -207,9 +204,9 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
               right: 0,
               child: Container(
                 padding: AppTheme.space2.paddingH.add(AppTheme.space1.paddingV),
-                decoration: CardHelper.getCardDecoration(
+                decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: AppTheme.radiusMd,
+                  borderRadius: AppTheme.radiusMd.radius,
                 ),
                 child: Text(
                   _getQuoteTitle(quote.type),
@@ -227,15 +224,15 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
               left: 0,
               child: Container(
                 padding: AppTheme.space2.paddingH.add(AppTheme.space1.paddingV),
-                decoration: CardHelper.getCardDecoration(
+                decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: AppTheme.radiusFull,
+                  borderRadius: AppTheme.radiusFull.radius,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      CategoryUtils.getCategoryIcon('quran'),
+                      AppTheme.getCategoryIcon('quran'),
                       color: Colors.white.withValues(alpha: 0.9),
                       size: AppTheme.iconSm,
                     ),
@@ -260,13 +257,13 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
               child: Container(
                 padding: AppTheme.space4.padding,
                 margin: AppTheme.space4.paddingH.add(AppTheme.space3.paddingV),
-                decoration: CardHelper.getCardDecoration(
+                decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: AppTheme.radiusLg,
+                  borderRadius: AppTheme.radiusLg.radius,
                 ),
                 child: Text(
                   quote.content,
-                  style: CardHelper.getTextStyle('quran').copyWith(
+                  style: AppTheme.quranStyle.copyWith(
                     color: Colors.white,
                     height: 1.7,
                     fontWeight: AppTheme.semiBold,
@@ -303,15 +300,15 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
         return AnimatedContainer(
           duration: AppTheme.durationNormal,
           margin: AppTheme.space1.paddingH,
-          width: isActive ? 24 : 8,
-          height: 8,
+          width: isActive ? AppTheme.space6 : AppTheme.space2,
+          height: AppTheme.space2,
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(AppTheme.radiusXs),
             boxShadow: isActive ? [
               BoxShadow(
                 color: color.withValues(alpha: 0.4),
-                blurRadius: 8,
+                blurRadius: AppTheme.space2,
                 offset: const Offset(0, 2),
               ),
             ] : null,
@@ -345,20 +342,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
     );
   }
 
-  // ✅ دوال مساعدة للألوان حسب النوع - محدثة
-  List<Color> _getQuoteColors(String type) {
-    switch (type) {
-      case 'verse':
-        return [AppTheme.primary, AppTheme.primaryDark];
-      case 'hadith':
-        return [AppTheme.secondary, AppTheme.secondaryDark];
-      case 'dua':
-        return [AppTheme.accent, AppTheme.accent.darken(0.2)];
-      default:
-        return [AppTheme.primary, AppTheme.primaryDark];
-    }
-  }
-
+  // ✅ دوال مساعدة للألوان حسب النوع - استخدام النظام الموحد
   Color _getQuotePrimaryColor(String type) {
     switch (type) {
       case 'verse':
@@ -395,7 +379,7 @@ class _QuoteDetailsModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gradientColors = _getQuoteColors(quote.type);
+    final cardColor = _getQuotePrimaryColor(quote.type);
     
     return Container(
       constraints: BoxConstraints(
@@ -403,7 +387,7 @@ class _QuoteDetailsModal extends StatelessWidget {
       ),
       child: AppCard(
         useGradient: true,
-        color: gradientColors.first,
+        color: cardColor,
         margin: EdgeInsets.zero,
         padding: EdgeInsets.zero,
         child: Column(
@@ -412,8 +396,8 @@ class _QuoteDetailsModal extends StatelessWidget {
             // مقبض السحب
             Container(
               margin: AppTheme.space3.paddingV.copyWith(top: AppTheme.space3),
-              width: 50,
-              height: 5,
+              width: AppTheme.iconXl + AppTheme.space3,
+              height: AppTheme.space1 + 1,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(2.5),
@@ -430,7 +414,7 @@ class _QuoteDetailsModal extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.15),
                       child: Text(
                         getTitle(quote.type),
-                        style: context.headlineMedium.copyWith(
+                        style: AppTheme.headlineMedium.copyWith(
                           fontWeight: AppTheme.bold,
                           color: Colors.white,
                         ),
@@ -445,7 +429,7 @@ class _QuoteDetailsModal extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.15),
                       child: Text(
                         quote.content,
-                        style: CardHelper.getTextStyle('quran').copyWith(
+                        style: AppTheme.quranStyle.copyWith(
                           height: 1.8,
                           fontSize: 17,
                           color: Colors.white,
@@ -460,13 +444,13 @@ class _QuoteDetailsModal extends StatelessWidget {
                     // المصدر
                     Container(
                       padding: AppTheme.space4.paddingH.add(AppTheme.space3.paddingV),
-                      decoration: CardHelper.getCardDecoration(
+                      decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: AppTheme.radiusFull,
+                        borderRadius: AppTheme.radiusFull.radius,
                       ),
                       child: Text(
                         quote.source,
-                        style: context.titleMedium.copyWith(
+                        style: AppTheme.titleMedium.copyWith(
                           color: Colors.white,
                           fontWeight: AppTheme.semiBold,
                         ),
@@ -491,7 +475,7 @@ class _QuoteDetailsModal extends StatelessWidget {
                         AppTheme.space3.w,
                         
                         Expanded(
-                          child: AppButton.secondary(
+                          child: AppButton.primary(
                             text: 'مشاركة',
                             icon: Icons.share,
                             onPressed: () => _shareQuote(context),
@@ -560,17 +544,17 @@ class _QuoteDetailsModal extends StatelessWidget {
     }
   }
 
-  // ✅ دوال مساعدة للألوان
-  List<Color> _getQuoteColors(String type) {
+  // ✅ دوال مساعدة للألوان - استخدام النظام الموحد
+  Color _getQuotePrimaryColor(String type) {
     switch (type) {
       case 'verse':
-        return [AppTheme.primary, AppTheme.primaryDark];
+        return AppTheme.primary;
       case 'hadith':
-        return [AppTheme.secondary, AppTheme.secondaryDark];
+        return AppTheme.secondary;
       case 'dua':
-        return [AppTheme.accent, AppTheme.accent.darken(0.2)];
+        return AppTheme.accent;
       default:
-        return [AppTheme.primary, AppTheme.primaryDark];
+        return AppTheme.primary;
     }
   }
 }

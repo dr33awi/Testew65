@@ -1,14 +1,11 @@
-// lib/app/themes/index.dart - الفهرس الشامل للثيم الموحد
-
-// ========== النواة الأساسية ==========
+// lib/app/themes/index.dart
 export 'app_theme.dart';
 export 'core/theme_notifier.dart';
 
-// ========== المكونات الأساسية ==========
-export 'widgets/widgets.dart';         // الكروت والأزرار والمكونات الأساسية
-export 'widgets/app_bars.dart';        // الأشرطة العلوية
-export 'widgets/app_info.dart';        // معلومات التطبيق
+export 'widgets/widgets.dart';
+export 'widgets/app_bars.dart'; 
+export 'widgets/app_info.dart';
+export 'widgets/extended_cards.dart';  // ← إضافة هذا السطر
 
-// ========== الأدوات المساعدة ==========
-export 'utils/category_utils.dart';    // أدوات الفئات
-export 'utils/prayer_utils.dart';      // أدوات الصلوات
+export 'utils/category_utils.dart';
+export 'utils/prayer_utils.dart';

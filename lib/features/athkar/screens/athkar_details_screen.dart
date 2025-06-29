@@ -1,12 +1,10 @@
-// lib/features/athkar/screens/athkar_details_screen.dart - محدث بالنظام الموحد الإسلامي
+// lib/features/athkar/screens/athkar_details_screen.dart - محدث بالثيم الإسلامي الموحد
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
-// ✅ استيراد النظام الموحد الإسلامي - إجباري
-import 'package:athkar_app/app/themes/app_theme.dart';
-import 'package:athkar_app/app/themes/widgets/widgets.dart';
-import 'package:athkar_app/app/themes/widgets/extended_cards.dart';
+// ✅ استيراد النظام الموحد الإسلامي - الوحيد المسموح
+import 'package:athkar_app/app/themes/index.dart';
 
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
@@ -318,9 +316,9 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}''';
     if (_category == null) {
       return Scaffold(
         backgroundColor: AppTheme.background,
-        // ✅ استخدام SimpleAppBar الموحد
-        appBar: SimpleAppBar(title: 'الأذكار'),
-        body: AppEmptyState.error(
+        // ✅ استخدام AppAppBar الموحد
+        appBar: AppAppBar.basic(title: 'الأذكار'),
+        body: AppEmptyState.noData(
           message: 'تعذر تحميل الأذكار المطلوبة',
           onRetry: _load,
         ),
@@ -339,16 +337,13 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}''';
       },
       child: Scaffold(
         backgroundColor: AppTheme.background,
-        // ✅ استخدام SimpleAppBar الموحد
-        appBar: SimpleAppBar(
+        // ✅ استخدام AppAppBar الموحد
+        appBar: AppAppBar.basic(
           title: category.title,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_rounded),
-            onPressed: () async {
-              await _resetAndReload();
-              Navigator.of(context).pop();
-            },
-          ),
+          onBackPressed: () async {
+            await _resetAndReload();
+            Navigator.of(context).pop();
+          },
           actions: [
             IconButton(
               icon: const Icon(
@@ -416,7 +411,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}''';
                 ),
                 const Icon(
                   Icons.check_circle,
-                  size: 16,
+                  size: AppTheme.iconSm,
                   color: AppTheme.success,
                 ),
                 AppTheme.space1.w,
@@ -436,16 +431,16 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}''';
           // شريط التقدم
           if (totalAthkar > 0)
             Container(
-              height: 8,
+              height: AppTheme.space2,
               decoration: BoxDecoration(
                 color: AppTheme.card,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(AppTheme.radiusXs),
                 border: Border.all(
                   color: AppTheme.divider.withValues(alpha: 0.2),
                 ),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(AppTheme.radiusXs),
                 child: LinearProgressIndicator(
                   value: completedAthkar / totalAthkar,
                   backgroundColor: Colors.transparent,
@@ -482,21 +477,43 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}''';
                         ? AppTheme.space4
                         : 0,
                   ),
-                  // ✅ استخدام AdvancedAthkarCard الموحد
-                  child: AdvancedAthkarCard(
+                  // ✅ استخدام AppCard.athkar الموحد
+                  child: AppCard.athkar(
                     content: item.text,
                     source: item.source,
                     fadl: item.fadl,
                     currentCount: currentCount,
                     totalCount: item.count,
-                    primaryColor: AppTheme.primary,
+                    primaryColor: AppTheme.getCategoryColor(widget.categoryId),
                     isCompleted: _completedItems.contains(item.id),
-                    isFavorite: isFavorite,
                     onTap: () => _onItemTap(item),
-                    onFavorite: () => _toggleFavorite(item),
-                    onShare: () => _shareItem(item),
-                    onCopy: () => _copyToClipboard(item),
-                    onReset: () => _onItemLongPress(item),
+                    actions: [
+                      CardAction(
+                        icon: isFavorite ? Icons.favorite : Icons.favorite_border,
+                        label: '',
+                        onPressed: () => _toggleFavorite(item),
+                        color: isFavorite ? AppTheme.error : AppTheme.textSecondary,
+                      ),
+                      CardAction(
+                        icon: Icons.share,
+                        label: '',
+                        onPressed: () => _shareItem(item),
+                        color: AppTheme.info,
+                      ),
+                      CardAction(
+                        icon: Icons.copy,
+                        label: '',
+                        onPressed: () => _copyToClipboard(item),
+                        color: AppTheme.warning,
+                      ),
+                      if (currentCount > 0)
+                        CardAction(
+                          icon: Icons.refresh,
+                          label: '',
+                          onPressed: () => _onItemLongPress(item),
+                          color: AppTheme.textTertiary,
+                        ),
+                    ],
                   ),
                 );
               },
@@ -516,15 +533,15 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}''';
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 80,
-                height: 80,
+                width: AppTheme.iconXl * 2,
+                height: AppTheme.iconXl * 2,
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.check_circle_rounded,
-                  size: 48,
+                  size: AppTheme.iconXl + AppTheme.space3,
                   color: Colors.white,
                 ),
               ),
@@ -573,7 +590,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}''';
                   AppTheme.space3.w,
                   
                   Expanded(
-                    child: AppButton.secondary(
+                    child: AppButton.primary(
                       text: 'مشاركة',
                       onPressed: _shareProgress,
                     ),
