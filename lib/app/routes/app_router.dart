@@ -1,5 +1,6 @@
 // lib/app/routes/app_router.dart - مُصحح للنظام المبسط وبدون إعدادات
 
+import 'package:athkar_app/app/themes/widgets/extended_cards.dart';
 import 'package:flutter/material.dart';
 import 'package:athkar_app/app/themes/app_theme.dart';
 import 'package:athkar_app/app/themes/widgets/widgets.dart';

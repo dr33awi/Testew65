@@ -1,20 +1,10 @@
-// lib/features/qibla/screens/qibla_screen.dart - محدث بالنظام الموحد
+// lib/features/qibla/screens/qibla_screen.dart - شاشة القبلة بالثيم الإسلامي الموحد
+import 'package:athkar_app/app/themes/index.dart';
+import 'package:athkar_app/app/di/service_locator.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-import 'dart:ui';
+import 'dart:math' as math;
 
-// ✅ استيراد النظام الموحد
-import '../../../app/themes/app_theme.dart';
-import '../../../app/themes/widgets/widgets.dart';
-import '../../../app/themes/widgets/extended_cards.dart';
-
-import '../../../app/di/service_locator.dart';
-import '../../../core/infrastructure/services/logging/logger_service.dart';
-import '../../../core/infrastructure/services/storage/storage_service.dart';
-import '../../../core/infrastructure/services/permissions/permission_service.dart';
 import '../services/qibla_service.dart';
-import '../widgets/qibla_compass.dart';
 
 class QiblaScreen extends StatefulWidget {
   const QiblaScreen({super.key});
@@ -23,93 +13,48 @@ class QiblaScreen extends StatefulWidget {
   State<QiblaScreen> createState() => _QiblaScreenState();
 }
 
-class _QiblaScreenState extends State<QiblaScreen>
-    with WidgetsBindingObserver, TickerProviderStateMixin {
-  late final QiblaService _qiblaService;
+class _QiblaScreenState extends State<QiblaScreen> with TickerProviderStateMixin {
+  late QiblaService _qiblaService;
+  late AnimationController _rotationController;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-    _initializeService();
-    WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _updateQiblaData());
-  }
-
-  void _initializeService() {
-    _qiblaService = QiblaService(
-      logger: getIt<LoggerService>(),
-      storage: getIt<StorageService>(),
-      permissionService: getIt<PermissionService>(),
-    );
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _updateQiblaData();
-    }
-  }
-
-  Future<void> _updateQiblaData() async {
-    await _qiblaService.updateQiblaData();
+    _qiblaService = getService<QiblaService>();
     
-    if (_shouldShowCalibrationTip()) {
-      _showCalibrationTip();
-    }
-  }
-
-  bool _shouldShowCalibrationTip() {
-    return !_qiblaService.isCalibrated &&
-           _qiblaService.hasCompass &&
-           _qiblaService.compassAccuracy < 0.7;
-  }
-
-  void _showCalibrationTip() {
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Row(
-            children: [
-              const Icon(
-                Icons.compass_calibration,
-                color: AppTheme.warning,
-                size: 24,
-              ),
-              AppTheme.space2.w,
-              const Text('تحسين دقة البوصلة'),
-            ],
-          ),
-          content: const Text(
-            'لتحسين دقة البوصلة، قم بتحريك هاتفك على شكل الرقم 8 في الهواء عدة مرات.',
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: AppTheme.radiusLg.radius,
-          ),
-          actions: [
-            AppButton.text(
-              text: 'إلغاء',
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            AppButton.primary(
-              text: 'بدء المعايرة',
-              onPressed: () {
-                Navigator.of(context).pop();
-                _qiblaService.startCalibration();
-              },
-            ),
-          ],
-        ),
-      );
+    // إعداد الحركات
+    _rotationController = AnimationController(
+      duration: AppTheme.durationSlow,
+      vsync: this,
+    );
+    
+    _pulseController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    
+    _pulseAnimation = Tween<double>(
+      begin: 0.95,
+      end: 1.05,
+    ).animate(CurvedAnimation(
+      parent: _pulseController,
+      curve: Curves.easeInOut,
+    ));
+    
+    // تحديث البيانات إذا لزم الأمر
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_qiblaService.qiblaData == null || _qiblaService.qiblaData!.isStale) {
+        _qiblaService.updateQiblaData();
+      }
     });
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _qiblaService.dispose();
+    _rotationController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -117,310 +62,265 @@ class _QiblaScreenState extends State<QiblaScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.background,
-      // ✅ استخدام SimpleAppBar الموحد
-      appBar: SimpleAppBar(
+      appBar: AppAppBar.basic(
         title: 'اتجاه القبلة',
         actions: [
           IconButton(
-            icon: const Icon(
-              Icons.help_outline,
-              color: AppTheme.primary,
-            ),
-            onPressed: _showInstructions,
-            tooltip: 'التعليمات',
+            icon: const Icon(Icons.refresh),
+            onPressed: () => _qiblaService.updateQiblaData(),
+            tooltip: 'تحديث الموقع',
+          ),
+          AppTheme.space2.w,
+        ],
+      ),
+      body: AnimatedBuilder(
+        animation: _qiblaService,
+        builder: (context, child) {
+          if (_qiblaService.isLoading) {
+            return _buildLoadingState();
+          }
+          
+          if (_qiblaService.errorMessage != null) {
+            return _buildErrorState();
+          }
+          
+          if (_qiblaService.qiblaData == null) {
+            return _buildInitialState();
+          }
+          
+          return _buildQiblaContent();
+        },
+      ),
+    );
+  }
+
+  // حالة التحميل
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AppLoading.page(message: 'جاري تحديد موقعك...'),
+          AppTheme.space6.h,
+          AppCard.basic(
+            title: 'الحصول على الموقع',
+            subtitle: 'نحتاج موقعك لحساب اتجاه القبلة بدقة',
+            icon: Icons.location_searching,
+            color: AppTheme.info,
           ),
         ],
       ),
-      body: ChangeNotifierProvider.value(
-        value: _qiblaService,
-        child: Consumer<QiblaService>(
-          builder: (context, service, _) {
-            return Stack(
-              children: [
-                // بطاقة الترحيب في الأعلى
-                Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: _buildWelcomeCard(context),
-                ),
-                
-                // المحتوى الرئيسي في المنتصف
-                Center(
-                  child: _buildMainContent(service),
-                ),
-              ],
-            );
-          },
-        ),
-      ),
     );
   }
 
-  Widget _buildWelcomeCard(BuildContext context) {
-    final qiblaColor = AppTheme.getCategoryColor('قبلة');
-    
-    return Container(
-      margin: AppTheme.space4.padding,
-      height: 140,
-      decoration: BoxDecoration(
-        borderRadius: AppTheme.radiusLg.radius,
-      ),
-      child: ClipRRect(
-        borderRadius: AppTheme.radiusLg.radius,
-        child: Stack(
-          children: [
-            // الخلفية المتدرجة
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    qiblaColor,
-                    qiblaColor.darken(0.2),
-                  ].map((c) => c.withValues(alpha: 0.9)).toList(),
-                ),
-              ),
-            ),
-            
-            // الطبقة الزجاجية
-            BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1,
-                  ),
-                ),
-              ),
-            ),
-            
-            // المحتوى
-            Padding(
-              padding: AppTheme.space5.padding,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // النصوص
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '"وَحَيْثُ مَا كُنتُمْ فَوَلُّوا وُجُوهَكُمْ شَطْرَهُ"',
-                        style: AppTheme.titleLarge.copyWith(
-                          color: Colors.white,
-                          fontWeight: AppTheme.bold,
-                          fontSize: 16,
-                          height: 1.3,
-                          letterSpacing: 0.3,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withValues(alpha: 0.4),
-                              offset: const Offset(0, 2),
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      
-                      AppTheme.space2.h,
-                      
-                      Text(
-                        'توجه نحو الكعبة المشرفة واستقبل القبلة',
-                        style: AppTheme.bodyMedium.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: 13,
-                          height: 1.2,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              offset: const Offset(0, 1),
-                              blurRadius: 2,
-                            ),
-                          ],
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            // العناصر الزخرفية
-            _buildDecorativeElements(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMainContent(QiblaService service) {
-    if (service.isLoading) {
-      return _buildLoadingState();
-    } else if (service.errorMessage != null) {
-      return _buildErrorState(service);
-    } else if (!service.hasCompass) {
-      return _buildNoCompassState(service);
-    } else if (service.qiblaData != null) {
-      return _buildCompassView(service);
-    } else {
-      return _buildInitialState();
-    }
-  }
-
-  Widget _buildCompassView(QiblaService service) {
-    return SizedBox(
-      width: 320,
-      height: 320,
-      child: QiblaCompass(
-        qiblaDirection: service.qiblaData!.qiblaDirection,
-        currentDirection: service.currentDirection, // ✅ استخدام currentDirection المصحح
-        accuracy: service.compassAccuracy,
-        isCalibrated: service.isCalibrated,
-        onCalibrate: () => service.startCalibration(),
-      ),
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return AppLoading.page(message: 'جاري تحديد موقعك...');
-  }
-
-  Widget _buildErrorState(QiblaService service) {
-    return AppEmptyState.error(
-      message: service.errorMessage ?? 'فشل تحميل البيانات',
-      onRetry: _updateQiblaData,
-    );
-  }
-
-  Widget _buildNoCompassState(QiblaService service) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // بطاقة تحذير
-        AppCard(
-          useGradient: true,
-          color: AppTheme.warning,
-          child: Column(
+  // حالة الخطأ
+  Widget _buildErrorState() {
+    return Padding(
+      padding: AppTheme.space6.padding,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AppCard.basic(
+            title: 'خطأ في تحديد الموقع',
+            subtitle: _qiblaService.errorMessage!,
+            icon: Icons.error_outline,
+            color: AppTheme.error,
+          ),
+          AppTheme.space6.h,
+          Row(
             children: [
-              const Icon(
-                Icons.compass_calibration,
-                size: 64,
-                color: Colors.white,
-              ),
-              AppTheme.space3.h,
-              Text(
-                'البوصلة غير متوفرة',
-                style: AppTheme.titleLarge.copyWith(
-                  fontWeight: AppTheme.bold,
-                  color: Colors.white,
+              Expanded(
+                child: AppButton.outline(
+                  text: 'إعادة المحاولة',
+                  icon: Icons.refresh,
+                  onPressed: () => _qiblaService.updateQiblaData(),
                 ),
               ),
-              AppTheme.space2.h,
-              Text(
-                'جهازك لا يدعم البوصلة أو أنها معطلة حالياً',
-                style: AppTheme.bodyMedium.copyWith(
-                  color: Colors.white.withValues(alpha: 0.9),
+              AppTheme.space3.w,
+              Expanded(
+                child: AppButton.primary(
+                  text: 'الإعدادات',
+                  icon: Icons.settings,
+                  onPressed: () => context.permissionService.openAppSettings(),
                 ),
-                textAlign: TextAlign.center,
               ),
             ],
           ),
-        ),
-        
-        if (service.qiblaData != null) ...[
-          AppTheme.space4.h,
-          _buildStaticQiblaInfo(service),
         ],
-      ],
+      ),
     );
   }
 
-  Widget _buildStaticQiblaInfo(QiblaService service) {
-    return QiblaInfoCard(
-      qiblaDirection: service.qiblaData!.qiblaDirection,
-      locationName: 'الموقع الحالي',
-      accuracy: service.compassAccuracy,
-      isCalibrated: service.isCalibrated,
-      onCalibrate: () => service.startCalibration(),
-    );
-  }
-
+  // الحالة الأولية
   Widget _buildInitialState() {
-    return AppCard(
-      useGradient: true,
-      color: AppTheme.getCategoryColor('قبلة'),
+    return Padding(
+      padding: AppTheme.space6.padding,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AppCard.basic(
+            title: 'مرحباً بك',
+            subtitle: 'اضغط على الزر أدناه لتحديد موقعك وحساب اتجاه القبلة',
+            icon: Icons.explore,
+            color: AppTheme.primary,
+          ),
+          AppTheme.space6.h,
+          AppButton.primary(
+            text: 'تحديد الموقع',
+            icon: Icons.my_location,
+            onPressed: () => _qiblaService.updateQiblaData(),
+            isFullWidth: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // المحتوى الرئيسي للقبلة
+  Widget _buildQiblaContent() {
+    final qiblaData = _qiblaService.qiblaData!;
+    
+    return SingleChildScrollView(
+      padding: AppTheme.space4.padding,
       child: Column(
         children: [
-          const Icon(
-            Icons.my_location,
-            size: 64,
-            color: Colors.white,
-          ),
-          AppTheme.space3.h,
-          Text(
-            'حدد موقعك',
-            style: AppTheme.titleLarge.copyWith(
-              fontWeight: AppTheme.bold,
-              color: Colors.white,
-            ),
-          ),
-          AppTheme.space2.h,
-          Text(
-            'اضغط هنا لتحديد موقعك وعرض اتجاه القبلة',
-            style: AppTheme.bodyMedium.copyWith(
-              color: Colors.white.withValues(alpha: 0.9),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          AppTheme.space5.h,
-          AppButton.outline(
-            text: 'تحديد الموقع',
-            onPressed: _updateQiblaData,
-            icon: Icons.location_on,
-            borderColor: Colors.white,
-          ),
+          // معلومات الموقع
+          _buildLocationInfo(qiblaData),
+          AppTheme.space4.h,
+          
+          // البوصلة الرئيسية
+          _buildMainCompass(qiblaData),
+          AppTheme.space4.h,
+          
+          // معلومات الاتجاه
+          _buildDirectionInfo(qiblaData),
+          AppTheme.space4.h,
+          
+          // حالة البوصلة
+          _buildCompassStatus(),
+          AppTheme.space4.h,
+          
+          // إحصائيات إضافية
+          _buildQiblaStats(qiblaData),
         ],
       ),
     );
   }
 
-  Widget _buildDecorativeElements() {
-    return Positioned.fill(
-      child: Stack(
+  // معلومات الموقع
+  Widget _buildLocationInfo(qiblaData) {
+    return AppCard.basic(
+      title: qiblaData.cityName ?? 'موقعك الحالي',
+      subtitle: qiblaData.countryName,
+      icon: Icons.location_on,
+      color: AppTheme.info,
+    );
+  }
+
+  // البوصلة الرئيسية
+  Widget _buildMainCompass(qiblaData) {
+    return Container(
+      width: double.infinity,
+      padding: AppTheme.space6.padding,
+      child: Column(
         children: [
-          // دائرة زخرفية صغيرة
-          Positioned(
-            top: 8,
-            right: 8,
-            child: Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.3),
-              ),
-            ),
+          // البوصلة
+          AnimatedBuilder(
+            animation: _pulseAnimation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _pulseAnimation.value,
+                child: Container(
+                  width: 250,
+                  height: 250,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: AppTheme.oliveGoldGradient,
+                    boxShadow: AppTheme.shadowLg,
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // خلفية البوصلة
+                      Container(
+                        width: 220,
+                        height: 220,
+                        decoration: const BoxDecoration(
+                          color: AppTheme.background,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      
+                      // الاتجاهات الأساسية
+                      _buildCompassDirections(),
+                      
+                      // سهم الشمال (البوصلة)
+                      if (_qiblaService.hasCompass)
+                        Transform.rotate(
+                          angle: -_qiblaService.currentDirection * (math.pi / 180),
+                          child: Container(
+                            width: 4,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: AppTheme.info,
+                              borderRadius: AppTheme.radiusFull.radius,
+                            ),
+                          ),
+                        ),
+                      
+                      // سهم القبلة
+                      Transform.rotate(
+                        angle: (_qiblaService.hasCompass ? _qiblaService.qiblaAngle : qiblaData.qiblaDirection) * (math.pi / 180),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.navigation,
+                              size: AppTheme.iconXl + AppTheme.space2,
+                              color: AppTheme.primary,
+                            ),
+                            Text(
+                              'القبلة',
+                              style: AppTheme.bodySmall.copyWith(
+                                color: AppTheme.primary,
+                                fontWeight: AppTheme.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      // النقطة المركزية
+                      Container(
+                        width: AppTheme.space3,
+                        height: AppTheme.space3,
+                        decoration: const BoxDecoration(
+                          color: AppTheme.textPrimary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
           
-          // دائرة إضافية
-          Positioned(
-            bottom: 12,
-            left: 12,
-            child: Container(
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.2),
+          AppTheme.space4.h,
+          
+          // الدرجة الرقمية
+          Container(
+            padding: AppTheme.space3.padding,
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withValues(alpha: 0.1),
+              borderRadius: AppTheme.radiusFull.radius,
+            ),
+            child: Text(
+              '${qiblaData.qiblaDirection.toStringAsFixed(1)}°',
+              style: AppTheme.headlineMedium.copyWith(
+                color: AppTheme.primary,
+                fontWeight: AppTheme.bold,
+                fontFamily: AppTheme.numbersFont,
               ),
             ),
           ),
@@ -429,108 +329,111 @@ class _QiblaScreenState extends State<QiblaScreen>
     );
   }
 
-  void _showInstructions() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(
-              Icons.help_outline,
-              color: AppTheme.getCategoryColor('قبلة'),
-              size: 24,
+  // الاتجاهات الأساسية للبوصلة
+  Widget _buildCompassDirections() {
+    const directions = [
+      {'label': 'ش', 'angle': 0.0},
+      {'label': 'ج', 'angle': 90.0},
+      {'label': 'ج', 'angle': 180.0},
+      {'label': 'غ', 'angle': 270.0},
+    ];
+    
+    return Stack(
+      children: directions.map((direction) {
+        final angle = direction['angle'] as double;
+        final label = direction['label'] as String;
+        return Transform.rotate(
+          angle: angle * (math.pi / 180),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(top: AppTheme.space2),
+              child: Text(
+                label,
+                style: AppTheme.labelMedium.copyWith(
+                  color: AppTheme.textSecondary,
+                  fontWeight: AppTheme.bold,
+                ),
+              ),
             ),
-            AppTheme.space2.w,
-            const Text('تعليمات استخدام البوصلة'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildInstructionItem(
-              icon: Icons.my_location,
-              title: '1. تفعيل الموقع',
-              description: 'تأكد من تفعيل خدمة الموقع على هاتفك',
-            ),
-            AppTheme.space4.h,
-            _buildInstructionItem(
-              icon: Icons.compass_calibration,
-              title: '2. معايرة البوصلة',
-              description: 'حرك هاتفك على شكل الرقم 8 لمعايرة البوصلة',
-            ),
-            AppTheme.space4.h,
-            _buildInstructionItem(
-              icon: Icons.phone_android,
-              title: '3. وضع الهاتف',
-              description: 'امسك الهاتف بشكل مسطح أمامك',
-            ),
-            AppTheme.space4.h,
-            _buildInstructionItem(
-              icon: Icons.navigation,
-              title: '4. اتباع الاتجاه',
-              description: 'اتبع السهم الأخضر للتوجه نحو القبلة',
-            ),
-          ],
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: AppTheme.radiusLg.radius,
-        ),
-        actions: [
-          AppButton.text(
-            text: 'فهمت',
-            onPressed: () => Navigator.of(context).pop(),
-            textColor: AppTheme.getCategoryColor('قبلة'),
           ),
-        ],
-      ),
+        );
+      }).toList(),
     );
   }
 
-  Widget _buildInstructionItem({
-    required IconData icon,
-    required String title,
-    required String description,
-  }) {
+  // معلومات الاتجاه
+  Widget _buildDirectionInfo(qiblaData) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppTheme.getCategoryColor('قبلة').withValues(alpha: 0.1),
-            borderRadius: AppTheme.radiusMd.radius,
-          ),
-          child: Icon(
-            icon,
-            color: AppTheme.getCategoryColor('قبلة'),
-            size: 20,
+        Expanded(
+          child: AppCard.stat(
+            title: 'الاتجاه',
+            value: qiblaData.directionDescription,
+            icon: Icons.explore,
+            color: AppTheme.tertiary,
           ),
         ),
         AppTheme.space3.w,
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: AppTheme.bodyMedium.copyWith(
-                  fontWeight: AppTheme.semiBold,
-                ),
-              ),
-              AppTheme.space1.h,
-              Text(
-                description,
-                style: AppTheme.bodySmall.copyWith(
-                  color: AppTheme.textSecondary,
-                  height: 1.3,
-                ),
-              ),
-            ],
+          child: AppCard.stat(
+            title: 'المسافة',
+            value: qiblaData.distanceDescription,
+            icon: Icons.straighten,
+            color: AppTheme.secondary,
           ),
         ),
       ],
+    );
+  }
+
+  // حالة البوصلة
+  Widget _buildCompassStatus() {
+    if (!_qiblaService.hasCompass) {
+      return AppCard.basic(
+        title: 'البوصلة غير متوفرة',
+        subtitle: 'يتم عرض الاتجاه الثابت بناءً على موقعك',
+        icon: Icons.compass_calibration,
+        color: AppTheme.warning,
+      );
+    }
+    
+    return Column(
+      children: [
+        AppCard.basic(
+          title: _qiblaService.isCalibrated ? 'البوصلة مُعايَرة' : 'البوصلة تحتاج معايرة',
+          subtitle: _qiblaService.isCalibrated 
+              ? 'البوصلة تعمل بدقة عالية'
+              : 'حرك الهاتف في شكل ثمانية للمعايرة',
+          icon: _qiblaService.isCalibrated ? Icons.check_circle : Icons.warning,
+          color: _qiblaService.isCalibrated ? AppTheme.success : AppTheme.warning,
+        ),
+        
+        if (!_qiblaService.isCalibrated) ...[
+          AppTheme.space3.h,
+          AppButton.primary(
+            text: 'معايرة البوصلة',
+            icon: Icons.tune,
+            onPressed: () => _qiblaService.startCalibration(),
+            isFullWidth: true,
+          ),
+        ],
+      ],
+    );
+  }
+
+  // إحصائيات القبلة
+  Widget _buildQiblaStats(qiblaData) {
+    return AppInfo.stats(
+      title: 'تفاصيل الحساب',
+      statistics: {
+        'خط العرض': '${qiblaData.latitude.toStringAsFixed(4)}°',
+        'خط الطول': '${qiblaData.longitude.toStringAsFixed(4)}°',
+        'دقة الموقع': '${qiblaData.accuracy.toStringAsFixed(1)} م',
+        'آخر تحديث': AppTheme.formatDuration(qiblaData.age),
+        if (_qiblaService.hasCompass) 'دقة البوصلة': '${(_qiblaService.compassAccuracy * 100).toStringAsFixed(0)}%',
+      },
+      icon: Icons.analytics,
     );
   }
 }

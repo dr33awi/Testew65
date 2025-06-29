@@ -2,10 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// ✅ استيراد النظام الموحد الإسلامي - إجباري
-import 'package:athkar_app/app/themes/app_theme.dart';
-import 'package:athkar_app/app/themes/widgets/widgets.dart';
-import 'package:athkar_app/app/themes/widgets/extended_cards.dart';
+// ✅ استيراد النظام الموحد الإسلامي - الوحيد المسموح
+import '../../../app/themes/index.dart';
 
 import '../widgets/welcome_message.dart';
 import '../widgets/category_grid.dart';
@@ -17,12 +15,20 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.background,
-      appBar: _buildAppBar(context),
+      backgroundColor: context.backgroundColor,
+      appBar: AppAppBar.home(
+        title: 'مُسلم',
+        actions: [
+          AppBarSettingsButton(
+            onPressed: () => _onSettingsTap(context),
+          ),
+          AppTheme.space2.w,
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () => _handleRefresh(context),
-        color: AppTheme.primary,
-        backgroundColor: AppTheme.card,
+        color: context.primaryColor,
+        backgroundColor: context.cardColor,
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           padding: AppTheme.space4.paddingH + AppTheme.space2.paddingV,
@@ -44,131 +50,14 @@ class HomeScreen extends StatelessWidget {
               
               AppTheme.space6.h,
               
-              // شبكة الفئات مع العنوان المدمج
+              // شبكة الفئات
               const SimpleCategoryGrid(),
               
-              // مساحة إضافية للأسفل
               AppTheme.space8.h,
             ],
           ),
         ),
       ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      toolbarHeight: 70,
-      systemOverlayStyle: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-      ),
-      leading: const SizedBox.shrink(),
-      leadingWidth: 0,
-      flexibleSpace: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppTheme.primary.withValues(alpha: 0.1),
-              AppTheme.primary.withValues(alpha: 0.05),
-              Colors.transparent,
-            ],
-          ),
-        ),
-      ),
-      title: Row(
-        children: [
-          // أيقونة التطبيق
-          Container(
-            padding: AppTheme.space2.padding,
-            decoration: BoxDecoration(
-              gradient: AppTheme.primaryGradient,
-              borderRadius: AppTheme.radiusMd.radius,
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primary.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.mosque_outlined,
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-          
-          AppTheme.space3.w,
-          
-          // اسم التطبيق والترحيب
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'مُسلم',
-                  style: AppTheme.headlineMedium.copyWith(
-                    fontWeight: AppTheme.bold,
-                    color: AppTheme.textPrimary,
-                    fontSize: 20,
-                    height: 1.1,
-                  ),
-                ),
-                Text(
-                  'السلام عليكم ورحمة الله',
-                  style: AppTheme.bodySmall.copyWith(
-                    color: AppTheme.textSecondary,
-                    fontSize: 12,
-                    height: 1.2,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        // أيقونة الإعدادات
-        Container(
-          margin: const EdgeInsets.only(left: AppTheme.space4),
-          decoration: BoxDecoration(
-            color: AppTheme.card.withValues(alpha: 0.8),
-            borderRadius: AppTheme.radiusMd.radius,
-            border: Border.all(
-              color: AppTheme.divider.withValues(alpha: 0.3),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.primary.withValues(alpha: 0.1),
-                blurRadius: 6,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: IconButton(
-            icon: const Icon(
-              Icons.settings_outlined,
-              color: AppTheme.primary,
-              size: 22,
-            ),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.pushNamed(context, '/settings').catchError((error) {
-                _showInfoSnackBar(context, 'هذه الميزة قيد التطوير');
-                return null;
-              });
-            },
-            tooltip: 'الإعدادات',
-          ),
-        ),
-      ],
     );
   }
 
@@ -187,19 +76,29 @@ class HomeScreen extends StatelessWidget {
     const nextPrayer = 'العصر';
     const timeToNext = Duration(hours: 3, minutes: 15);
 
-    return PrayerTimesCard(
+    return AppCard.prayerTimes(
       prayerTimes: prayerTimes,
       currentPrayer: currentPrayer,
       nextPrayer: nextPrayer,
       timeToNext: timeToNext,
-      onTap: () {
-        HapticFeedback.lightImpact();
-        Navigator.pushNamed(context, '/prayer-times').catchError((error) {
-          _showInfoSnackBar(context, 'هذه الميزة قيد التطوير');
-          return null;
-        });
-      },
+      onTap: () => _onPrayerTimesTap(context),
     );
+  }
+
+  void _onSettingsTap(BuildContext context) {
+    HapticFeedback.lightImpact();
+    Navigator.pushNamed(context, '/settings').catchError((error) {
+      _showInfoSnackBar(context, 'هذه الميزة قيد التطوير');
+      return null;
+    });
+  }
+
+  void _onPrayerTimesTap(BuildContext context) {
+    HapticFeedback.lightImpact();
+    Navigator.pushNamed(context, '/prayer-times').catchError((error) {
+      _showInfoSnackBar(context, 'هذه الميزة قيد التطوير');
+      return null;
+    });
   }
 
   Future<void> _handleRefresh(BuildContext context) async {
@@ -213,11 +112,13 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
-  // ✅ دوال مساعدة لإظهار الرسائل
   void _showSuccessSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(
+          message,
+          style: context.bodyMedium.copyWith(color: Colors.white),
+        ),
         backgroundColor: AppTheme.success,
         duration: AppTheme.durationNormal,
         behavior: SnackBarBehavior.floating,
@@ -231,7 +132,10 @@ class HomeScreen extends StatelessWidget {
   void _showInfoSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(
+          message,
+          style: context.bodyMedium.copyWith(color: Colors.white),
+        ),
         backgroundColor: AppTheme.info,
         duration: AppTheme.durationNormal,
         behavior: SnackBarBehavior.floating,
