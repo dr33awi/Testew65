@@ -1,4 +1,4 @@
-// lib/app/themes/widgets/widgets.dart - المكونات الموحدة المحدثة
+// lib/app/themes/widgets/widgets.dart - المكونات الموحدة المحدثة ومصححة
 import 'package:athkar_app/app/themes/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -324,6 +324,8 @@ class AppButton extends StatelessWidget {
     required String text,
     VoidCallback? onPressed,
     IconData? icon,
+    Color? backgroundColor, // ✅ اختياري وليس مطلوب
+    Color? foregroundColor, // ✅ اختياري وليس مطلوب
     bool isLoading = false,
     bool isFullWidth = false,
   }) {
@@ -332,8 +334,8 @@ class AppButton extends StatelessWidget {
       text: text,
       onPressed: onPressed,
       icon: icon,
-      backgroundColor: AppTheme.primary,
-      foregroundColor: Colors.black,
+      backgroundColor: backgroundColor ?? AppTheme.primary, // ✅ استخدام الافتراضي إذا لم يُرسل
+      foregroundColor: foregroundColor ?? Colors.black, // ✅ استخدام الافتراضي إذا لم يُرسل
       isLoading: isLoading,
       isFullWidth: isFullWidth,
     );
@@ -826,6 +828,185 @@ class _AnimatedPressState extends State<AnimatedPress>
             child: widget.child,
           );
         },
+      ),
+    );
+  }
+}
+
+// ==================== Settings Card ====================
+
+/// بطاقة إعداد من extended_cards.dart
+class SettingCard extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  final IconData icon;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+  final Color? color;
+  final bool showArrow;
+
+  const SettingCard({
+    super.key,
+    required this.title,
+    this.subtitle,
+    required this.icon,
+    this.trailing,
+    this.onTap,
+    this.color,
+    this.showArrow = true,
+  });
+
+  // Factory للإعدادات المختلفة
+  factory SettingCard.toggle({
+    Key? key,
+    required String title,
+    String? subtitle,
+    required IconData icon,
+    required bool value,
+    required ValueChanged<bool>? onChanged, // ✅ معالجة nullable
+    Color? color,
+  }) {
+    return SettingCard(
+      key: key,
+      title: title,
+      subtitle: subtitle,
+      icon: icon,
+      color: color,
+      showArrow: false,
+      trailing: Switch(
+        value: value,
+        onChanged: onChanged, // ✅ تمرير nullable مباشرة
+        activeColor: color ?? AppTheme.primary,
+      ),
+      onTap: onChanged != null ? () => onChanged(!value) : null, // ✅ معالجة nullable
+    );
+  }
+
+  factory SettingCard.navigation({
+    Key? key,
+    required String title,
+    String? subtitle,
+    required IconData icon,
+    required VoidCallback onTap,
+    Color? color,
+    String? badge,
+  }) {
+    return SettingCard(
+      key: key,
+      title: title,
+      subtitle: subtitle,
+      icon: icon,
+      color: color,
+      onTap: onTap,
+      trailing: badge != null 
+          ? Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppTheme.space2,
+                vertical: 2,
+              ),
+              decoration: BoxDecoration(
+                color: AppTheme.error,
+                borderRadius: AppTheme.radiusFull.radius,
+              ),
+              child: Text(
+                badge,
+                style: AppTheme.caption.copyWith(
+                  color: Colors.white,
+                  fontWeight: AppTheme.medium,
+                ),
+              ),
+            )
+          : null,
+    );
+  }
+
+  factory SettingCard.info({
+    Key? key,
+    required String title,
+    required String value,
+    required IconData icon,
+    Color? color,
+  }) {
+    return SettingCard(
+      key: key,
+      title: title,
+      icon: icon,
+      color: color,
+      showArrow: false,
+      trailing: Text(
+        value,
+        style: AppTheme.bodyMedium.copyWith(
+          color: AppTheme.textSecondary,
+          fontFamily: AppTheme.numbersFont,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      onTap: onTap,
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppTheme.space4,
+        vertical: AppTheme.space1,
+      ),
+      child: Row(
+        children: [
+          // الأيقونة
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: (color ?? AppTheme.primary).withValues(alpha: 0.1),
+              borderRadius: AppTheme.radiusMd.radius,
+            ),
+            child: Icon(
+              icon,
+              color: color ?? AppTheme.primary,
+              size: AppTheme.iconMd,
+            ),
+          ),
+          
+          AppTheme.space3.w,
+          
+          // النص
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTheme.bodyLarge.copyWith(
+                    fontWeight: AppTheme.medium,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  AppTheme.space1.h,
+                  Text(
+                    subtitle!,
+                    style: AppTheme.bodySmall.copyWith(
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          
+          // العنصر الجانبي
+          if (trailing != null) ...[
+            AppTheme.space2.w,
+            trailing!,
+          ] else if (showArrow) ...[
+            AppTheme.space2.w,
+            const Icon(
+              Icons.chevron_right,
+              color: AppTheme.textTertiary,
+              size: AppTheme.iconMd,
+            ),
+          ],
+        ],
       ),
     );
   }

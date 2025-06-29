@@ -1,4 +1,4 @@
-// lib/features/settings/screens/settings_screen.dart - مُحدث بالنظام الموحد
+// lib/features/settings/screens/settings_screen.dart - محدث ومصحح
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,7 +16,8 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
 import '../services/settings_services_manager.dart';
-import '../widgets/service_status_widgets.dart' hide ServiceStatus;
+import '../services/service_status_unified.dart'; // ✅ استيراد النوع الموحد
+import '../widgets/service_status_widgets.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/settings_tile.dart';
 import '../models/app_settings.dart';
@@ -35,13 +36,13 @@ class _SettingsScreenState extends State<SettingsScreen>
   LoggerService? _logger;
   
   AppSettings _settings = const AppSettings();
-  ServiceStatus _serviceStatus = ServiceStatus.initial();
+  UnifiedServiceStatus _serviceStatus = UnifiedServiceStatus.initial(); // ✅ استخدام النوع الموحد
   bool _loading = true;
   bool _isRefreshing = false;
   String? _errorMessage;
   
   Stream<AppSettings>? _settingsStream;
-  Stream<ServiceStatus>? _serviceStatusStream;
+  Stream<UnifiedServiceStatus>? _serviceStatusStream; // ✅ استخدام النوع الموحد
   
   @override
   bool get wantKeepAlive => true;
@@ -81,7 +82,11 @@ class _SettingsScreenState extends State<SettingsScreen>
     
     try {
       _settingsStream = _servicesManager!.settingsStream;
-      _serviceStatusStream = _servicesManager!.serviceStatusStream;
+      
+      // ✅ تحويل النوع القديم إلى الموحد
+      _serviceStatusStream = _servicesManager!.serviceStatusStream.map(
+        (oldStatus) => UnifiedServiceStatus.fromOldServiceStatus(oldStatus),
+      );
       
       _settingsStream?.listen(
         (settings) {
@@ -151,7 +156,7 @@ class _SettingsScreenState extends State<SettingsScreen>
   void _useDefaultValues() {
     setState(() {
       _settings = const AppSettings();
-      _serviceStatus = ServiceStatus.initial();
+      _serviceStatus = UnifiedServiceStatus.initial();
     });
   }
   
@@ -172,7 +177,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       if (result.isSuccess && result.settings != null && result.serviceStatus != null) {
         setState(() {
           _settings = result.settings!;
-          _serviceStatus = result.serviceStatus!;
+          _serviceStatus = UnifiedServiceStatus.fromOldServiceStatus(result.serviceStatus); // ✅ تحويل النوع
           _loading = false;
           _errorMessage = null;
         });
@@ -777,64 +782,45 @@ $appUrl
             title: 'الأذونات والصلاحيات',
             icon: Icons.security_outlined,
             children: [
-              SettingCard(
+              SettingCard.navigation(
                 icon: Icons.notifications_active_outlined,
                 title: 'الإشعارات',
                 subtitle: _settings.notificationsEnabled 
                     ? 'الإشعارات مفعلة - اضغط للتخصيص' 
                     : 'الإشعارات معطلة - اضغط للتفعيل',
                 onTap: _handleNotificationPermission,
-                trailing: _settings.notificationsEnabled
-                    ? const Icon(Icons.settings, color: AppTheme.primary)
-                    : const Icon(Icons.add_circle, color: AppTheme.warning),
-                color: _settings.notificationsEnabled 
+                iconColor: _settings.notificationsEnabled 
                     ? AppTheme.success 
                     : AppTheme.warning,
               ),
-              SettingCard(
+              SettingCard.navigation(
                 icon: Icons.location_on_outlined,
                 title: 'الموقع للصلاة',
                 subtitle: _serviceStatus.locationAvailable
                     ? 'الموقع محدد - اضغط للتحديث'
                     : 'لم يتم تحديد الموقع',
                 onTap: _handleLocationUpdate,
-                trailing: _isRefreshing
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation(AppTheme.primary),
-                        ),
-                      )
-                    : _serviceStatus.locationAvailable
-                        ? const Icon(Icons.refresh, color: AppTheme.primary)
-                        : const Icon(Icons.add_location, color: AppTheme.warning),
-                color: _serviceStatus.locationAvailable
+                iconColor: _serviceStatus.locationAvailable
                     ? AppTheme.success
                     : AppTheme.warning,
               ),
-              SettingCard(
+              SettingCard.navigation(
                 icon: Icons.battery_saver_outlined,
                 title: 'تحسين البطارية',
                 subtitle: _settings.batteryOptimizationDisabled
                     ? 'تم تحسين إعدادات البطارية'
                     : 'يُنصح بتحسين إعدادات البطارية',
                 onTap: _handleBatteryOptimization,
-                color: _settings.batteryOptimizationDisabled 
+                iconColor: _settings.batteryOptimizationDisabled 
                     ? AppTheme.success 
                     : AppTheme.warning,
-                trailing: _settings.batteryOptimizationDisabled
-                    ? const Icon(Icons.check_circle, color: AppTheme.success)
-                    : const Icon(Icons.warning, color: AppTheme.warning),
               ),
-              SettingCard(
+              SettingCard.navigation(
                 icon: Icons.admin_panel_settings_outlined,
                 title: 'طلب جميع الأذونات',
                 subtitle: 'تفعيل جميع الأذونات دفعة واحدة',
                 onTap: _requestAllPermissions,
-                color: AppTheme.primary,
-                trailing: const Icon(Icons.security_update_good, color: AppTheme.primary),
+                iconColor: AppTheme.primary,
               ),
             ],
           ),
@@ -858,14 +844,14 @@ $appUrl
                 subtitle: 'تخصيص تنبيهات أوقات الصلاة',
                 onTap: () => Navigator.pushNamed(context, AppRouter.prayerNotificationsSettings),
               ),
-              SettingCard.toggle(
+              SettingsTile.toggle(
                 icon: Icons.volume_up_outlined,
                 title: 'الصوت',
                 subtitle: 'تفعيل الأصوات مع الإشعارات',
                 value: _settings.soundEnabled,
                 onChanged: _servicesManager != null ? _toggleSound : null,
               ),
-              SettingCard.toggle(
+              SettingsTile.toggle(
                 icon: Icons.vibration_outlined,
                 title: 'الاهتزاز',
                 subtitle: 'تفعيل الاهتزاز مع الإشعارات',
@@ -879,13 +865,13 @@ $appUrl
             title: 'المظهر والعرض',
             icon: Icons.palette_outlined,
             children: [
-              SettingCard.toggle(
+              SettingsTile.toggle(
                 icon: _settings.isDarkMode ? Icons.dark_mode : Icons.light_mode,
                 title: 'وضع العرض',
                 subtitle: _settings.isDarkMode ? 'الوضع الليلي مفعل' : 'الوضع النهاري مفعل',
                 value: _settings.isDarkMode,
                 onChanged: _servicesManager != null ? _toggleTheme : null,
-                color: _settings.isDarkMode ? Colors.orange : Colors.blue,
+                iconColor: _settings.isDarkMode ? Colors.orange : Colors.blue,
               ),
             ],
           ),

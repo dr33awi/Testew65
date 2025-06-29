@@ -1,4 +1,4 @@
-// lib/features/qibla/widgets/qibla_compass.dart - محدث بالنظام الموحد الإسلامي
+// lib/features/qibla/widgets/qibla_compass.dart - محدث ومصحح
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,11 +7,10 @@ import 'dart:math';
 // ✅ استيراد النظام الموحد الإسلامي
 import '../../../app/themes/app_theme.dart';
 import '../../../app/themes/widgets/widgets.dart';
-import '../../../app/themes/widgets/extended_cards.dart';
 
 class QiblaCompass extends StatefulWidget {
   final double qiblaDirection;
-  final double deviceDirection;
+  final double currentDirection; // ✅ تم تصحيح الاسم
   final double accuracy;
   final bool isCalibrated;
   final VoidCallback? onCalibrate;
@@ -19,7 +18,7 @@ class QiblaCompass extends StatefulWidget {
   const QiblaCompass({
     super.key,
     required this.qiblaDirection,
-    required this.deviceDirection,
+    required this.currentDirection, // ✅ تم تصحيح الاسم
     required this.accuracy,
     this.isCalibrated = false,
     this.onCalibrate,
@@ -142,7 +141,7 @@ class _QiblaCompassState extends State<QiblaCompass>
             
             Text(
               'اتجاه القبلة',
-              style: context.titleMedium.copyWith(
+              style: AppTheme.titleMedium.copyWith(
                 color: Colors.white,
                 fontWeight: AppTheme.bold,
               ),
@@ -151,7 +150,7 @@ class _QiblaCompassState extends State<QiblaCompass>
         ),
         
         Container(
-          padding: EdgeInsets.symmetric(
+          padding: const EdgeInsets.symmetric(
             horizontal: AppTheme.space3,
             vertical: AppTheme.space1,
           ),
@@ -162,7 +161,7 @@ class _QiblaCompassState extends State<QiblaCompass>
           ),
           child: Text(
             isAccurate ? 'دقيق' : 'غير دقيق',
-            style: context.bodySmall.copyWith(
+            style: AppTheme.bodySmall.copyWith(
               color: Colors.white,
               fontWeight: AppTheme.medium,
             ),
@@ -185,7 +184,7 @@ class _QiblaCompassState extends State<QiblaCompass>
               size: const Size(250, 250),
               painter: CompassPainter(
                 qiblaDirection: widget.qiblaDirection,
-                deviceDirection: widget.deviceDirection,
+                deviceDirection: widget.currentDirection,
                 primaryColor: Colors.white,
                 backgroundColor: Colors.white.withValues(alpha: 0.1),
               ),
@@ -198,7 +197,7 @@ class _QiblaCompassState extends State<QiblaCompass>
                 return Transform.scale(
                   scale: _pulseAnimation.value,
                   child: Transform.rotate(
-                    angle: (widget.qiblaDirection - widget.deviceDirection) * 
+                    angle: (widget.qiblaDirection - widget.currentDirection) * 
                            (pi / 180),
                     child: Container(
                       width: 60,
@@ -243,7 +242,7 @@ class _QiblaCompassState extends State<QiblaCompass>
 
   Widget _buildDirectionInfo(BuildContext context) {
     final qiblaDegrees = widget.qiblaDirection.toStringAsFixed(0);
-    final deviceDegrees = widget.deviceDirection.toStringAsFixed(0);
+    final deviceDegrees = widget.currentDirection.toStringAsFixed(0);
     final accuracyPercent = (widget.accuracy * 100).toStringAsFixed(0);
     
     return Row(
@@ -291,7 +290,7 @@ class _QiblaCompassState extends State<QiblaCompass>
         
         Text(
           value,
-          style: context.titleMedium.copyWith(
+          style: AppTheme.titleMedium.copyWith(
             color: Colors.white,
             fontWeight: AppTheme.bold,
             fontFamily: AppTheme.numbersFont,
@@ -300,7 +299,7 @@ class _QiblaCompassState extends State<QiblaCompass>
         
         Text(
           label,
-          style: context.bodySmall.copyWith(
+          style: AppTheme.bodySmall.copyWith(
             color: Colors.white.withValues(alpha: 0.8),
           ),
         ),
