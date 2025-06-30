@@ -1,4 +1,5 @@
-// lib/app/themes/widgets/cards/app_card.dart - مُحدث لحل مشكلة تكرار الأزرار
+// lib/app/themes/widgets/cards/app_card.dart - مُصحح ومحسن
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
@@ -41,7 +42,7 @@ class CardAction {
   });
 }
 
-/// بطاقة موحدة لجميع الاستخدامات
+/// بطاقة موحدة لجميع الاستخدامات - مُصححة
 class AppCard extends StatelessWidget {
   // النوع والأسلوب
   final CardType type;
@@ -84,7 +85,7 @@ class AppCard extends StatelessWidget {
   final int? totalCount;
   final bool? isFavorite;
   final String? source;
-  final String? fadl; // إضافة خاصية الفضل
+  final String? fadl;
   final VoidCallback? onFavoriteToggle;
   
   // خصائص خاصة بالإحصائيات
@@ -122,7 +123,7 @@ class AppCard extends StatelessWidget {
     this.totalCount,
     this.isFavorite,
     this.source,
-    this.fadl, // إضافة خاصية الفضل
+    this.fadl,
     this.onFavoriteToggle,
     this.value,
     this.unit,
@@ -131,12 +132,66 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ التحقق من صحة البيانات
+    if (!_isValidCard()) {
+      return _buildFallbackCard(context);
+    }
+
     return _buildCard(context);
+  }
+
+  /// ✅ التحقق من صحة البطاقة
+  bool _isValidCard() {
+    // البطاقة صحيحة إذا كان لديها محتوى أو child
+    return child != null || 
+           title != null || 
+           content != null || 
+           icon != null ||
+           type == CardType.stat ||
+           type == CardType.completion;
+  }
+
+  /// ✅ بطاقة احتياطية في حالة عدم وجود محتوى
+  Widget _buildFallbackCard(BuildContext context) {
+    return Container(
+      margin: margin ?? const EdgeInsets.symmetric(
+        horizontal: ThemeConstants.space4,
+        vertical: ThemeConstants.space2,
+      ),
+      padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
+      decoration: BoxDecoration(
+        color: backgroundColor ?? context.cardColor,
+        borderRadius: BorderRadius.circular(
+          borderRadius ?? ThemeConstants.radiusMd,
+        ),
+        border: Border.all(
+          color: context.dividerColor.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.info_outline,
+            color: context.textSecondaryColor,
+            size: ThemeConstants.iconMd,
+          ),
+          const SizedBox(width: ThemeConstants.space2),
+          Expanded(
+            child: Text(
+              'بطاقة فارغة',
+              style: context.bodyMedium?.copyWith(
+                color: context.textSecondaryColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildCard(BuildContext context) {
     final effectiveColor = primaryColor ?? context.primaryColor;
-    final effectiveBorderRadius = borderRadius ?? ThemeConstants.radius3xl;
+    final effectiveBorderRadius = borderRadius ?? ThemeConstants.radiusMd;
     
     return Container(
       margin: margin ?? const EdgeInsets.symmetric(
@@ -148,46 +203,120 @@ class AppCard extends StatelessWidget {
   }
 
   Widget _buildCardContainer(BuildContext context, Color effectiveColor, double effectiveBorderRadius) {
+    // ✅ بناء محتوى البطاقة أولاً
+    Widget cardContent = _buildContent(context);
+    
+    // ✅ إذا لم يكن هناك محتوى، أرجع بطاقة فارغة
+    if (cardContent is SizedBox && (cardContent as SizedBox).child == null) {
+      return _buildFallbackCard(context);
+    }
+
+    // ✅ تطبيق التصميم المناسب
+    switch (style) {
+      case CardStyle.gradient:
+        return _buildGradientCard(context, effectiveColor, effectiveBorderRadius, cardContent);
+      case CardStyle.glassmorphism:
+        return _buildGlassCard(context, effectiveColor, effectiveBorderRadius, cardContent);
+      case CardStyle.outlined:
+        return _buildOutlinedCard(context, effectiveColor, effectiveBorderRadius, cardContent);
+      case CardStyle.elevated:
+        return _buildElevatedCard(context, effectiveColor, effectiveBorderRadius, cardContent);
+      default:
+        return _buildNormalCard(context, effectiveColor, effectiveBorderRadius, cardContent);
+    }
+  }
+
+  /// ✅ بطاقة عادية مبسطة
+  Widget _buildNormalCard(BuildContext context, Color color, double radius, Widget content) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(effectiveBorderRadius),
-        gradient: _getCardGradient(context, effectiveColor),
+        color: backgroundColor ?? context.cardColor,
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(
+          color: context.dividerColor.withValues(alpha: 0.3),
+        ),
         boxShadow: showShadow ? [
           BoxShadow(
-            color: effectiveColor.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
         ] : null,
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(effectiveBorderRadius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(radius),
+        child: InkWell(
+          onTap: onTap,
+          onLongPress: onLongPress,
+          borderRadius: BorderRadius.circular(radius),
+          child: Container(
+            padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
+            child: content,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// ✅ بطاقة متدرجة
+  Widget _buildGradientCard(BuildContext context, Color color, double radius, Widget content) {
+    final colors = gradientColors ?? [color, color.darken(0.2)];
+    
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(radius),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: colors,
+        ),
+        boxShadow: showShadow ? [
+          BoxShadow(
+            color: color.withValues(alpha: 0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ] : null,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(radius),
+        child: InkWell(
+          onTap: onTap,
+          onLongPress: onLongPress,
+          borderRadius: BorderRadius.circular(radius),
+          child: Container(
+            padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
+            child: content,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// ✅ بطاقة زجاجية مبسطة
+  Widget _buildGlassCard(BuildContext context, Color color, double radius, Widget content) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(radius),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.2),
+            ),
+          ),
           child: Material(
             color: Colors.transparent,
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-                borderRadius: BorderRadius.circular(effectiveBorderRadius),
-              ),
-              child: InkWell(
-                onTap: onTap,
-                onLongPress: onLongPress,
-                borderRadius: BorderRadius.circular(effectiveBorderRadius),
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
-                      child: _buildContent(context),
-                    ),
-                    if (badge != null) _buildBadge(context),
-                    if (isSelected) _buildSelectionIndicator(context),
-                  ],
-                ),
+            child: InkWell(
+              onTap: onTap,
+              onLongPress: onLongPress,
+              child: Container(
+                padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
+                child: content,
               ),
             ),
           ),
@@ -196,50 +325,70 @@ class AppCard extends StatelessWidget {
     );
   }
 
-  LinearGradient _getCardGradient(BuildContext context, Color color) {
-    List<Color> colors;
-    
-    switch (style) {
-      case CardStyle.gradient:
-        // إذا تم تمرير ألوان مخصصة، استخدمها
-        if (gradientColors != null && gradientColors!.isNotEmpty) {
-          colors = gradientColors!;
-        } else {
-          colors = [
-            color,
-            color.darken(0.2),
-          ];
-        }
-        break;
-      case CardStyle.glassmorphism:
-        colors = [
-          color.withValues(alpha: 0.3),
-          color.withValues(alpha: 0.1),
-        ];
-        break;
-      case CardStyle.outlined:
-      case CardStyle.elevated:
-      case CardStyle.normal:
-        // للكارد العادي، استخدم تدرج خفيف من اللون الأساسي
-        colors = [
-          color.withValues(alpha: 0.8),
-          color.withValues(alpha: 0.6),
-        ];
-        break;
-    }
-    
-    return LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: colors, // استخدام الألوان مباشرة بدون تقليل الشفافية
+  /// ✅ بطاقة محددة
+  Widget _buildOutlinedCard(BuildContext context, Color color, double radius, Widget content) {
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor ?? Colors.transparent,
+        borderRadius: BorderRadius.circular(radius),
+        border: Border.all(
+          color: color,
+          width: 2,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(radius),
+        child: InkWell(
+          onTap: onTap,
+          onLongPress: onLongPress,
+          borderRadius: BorderRadius.circular(radius),
+          child: Container(
+            padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
+            child: content,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// ✅ بطاقة مرتفعة
+  Widget _buildElevatedCard(BuildContext context, Color color, double radius, Widget content) {
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor ?? context.cardColor,
+        borderRadius: BorderRadius.circular(radius),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(radius),
+        child: InkWell(
+          onTap: onTap,
+          onLongPress: onLongPress,
+          borderRadius: BorderRadius.circular(radius),
+          child: Container(
+            padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
+            child: content,
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildContent(BuildContext context) {
-    // إذا كان هناك child مخصص، استخدمه
-    if (child != null) return child!;
+    // ✅ إذا كان هناك child مخصص، استخدمه مباشرة
+    if (child != null) {
+      return child!;
+    }
     
-    // بناء المحتوى حسب النوع
+    // ✅ بناء المحتوى حسب النوع
     switch (type) {
       case CardType.athkar:
         return _buildAthkarContent(context);
@@ -257,6 +406,11 @@ class AppCard extends StatelessWidget {
   }
 
   Widget _buildNormalContent(BuildContext context) {
+    // ✅ التحقق من وجود محتوى
+    if (title == null && subtitle == null && content == null && icon == null) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -264,21 +418,25 @@ class AppCard extends StatelessWidget {
         if (title != null || leading != null || trailing != null)
           _buildHeader(context),
         if (subtitle != null) ...[
-          if (title != null) ThemeConstants.space1.h,
+          if (title != null) const SizedBox(height: ThemeConstants.space1),
           Text(
             subtitle!,
-            style: context.bodyMedium?.textColor(_getTextColor(context, isSecondary: true)),
+            style: context.bodyMedium?.copyWith(
+              color: _getTextColor(context, isSecondary: true),
+            ),
           ),
         ],
         if (content != null) ...[
-          ThemeConstants.space3.h,
+          const SizedBox(height: ThemeConstants.space3),
           Text(
             content!,
-            style: context.bodyLarge?.textColor(_getTextColor(context)),
+            style: context.bodyLarge?.copyWith(
+              color: _getTextColor(context),
+            ),
           ),
         ],
         if (actions != null && actions!.isNotEmpty) ...[
-          ThemeConstants.space4.h,
+          const SizedBox(height: ThemeConstants.space4),
           _buildActions(context),
         ],
       ],
@@ -286,85 +444,45 @@ class AppCard extends StatelessWidget {
   }
 
   Widget _buildAthkarContent(BuildContext context) {
+    if (content == null && title == null) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // الرأس مع العداد والأيقونات
-        _buildAthkarHeader(context),
+        if (currentCount != null || totalCount != null || actions != null)
+          _buildAthkarHeader(context),
         
-        ThemeConstants.space3.h,
+        if ((currentCount != null || totalCount != null || actions != null) && 
+            (content != null || title != null))
+          const SizedBox(height: ThemeConstants.space3),
         
         // محتوى الذكر
-        _buildAthkarBody(context),
+        if (content != null || title != null)
+          _buildAthkarBody(context),
         
         // المصدر
         if (source != null) ...[
-          ThemeConstants.space3.h,
+          const SizedBox(height: ThemeConstants.space3),
           _buildSource(context),
         ],
         
-        // الفضل إن وُجد - مدمج في الكارد
+        // الفضل إن وُجد
         if (fadl != null) ...[
-          ThemeConstants.space3.h,
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.star_outline,
-                  color: Colors.white.withValues(alpha: 0.8),
-                  size: 16,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'الفضل',
-                        style: context.labelSmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        fadl!,
-                        style: context.bodySmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const SizedBox(height: ThemeConstants.space3),
+          _buildFadlSection(context),
         ],
-        
-        // ✅ إزالة الإجراءات من الأسفل لنوع athkar - ستظهر فقط في الهيدر
-        // if (actions != null && actions!.isNotEmpty && type != CardType.athkar) ...[
-        //   ThemeConstants.space4.h,
-        //   _buildActions(context),
-        // ],
       ],
     );
   }
 
   Widget _buildQuoteContent(BuildContext context) {
-    final effectiveColor = primaryColor ?? context.primaryColor;
-    
+    if (content == null && title == null) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -378,80 +496,37 @@ class AppCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
-                width: 1,
-              ),
             ),
             child: Text(
               subtitle!,
-              style: context.labelMedium?.textColor(Colors.white).semiBold,
+              style: context.labelMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: ThemeConstants.semiBold,
+              ),
             ),
           ),
         
-        if (subtitle != null) ThemeConstants.space3.h,
+        if (subtitle != null) const SizedBox(height: ThemeConstants.space3),
         
         Container(
           padding: const EdgeInsets.all(ThemeConstants.space4),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
-              width: 1,
-            ),
           ),
-          child: Stack(
-            children: [
-              // علامة اقتباس في البداية
-              const Positioned(
-                top: 0,
-                right: 0,
-                child: Icon(
-                  Icons.format_quote,
-                  size: ThemeConstants.iconSm,
-                  color: Colors.white54,
-                ),
-              ),
-              
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: ThemeConstants.space2),
-                child: Text(
-                  content ?? title ?? '',
-                  textAlign: TextAlign.center,
-                  style: context.bodyLarge?.textColor(Colors.white).copyWith(
-                    fontSize: 18,
-                    height: 1.8,
-                    shadows: const [
-                      Shadow(
-                        color: Colors.black26,
-                        offset: Offset(0, 1),
-                        blurRadius: 2,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              
-              // علامة اقتباس في النهاية
-              Positioned(
-                bottom: 0,
-                left: 0,
-                child: Transform.rotate(
-                  angle: 3.14159,
-                  child: const Icon(
-                    Icons.format_quote,
-                    size: ThemeConstants.iconSm,
-                    color: Colors.white54,
-                  ),
-                ),
-              ),
-            ],
+          child: Text(
+            content ?? title ?? '',
+            textAlign: TextAlign.center,
+            style: context.bodyLarge?.copyWith(
+              color: Colors.white,
+              fontSize: 18,
+              height: 1.8,
+            ),
           ),
         ),
         
         if (source != null) ...[
-          ThemeConstants.space3.h,
+          const SizedBox(height: ThemeConstants.space3),
           _buildSource(context),
         ],
       ],
@@ -459,8 +534,6 @@ class AppCard extends StatelessWidget {
   }
 
   Widget _buildCompletionContent(BuildContext context) {
-    final effectiveColor = primaryColor ?? context.primaryColor;
-    
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -471,56 +544,51 @@ class AppCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
             shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
-              width: 2,
-            ),
           ),
           child: Icon(
             icon ?? Icons.check_circle_outline,
             color: Colors.white,
-            size: ThemeConstants.icon2xl,
+            size: 40,
           ),
         ),
         
-        ThemeConstants.space5.h,
+        const SizedBox(height: ThemeConstants.space4),
         
         // العنوان
         if (title != null)
           Text(
             title!,
-            style: context.headlineMedium?.textColor(Colors.white).copyWith(
-              shadows: const [
-                Shadow(
-                  color: Colors.black26,
-                  offset: Offset(0, 2),
-                  blurRadius: 4,
-                ),
-              ],
+            style: context.headlineMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: ThemeConstants.bold,
             ),
             textAlign: TextAlign.center,
           ),
         
         if (content != null) ...[
-          ThemeConstants.space3.h,
+          const SizedBox(height: ThemeConstants.space3),
           Text(
             content!,
             textAlign: TextAlign.center,
-            style: context.bodyLarge?.textColor(Colors.white.withValues(alpha: 0.9)),
+            style: context.bodyLarge?.copyWith(
+              color: Colors.white.withValues(alpha: 0.9),
+            ),
           ),
         ],
         
         if (subtitle != null) ...[
-          ThemeConstants.space2.h,
+          const SizedBox(height: ThemeConstants.space2),
           Text(
             subtitle!,
             textAlign: TextAlign.center,
-            style: context.bodyMedium?.textColor(Colors.white.withValues(alpha: 0.7)),
+            style: context.bodyMedium?.copyWith(
+              color: Colors.white.withValues(alpha: 0.7),
+            ),
           ),
         ],
         
         if (actions != null && actions!.isNotEmpty) ...[
-          ThemeConstants.space6.h,
+          const SizedBox(height: ThemeConstants.space6),
           _buildActions(context),
         ],
       ],
@@ -528,6 +596,10 @@ class AppCard extends StatelessWidget {
   }
 
   Widget _buildInfoContent(BuildContext context) {
+    if (title == null && subtitle == null && icon == null) {
+      return const SizedBox.shrink();
+    }
+
     return Row(
       children: [
         if (icon != null)
@@ -535,21 +607,17 @@ class AppCard extends StatelessWidget {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: (primaryColor ?? context.primaryColor).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
-                width: 1,
-              ),
             ),
             child: Icon(
               icon,
-              color: Colors.white,
+              color: primaryColor ?? context.primaryColor,
               size: ThemeConstants.iconLg,
             ),
           ),
         
-        if (icon != null) ThemeConstants.space4.w,
+        if (icon != null) const SizedBox(width: ThemeConstants.space4),
         
         Expanded(
           child: Column(
@@ -558,13 +626,17 @@ class AppCard extends StatelessWidget {
               if (title != null)
                 Text(
                   title!,
-                  style: context.titleMedium?.semiBold.textColor(_getTextColor(context)),
+                  style: context.titleMedium?.copyWith(
+                    fontWeight: ThemeConstants.semiBold,
+                  ),
                 ),
               if (subtitle != null) ...[
-                ThemeConstants.space1.h,
+                const SizedBox(height: ThemeConstants.space1),
                 Text(
                   subtitle!,
-                  style: context.bodyMedium?.textColor(_getTextColor(context, isSecondary: true)),
+                  style: context.bodyMedium?.copyWith(
+                    color: context.textSecondaryColor,
+                  ),
                 ),
               ],
             ],
@@ -606,32 +678,29 @@ class AppCard extends StatelessWidget {
           ],
         ),
         
-        ThemeConstants.space2.h,
+        const SizedBox(height: ThemeConstants.space2),
         
         if (value != null)
           Text(
             value!,
-            style: context.headlineMedium?.textColor(Colors.white).bold.copyWith(
-              shadows: const [
-                Shadow(
-                  color: Colors.black26,
-                  offset: Offset(0, 2),
-                  blurRadius: 4,
-                ),
-              ],
+            style: context.headlineMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: ThemeConstants.bold,
             ),
           ),
         
         if (title != null) ...[
-          ThemeConstants.space1.h,
+          const SizedBox(height: ThemeConstants.space1),
           Text(
             title!,
-            style: context.bodyMedium?.textColor(Colors.white.withValues(alpha: 0.8)),
+            style: context.bodyMedium?.copyWith(
+              color: Colors.white.withValues(alpha: 0.8),
+            ),
           ),
         ],
         
         if (progress != null) ...[
-          ThemeConstants.space3.h,
+          const SizedBox(height: ThemeConstants.space3),
           ClipRRect(
             borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
             child: LinearProgressIndicator(
@@ -655,24 +724,27 @@ class AppCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(ThemeConstants.space2),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: (primaryColor ?? context.primaryColor).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
             ),
             child: Icon(
               icon,
-              color: _getTextColor(context),
+              color: primaryColor ?? context.primaryColor,
               size: ThemeConstants.iconMd,
             ),
           ),
         
         if ((leading != null || icon != null) && title != null)
-          ThemeConstants.space3.w,
+          const SizedBox(width: ThemeConstants.space3),
         
         if (title != null)
           Expanded(
             child: Text(
               title!,
-              style: context.titleMedium?.textColor(_getTextColor(context)).semiBold,
+              style: context.titleMedium?.copyWith(
+                color: _getTextColor(context),
+                fontWeight: ThemeConstants.semiBold,
+              ),
             ),
           ),
         
@@ -684,7 +756,7 @@ class AppCard extends StatelessWidget {
   Widget _buildAthkarHeader(BuildContext context) {
     return Row(
       children: [
-        // عداد التكرار (في اليسار)
+        // عداد التكرار
         if (currentCount != null && totalCount != null)
           Container(
             padding: const EdgeInsets.symmetric(
@@ -694,10 +766,6 @@ class AppCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
-                width: 1,
-              ),
             ),
             child: Text(
               '${currentCount}/${totalCount}',
@@ -710,7 +778,7 @@ class AppCard extends StatelessWidget {
         
         const Spacer(),
         
-        // أيقونات المفضلة والمشاركة من actions (في اليمين)
+        // أيقونات الإجراءات
         if (actions != null && actions!.isNotEmpty)
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -729,38 +797,32 @@ class AppCard extends StatelessWidget {
   }
 
   Widget _buildAthkarBody(BuildContext context) {
+    final text = content ?? title ?? '';
+    if (text.isEmpty) return const SizedBox.shrink();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(ThemeConstants.space5),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-          width: 1,
-        ),
       ),
       child: Text(
-        content ?? title ?? '',
+        text,
         textAlign: TextAlign.center,
-        style: context.bodyLarge?.textColor(Colors.white).copyWith(
+        style: context.bodyLarge?.copyWith(
+          color: Colors.white,
           fontSize: 20,
-          fontFamily: ThemeConstants.fontFamilyArabic,
           fontWeight: ThemeConstants.semiBold,
           height: 2.0,
-          shadows: const [
-            Shadow(
-              color: Colors.black26,
-              offset: Offset(0, 1),
-              blurRadius: 2,
-            ),
-          ],
         ),
       ),
     );
   }
 
   Widget _buildSource(BuildContext context) {
+    if (source == null) return const SizedBox.shrink();
+
     return Center(
       child: Container(
         padding: const EdgeInsets.symmetric(
@@ -770,21 +832,69 @@ class AppCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.3),
-            width: 1,
-          ),
         ),
         child: Text(
           source!,
-          style: context.labelLarge?.textColor(Colors.white).semiBold,
+          style: context.labelLarge?.copyWith(
+            color: Colors.white,
+            fontWeight: ThemeConstants.semiBold,
+          ),
         ),
       ),
     );
   }
 
+  Widget _buildFadlSection(BuildContext context) {
+    if (fadl == null) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.star_outline,
+            color: Colors.white.withValues(alpha: 0.8),
+            size: 16,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'الفضل',
+                  style: context.labelSmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  fadl!,
+                  style: context.bodySmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildActions(BuildContext context) {
-    // للبطاقات من نوع completion، عرض الإجراءات بشكل عمودي
+    if (actions == null || actions!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     if (type == CardType.completion) {
       return Column(
         children: actions!.map((action) => Padding(
@@ -794,7 +904,6 @@ class AppCard extends StatelessWidget {
       );
     }
     
-    // للبطاقات الأخرى، عرض الإجراءات بشكل أفقي
     return Wrap(
       spacing: ThemeConstants.space2,
       runSpacing: ThemeConstants.space2,
@@ -806,174 +915,47 @@ class AppCard extends StatelessWidget {
     if (action.isPrimary) {
       return SizedBox(
         width: fullWidth ? double.infinity : null,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                action.onPressed();
-              },
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: ThemeConstants.space4,
-                  vertical: ThemeConstants.space3,
-                ),
-                child: Row(
-                  mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      action.icon,
-                      size: ThemeConstants.iconSm,
-                      color: primaryColor ?? context.primaryColor,
-                    ),
-                    ThemeConstants.space2.w,
-                    Text(
-                      action.label,
-                      style: context.labelMedium?.copyWith(
-                        color: primaryColor ?? context.primaryColor,
-                        fontWeight: ThemeConstants.semiBold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+        child: ElevatedButton.icon(
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            action.onPressed();
+          },
+          icon: Icon(action.icon, size: 18),
+          label: Text(action.label),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            foregroundColor: primaryColor ?? context.primaryColor,
           ),
         ),
       );
     }
     
-    // زر ثانوي
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          action.onPressed();
-        },
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: ThemeConstants.space3,
-            vertical: ThemeConstants.space2,
-          ),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
-              width: 1,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                action.icon,
-                color: Colors.white,
-                size: ThemeConstants.iconSm,
-              ),
-              ThemeConstants.space2.w,
-              Text(
-                action.label,
-                style: context.labelMedium?.textColor(Colors.white).semiBold,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBadge(BuildContext context) {
-    return Positioned(
-      top: ThemeConstants.space2,
-      left: ThemeConstants.space2,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: ThemeConstants.space2,
-          vertical: ThemeConstants.space1,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Text(
-          badge!,
-          style: context.labelSmall?.copyWith(
-            color: primaryColor ?? context.primaryColor,
-            fontWeight: ThemeConstants.semiBold,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSelectionIndicator(BuildContext context) {
-    return Positioned(
-      top: ThemeConstants.space2,
-      right: ThemeConstants.space2,
-      child: Container(
-        padding: const EdgeInsets.all(ThemeConstants.space1),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Icon(
-          Icons.check,
-          color: primaryColor ?? context.primaryColor,
-          size: ThemeConstants.iconSm,
-        ),
+    return OutlinedButton.icon(
+      onPressed: () {
+        HapticFeedback.lightImpact();
+        action.onPressed();
+      },
+      icon: Icon(action.icon, size: 18),
+      label: Text(action.label),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Colors.white,
+        side: const BorderSide(color: Colors.white),
       ),
     );
   }
 
   Color _getTextColor(BuildContext context, {bool isSecondary = false}) {
-    // معظم الكارد الآن يستخدم النص الأبيض بسبب التأثيرات الزجاجية والتدرجات
     if (style == CardStyle.gradient || style == CardStyle.glassmorphism) {
       return Colors.white.withValues(alpha: isSecondary ? 0.7 : 1.0);
     }
     
-    if (backgroundColor != null) {
-      return backgroundColor!.contrastingTextColor.withValues(
-        alpha: isSecondary ? 0.7 : 1.0
-      );
-    }
-    
-    // للكارد العادي، استخدم النص الأبيض أيضاً للتناسق
-    return Colors.white.withValues(alpha: isSecondary ? 0.7 : 1.0);
+    return isSecondary 
+        ? context.textSecondaryColor 
+        : context.textPrimaryColor;
   }
 
-  // Factory constructors للتوافق مع الكود القديم
+  // ===== Factory Constructors =====
+
   factory AppCard.simple({
     required String title,
     String? subtitle,
@@ -983,7 +965,6 @@ class AppCard extends StatelessWidget {
   }) {
     return AppCard(
       type: CardType.normal,
-      style: CardStyle.gradient,
       title: title,
       subtitle: subtitle,
       icon: icon,
@@ -995,7 +976,7 @@ class AppCard extends StatelessWidget {
   factory AppCard.athkar({
     required String content,
     String? source,
-    String? fadl, // إضافة معامل الفضل
+    String? fadl,
     int currentCount = 0,
     int totalCount = 1,
     bool isFavorite = false,
@@ -1009,7 +990,7 @@ class AppCard extends StatelessWidget {
       style: CardStyle.gradient,
       content: content,
       source: source,
-      fadl: fadl, // تمرير معامل الفضل
+      fadl: fadl,
       currentCount: currentCount,
       totalCount: totalCount,
       isFavorite: isFavorite,
@@ -1048,14 +1029,13 @@ class AppCard extends StatelessWidget {
   }) {
     return AppCard(
       type: CardType.completion,
+      style: CardStyle.gradient,
       title: title,
       content: message,
       subtitle: subMessage,
       icon: icon,
       primaryColor: primaryColor,
       actions: actions,
-      style: CardStyle.gradient,
-      padding: const EdgeInsets.all(ThemeConstants.space6),
     );
   }
 
@@ -1075,7 +1055,6 @@ class AppCard extends StatelessWidget {
       onTap: onTap,
       primaryColor: iconColor,
       trailing: trailing,
-      style: CardStyle.glassmorphism,
     );
   }
 
@@ -1089,13 +1068,13 @@ class AppCard extends StatelessWidget {
   }) {
     return AppCard(
       type: CardType.stat,
+      style: CardStyle.gradient,
       title: title,
       value: value,
       icon: icon,
       primaryColor: color,
       onTap: onTap,
       progress: progress,
-      style: CardStyle.gradient,
     );
   }
 }
