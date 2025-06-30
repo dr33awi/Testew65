@@ -1,4 +1,4 @@
-// lib/features/athkar/screens/athkar_details_screen.dart - محسن بالنظام الموحد
+// lib/features/athkar/screens/athkar_details_screen.dart - مُصحح مع ألوان البطاقات
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
@@ -263,7 +263,6 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
       },
       child: Scaffold(
         backgroundColor: context.backgroundColor,
-        // ✅ استخدام CustomAppBar الموحد
         appBar: CustomAppBar(
           title: category.title,
           leading: AppBackButton(
@@ -284,7 +283,6 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
               tooltip: 'إعدادات الإشعارات',
             ),
           ],
-          // إضافة شريط التقدم كـ bottom
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(80),
             child: Container(
@@ -330,7 +328,6 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                   
                   ThemeConstants.space3.h,
                   
-                  // شريط التقدم
                   if (totalAthkar > 0)
                     Container(
                       height: 8,
@@ -382,7 +379,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                 final originalIndex = category.athkar.indexOf(item);
                 final number = originalIndex + 1;
                 
-                // ✅ الحصول على لون الفئة للتميز
+                // ✅ الحصول على لون الفئة للتميز - نفس ما يستخدم في categories_screen
                 final categoryColor = CategoryHelper.getCategoryColor(context, widget.categoryId);
                   
                 return Padding(
@@ -391,10 +388,10 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                         ? ThemeConstants.space4
                         : 0,
                   ),
-                  // ✅ استخدام نفس النمط المستخدم في athkar_categories_screen
+                  // ✅ استخدام نمط أقل شفافية لوضوح الألوان أكثر
                   child: AppCard(
                     type: CardType.athkar,
-                    style: CardStyle.glassmorphism,
+                    style: CardStyle.gradient, // ✅ تغيير إلى gradient للألوان الأوضح
                     content: item.text,
                     source: item.source,
                     fadl: item.fadl,
@@ -402,13 +399,14 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                     totalCount: item.count,
                     primaryColor: categoryColor,
                     gradientColors: [
-                      categoryColor,                // ✅ نفس النمط: لون أساسي
-                      categoryColor.darken(0.2),    // ✅ نفس النمط: تدرج بسيط
+                      categoryColor,                    // ✅ لون كامل بدون شفافية
+                      categoryColor.darken(0.2),        // ✅ تدرج بسيط
                     ],
                     onTap: () => _onItemTap(item),
                     onLongPress: () => _onItemLongPress(item),
                     margin: EdgeInsets.zero,
                     padding: const EdgeInsets.all(ThemeConstants.space5),
+                    showShadow: true,
                     actions: [
                       CardAction(
                         icon: Icons.favorite_outline,
@@ -429,24 +427,25 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
   }
 
   Widget _buildEmptyState() {
-    // ✅ استخدام نفس النمط للحالة المكتملة
+    // ✅ استخدام نمط gradient للألوان الأوضح
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(ThemeConstants.space6),
         child: AppCard(
           type: CardType.completion,
-          style: CardStyle.glassmorphism,
+          style: CardStyle.gradient, // ✅ gradient للألوان الأوضح
           title: 'أكملت جميع الأذكار! 🎉',
           content: 'بارك الله فيك',
           subtitle: 'جعلها الله في ميزان حسناتك',
           icon: Icons.check_circle_rounded,
           primaryColor: context.successColor,
           gradientColors: [
-            context.successColor,               // ✅ نفس النمط: لون أساسي
-            context.successColor.darken(0.2),   // ✅ نفس النمط: تدرج بسيط
+            context.successColor,              // ✅ لون كامل
+            context.successColor.darken(0.2),  // ✅ تدرج بسيط
           ],
           margin: EdgeInsets.zero,
           padding: const EdgeInsets.all(ThemeConstants.space6),
+          showShadow: true,
           actions: [
             CardAction(
               icon: Icons.refresh_rounded,
@@ -469,7 +468,7 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
   void _toggleFavorite(AthkarItem item) {
     HapticFeedback.lightImpact();
     
-    // ✅ تحسين: استخدام النظام الموحد للإشعارات
+    // ✅ استخدام النظام الموحد للإشعارات
     AppSnackBar.showSuccess(
       context: context, 
       message: 'تمت إضافة الذكر للمفضلة',
