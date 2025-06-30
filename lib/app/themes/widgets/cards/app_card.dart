@@ -1,4 +1,4 @@
-// lib/app/themes/widgets/cards/app_card.dart - مُصحح ومحسن
+// lib/app/themes/widgets/cards/app_card.dart - مُصحح مع ألوان واضحة
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -42,7 +42,7 @@ class CardAction {
   });
 }
 
-/// بطاقة موحدة لجميع الاستخدامات - مُصححة
+/// بطاقة موحدة لجميع الاستخدامات - مُصححة مع ألوان واضحة
 class AppCard extends StatelessWidget {
   // النوع والأسلوب
   final CardType type;
@@ -295,32 +295,71 @@ class AppCard extends StatelessWidget {
     );
   }
 
-  /// ✅ بطاقة زجاجية مبسطة
+  /// ✅ بطاقة زجاجية محسّنة مع ألوان واضحة
   Widget _buildGlassCard(BuildContext context, Color color, double radius, Widget content) {
+    // ✅ ألوان تدرج واضحة وقوية
+    final effectiveGradientColors = gradientColors ?? [
+      color.withValues(alpha: 0.95),                    // شفافية أقل للوضوح
+      color.darken(0.15).withValues(alpha: 0.90),      // تدرج متوسط
+      color.darken(0.25).withValues(alpha: 0.85),      // تدرج داكن
+    ];
+    
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(radius),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
+      child: Stack(
+        children: [
+          // ✅ الخلفية الأساسية بألوان قوية
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(radius),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: effectiveGradientColors,
+                stops: effectiveGradientColors.length == 3 
+                    ? [0.0, 0.5, 1.0] 
+                    : null,
+              ),
+              boxShadow: showShadow ? [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.4),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ] : null,
             ),
           ),
-          child: Material(
+          
+          // ✅ طبقة زجاجية خفيفة فقط للتأثير
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2), // ضبابية أقل بكثير
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05), // شفافية قليلة جداً
+                borderRadius: BorderRadius.circular(radius),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  width: 1,
+                ),
+              ),
+            ),
+          ),
+          
+          // المحتوى
+          Material(
             color: Colors.transparent,
+            borderRadius: BorderRadius.circular(radius),
             child: InkWell(
               onTap: onTap,
               onLongPress: onLongPress,
+              borderRadius: BorderRadius.circular(radius),
               child: Container(
                 padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
                 child: content,
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -405,6 +444,7 @@ class AppCard extends StatelessWidget {
     }
   }
 
+  /// ✅ محتوى عادي محسن مع نصوص واضحة
   Widget _buildNormalContent(BuildContext context) {
     // ✅ التحقق من وجود محتوى
     if (title == null && subtitle == null && content == null && icon == null) {
@@ -415,17 +455,89 @@ class AppCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (title != null || leading != null || trailing != null)
-          _buildHeader(context),
-        if (subtitle != null) ...[
-          if (title != null) const SizedBox(height: ThemeConstants.space1),
-          Text(
-            subtitle!,
-            style: context.bodyMedium?.copyWith(
-              color: _getTextColor(context, isSecondary: true),
+        // ✅ الأيقونة المحسنة
+        if (icon != null)
+          Container(
+            width: 56,
+            height: 56,
+            margin: const EdgeInsets.only(bottom: ThemeConstants.space4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.25),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.4),
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 28,
             ),
           ),
+        
+        const Spacer(),
+        
+        // ✅ العنوان المحسن مع ظلال قوية
+        if (title != null)
+          Text(
+            title!,
+            style: _getTextColor(context) == Colors.white
+                ? context.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: ThemeConstants.bold,
+                    fontSize: 18,
+                    height: 1.2,
+                    letterSpacing: 0.3,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.5), // ظل أقوى للوضوح
+                        offset: const Offset(0, 2),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  )
+                : context.titleLarge?.copyWith(
+                    color: _getTextColor(context),
+                    fontWeight: ThemeConstants.semiBold,
+                  ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        
+        // ✅ العنوان الفرعي المحسن
+        if (subtitle != null) ...[
+          const SizedBox(height: ThemeConstants.space1),
+          Text(
+            subtitle!,
+            style: _getTextColor(context) == Colors.white
+                ? context.bodyMedium?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontSize: 13,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        offset: const Offset(0, 1),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  )
+                : context.bodyMedium?.copyWith(
+                    color: _getTextColor(context, isSecondary: true),
+                  ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
+        
+        // المحتوى النصي
         if (content != null) ...[
           const SizedBox(height: ThemeConstants.space3),
           Text(
@@ -435,6 +547,30 @@ class AppCard extends StatelessWidget {
             ),
           ),
         ],
+        
+        // مؤشر الانتقال
+        if (onTap != null) ...[
+          const SizedBox(height: ThemeConstants.space3),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: Colors.white,
+                  size: 14,
+                ),
+              ),
+            ],
+          ),
+        ],
+        
+        // الإجراءات
         if (actions != null && actions!.isNotEmpty) ...[
           const SizedBox(height: ThemeConstants.space4),
           _buildActions(context),
@@ -711,44 +847,6 @@ class AppCard extends StatelessWidget {
             ),
           ),
         ],
-      ],
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    return Row(
-      children: [
-        if (leading != null)
-          leading!
-        else if (icon != null)
-          Container(
-            padding: const EdgeInsets.all(ThemeConstants.space2),
-            decoration: BoxDecoration(
-              color: (primaryColor ?? context.primaryColor).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-            ),
-            child: Icon(
-              icon,
-              color: primaryColor ?? context.primaryColor,
-              size: ThemeConstants.iconMd,
-            ),
-          ),
-        
-        if ((leading != null || icon != null) && title != null)
-          const SizedBox(width: ThemeConstants.space3),
-        
-        if (title != null)
-          Expanded(
-            child: Text(
-              title!,
-              style: context.titleMedium?.copyWith(
-                color: _getTextColor(context),
-                fontWeight: ThemeConstants.semiBold,
-              ),
-            ),
-          ),
-        
-        if (trailing != null) trailing!,
       ],
     );
   }
@@ -1075,6 +1173,32 @@ class AppCard extends StatelessWidget {
       primaryColor: color,
       onTap: onTap,
       progress: progress,
+    );
+  }
+
+  /// ✅ Factory constructor محسن للفئات مع ألوان واضحة
+  factory AppCard.glassCategory({
+    required String title,
+    required IconData icon,
+    required Color primaryColor,
+    required VoidCallback onTap,
+    EdgeInsetsGeometry? margin,
+    EdgeInsetsGeometry? padding,
+  }) {
+    return AppCard(
+      style: CardStyle.glassmorphism,
+      title: title,
+      icon: icon,
+      primaryColor: primaryColor,
+      gradientColors: [
+        primaryColor.withValues(alpha: 0.95),        // شفافية قليلة
+        primaryColor.darken(0.15).withValues(alpha: 0.90),
+        primaryColor.darken(0.25).withValues(alpha: 0.85),
+      ],
+      onTap: onTap,
+      margin: margin ?? EdgeInsets.zero,
+      padding: padding ?? const EdgeInsets.all(ThemeConstants.space5),
+      showShadow: true,
     );
   }
 }
