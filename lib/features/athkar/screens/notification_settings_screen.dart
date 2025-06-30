@@ -1,4 +1,4 @@
-// lib/features/athkar/screens/notification_settings_screen.dart - موحد مع النظام
+// lib/features/athkar/screens/notification_settings_screen.dart - مُصحح نهائياً
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/di/service_locator.dart';
@@ -41,19 +41,14 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
 
   Future<void> _loadData() async {
     try {
-      print('🔍 بدء تحميل البيانات...');
       setState(() {
         _isLoading = true;
         _errorMessage = null;
       });
       
-      print('✅ تحقق من الإذن...');
       _hasPermission = await _permissionService.checkNotificationPermission();
-      print('📱 حالة الإذن: $_hasPermission');
       
-      print('📚 تحميل الفئات...');
       final allCategories = await _service.loadCategories();
-      print('📚 تم تحميل ${allCategories.length} فئة');
       
       final enabledIds = _service.getEnabledReminderCategories();
       final savedCustomTimes = _loadSavedCustomTimes();
@@ -85,17 +80,16 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
         await _saveInitialSettings(autoEnabledIds);
       }
       
-      if (mounted) { // ✅ تحقق من أن Widget ما زال mounted
+      if (mounted) {
         setState(() {
           _categories = allCategories;
           _isLoading = false;
         });
-        print('✅ تم تحميل البيانات بنجاح');
       }
       
     } catch (e, stackTrace) {
-      print('❌ خطأ في تحميل البيانات: $e');
-      print('📍 Stack trace: $stackTrace');
+      debugPrint('❌ خطأ في تحميل البيانات: $e');
+      debugPrint('📍 Stack trace: $stackTrace');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -139,17 +133,21 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       setState(() => _hasPermission = granted);
       if (granted) {
         await _scheduleEnabledNotifications();
-        AppSnackBar.showSuccess(
-          context: context,
-          message: 'تم تفعيل الإشعارات بنجاح',
-        );
+        if (mounted) {
+          AppSnackBar.showSuccess(
+            context: context,
+            message: 'تم تفعيل الإشعارات بنجاح',
+          );
+        }
       }
     } catch (e) {
       _logger.error(message: 'فشل طلب إذن الإشعارات - $e');
-      AppSnackBar.showError(
-        context: context,
-        message: 'فشل في تفعيل الإشعارات',
-      );
+      if (mounted) {
+        AppSnackBar.showError(
+          context: context,
+          message: 'فشل في تفعيل الإشعارات',
+        );
+      }
     }
   }
 
@@ -181,7 +179,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     await _saveChanges();
     
     final category = _categories?.firstWhere((c) => c.id == categoryId);
-    if (category != null) {
+    if (category != null && mounted) {
       AppSnackBar.show(
         context: context,
         message: value 
@@ -255,10 +253,12 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
         await _toggleCategory(categoryId, true);
       }
       
-      AppSnackBar.showSuccess(
-        context: context,
-        message: 'تم تحديث الوقت إلى ${selectedTime.format(context)}',
-      );
+      if (mounted) {
+        AppSnackBar.showSuccess(
+          context: context,
+          message: 'تم تحديث الوقت إلى ${selectedTime.format(context)}',
+        );
+      }
     }
   }
 
@@ -282,10 +282,12 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       });
       await _saveChanges();
       
-      AppSnackBar.showSuccess(
-        context: context,
-        message: 'تم تفعيل جميع التذكيرات',
-      );
+      if (mounted) {
+        AppSnackBar.showSuccess(
+          context: context,
+          message: 'تم تفعيل جميع التذكيرات',
+        );
+      }
     }
   }
 
@@ -309,10 +311,12 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       });
       await _saveChanges();
       
-      AppSnackBar.showWarning(
-        context: context,
-        message: 'تم إيقاف جميع التذكيرات',
-      );
+      if (mounted) {
+        AppSnackBar.showWarning(
+          context: context,
+          message: 'تم إيقاف جميع التذكيرات',
+        );
+      }
     }
   }
 
@@ -390,7 +394,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
       child: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // بطاقة حالة الإشعارات باستخدام النظام الموحد
+          // بطاقة حالة الإشعارات
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(ThemeConstants.space4),
@@ -478,7 +482,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     );
   }
 
-  /// ✅ بطاقة حالة الإشعارات باستخدام النظام الموحد
+  /// بطاقة حالة الإشعارات
   Widget _buildPermissionCard() {
     if (_hasPermission) {
       return AppCard.glassWelcome(
@@ -499,7 +503,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     );
   }
 
-  /// ✅ تحذير الإشعارات باستخدام النظام الموحد
+  /// تحذير الإشعارات
   Widget _buildPermissionWarning() {
     return AppNoticeCard.warning(
       title: 'الإشعارات مطلوبة',
@@ -512,7 +516,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     );
   }
 
-  /// ✅ إحصائيات سريعة بتصميم بسيط - مُصححة
+  /// إحصائيات سريعة
   Widget _buildQuickStats(List<AthkarCategory> categories) {
     final enabledCount = _enabled.values.where((e) => e).length;
     final disabledCount = categories.length - enabledCount;
@@ -549,7 +553,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     );
   }
 
-  /// ✅ بطاقة إحصائية بسيطة بدون مشاكل layout
+  /// بطاقة إحصائية بسيطة
   Widget _buildSimpleStatCard({
     required String title,
     required String value,
@@ -624,7 +628,7 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     );
   }
 
-  /// ✅ بطاقة الفئة باستخدام النظام الموحد مع ألوان الفئات
+  /// ✅ بطاقة الفئة - مُصححة نهائياً
   Widget _buildCategoryCard(AthkarCategory category) {
     final isEnabled = _enabled[category.id] ?? false;
     final currentTime = _customTimes[category.id] ?? 
@@ -632,129 +636,147 @@ class _AthkarNotificationSettingsScreenState extends State<AthkarNotificationSet
     final originalTime = _originalTimes[category.id];
     final hasCustomTime = originalTime != null && currentTime != originalTime;
     
-    // ✅ استخدام نفس نظام الألوان من الشاشات الأخرى
     final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
     final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
     final categoryDescription = CategoryHelper.getCategoryDescription(category.id);
 
-    return AppCard(
-      type: CardType.normal,
-      style: CardStyle.gradient, // ✅ نفس النمط المستخدم في athkar_details
-      primaryColor: isEnabled ? categoryColor : context.textSecondaryColor,
-      gradientColors: isEnabled ? [
-        categoryColor,                    // ✅ نفس التدرج
-        categoryColor.darken(0.2),
-      ] : [
-        context.textSecondaryColor.withValues(alpha: 0.3),
-        context.textSecondaryColor.withValues(alpha: 0.5),
-      ],
-      onTap: isEnabled ? () => _selectTime(category.id, currentTime) : null,
-      margin: EdgeInsets.zero,
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: Row(
-        children: [
-          // ✅ أيقونة دائرية موحدة
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.25),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.4),
-                width: 2,
-              ),
-            ),
-            child: Icon(
-              categoryIcon, 
-              color: Colors.white, 
-              size: 24,
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isEnabled ? [
+            categoryColor,
+            categoryColor.darken(0.2),
+          ] : [
+            context.textSecondaryColor.withValues(alpha: 0.3),
+            context.textSecondaryColor.withValues(alpha: 0.5),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isEnabled ? categoryColor : context.textSecondaryColor).withValues(alpha: 0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
-          
-          const SizedBox(width: ThemeConstants.space3),
-          
-          // النص والمعلومات
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        child: InkWell(
+          onTap: isEnabled ? () => _selectTime(category.id, currentTime) : null,
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+          child: Padding(
+            padding: const EdgeInsets.all(ThemeConstants.space4),
+            child: Row(
               children: [
-                Text(
-                  category.title,
-                  style: context.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: ThemeConstants.bold,
-                    shadows: const [
-                      Shadow(
-                        color: Colors.black26, 
-                        offset: Offset(0, 1), 
-                        blurRadius: 2,
-                      ),
-                    ],
+                // أيقونة دائرية
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.25),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      width: 2,
+                    ),
+                  ),
+                  child: Icon(
+                    categoryIcon, 
+                    color: Colors.white, 
+                    size: 24,
                   ),
                 ),
-                if (categoryDescription.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    categoryDescription,
-                    style: context.bodySmall?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-                if (isEnabled) ...[
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8, 
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.access_time,
-                          size: 12,
-                          color: Colors.white.withValues(alpha: 0.9),
+                
+                const SizedBox(width: ThemeConstants.space3),
+                
+                // النص والمعلومات
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        category.title,
+                        style: context.titleMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: ThemeConstants.bold,
+                          shadows: const [
+                            Shadow(
+                              color: Colors.black26, 
+                              offset: Offset(0, 1), 
+                              blurRadius: 2,
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 4),
+                      ),
+                      if (categoryDescription.isNotEmpty) ...[
+                        const SizedBox(height: 2),
                         Text(
-                          currentTime.format(context),
-                          style: context.labelSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: hasCustomTime 
-                                ? ThemeConstants.bold 
-                                : ThemeConstants.regular,
+                          categoryDescription,
+                          style: context.bodySmall?.copyWith(
+                            color: Colors.white.withValues(alpha: 0.8),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                      if (isEnabled) ...[
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8, 
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.access_time,
+                                size: 12,
+                                color: Colors.white.withValues(alpha: 0.9),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                currentTime.format(context),
+                                style: context.labelSmall?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: hasCustomTime 
+                                      ? ThemeConstants.bold 
+                                      : ThemeConstants.regular,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
-                    ),
+                    ],
                   ),
-                ],
+                ),
+                
+                // مفتاح التشغيل
+                Switch(
+                  value: isEnabled,
+                  onChanged: _hasPermission ? (value) => _toggleCategory(category.id, value) : null,
+                  activeColor: Colors.white,
+                  activeTrackColor: Colors.white.withValues(alpha: 0.3),
+                  inactiveThumbColor: context.textSecondaryColor,
+                  inactiveTrackColor: context.dividerColor,
+                ),
               ],
             ),
           ),
-          
-          // مفتاح التشغيل
-          Switch(
-            value: isEnabled,
-            onChanged: _hasPermission ? (value) => _toggleCategory(category.id, value) : null,
-            activeColor: Colors.white,
-            activeTrackColor: Colors.white.withOpacitySafe(0.3),
-            inactiveThumbColor: context.textSecondaryColor,
-            inactiveTrackColor: context.dividerColor,
-          ),
-        ],
+        ),
       ),
     );
   }

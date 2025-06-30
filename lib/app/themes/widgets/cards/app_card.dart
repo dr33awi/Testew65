@@ -1,4 +1,4 @@
-// lib/app/themes/widgets/cards/app_card.dart - مُصحح مع ألوان واضحة
+// lib/app/themes/widgets/cards/app_card.dart - مُصحح مع حل مشكلة الشاشة الفارغة
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -43,7 +43,7 @@ class CardAction {
   });
 }
 
-/// بطاقة موحدة لجميع الاستخدامات - مُصححة مع ألوان واضحة
+/// بطاقة موحدة لجميع الاستخدامات - مُصححة مع حل مشكلة الشاشة الفارغة
 class AppCard extends StatefulWidget {
   // النوع والأسلوب
   final CardType type;
@@ -347,61 +347,7 @@ class _AppCardState extends State<AppCard>
 
   @override
   Widget build(BuildContext context) {
-    // ✅ التحقق من صحة البيانات
-    if (!_isValidCard()) {
-      return _buildFallbackCard(context);
-    }
-
     return _buildCard(context);
-  }
-
-  /// ✅ التحقق من صحة البطاقة
-  bool _isValidCard() {
-    // البطاقة صحيحة إذا كان لديها محتوى أو child
-    return widget.child != null || 
-           widget.title != null || 
-           widget.content != null || 
-           widget.icon != null ||
-           widget.type == CardType.stat ||
-           widget.type == CardType.completion;
-  }
-
-  /// ✅ بطاقة احتياطية في حالة عدم وجود محتوى
-  Widget _buildFallbackCard(BuildContext context) {
-    return Container(
-      margin: widget.margin ?? const EdgeInsets.symmetric(
-        horizontal: ThemeConstants.space4,
-        vertical: ThemeConstants.space2,
-      ),
-      padding: widget.padding ?? const EdgeInsets.all(ThemeConstants.space4),
-      decoration: BoxDecoration(
-        color: widget.backgroundColor ?? context.cardColor,
-        borderRadius: BorderRadius.circular(
-          widget.borderRadius ?? ThemeConstants.radiusMd,
-        ),
-        border: Border.all(
-          color: context.dividerColor.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.info_outline,
-            color: context.textSecondaryColor,
-            size: ThemeConstants.iconMd,
-          ),
-          const SizedBox(width: ThemeConstants.space2),
-          Expanded(
-            child: Text(
-              'بطاقة فارغة',
-              style: context.bodyMedium?.copyWith(
-                color: context.textSecondaryColor,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildCard(BuildContext context) {
@@ -421,11 +367,6 @@ class _AppCardState extends State<AppCard>
     // ✅ بناء محتوى البطاقة أولاً
     Widget cardContent = _buildContent(context);
     
-    // ✅ إذا لم يكن هناك محتوى، أرجع بطاقة فارغة
-    if (cardContent is SizedBox && cardContent.child == null) {
-      return _buildFallbackCard(context);
-    }
-
     // ✅ تطبيق التصميم المناسب
     switch (widget.style) {
       case CardStyle.gradient:
@@ -767,8 +708,16 @@ class _AppCardState extends State<AppCard>
   }
 
   Widget _buildContent(BuildContext context) {
-    // ✅ إذا كان هناك child مخصص، استخدمه مباشرة
+    // ✅ إذا كان هناك child مخصص، استخدمه مع التحقق من صحته
     if (widget.child != null) {
+      // ✅ تأكد من أن الـ child ليس SizedBox.shrink أو empty
+      if (widget.child is SizedBox) {
+        final sizedBox = widget.child as SizedBox;
+        if (sizedBox.width == 0.0 && sizedBox.height == 0.0) {
+          // إذا كان SizedBox.shrink، استخدم المحتوى الافتراضي
+          return _buildDefaultContent(context);
+        }
+      }
       return widget.child!;
     }
     
@@ -789,11 +738,52 @@ class _AppCardState extends State<AppCard>
     }
   }
 
-  /// ✅ محتوى عادي محسن مع نصوص واضحة
+  /// ✅ محتوى افتراضي للحالات الطارئة
+  Widget _buildDefaultContent(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(ThemeConstants.space4),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.info_outline,
+            size: 48,
+            color: _getTextColor(context).withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: ThemeConstants.space2),
+          Text(
+            'محتوى البطاقة',
+            style: context.bodyMedium?.copyWith(
+              color: _getTextColor(context),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ✅ محتوى عادي محسن مع نصوص واضحة - مُصحح
   Widget _buildNormalContent(BuildContext context) {
-    // ✅ التحقق من وجود محتوى
-    if (widget.title == null && widget.subtitle == null && widget.content == null && widget.icon == null) {
-      return const SizedBox.shrink();
+    // ✅ التحقق من وجود محتوى - الحل الأساسي للمشكلة
+    final hasContent = widget.title != null || 
+                      widget.subtitle != null || 
+                      widget.content != null || 
+                      widget.icon != null;
+    
+    // ✅ إذا لم يوجد محتوى، أرجع container بسيط بدلاً من SizedBox.shrink()
+    if (!hasContent) {
+      return Container(
+        padding: const EdgeInsets.all(ThemeConstants.space4),
+        child: Center(
+          child: Text(
+            'محتوى البطاقة',
+            style: _getTextColor(context) == Colors.white
+                ? context.bodyMedium?.copyWith(color: Colors.white.withValues(alpha: 0.7))
+                : context.bodyMedium?.copyWith(color: context.textSecondaryColor),
+          ),
+        ),
+      );
     }
 
     return Column(
@@ -926,7 +916,15 @@ class _AppCardState extends State<AppCard>
 
   Widget _buildAthkarContent(BuildContext context) {
     if (widget.content == null && widget.title == null) {
-      return const SizedBox.shrink();
+      return Container(
+        padding: const EdgeInsets.all(ThemeConstants.space4),
+        child: Center(
+          child: Text(
+            'محتوى الذكر',
+            style: context.bodyMedium?.copyWith(color: Colors.white.withValues(alpha: 0.7)),
+          ),
+        ),
+      );
     }
 
     return Column(
@@ -961,7 +959,15 @@ class _AppCardState extends State<AppCard>
 
   Widget _buildQuoteContent(BuildContext context) {
     if (widget.content == null && widget.title == null) {
-      return const SizedBox.shrink();
+      return Container(
+        padding: const EdgeInsets.all(ThemeConstants.space4),
+        child: Center(
+          child: Text(
+            'محتوى الاقتباس',
+            style: context.bodyMedium?.copyWith(color: Colors.white.withValues(alpha: 0.7)),
+          ),
+        ),
+      );
     }
 
     return Column(
@@ -1078,7 +1084,15 @@ class _AppCardState extends State<AppCard>
 
   Widget _buildInfoContent(BuildContext context) {
     if (widget.title == null && widget.subtitle == null && widget.icon == null) {
-      return const SizedBox.shrink();
+      return Container(
+        padding: const EdgeInsets.all(ThemeConstants.space4),
+        child: Center(
+          child: Text(
+            'معلومات البطاقة',
+            style: context.bodyMedium?.copyWith(color: context.textSecondaryColor),
+          ),
+        ),
+      );
     }
 
     return Row(
@@ -1260,7 +1274,17 @@ class _AppCardState extends State<AppCard>
 
   Widget _buildAthkarBody(BuildContext context) {
     final text = widget.content ?? widget.title ?? '';
-    if (text.isEmpty) return const SizedBox.shrink();
+    if (text.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(ThemeConstants.space4),
+        child: Center(
+          child: Text(
+            'محتوى الذكر',
+            style: context.bodyMedium?.copyWith(color: Colors.white.withValues(alpha: 0.7)),
+          ),
+        ),
+      );
+    }
 
     return Container(
       width: double.infinity,
