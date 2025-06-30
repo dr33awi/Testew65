@@ -190,7 +190,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
-            // رسالة الترحيب باستخدام البطاقة الموحدة
+            // رسالة الترحيب باستخدام AppCard.glassWelcome
             SliverToBoxAdapter(
               child: _buildWelcomeSection(context),
             ),
@@ -293,67 +293,22 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     );
   }
 
+  /// ✅ كارد الترحيب باستخدام AppCard.glassWelcome مع تأثير التلميع
   Widget _buildWelcomeSection(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: AppCard(
-        style: CardStyle.glassmorphism,
-        primaryColor: context.primaryColor,
-        gradientColors: [
-          context.primaryColor,
-          context.primaryColor.darken(0.15),
-          context.primaryColor.darken(0.25),
-        ],
-        onTap: () {
-          HapticFeedback.lightImpact();
-          // يمكن إضافة إجراء عند الضغط على كارد الترحيب
-        },
-        margin: EdgeInsets.zero,
-        padding: const EdgeInsets.all(ThemeConstants.space5),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
-              style: context.titleLarge?.copyWith(
-                color: Colors.white,
-                fontWeight: ThemeConstants.bold,
-                fontSize: 16,
-                height: 1.3,
-                letterSpacing: 0.3,
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    offset: const Offset(0, 2),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            
-            const SizedBox(height: ThemeConstants.space2),
-            
-            Text(
-              'اقرأ الأذكار اليومية وحافظ على ذكر الله',
-              style: context.bodyMedium?.copyWith(
-                color: Colors.white.withValues(alpha: 0.9),
-                fontSize: 13,
-                height: 1.2,
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withValues(alpha: 0.4),
-                    offset: const Offset(0, 1),
-                    blurRadius: 2,
-                  ),
-                ],
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+      child: SizedBox(
+        height: 160, // نفس الارتفاع المستخدم في النسخة الأصلية
+        child: AppCard.glassWelcome(
+          title: 'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
+          subtitle: 'اقرأ الأذكار اليومية وحافظ على ذكر الله',
+          primaryColor: context.primaryColor,
+          onTap: () {
+            HapticFeedback.lightImpact();
+            // يمكن إضافة إجراء عند الضغط على كارد الترحيب
+          },
+          margin: EdgeInsets.zero,
+          padding: const EdgeInsets.all(ThemeConstants.space5),
         ),
       ),
     );
@@ -363,96 +318,13 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
     final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
     
-    return AppCard(
-      style: CardStyle.glassmorphism,
+    return AppCard.glassCategory(
+      title: category.title,
+      icon: categoryIcon,
       primaryColor: categoryColor,
-      gradientColors: [
-        categoryColor,
-        categoryColor.darken(0.15),
-        categoryColor.darken(0.25),
-      ],
       onTap: () => _openCategoryDetails(category),
       margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(ThemeConstants.space5),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // الأيقونة
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.25),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.4),
-                width: 2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
-                  blurRadius: 12,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Icon(
-              categoryIcon,
-              color: Colors.white,
-              size: 28,
-            ),
-          ),
-          
-          const Spacer(),
-          
-          // النصوص
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                category.title,
-                style: context.titleLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: ThemeConstants.bold,
-                  fontSize: 18,
-                  height: 1.2,
-                  letterSpacing: 0.3,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withValues(alpha: 0.5),
-                      offset: const Offset(0, 2),
-                      blurRadius: 4,
-                    ),
-                  ],
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: ThemeConstants.space3),
-          
-          // مؤشر الانتقال فقط
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: Colors.white,
-                  size: 14,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }

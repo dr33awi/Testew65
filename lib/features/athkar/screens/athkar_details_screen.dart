@@ -381,6 +381,9 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                 
                 final originalIndex = category.athkar.indexOf(item);
                 final number = originalIndex + 1;
+                
+                // ✅ الحصول على لون الفئة للتميز
+                final categoryColor = CategoryHelper.getCategoryColor(context, widget.categoryId);
                   
                 return Padding(
                   padding: EdgeInsets.only(
@@ -388,15 +391,24 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
                         ? ThemeConstants.space4
                         : 0,
                   ),
-                  // ✅ استخدام AppCard.athkar الموحد
-                  child: AppCard.athkar(
+                  // ✅ استخدام نفس النمط المستخدم في athkar_categories_screen
+                  child: AppCard(
+                    type: CardType.athkar,
+                    style: CardStyle.glassmorphism,
                     content: item.text,
                     source: item.source,
                     fadl: item.fadl,
                     currentCount: currentCount,
                     totalCount: item.count,
-                    primaryColor: context.successColor, // ✅ تحسين: استخدام context
+                    primaryColor: categoryColor,
+                    gradientColors: [
+                      categoryColor,                // ✅ نفس النمط: لون أساسي
+                      categoryColor.darken(0.2),    // ✅ نفس النمط: تدرج بسيط
+                    ],
                     onTap: () => _onItemTap(item),
+                    onLongPress: () => _onItemLongPress(item),
+                    margin: EdgeInsets.zero,
+                    padding: const EdgeInsets.all(ThemeConstants.space5),
                     actions: [
                       CardAction(
                         icon: Icons.favorite_outline,
@@ -417,22 +429,39 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
   }
 
   Widget _buildEmptyState() {
-    // ✅ استخدام AppCard للحالة المكتملة
+    // ✅ استخدام نفس النمط للحالة المكتملة
     return Center(
-      child: AppCard.completion(
-        title: 'أكملت جميع الأذكار! 🎉',
-        message: 'بارك الله فيك',
-        subMessage: 'جعلها الله في ميزان حسناتك',
-        icon: Icons.check_circle_rounded,
-        primaryColor: context.successColor, // ✅ تحسين: استخدام context
-        actions: [
-          CardAction(
-            icon: Icons.refresh_rounded,
-            label: 'إعادة القراءة',
-            onPressed: _rereadAthkar,
-            isPrimary: false,
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(ThemeConstants.space6),
+        child: AppCard(
+          type: CardType.completion,
+          style: CardStyle.glassmorphism,
+          title: 'أكملت جميع الأذكار! 🎉',
+          content: 'بارك الله فيك',
+          subtitle: 'جعلها الله في ميزان حسناتك',
+          icon: Icons.check_circle_rounded,
+          primaryColor: context.successColor,
+          gradientColors: [
+            context.successColor,               // ✅ نفس النمط: لون أساسي
+            context.successColor.darken(0.2),   // ✅ نفس النمط: تدرج بسيط
+          ],
+          margin: EdgeInsets.zero,
+          padding: const EdgeInsets.all(ThemeConstants.space6),
+          actions: [
+            CardAction(
+              icon: Icons.refresh_rounded,
+              label: 'إعادة القراءة',
+              onPressed: _rereadAthkar,
+              isPrimary: true,
+            ),
+            CardAction(
+              icon: Icons.share_rounded,
+              label: 'مشاركة الإنجاز',
+              onPressed: _shareProgress,
+              isPrimary: false,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -441,6 +470,10 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     HapticFeedback.lightImpact();
     
     // ✅ تحسين: استخدام النظام الموحد للإشعارات
-    AppSnackBar.showSuccess(context: context, message:'تمت إضافة الذكر للمفضلة');
+    AppSnackBar.showSuccess(
+      context: context, 
+      message: 'تمت إضافة الذكر للمفضلة',
+      enableGlass: true,
+    );
   }
 }
