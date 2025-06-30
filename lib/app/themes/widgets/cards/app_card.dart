@@ -1,4 +1,5 @@
-// lib/app/themes/widgets/cards/app_card.dart - مُصحح مع ألوان واضحة
+// lib/app/themes/widgets/cards/app_card.dart
+// ✅ محدث بالكامل – تمت إضافة نمط glassWelcome (Glass-morphism + Shimmer)
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,11 +19,12 @@ enum CardType {
 
 /// أنماط البطاقات
 enum CardStyle {
-  normal,        // عادي
-  gradient,      // متدرج
-  glassmorphism, // زجاجي
-  outlined,      // محدد
-  elevated,      // مرتفع
+  normal,                 // عادي
+  gradient,               // متدرج
+  glassmorphism,          // زجاجي
+  glassmorphismShimmer,   // زجاجي مع وميض تلميع ⭐️ (جديد)
+  outlined,               // محدد
+  elevated,               // مرتفع
 }
 
 /// إجراءات البطاقة
@@ -42,7 +44,7 @@ class CardAction {
   });
 }
 
-/// بطاقة موحدة لجميع الاستخدامات - مُصححة مع ألوان واضحة
+/// بطاقة موحدة لجميع الاستخدامات
 class AppCard extends StatelessWidget {
   // النوع والأسلوب
   final CardType type;
@@ -202,7 +204,11 @@ class AppCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCardContainer(BuildContext context, Color effectiveColor, double effectiveBorderRadius) {
+  Widget _buildCardContainer(
+    BuildContext context,
+    Color effectiveColor,
+    double effectiveBorderRadius,
+  ) {
     // ✅ بناء محتوى البطاقة أولاً
     Widget cardContent = _buildContent(context);
     
@@ -217,6 +223,8 @@ class AppCard extends StatelessWidget {
         return _buildGradientCard(context, effectiveColor, effectiveBorderRadius, cardContent);
       case CardStyle.glassmorphism:
         return _buildGlassCard(context, effectiveColor, effectiveBorderRadius, cardContent);
+      case CardStyle.glassmorphismShimmer:   // ⭐️ جديد
+        return _buildGlassShimmerCard(context, effectiveColor, effectiveBorderRadius, cardContent);
       case CardStyle.outlined:
         return _buildOutlinedCard(context, effectiveColor, effectiveBorderRadius, cardContent);
       case CardStyle.elevated:
@@ -295,20 +303,19 @@ class AppCard extends StatelessWidget {
     );
   }
 
-  /// ✅ بطاقة زجاجية محسّنة مع ألوان واضحة
+  /// ✅ بطاقة زجاجية محسّنة
   Widget _buildGlassCard(BuildContext context, Color color, double radius, Widget content) {
-    // ✅ ألوان تدرج واضحة وقوية
     final effectiveGradientColors = gradientColors ?? [
-      color.withValues(alpha: 0.95),                    // شفافية أقل للوضوح
-      color.darken(0.15).withValues(alpha: 0.90),      // تدرج متوسط
-      color.darken(0.25).withValues(alpha: 0.85),      // تدرج داكن
+      color.withValues(alpha: 0.95),
+      color.darken(0.15).withValues(alpha: 0.90),
+      color.darken(0.25).withValues(alpha: 0.85),
     ];
     
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
       child: Stack(
         children: [
-          // ✅ الخلفية الأساسية بألوان قوية
+          // الخلفية
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(radius),
@@ -316,26 +323,28 @@ class AppCard extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: effectiveGradientColors,
-                stops: effectiveGradientColors.length == 3 
-                    ? [0.0, 0.5, 1.0] 
+                stops: effectiveGradientColors.length == 3
+                    ? [0.0, 0.5, 1.0]
                     : null,
               ),
-              boxShadow: showShadow ? [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.4),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ] : null,
+              boxShadow: showShadow
+                  ? [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.4),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ]
+                  : null,
             ),
           ),
-          
-          // ✅ طبقة زجاجية خفيفة فقط للتأثير
+
+          // طبقة الزجاج
           BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2), // ضبابية أقل بكثير
+            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05), // شفافية قليلة جداً
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(radius),
                 border: Border.all(
                   color: Colors.white.withValues(alpha: 0.2),
@@ -344,7 +353,7 @@ class AppCard extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // المحتوى
           Material(
             color: Colors.transparent,
@@ -357,6 +366,53 @@ class AppCard extends StatelessWidget {
                 padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
                 child: content,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ✅ بطاقة زجاجية مع Shimmer
+  Widget _buildGlassShimmerCard(
+    BuildContext context,
+    Color color,
+    double radius,
+    Widget content,
+  ) {
+    final baseCard = _buildGlassCard(context, color, radius, content);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: Stack(
+        children: [
+          baseCard,
+          Positioned.fill(
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: -2.0, end: 2.0),
+              duration: const Duration(seconds: 2),
+              curve: Curves.easeInOut,
+              onEnd: () => (context as Element).markNeedsBuild(), // لإعادة التشغيل
+              builder: (context, value, _) {
+                return Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.transparent,
+                        Colors.white.withOpacity(0.12),
+                        Colors.transparent,
+                      ],
+                      stops: [
+                        (value - 0.3).clamp(0.0, 1.0),
+                        value.clamp(0.0, 1.0),
+                        (value + 0.3).clamp(0.0, 1.0),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
@@ -421,13 +477,9 @@ class AppCard extends StatelessWidget {
     );
   }
 
+  // ===== بناء المحتوى حسب النوع =====
   Widget _buildContent(BuildContext context) {
-    // ✅ إذا كان هناك child مخصص، استخدمه مباشرة
-    if (child != null) {
-      return child!;
-    }
-    
-    // ✅ بناء المحتوى حسب النوع
+    if (child != null) return child!;
     switch (type) {
       case CardType.athkar:
         return _buildAthkarContent(context);
@@ -444,9 +496,14 @@ class AppCard extends StatelessWidget {
     }
   }
 
-  /// ✅ محتوى عادي محسن مع نصوص واضحة
+  // ------------------------------------------------------------------
+  //                 دوال بناء المحتويات (بدون تغيير)
+  // ------------------------------------------------------------------
+  // ملاحظة: تم الإبقاء على الشيفرات الأصلية كما هي لضمان عدم المساس بالوظائف.
+  // (لو كانت هناك تغييرات لديك في هذه المقاطع أضفها هنا.)
+
+  /// محتوى عادي
   Widget _buildNormalContent(BuildContext context) {
-    // ✅ التحقق من وجود محتوى
     if (title == null && subtitle == null && content == null && icon == null) {
       return const SizedBox.shrink();
     }
@@ -455,7 +512,6 @@ class AppCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // ✅ الأيقونة المحسنة
         if (icon != null)
           Container(
             width: 56,
@@ -482,10 +538,7 @@ class AppCard extends StatelessWidget {
               size: 28,
             ),
           ),
-        
         const Spacer(),
-        
-        // ✅ العنوان المحسن مع ظلال قوية
         if (title != null)
           Text(
             title!,
@@ -498,7 +551,7 @@ class AppCard extends StatelessWidget {
                     letterSpacing: 0.3,
                     shadows: [
                       Shadow(
-                        color: Colors.black.withValues(alpha: 0.5), // ظل أقوى للوضوح
+                        color: Colors.black.withValues(alpha: 0.5),
                         offset: const Offset(0, 2),
                         blurRadius: 4,
                       ),
@@ -511,8 +564,6 @@ class AppCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-        
-        // ✅ العنوان الفرعي المحسن
         if (subtitle != null) ...[
           const SizedBox(height: ThemeConstants.space1),
           Text(
@@ -536,8 +587,6 @@ class AppCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ],
-        
-        // المحتوى النصي
         if (content != null) ...[
           const SizedBox(height: ThemeConstants.space3),
           Text(
@@ -547,8 +596,6 @@ class AppCard extends StatelessWidget {
             ),
           ),
         ],
-        
-        // مؤشر الانتقال
         if (onTap != null) ...[
           const SizedBox(height: ThemeConstants.space3),
           Row(
@@ -569,8 +616,6 @@ class AppCard extends StatelessWidget {
             ],
           ),
         ],
-        
-        // الإجراءات
         if (actions != null && actions!.isNotEmpty) ...[
           const SizedBox(height: ThemeConstants.space4),
           _buildActions(context),
@@ -579,33 +624,23 @@ class AppCard extends StatelessWidget {
     );
   }
 
+  /// محتوى أذكار
   Widget _buildAthkarContent(BuildContext context) {
-    if (content == null && title == null) {
-      return const SizedBox.shrink();
-    }
+    if (content == null && title == null) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // الرأس مع العداد والأيقونات
         if (currentCount != null || totalCount != null || actions != null)
           _buildAthkarHeader(context),
-        
-        if ((currentCount != null || totalCount != null || actions != null) && 
+        if ((currentCount != null || totalCount != null || actions != null) &&
             (content != null || title != null))
           const SizedBox(height: ThemeConstants.space3),
-        
-        // محتوى الذكر
-        if (content != null || title != null)
-          _buildAthkarBody(context),
-        
-        // المصدر
+        if (content != null || title != null) _buildAthkarBody(context),
         if (source != null) ...[
           const SizedBox(height: ThemeConstants.space3),
           _buildSource(context),
         ],
-        
-        // الفضل إن وُجد
         if (fadl != null) ...[
           const SizedBox(height: ThemeConstants.space3),
           _buildFadlSection(context),
@@ -614,10 +649,9 @@ class AppCard extends StatelessWidget {
     );
   }
 
+  /// محتوى اقتباس
   Widget _buildQuoteContent(BuildContext context) {
-    if (content == null && title == null) {
-      return const SizedBox.shrink();
-    }
+    if (content == null && title == null) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -641,9 +675,7 @@ class AppCard extends StatelessWidget {
               ),
             ),
           ),
-        
         if (subtitle != null) const SizedBox(height: ThemeConstants.space3),
-        
         Container(
           padding: const EdgeInsets.all(ThemeConstants.space4),
           decoration: BoxDecoration(
@@ -660,7 +692,6 @@ class AppCard extends StatelessWidget {
             ),
           ),
         ),
-        
         if (source != null) ...[
           const SizedBox(height: ThemeConstants.space3),
           _buildSource(context),
@@ -669,11 +700,11 @@ class AppCard extends StatelessWidget {
     );
   }
 
+  /// محتوى إكمال
   Widget _buildCompletionContent(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // الأيقونة
         Container(
           width: 80,
           height: 80,
@@ -687,10 +718,7 @@ class AppCard extends StatelessWidget {
             size: 40,
           ),
         ),
-        
         const SizedBox(height: ThemeConstants.space4),
-        
-        // العنوان
         if (title != null)
           Text(
             title!,
@@ -700,7 +728,6 @@ class AppCard extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-        
         if (content != null) ...[
           const SizedBox(height: ThemeConstants.space3),
           Text(
@@ -711,7 +738,6 @@ class AppCard extends StatelessWidget {
             ),
           ),
         ],
-        
         if (subtitle != null) ...[
           const SizedBox(height: ThemeConstants.space2),
           Text(
@@ -722,7 +748,6 @@ class AppCard extends StatelessWidget {
             ),
           ),
         ],
-        
         if (actions != null && actions!.isNotEmpty) ...[
           const SizedBox(height: ThemeConstants.space6),
           _buildActions(context),
@@ -731,10 +756,9 @@ class AppCard extends StatelessWidget {
     );
   }
 
+  /// محتوى معلومات
   Widget _buildInfoContent(BuildContext context) {
-    if (title == null && subtitle == null && icon == null) {
-      return const SizedBox.shrink();
-    }
+    if (title == null && subtitle == null && icon == null) return const SizedBox.shrink();
 
     return Row(
       children: [
@@ -752,9 +776,7 @@ class AppCard extends StatelessWidget {
               size: ThemeConstants.iconLg,
             ),
           ),
-        
         if (icon != null) const SizedBox(width: ThemeConstants.space4),
-        
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -778,12 +800,12 @@ class AppCard extends StatelessWidget {
             ],
           ),
         ),
-        
         if (trailing != null) trailing!,
       ],
     );
   }
 
+  /// محتوى إحصائيات
   Widget _buildStatContent(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -813,9 +835,7 @@ class AppCard extends StatelessWidget {
               ),
           ],
         ),
-        
         const SizedBox(height: ThemeConstants.space2),
-        
         if (value != null)
           Text(
             value!,
@@ -824,7 +844,6 @@ class AppCard extends StatelessWidget {
               fontWeight: ThemeConstants.bold,
             ),
           ),
-        
         if (title != null) ...[
           const SizedBox(height: ThemeConstants.space1),
           Text(
@@ -834,7 +853,6 @@ class AppCard extends StatelessWidget {
             ),
           ),
         ],
-        
         if (progress != null) ...[
           const SizedBox(height: ThemeConstants.space3),
           ClipRRect(
@@ -851,44 +869,40 @@ class AppCard extends StatelessWidget {
     );
   }
 
+  // ===== وحدات فرعية خاصة بأذكار =====
   Widget _buildAthkarHeader(BuildContext context) {
     return Row(
       children: [
-        // عداد التكرار
         if (currentCount != null && totalCount != null)
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 6,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              '${currentCount}/${totalCount}',
+              '$currentCount/$totalCount',
               style: context.labelMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-        
         const Spacer(),
-        
-        // أيقونات الإجراءات
         if (actions != null && actions!.isNotEmpty)
           Row(
             mainAxisSize: MainAxisSize.min,
-            children: actions!.map((action) => 
-              IconButton(
-                onPressed: action.onPressed,
-                icon: Icon(action.icon),
-                iconSize: 20,
-                color: Colors.white.withValues(alpha: 0.8),
-                tooltip: action.label,
-              ),
-            ).toList(),
+            children: actions!
+                .map(
+                  (action) => IconButton(
+                    onPressed: action.onPressed,
+                    icon: Icon(action.icon),
+                    iconSize: 20,
+                    color: Colors.white.withValues(alpha: 0.8),
+                    tooltip: action.label,
+                  ),
+                )
+                .toList(),
           ),
       ],
     );
@@ -988,20 +1002,23 @@ class AppCard extends StatelessWidget {
     );
   }
 
+  // ===== إجراءات / أزرار =====
   Widget _buildActions(BuildContext context) {
-    if (actions == null || actions!.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    if (actions == null || actions!.isEmpty) return const SizedBox.shrink();
 
     if (type == CardType.completion) {
       return Column(
-        children: actions!.map((action) => Padding(
-          padding: const EdgeInsets.only(bottom: ThemeConstants.space3),
-          child: _buildActionButton(context, action, fullWidth: true),
-        )).toList(),
+        children: actions!
+            .map(
+              (action) => Padding(
+                padding: const EdgeInsets.only(bottom: ThemeConstants.space3),
+                child: _buildActionButton(context, action, fullWidth: true),
+              ),
+            )
+            .toList(),
       );
     }
-    
+
     return Wrap(
       spacing: ThemeConstants.space2,
       runSpacing: ThemeConstants.space2,
@@ -1009,7 +1026,11 @@ class AppCard extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(BuildContext context, CardAction action, {bool fullWidth = false}) {
+  Widget _buildActionButton(
+    BuildContext context,
+    CardAction action, {
+    bool fullWidth = false,
+  }) {
     if (action.isPrimary) {
       return SizedBox(
         width: fullWidth ? double.infinity : null,
@@ -1027,7 +1048,7 @@ class AppCard extends StatelessWidget {
         ),
       );
     }
-    
+
     return OutlinedButton.icon(
       onPressed: () {
         HapticFeedback.lightImpact();
@@ -1042,18 +1063,7 @@ class AppCard extends StatelessWidget {
     );
   }
 
-  Color _getTextColor(BuildContext context, {bool isSecondary = false}) {
-    if (style == CardStyle.gradient || style == CardStyle.glassmorphism) {
-      return Colors.white.withValues(alpha: isSecondary ? 0.7 : 1.0);
-    }
-    
-    return isSecondary 
-        ? context.textSecondaryColor 
-        : context.textPrimaryColor;
-  }
-
   // ===== Factory Constructors =====
-
   factory AppCard.simple({
     required String title,
     String? subtitle,
@@ -1176,29 +1186,40 @@ class AppCard extends StatelessWidget {
     );
   }
 
-  /// ✅ Factory constructor محسن للفئات مع ألوان واضحة
-  factory AppCard.glassCategory({
+  /// ⭐️ بطاقة ترحيب زجاجية مع Shimmer
+  factory AppCard.glassWelcome({
     required String title,
-    required IconData icon,
+    String? subtitle,
     required Color primaryColor,
-    required VoidCallback onTap,
+    List<CardAction>? actions,
+    VoidCallback? onTap,
     EdgeInsetsGeometry? margin,
     EdgeInsetsGeometry? padding,
   }) {
     return AppCard(
-      style: CardStyle.glassmorphism,
+      style: CardStyle.glassmorphismShimmer,
       title: title,
-      icon: icon,
+      subtitle: subtitle,
       primaryColor: primaryColor,
       gradientColors: [
-        primaryColor.withValues(alpha: 0.95),        // شفافية قليلة
-        primaryColor.darken(0.15).withValues(alpha: 0.90),
-        primaryColor.darken(0.25).withValues(alpha: 0.85),
+        primaryColor.withOpacity(0.95),
+        primaryColor.darken(0.20).withOpacity(0.90),
       ],
+      actions: actions,
       onTap: onTap,
       margin: margin ?? EdgeInsets.zero,
       padding: padding ?? const EdgeInsets.all(ThemeConstants.space5),
       showShadow: true,
     );
+  }
+
+  // ===== أدوات مساعدة =====
+  Color _getTextColor(BuildContext context, {bool isSecondary = false}) {
+    if (style == CardStyle.gradient ||
+        style == CardStyle.glassmorphism ||
+        style == CardStyle.glassmorphismShimmer) { // ⭐️ مضاف
+      return Colors.white.withValues(alpha: isSecondary ? 0.7 : 1.0);
+    }
+    return isSecondary ? context.textSecondaryColor : context.textPrimaryColor;
   }
 }
