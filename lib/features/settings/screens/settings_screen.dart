@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../app/themes/app_theme.dart';
-import '../../../app/themes/widgets/layout/app_bar.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../app/routes/app_router.dart';
 import '../../../core/constants/app_constants.dart';
@@ -555,72 +554,32 @@ $appUrl
     }
   }
   
-  // ==================== Helper Methods - استخدام ألوان من Context ====================
+  // ==================== Helper Methods - محسنة بالنظام الموحد ====================
   
   void _showSuccessMessage(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.white, size: 20),
-            ThemeConstants.space2.w,
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: context.successColor, // استخدام context بدلاً من ThemeConstants
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-        ),
-      ),
-    );
+    // ✅ تحسين: استخدام AppSnackBar مباشرة
+    AppSnackBar.showSuccess(context: context, message: message);
   }
   
   void _showErrorMessage(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.error, color: Colors.white, size: 20),
-            ThemeConstants.space2.w,
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: context.errorColor, // استخدام context بدلاً من ThemeConstants
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-        ),
-        duration: const Duration(seconds: 6),
-        action: SnackBarAction(
-          label: 'إعادة المحاولة',
-          textColor: Colors.white,
-          onPressed: _refreshSettings,
-        ),
+    // ✅ تحسين: استخدام AppSnackBar مباشرة مع action
+    AppSnackBar.showError(
+      context: context,
+      message: message,
+      action: SnackBarAction(
+        label: 'إعادة المحاولة',
+        textColor: context.surfaceColor,
+        onPressed: _refreshSettings,
       ),
     );
   }
   
   void _showInfoMessage(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.info, color: Colors.white, size: 20),
-            ThemeConstants.space2.w,
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: context.primaryColor, // استخدام context
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-        ),
-      ),
-    );
+    // ✅ تحسين: استخدام AppSnackBar مباشرة
+    AppSnackBar.showInfo(context: context, message: message);
   }
   
   Future<bool> _showConfirmationDialog({
@@ -633,115 +592,65 @@ $appUrl
   }) async {
     if (!mounted) return false;
     
-    return await showDialog<bool>(
+    // ✅ تحسين: استخدام AppInfoDialog الموحد
+    return await AppInfoDialog.showConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-        ),
-        title: Row(
-          children: [
-            if (icon != null) ...[
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: (destructive ? context.errorColor : context.primaryColor)
-                      .withOpacitySafe(0.1), // استخدام Extension المُصحح
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                ),
-                child: Icon(
-                  icon,
-                  color: destructive ? context.errorColor : context.primaryColor,
-                  size: 24,
-                ),
-              ),
-              ThemeConstants.space3.w,
-            ],
-            Expanded(child: Text(title)),
-          ],
-        ),
-        content: Text(
-          content,
-          style: context.bodyMedium?.copyWith(height: 1.5),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(cancelText),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: destructive ? context.errorColor : null,
-            ),
-            child: Text(confirmText),
-          ),
-        ],
-      ),
+      title: title,
+      content: content,
+      confirmText: confirmText,
+      cancelText: cancelText,
+      icon: icon,
+      destructive: destructive,
     ) ?? false;
   }
   
   void _showPermissionDeniedDialog(String permissionName) {
     if (!mounted) return;
     
-    showDialog(
+    // ✅ تحسين: استخدام AppInfoDialog الموحد
+    AppInfoDialog.show(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('إذن $permissionName مطلوب'),
-        content: Text(
-          'لاستخدام هذه الميزة، يجب منح إذن $permissionName. يمكنك تفعيله من إعدادات التطبيق.',
+      title: 'إذن $permissionName مطلوب',
+      content: 'لاستخدام هذه الميزة، يجب منح إذن $permissionName. يمكنك تفعيله من إعدادات التطبيق.',
+      icon: Icons.security,
+      accentColor: context.warningColor,
+      actions: [
+        DialogAction(
+          label: 'فتح الإعدادات',
+          onPressed: () async {
+            Navigator.of(context).pop();
+            if (_servicesManager != null) {
+              await _servicesManager!.openAppSettings();
+            }
+          },
+          isPrimary: true,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('لاحقاً'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              if (_servicesManager != null) {
-                await _servicesManager!.openAppSettings();
-              }
-            },
-            child: const Text('فتح الإعدادات'),
-          ),
-        ],
-      ),
+      ],
     );
   }
   
   void _showBatteryOptimizationFailedDialog() {
     if (!mounted) return;
     
-    showDialog(
+    // ✅ تحسين: استخدام AppInfoDialog الموحد
+    AppInfoDialog.show(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.battery_saver, color: context.warningColor),
-            ThemeConstants.space2.w,
-            const Text('تحسين البطارية'),
-          ],
+      title: 'تحسين البطارية',
+      content: 'لم نتمكن من تحسين إعدادات البطارية تلقائياً. يرجى فتح إعدادات النظام وإيقاف تحسين البطارية لهذا التطبيق يدوياً.',
+      icon: Icons.battery_saver,
+      accentColor: context.warningColor,
+      actions: [
+        DialogAction(
+          label: 'فتح الإعدادات',
+          onPressed: () async {
+            Navigator.of(context).pop();
+            if (_servicesManager != null) {
+              await _servicesManager!.openAppSettings(AppSettingsType.battery);
+            }
+          },
+          isPrimary: true,
         ),
-        content: const Text(
-          'لم نتمكن من تحسين إعدادات البطارية تلقائياً. يرجى فتح إعدادات النظام وإيقاف تحسين البطارية لهذا التطبيق يدوياً.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('لاحقاً'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              if (_servicesManager != null) {
-                await _servicesManager!.openAppSettings(AppSettingsType.battery);
-              }
-            },
-            child: const Text('فتح الإعدادات'),
-          ),
-        ],
-      ),
+      ],
     );
   }
   
@@ -752,29 +661,25 @@ $appUrl
         .map((p) => _getPermissionDisplayName(p))
         .join('، ');
     
-    showDialog(
+    // ✅ تحسين: استخدام AppInfoDialog الموحد
+    AppInfoDialog.show(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('أذونات مفقودة'),
-        content: Text(
-          'تم منح بعض الأذونات بنجاح، لكن الأذونات التالية لم يتم منحها:\n\n$deniedPermissions\n\nيمكنك منحها لاحقاً من إعدادات التطبيق.',
+      title: 'أذونات مفقودة',
+      content: 'تم منح بعض الأذونات بنجاح، لكن الأذونات التالية لم يتم منحها:\n\n$deniedPermissions\n\nيمكنك منحها لاحقاً من إعدادات التطبيق.',
+      icon: Icons.security,
+      accentColor: context.warningColor,
+      actions: [
+        DialogAction(
+          label: 'فتح الإعدادات',
+          onPressed: () async {
+            Navigator.of(context).pop();
+            if (_servicesManager != null) {
+              await _servicesManager!.openAppSettings();
+            }
+          },
+          isPrimary: true,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('موافق'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              if (_servicesManager != null) {
-                await _servicesManager!.openAppSettings();
-              }
-            },
-            child: const Text('فتح الإعدادات'),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -831,74 +736,19 @@ $appUrl
   }
   
   Widget _buildErrorView() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(ThemeConstants.space6),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: context.errorColor, // استخدام context
-            ),
-            ThemeConstants.space4.h,
-            Text(
-              'فشل تحميل الإعدادات',
-              style: context.headlineSmall?.copyWith(
-                color: context.errorColor,
-                fontWeight: ThemeConstants.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            ThemeConstants.space3.h,
-            Text(
-              _errorMessage ?? 'حدث خطأ غير معروف',
-              style: context.bodyMedium?.copyWith(
-                color: context.textSecondaryColor,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            ThemeConstants.space6.h,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: () {
-                    setState(() => _errorMessage = null);
-                    _useDefaultValues();
-                  },
-                  icon: const Icon(Icons.settings),
-                  label: const Text('استخدام الافتراضية'),
-                ),
-                ThemeConstants.space3.w,
-                ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() => _errorMessage = null);
-                    _initializeServices();
-                  },
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('إعادة المحاولة'),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+    // ✅ تحسين: استخدام AppEmptyState الموحد
+    return AppEmptyState.error(
+      message: _errorMessage ?? 'حدث خطأ غير معروف',
+      onRetry: () {
+        setState(() => _errorMessage = null);
+        _initializeServices();
+      },
     );
   }
   
   Widget _buildLoadingView() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text('جاري تحميل الإعدادات...'),
-        ],
-      ),
-    );
+    // ✅ تحسين: استخدام AppLoading الموحد
+    return AppLoading.page(message: 'جاري تحميل الإعدادات...');
   }
   
   Widget _buildContent() {
@@ -1095,45 +945,13 @@ $appUrl
   }
   
   Widget _buildErrorBanner() {
-    return Container(
+    // ✅ تحسين: استخدام AppNoticeCard الموحد
+    return AppNoticeCard.error(
+      title: 'خطأ في النظام',
+      message: _errorMessage!,
+      onClose: () => setState(() => _errorMessage = null),
+      isDismissible: true,
       margin: const EdgeInsets.all(ThemeConstants.space4),
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      decoration: BoxDecoration(
-        color: context.errorColor.withOpacitySafe(0.1), // استخدام Extension المُصحح
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-        border: Border.all(color: context.errorColor.withOpacitySafe(0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.warning,
-            color: context.errorColor,
-            size: 20,
-          ),
-          ThemeConstants.space2.w,
-          Expanded(
-            child: Text(
-              _errorMessage!,
-              style: context.bodySmall?.copyWith(
-                color: context.errorColor,
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: () => setState(() => _errorMessage = null),
-            icon: Icon(
-              Icons.close,
-              color: context.errorColor,
-              size: 20,
-            ),
-            constraints: const BoxConstraints(
-              minWidth: 32,
-              minHeight: 32,
-            ),
-            padding: EdgeInsets.zero,
-          ),
-        ],
-      ),
     );
   }
 }
@@ -1153,7 +971,7 @@ class _AboutDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        borderRadius: ThemeConstants.radiusXl.circular,
       ),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 400),
@@ -1163,7 +981,7 @@ class _AboutDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(ThemeConstants.space6),
               decoration: BoxDecoration(
-                gradient: context.primaryGradient, // استخدام context
+                gradient: context.primaryGradient,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(ThemeConstants.radiusXl),
                   topRight: Radius.circular(ThemeConstants.radiusXl),
@@ -1175,12 +993,12 @@ class _AboutDialog extends StatelessWidget {
                     width: 64,
                     height: 64,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacitySafe(0.2),
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                      color: context.surfaceColor.withOpacitySafe(0.2),
+                      borderRadius: ThemeConstants.radiusMd.circular,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.auto_awesome,
-                      color: Colors.white,
+                      color: context.surfaceColor,
                       size: 32,
                     ),
                   ),
@@ -1188,14 +1006,14 @@ class _AboutDialog extends StatelessWidget {
                   Text(
                     AppConstants.appName,
                     style: context.headlineSmall?.copyWith(
-                      color: Colors.white,
+                      color: context.surfaceColor,
                       fontWeight: ThemeConstants.bold,
                     ),
                   ),
                   Text(
                     'حصن المسلم',
                     style: context.bodyMedium?.copyWith(
-                      color: Colors.white.withOpacitySafe(0.9),
+                      color: context.surfaceColor.withOpacitySafe(0.9),
                     ),
                   ),
                 ],
@@ -1229,7 +1047,7 @@ class _AboutDialog extends StatelessWidget {
                     padding: const EdgeInsets.all(ThemeConstants.space4),
                     decoration: BoxDecoration(
                       color: context.primaryColor.withOpacitySafe(0.1),
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                      borderRadius: ThemeConstants.radiusMd.circular,
                     ),
                     child: Row(
                       children: [

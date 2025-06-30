@@ -1,4 +1,4 @@
-// lib/features/home/screens/home_screen.dart - مع استخدام CustomAppBar الموحد
+// lib/features/home/screens/home_screen.dart - محسن بالنظام الموحد
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
@@ -82,7 +82,7 @@ class HomeScreen extends StatelessWidget {
       ),
       titleWidget: Row(
         children: [
-          // أيقونة التطبيق
+          // أيقونة التطبيق - محسنة بالنظام الموحد
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -103,14 +103,14 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
-            child: const Icon(
+            child: Icon(
               Icons.mosque_outlined,
-              color: Colors.white,
+              color: context.surfaceColor, // ✅ تحسين: استخدام context بدلاً من Colors.white
               size: 24,
             ),
           ),
           
-          const SizedBox(width: ThemeConstants.space3),
+          ThemeConstants.space3.w,
           
           // اسم التطبيق والترحيب
           Expanded(
@@ -141,7 +141,7 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       actions: [
-        // أيقونة الإعدادات
+        // أيقونة الإعدادات - محسنة بالنظام الموحد
         Container(
           margin: const EdgeInsets.only(left: ThemeConstants.space4),
           decoration: BoxDecoration(
@@ -168,6 +168,7 @@ class HomeScreen extends StatelessWidget {
             onPressed: () {
               HapticFeedback.lightImpact();
               Navigator.pushNamed(context, '/settings').catchError((error) {
+                // ✅ تحسين: استخدام النظام الموحد للإشعارات
                 context.showInfoSnackBar('هذه الميزة قيد التطوير');
                 return null;
               });
@@ -183,9 +184,10 @@ class HomeScreen extends StatelessWidget {
     HapticFeedback.lightImpact();
     
     // محاكاة تحديث البيانات
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(ThemeConstants.durationNormal);
     
     if (context.mounted) {
+      // ✅ تحسين: استخدام النظام الموحد للإشعارات
       context.showSuccessSnackBar('تم تحديث البيانات بنجاح');
     }
   }

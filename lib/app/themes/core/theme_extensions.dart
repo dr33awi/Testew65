@@ -1,5 +1,6 @@
-// lib/app/themes/core/theme_extensions.dart - مُصحح ومُحدث
+// lib/app/themes/core/theme_extensions.dart - محسن ومُحدث
 import 'package:athkar_app/app/themes/text_styles.dart';
+import 'package:athkar_app/app/themes/widgets/feedback/app_snackbar.dart';
 import 'package:flutter/material.dart';
 import '../theme_constants.dart';
 
@@ -70,8 +71,10 @@ extension ThemeExtension on BuildContext {
   /// لون الخلفية الرئيسية
   Color get backgroundColor => theme.scaffoldBackgroundColor;
   
-  /// لون السطح
-  Color get surfaceColor => theme.colorScheme.surface;
+  /// لون السطح - متجاوب مع الوضع الليلي/النهاري
+  Color get surfaceColor => isDarkMode 
+      ? ThemeConstants.darkTextPrimary  // أبيض في الوضع الليلي
+      : Colors.white;                   // أبيض في النهاري
   
   /// لون البطاقات
   Color get cardColor => theme.cardTheme.color ?? ThemeConstants.card(this);
@@ -227,7 +230,7 @@ extension ThemeExtension on BuildContext {
 
 /// Extensions للألوان - موحدة مع إصلاح withValues
 extension ColorExtensions on Color {
-  /// إنشاء لون بشفافية - مُصحح لـ Flutter 3.27+
+  /// ✅ إنشاء لون بشفافية - مُصحح لـ Flutter 3.27+
   Color withOpacitySafe(double opacity) {
     final safeOpacity = opacity.clamp(0.0, 1.0);
     return withValues(alpha: safeOpacity);
@@ -420,7 +423,7 @@ extension WidgetExtensions on Widget {
     child: this,
   );
 
-  /// إضافة تأثير تلاشي - مُصحح
+  /// ✅ إضافة تأثير تلاشي - مُصحح
   Widget opacity(double opacity) {
     final safeOpacity = opacity.clamp(0.0, 1.0);
     return Opacity(
@@ -440,4 +443,79 @@ extension WidgetExtensions on Widget {
     scale: scale,
     child: this,
   );
+}
+
+/// ✅ Extensions محسنة للـ SnackBar
+extension SnackBarExtension on BuildContext {
+  void showSuccessSnackBar(
+    String message, {
+    Duration? duration, 
+    SnackBarAction? action,
+    bool enableGlass = true,
+  }) {
+    AppSnackBar.showSuccess(
+      context: this, 
+      message: message, 
+      duration: duration, 
+      action: action,
+      enableGlass: enableGlass,
+    );
+  }
+
+  void showErrorSnackBar(
+    String message, {
+    Duration? duration, 
+    SnackBarAction? action,
+    bool enableGlass = true,
+  }) {
+    AppSnackBar.showError(
+      context: this, 
+      message: message, 
+      duration: duration, 
+      action: action,
+      enableGlass: enableGlass,
+    );
+  }
+
+  void showInfoSnackBar(
+    String message, {
+    Duration? duration, 
+    SnackBarAction? action,
+    bool enableGlass = true,
+  }) {
+    AppSnackBar.showInfo(
+      context: this, 
+      message: message, 
+      duration: duration, 
+      action: action,
+      enableGlass: enableGlass,
+    );
+  }
+
+  void showWarningSnackBar(
+    String message, {
+    Duration? duration, 
+    SnackBarAction? action,
+    bool enableGlass = true,
+  }) {
+    AppSnackBar.showWarning(
+      context: this, 
+      message: message, 
+      duration: duration, 
+      action: action,
+      enableGlass: enableGlass,
+    );
+  }
+
+  void showLoadingSnackBar(String message, {bool enableGlass = true}) {
+    AppSnackBar.showLoading(
+      context: this, 
+      message: message,
+      enableGlass: enableGlass,
+    );
+  }
+
+  void hideSnackBars() {
+    AppSnackBar.hideAll(this);
+  }
 }
