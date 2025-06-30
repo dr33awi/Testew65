@@ -63,7 +63,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
       
       if (!mounted) return;
       
-      context.showSuccessSnackBar('تم حفظ إعدادات الإشعارات بنجاح');
+      AppSnackBar.showSuccess(context: context, message:'تم حفظ إعدادات الإشعارات بنجاح');
       setState(() {
         _hasChanges = false;
       });

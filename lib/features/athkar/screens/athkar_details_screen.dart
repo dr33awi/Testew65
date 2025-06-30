@@ -441,6 +441,6 @@ ${item.source != null ? 'المصدر: ${item.source}' : ''}
     HapticFeedback.lightImpact();
     
     // ✅ تحسين: استخدام النظام الموحد للإشعارات
-    context.showSuccessSnackBar('تمت إضافة الذكر للمفضلة');
+    AppSnackBar.showSuccess(context: context, message:'تمت إضافة الذكر للمفضلة');
   }
 }

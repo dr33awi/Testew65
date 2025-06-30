@@ -599,7 +599,7 @@ $appUrl
       content: content,
       confirmText: confirmText,
       cancelText: cancelText,
-      icon: icon,
+      icon: icon ?? Icons.help_outline,
       destructive: destructive,
     ) ?? false;
   }

@@ -64,7 +64,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       
       if (!mounted) return;
       
-      context.showSuccessSnackBar('تم حفظ الإعدادات بنجاح');
+      AppSnackBar.showSuccess(context: context, message:'تم حفظ الإعدادات بنجاح');
       setState(() {
         _hasChanges = false;
       });

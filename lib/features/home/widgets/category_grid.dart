@@ -40,7 +40,7 @@ class SimpleCategoryGrid extends StatelessWidget {
     if (category.routeName != null) {
       Navigator.pushNamed(context, category.routeName!).catchError((error) {
         if (context.mounted) {
-          context.showWarningSnackBar('هذه الميزة قيد التطوير');
+          AppSnackBar.showWarning(context: context, message: 'هذه الميزة قيد التطوير');
         }
         return null;
       });

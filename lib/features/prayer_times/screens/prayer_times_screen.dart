@@ -336,7 +336,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     );
     
     // ✅ تحسين: استخدام النظام الموحد للإشعارات
-    context.showSuccessSnackBar(
+    AppSnackBar.showSuccess(context: context, message:
       enabled 
           ? 'تم تفعيل تنبيه ${prayer.nameAr}'
           : 'تم إيقاف تنبيه ${prayer.nameAr}',

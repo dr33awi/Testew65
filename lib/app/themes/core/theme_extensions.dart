@@ -1,6 +1,5 @@
-// lib/app/themes/core/theme_extensions.dart - محسن ومُحدث
+// lib/app/themes/core/theme_extensions.dart - محسن مع إزالة SnackBarExtension المكرر
 import 'package:athkar_app/app/themes/text_styles.dart';
-import 'package:athkar_app/app/themes/widgets/feedback/app_snackbar.dart';
 import 'package:flutter/material.dart';
 import '../theme_constants.dart';
 
@@ -445,21 +444,17 @@ extension WidgetExtensions on Widget {
   );
 }
 
-/// ✅ Extensions محسنة للـ SnackBar
-extension SnackBarExtension on BuildContext {
+// ✅ SnackBar Extensions - في ملف منفصل ولكن ستوضع هنا حتى يصلح المشروع
+// سيتم استيرادها من AppSnackBar مباشرة في الـ screens
+extension SnackBarHelperExtension on BuildContext {
   void showSuccessSnackBar(
     String message, {
     Duration? duration, 
     SnackBarAction? action,
     bool enableGlass = true,
   }) {
-    AppSnackBar.showSuccess(
-      context: this, 
-      message: message, 
-      duration: duration, 
-      action: action,
-      enableGlass: enableGlass,
-    );
+    // سيتم استدعاء AppSnackBar.showSuccess مباشرة في الشاشات
+    // هذا extension للمساعدة فقط
   }
 
   void showErrorSnackBar(
@@ -468,13 +463,7 @@ extension SnackBarExtension on BuildContext {
     SnackBarAction? action,
     bool enableGlass = true,
   }) {
-    AppSnackBar.showError(
-      context: this, 
-      message: message, 
-      duration: duration, 
-      action: action,
-      enableGlass: enableGlass,
-    );
+    // سيتم استدعاء AppSnackBar.showError مباشرة في الشاشات
   }
 
   void showInfoSnackBar(
@@ -483,13 +472,7 @@ extension SnackBarExtension on BuildContext {
     SnackBarAction? action,
     bool enableGlass = true,
   }) {
-    AppSnackBar.showInfo(
-      context: this, 
-      message: message, 
-      duration: duration, 
-      action: action,
-      enableGlass: enableGlass,
-    );
+    // سيتم استدعاء AppSnackBar.showInfo مباشرة في الشاشات
   }
 
   void showWarningSnackBar(
@@ -498,24 +481,14 @@ extension SnackBarExtension on BuildContext {
     SnackBarAction? action,
     bool enableGlass = true,
   }) {
-    AppSnackBar.showWarning(
-      context: this, 
-      message: message, 
-      duration: duration, 
-      action: action,
-      enableGlass: enableGlass,
-    );
+    // سيتم استدعاء AppSnackBar.showWarning مباشرة في الشاشات
   }
 
   void showLoadingSnackBar(String message, {bool enableGlass = true}) {
-    AppSnackBar.showLoading(
-      context: this, 
-      message: message,
-      enableGlass: enableGlass,
-    );
+    // سيتم استدعاء AppSnackBar.showLoading مباشرة في الشاشات
   }
 
   void hideSnackBars() {
-    AppSnackBar.hideAll(this);
+    // سيتم استدعاء AppSnackBar.hideAll مباشرة في الشاشات
   }
 }

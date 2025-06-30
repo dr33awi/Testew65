@@ -188,7 +188,7 @@ class HomeScreen extends StatelessWidget {
     
     if (context.mounted) {
       // ✅ تحسين: استخدام النظام الموحد للإشعارات
-      context.showSuccessSnackBar('تم تحديث البيانات بنجاح');
+      AppSnackBar.showSuccess(context: context, message:'تم تحديث البيانات بنجاح');
     }
   }
 }

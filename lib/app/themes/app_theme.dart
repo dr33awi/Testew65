@@ -1,4 +1,5 @@
-// lib/app/themes/app_theme.dart - مصحح بالكامل
+// lib/app/themes/app_theme.dart - إصلاح مشكلة تكرار SnackBarExtension
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'theme_constants.dart';
@@ -26,7 +27,8 @@ export 'widgets/cards/app_card.dart';
 export 'widgets/dialogs/app_info_dialog.dart';
 
 // ===== Feedback Components =====
-export 'widgets/feedback/app_snackbar.dart';
+// ✅ حل مشكلة تكرار SnackBarExtension - تصدير AppSnackBar فقط بدون extension
+export 'widgets/feedback/app_snackbar.dart' hide SnackBarExtension;
 export 'widgets/feedback/app_notice_card.dart';
 
 // ===== State Components =====
