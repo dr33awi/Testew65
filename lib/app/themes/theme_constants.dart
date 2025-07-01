@@ -1,9 +1,8 @@
-// lib/app/themes/theme_constants.dart - النسخة المبسطة (بدون ألوان)
+// lib/app/themes/theme_constants.dart - النسخة النظيفة (ثوابت فقط)
 import 'package:flutter/material.dart';
-import 'core/systems/app_color_system.dart';
+import 'core/systems/app_icons_system.dart';
 
-/// ثوابت الثيم - المقاييس والأحجام والأيقونات فقط
-/// الألوان منقولة إلى AppColorSystem
+/// ثوابت الثيم - الأساسيات فقط (بدون ألوان أو ظلال)
 class ThemeConstants {
   ThemeConstants._();
 
@@ -94,7 +93,7 @@ class ThemeConstants {
   static const double fabSize = 56.0;
   static const double fabSizeMini = 40.0;
 
-  // ===== الظلال =====
+  // ===== الارتفاعات (Material Design) =====
   static const double elevationNone = 0.0;
   static const double elevation1 = 1.0;
   static const double elevation2 = 2.0;
@@ -132,65 +131,8 @@ class ThemeConstants {
   static const Curve curveOvershoot = Curves.easeOutBack;
   static const Curve curveAnticipate = Curves.easeInBack;
 
-  // ===== الظلال الجاهزة =====
-  static List<BoxShadow> shadowSm = [
-    BoxShadow(
-      color: AppColorSystem.primary.withValues(alpha: opacity5),
-      blurRadius: 4,
-      offset: const Offset(0, 2),
-    ),
-  ];
-
-  static List<BoxShadow> shadowMd = [
-    BoxShadow(
-      color: AppColorSystem.primary.withValues(alpha: opacity10),
-      blurRadius: 8,
-      offset: const Offset(0, 4),
-    ),
-  ];
-
-  static List<BoxShadow> shadowLg = [
-    BoxShadow(
-      color: AppColorSystem.primary.withValues(alpha: opacity10),
-      blurRadius: 16,
-      offset: const Offset(0, 8),
-    ),
-  ];
-
-  static List<BoxShadow> shadowXl = [
-    BoxShadow(
-      color: AppColorSystem.primary.withValues(alpha: opacity20),
-      blurRadius: 24,
-      offset: const Offset(0, 12),
-    ),
-  ];
-
-  static List<BoxShadow> shadowInner = [
-    BoxShadow(
-      color: AppColorSystem.primary.withValues(alpha: opacity10),
-      blurRadius: 4,
-      offset: const Offset(0, -2),
-      spreadRadius: -2,
-    ),
-  ];
-
-  // ===== الأيقونات =====
-  static const IconData iconPrayer = Icons.mosque;
-  static const IconData iconPrayerTime = Icons.access_time;
-  static const IconData iconQibla = Icons.explore;
-  static const IconData iconAdhan = Icons.volume_up;
-
-  static const IconData iconAthkar = Icons.menu_book;
-  static const IconData iconMorningAthkar = Icons.wb_sunny;
-  static const IconData iconEveningAthkar = Icons.nights_stay;
-  static const IconData iconSleepAthkar = Icons.bedtime;
-
-  static const IconData iconFavorite = Icons.favorite;
-  static const IconData iconFavoriteOutline = Icons.favorite_border;
-  static const IconData iconShare = Icons.share;
-  static const IconData iconCopy = Icons.content_copy;
-  static const IconData iconSettings = Icons.settings;
-  static const IconData iconNotifications = Icons.notifications;
+  // ===== الأيقونات منقولة إلى AppIconsSystem =====
+  // استخدم AppIconsSystem بدلاً من الثوابت هنا
 
   // ===== Avatar Sizes =====
   static const double avatarSm = 32.0;
@@ -211,82 +153,19 @@ class ThemeConstants {
   static const int defaultMinBatteryLevel = 15;
   static const int criticalBatteryLevel = 5;
 
-  // ===== دوال الألوان - تستدعي AppColorSystem =====
+  // ===== دوال الأيقونات - تستدعي AppIconsSystem =====
   
-  /// الحصول على اللون حسب الثيم
-  static Color background(BuildContext context) => AppColorSystem.getBackground(context);
-  static Color surface(BuildContext context) => AppColorSystem.getSurface(context);
-  static Color card(BuildContext context) => AppColorSystem.getCard(context);
-  static Color textPrimary(BuildContext context) => AppColorSystem.getTextPrimary(context);
-  static Color textSecondary(BuildContext context) => AppColorSystem.getTextSecondary(context);
-  static Color divider(BuildContext context) => AppColorSystem.getDivider(context);
-
-  // ===== دوال الصلوات - تستدعي AppColorSystem =====
-  
-  /// الحصول على لون حسب اسم الصلاة
-  static Color getPrayerColor(String name) => AppColorSystem.getPrayerColor(name);
-  
-  /// الحصول على تدرج حسب وقت الصلاة
-  static LinearGradient prayerGradient(String prayerName) => AppColorSystem.getPrayerGradient(prayerName);
-  
-  /// الحصول على تدرج حسب الوقت
-  static LinearGradient getTimeBasedGradient() => AppColorSystem.getTimeBasedGradient();
-
-  /// الحصول على أيقونة حسب اسم الصلاة
+  /// الحصول على أيقونة حسب اسم الصلاة (للتوافق مع الإصدارات القديمة)
+  /// يُنصح باستخدام AppIconsSystem.getPrayerIcon() مباشرة
+  @Deprecated('استخدم AppIconsSystem.getPrayerIcon() بدلاً من ذلك')
   static IconData getPrayerIcon(String name) {
-    switch (name.toLowerCase()) {
-      case 'fajr':
-      case 'الفجر':
-        return Icons.dark_mode;
-      case 'dhuhr':
-      case 'الظهر':
-        return Icons.light_mode;
-      case 'asr':
-      case 'العصر':
-        return Icons.wb_cloudy;
-      case 'maghrib':
-      case 'المغرب':
-        return Icons.wb_twilight;
-      case 'isha':
-      case 'العشاء':
-        return Icons.bedtime;
-      case 'sunrise':
-      case 'الشروق':
-        return Icons.wb_sunny;
-      default:
-        return Icons.access_time;
-    }
+    return AppIconsSystem.getPrayerIcon(name);
   }
 
-  // ===== دوال التدرجات - تستدعي AppColorSystem =====
-  
-  /// الحصول على تدرج خلفية الأذكار حسب الوضع
-  static LinearGradient getAthkarBackgroundGradient(BuildContext context) => 
-      AppColorSystem.getAthkarBackgroundGradient(context);
-
-  /// الحصول على تدرج خلفية التطبيق
-  static LinearGradient getAppBackgroundGradient(BuildContext context) => 
-      AppColorSystem.getAppBackgroundGradient(context);
-
-  /// إنشاء تدرج مخصص
-  static LinearGradient customGradient({
-    required List<Color> colors,
-    AlignmentGeometry begin = Alignment.topLeft,
-    AlignmentGeometry end = Alignment.bottomRight,
-    List<double>? stops,
-  }) => AppColorSystem.customGradient(
-    colors: colors,
-    begin: begin,
-    end: end,
-    stops: stops,
-  );
-
-  /// الحصول على ظل حسب الارتفاع
-  static List<BoxShadow> shadowForElevation(double elevation) {
-    if (elevation <= 0) return [];
-    if (elevation <= 2) return shadowSm;
-    if (elevation <= 4) return shadowMd;
-    if (elevation <= 8) return shadowLg;
-    return shadowXl;
+  /// الحصول على أيقونة حسب الفئة (للتوافق مع الإصدارات القديمة)
+  /// يُنصح باستخدام AppIconsSystem.getCategoryIcon() مباشرة
+  @Deprecated('استخدم AppIconsSystem.getCategoryIcon() بدلاً من ذلك')
+  static IconData getCategoryIcon(String categoryId) {
+    return AppIconsSystem.getCategoryIcon(categoryId);
   }
 }

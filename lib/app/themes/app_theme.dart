@@ -17,6 +17,7 @@ export 'core/theme_extensions.dart';
 
 // الأنظمة الموحدة
 export 'core/systems/app_color_system.dart'; // المصدر الأساسي للألوان
+export 'core/systems/app_icons_system.dart'; // المصدر الأساسي للأيقونات
 export 'core/systems/app_size_system.dart';
 export 'core/systems/app_shadow_system.dart';
 export 'core/systems/app_container_builder.dart';

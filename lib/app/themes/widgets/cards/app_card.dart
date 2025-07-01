@@ -1,6 +1,5 @@
-// lib/app/themes/widgets/cards/app_card.dart - إزالة الاستدعاءات المحذوفة
+// lib/app/themes/widgets/cards/app_card.dart - مُصلح بالكامل
 import 'package:flutter/material.dart';
-import '../../theme_constants.dart';
 import 'card_types.dart';
 import 'card_styles.dart';
 import 'card_contents.dart';
@@ -19,45 +18,7 @@ class AppCard extends StatefulWidget {
   const AppCard({
     super.key,
     required this.properties,
-}
-
-/// حالة البطاقة الرئيسية
-class _AppCardState extends State<AppCard> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: widget.properties.margin ?? const EdgeInsets.symmetric(
-        horizontal: ThemeConstants.space4,
-        vertical: ThemeConstants.space2,
-      ),
-      child: _buildCard(),
-    );
-  }
-
-  /// بناء البطاقة
-  Widget _buildCard() {
-    // التحقق من صحة البطاقة
-    if (!widget.properties.isValid) {
-      return CardContentBuilder.buildFallbackContent(
-        context, 
-        'بيانات البطاقة غير صحيحة',
-      );
-    }
-
-    // بناء المحتوى
-    final content = CardContentBuilder.buildContent(
-      properties: widget.properties,
-      context: context,
-    );
-
-    // تطبيق النمط
-    return CardStyleBuilder.buildStyled(
-      properties: widget.properties,
-      content: content,
-      context: context,
-    );
-  }
-});
+  });
 
   /// إنشاء بطاقة مخصصة
   AppCard.custom({
@@ -346,3 +307,42 @@ class _AppCardState extends State<AppCard> {
       ),
     );
   }
+}
+
+/// حالة البطاقة الرئيسية
+class _AppCardState extends State<AppCard> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: widget.properties.margin ?? const EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 8.0,
+      ),
+      child: _buildCard(),
+    );
+  }
+
+  /// بناء البطاقة
+  Widget _buildCard() {
+    // التحقق من صحة البطاقة
+    if (!widget.properties.isValid) {
+      return CardContentBuilder.buildFallbackContent(
+        context, 
+        'بيانات البطاقة غير صحيحة',
+      );
+    }
+
+    // بناء المحتوى
+    final content = CardContentBuilder.buildContent(
+      properties: widget.properties,
+      context: context,
+    );
+
+    // تطبيق النمط
+    return CardStyleBuilder.buildStyled(
+      properties: widget.properties,
+      content: content,
+      context: context,
+    );
+  }
+}

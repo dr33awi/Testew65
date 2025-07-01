@@ -1,7 +1,8 @@
-// lib/app/themes/widgets/core/app_loading.dart - النسخة المبسطة (circular فقط)
+// lib/app/themes/widgets/core/app_loading.dart - النسخة المصححة
 import 'package:flutter/material.dart';
 import '../../theme_constants.dart';
 import '../../text_styles.dart';
+import '../../core/systems/app_shadow_system.dart';
 
 /// أحجام مؤشرات التحميل - مبسطة
 enum LoadingSize {
@@ -62,7 +63,7 @@ class AppLoading extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.cardTheme.color,
           borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-          boxShadow: ThemeConstants.shadowLg,
+          boxShadow: AppShadowSystem.strong, // استخدام AppShadowSystem بدلاً من ThemeConstants
         ),
         child: loadingIndicator,
       );

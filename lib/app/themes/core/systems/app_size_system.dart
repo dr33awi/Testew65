@@ -1,14 +1,14 @@
-// lib/app/themes/core/systems/app_size_system.dart - النسخة النظيفة (موحدة مع ThemeConstants)
+// lib/app/themes/core/systems/app_size_system.dart - النسخة النظيفة المنفصلة
 import 'package:flutter/material.dart';
-import 'package:athkar_app/app/themes/theme_constants.dart';
+import '../../theme_constants.dart';
 
-/// نظام الأحجام الموحد - يستخدم قيم ThemeConstants لتجنب التضارب
+/// نظام الأحجام الموحد - منفصل ونظيف
 class AppSizeSystem {
   AppSizeSystem._();
 
-  // ===== استخدام قيم ThemeConstants مباشرة لتجنب التضارب =====
+  // ===== استخدام قيم ThemeConstants مع إضافات منطقية =====
   
-  /// أحجام المكونات المختلفة - موحدة مع ThemeConstants
+  /// أحجام المكونات المختلفة - موحدة ونظيفة
   static const Map<ComponentSize, ComponentSizes> _componentSizes = {
     ComponentSize.xs: ComponentSizes(
       height: ThemeConstants.heightXs,
@@ -29,7 +29,7 @@ class AppSizeSystem {
     ComponentSize.md: ComponentSizes(
       height: ThemeConstants.heightMd,
       width: 120,
-      iconSize: ThemeConstants.iconMd, // ✅ موحد مع ThemeConstants
+      iconSize: ThemeConstants.iconMd,
       fontSize: ThemeConstants.textSizeMd,
       padding: EdgeInsets.all(ThemeConstants.space4),
       borderRadius: ThemeConstants.radiusMd,
@@ -60,7 +60,7 @@ class AppSizeSystem {
     ),
   };
 
-  // ===== دوال الحصول على الأحجام =====
+  // ===== دوال الحصول على الأحجام الأساسية =====
 
   /// الحصول على ارتفاع المكون
   static double getHeight(ComponentSize size) {
@@ -206,6 +206,50 @@ class AppSizeSystem {
     }
     return null;
   }
+
+  // ===== دوال متقدمة للتحكم بالأحجام =====
+
+  /// إنشاء حجم مخصص
+  static ComponentSizes createCustomSize({
+    double? height,
+    double? width,
+    double? iconSize,
+    double? fontSize,
+    EdgeInsets? padding,
+    double? borderRadius,
+    ComponentSize baseSize = ComponentSize.md,
+  }) {
+    final base = getSizes(baseSize);
+    return ComponentSizes(
+      height: height ?? base.height,
+      width: width ?? base.width,
+      iconSize: iconSize ?? base.iconSize,
+      fontSize: fontSize ?? base.fontSize,
+      padding: padding ?? base.padding,
+      borderRadius: borderRadius ?? base.borderRadius,
+    );
+  }
+
+  /// تعديل حجم موجود
+  static ComponentSizes modifySize(
+    ComponentSize size, {
+    double heightMultiplier = 1.0,
+    double widthMultiplier = 1.0,
+    double iconMultiplier = 1.0,
+    double fontMultiplier = 1.0,
+    double paddingMultiplier = 1.0,
+    double radiusMultiplier = 1.0,
+  }) {
+    final base = getSizes(size);
+    return ComponentSizes(
+      height: base.height * heightMultiplier,
+      width: base.width * widthMultiplier,
+      iconSize: base.iconSize * iconMultiplier,
+      fontSize: base.fontSize * fontMultiplier,
+      padding: base.padding * paddingMultiplier,
+      borderRadius: base.borderRadius * radiusMultiplier,
+    );
+  }
 }
 
 // ===== التعدادات والفئات المساعدة =====
@@ -237,6 +281,25 @@ class ComponentSizes {
     required this.padding,
     required this.borderRadius,
   });
+
+  /// نسخ مع تعديلات
+  ComponentSizes copyWith({
+    double? height,
+    double? width,
+    double? iconSize,
+    double? fontSize,
+    EdgeInsets? padding,
+    double? borderRadius,
+  }) {
+    return ComponentSizes(
+      height: height ?? this.height,
+      width: width ?? this.width,
+      iconSize: iconSize ?? this.iconSize,
+      fontSize: fontSize ?? this.fontSize,
+      padding: padding ?? this.padding,
+      borderRadius: borderRadius ?? this.borderRadius,
+    );
+  }
 }
 
 /// أحجام مخصصة للأزرار

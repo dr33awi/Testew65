@@ -1,10 +1,11 @@
-// lib/app/themes/core/theme_extensions.dart - محدث للنظام الجديد
+// lib/app/themes/core/theme_extensions.dart - النسخة المصححة
 import 'package:flutter/material.dart';
 import '../theme_constants.dart';
 import 'systems/app_color_system.dart';
+import 'systems/app_icons_system.dart';
 import 'systems/app_size_system.dart';
 
-/// Extensions مفيدة - تستخدم AppColorSystem الجديد
+/// Extensions مفيدة - تستخدم الأنظمة الجديدة
 extension ThemeExtension on BuildContext {
   // ===== الوصول المباشر للثيم =====
   ThemeData get theme => Theme.of(this);
@@ -56,7 +57,7 @@ extension ThemeExtension on BuildContext {
   Color getPrayerColor(String prayerName) => 
     AppColorSystem.getPrayerColor(prayerName);
   IconData getPrayerIcon(String prayerName) =>
-    ThemeConstants.getPrayerIcon(prayerName);
+    AppIconsSystem.getPrayerIcon(prayerName);
 
   // ===== دوال الفئات والاقتباسات =====
   Color getCategoryColor(String categoryId) {
@@ -252,7 +253,7 @@ extension StringThemeExtension on String {
   
   /// الحصول على أيقونة الفئة/الصلاة
   IconData getCategoryIcon() {
-    return ThemeConstants.getPrayerIcon(this);
+    return AppIconsSystem.getCategoryIcon(this);
   }
 
   /// الحصول على لون للصلاة (مرادف)
@@ -262,7 +263,7 @@ extension StringThemeExtension on String {
   LinearGradient get prayerGradient => AppColorSystem.getPrayerGradient(this);
   
   /// الحصول على أيقونة للصلاة (مرادف)
-  IconData get prayerIcon => ThemeConstants.getPrayerIcon(this);
+  IconData get prayerIcon => AppIconsSystem.getPrayerIcon(this);
 }
 
 /// Extension لـ AppColorSystem في String - للراحة
@@ -272,4 +273,13 @@ extension AppColorExtension on String {
   Color get categoryLightColor => AppColorSystem.getCategoryLightColor(this);
   Color get categoryDarkColor => AppColorSystem.getCategoryDarkColor(this);
   LinearGradient get categoryGradient => AppColorSystem.getCategoryGradient(this);
+}
+
+/// Extension لـ AppIconsSystem في String - للراحة (اسم مختلف لتجنب التضارب)
+extension AppIconsThemeExtension on String {
+  /// الوصول السريع للأيقونات
+  IconData get categoryIcon => AppIconsSystem.getCategoryIcon(this);
+  IconData get prayerIcon => AppIconsSystem.getPrayerIcon(this);
+  IconData get quoteTypeIcon => AppIconsSystem.getQuoteTypeIcon(this);
+  IconData get stateIcon => AppIconsSystem.getStateIcon(this);
 }
