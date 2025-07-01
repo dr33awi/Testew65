@@ -1,7 +1,9 @@
-// lib/app/themes/core/theme_extensions.dart - محسن مع إزالة SnackBarExtension المكرر
-import 'package:athkar_app/app/themes/text_styles.dart';
+// lib/app/themes/core/theme_extensions.dart - منظفة ومبسطة
 import 'package:flutter/material.dart';
 import '../theme_constants.dart';
+import '../text_styles.dart';
+import 'systems/app_color_system.dart';
+import 'systems/app_size_system.dart';
 
 /// Extensions لتسهيل الوصول للثيم مع ضمان التطابق الكامل
 extension ThemeExtension on BuildContext {
@@ -9,156 +11,62 @@ extension ThemeExtension on BuildContext {
   TextTheme get textTheme => theme.textTheme;
   ColorScheme get colorScheme => theme.colorScheme;
 
-  // ===== الألوان الأساسية - مضمونة التطابق مع ThemeConstants =====
+  // ===== الألوان الأساسية - مطابقة تماماً لـ ThemeConstants =====
   
-  /// اللون الأساسي - نفس ThemeConstants.primary بالضبط
   Color get primaryColor => ThemeConstants.primary;
-  
-  /// اللون الأساسي الفاتح - نفس ThemeConstants.primaryLight بالضبط
   Color get primaryLightColor => ThemeConstants.primaryLight;
-  
-  /// اللون الأساسي الداكن - نفس ThemeConstants.primaryDark بالضبط
   Color get primaryDarkColor => ThemeConstants.primaryDark;
-
-  // ===== الألوان الثانوية =====
-  
-  /// اللون الثانوي (الذهبي) - نفس ThemeConstants.accent بالضبط
   Color get accentColor => ThemeConstants.accent;
-  
-  /// اللون الثانوي الفاتح
   Color get accentLightColor => ThemeConstants.accentLight;
-  
-  /// اللون الثانوي الداكن
   Color get accentDarkColor => ThemeConstants.accentDark;
-
-  // ===== اللون الثالث (البني) =====
-  
-  /// اللون الثالث - نفس ThemeConstants.tertiary بالضبط
   Color get tertiaryColor => ThemeConstants.tertiary;
-  
-  /// اللون الثالث الفاتح
   Color get tertiaryLightColor => ThemeConstants.tertiaryLight;
-  
-  /// اللون الثالث الداكن
   Color get tertiaryDarkColor => ThemeConstants.tertiaryDark;
 
-  // ===== الألوان الدلالية - مطابقة تماماً لـ ThemeConstants =====
+  // ===== الألوان الدلالية =====
   
-  /// لون النجاح - نفس ThemeConstants.success (= primary) بالضبط
   Color get successColor => ThemeConstants.success;
-  
-  /// لون النجاح الفاتح
   Color get successLightColor => ThemeConstants.successLight;
-  
-  /// لون الخطأ - نفس ThemeConstants.error بالضبط
   Color get errorColor => ThemeConstants.error;
-  
-  /// لون التحذير - نفس ThemeConstants.warning بالضبط
   Color get warningColor => ThemeConstants.warning;
-  
-  /// لون التحذير الفاتح
   Color get warningLightColor => ThemeConstants.warningLight;
-  
-  /// لون المعلومات - نفس ThemeConstants.info بالضبط
   Color get infoColor => ThemeConstants.info;
-  
-  /// لون المعلومات الفاتح
   Color get infoLightColor => ThemeConstants.infoLight;
 
   // ===== ألوان الخلفيات والأسطح =====
   
-  /// لون الخلفية الرئيسية
-  Color get backgroundColor => theme.scaffoldBackgroundColor;
-  
-  /// لون السطح - متجاوب مع الوضع الليلي/النهاري
-  Color get surfaceColor => isDarkMode 
-      ? ThemeConstants.darkTextPrimary  // أبيض في الوضع الليلي
-      : Colors.white;                   // أبيض في النهاري
-  
-  /// لون البطاقات
-  Color get cardColor => theme.cardTheme.color ?? ThemeConstants.card(this);
-  
-  /// لون الفواصل
-  Color get dividerColor => theme.dividerTheme.color ?? ThemeConstants.divider(this);
-
-  // ===== ألوان النصوص =====
-  
-  /// لون النص الأساسي
+  Color get backgroundColor => ThemeConstants.background(this);
+  Color get surfaceColor => ThemeConstants.surface(this);
+  Color get cardColor => ThemeConstants.card(this);
+  Color get dividerColor => ThemeConstants.divider(this);
   Color get textPrimaryColor => ThemeConstants.textPrimary(this);
-  
-  /// لون النص الثانوي
   Color get textSecondaryColor => ThemeConstants.textSecondary(this);
 
-  // ===== التدرجات الأساسية - نفس ThemeConstants بالضبط =====
+  // ===== التدرجات الأساسية =====
   
-  /// التدرج الأساسي - نفس ThemeConstants.primaryGradient بالضبط
   LinearGradient get primaryGradient => ThemeConstants.primaryGradient;
-  
-  /// التدرج الثانوي - نفس ThemeConstants.accentGradient بالضبط
   LinearGradient get accentGradient => ThemeConstants.accentGradient;
-  
-  /// التدرج الثالث - نفس ThemeConstants.tertiaryGradient بالضبط
   LinearGradient get tertiaryGradient => ThemeConstants.tertiaryGradient;
-  
-  /// تدرج النجاح
-  LinearGradient get successGradient => const LinearGradient(
-    colors: [ThemeConstants.success, ThemeConstants.successLight],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
 
-  // ===== دوال الـ gradients المتخصصة - نفس ThemeConstants =====
+  // ===== دوال ThemeConstants المتخصصة =====
   
-  /// الحصول على تدرج حسب اسم الصلاة
   LinearGradient prayerGradient(String prayerName) => 
     ThemeConstants.prayerGradient(prayerName);
-  
-  /// الحصول على تدرج حسب الوقت
   LinearGradient getTimeBasedGradient({DateTime? dateTime}) => 
     ThemeConstants.getTimeBasedGradient();
-  
-  /// الحصول على لون حسب اسم الصلاة
   Color getPrayerColor(String prayerName) => 
     ThemeConstants.getPrayerColor(prayerName);
-  
-  /// الحصول على أيقونة حسب اسم الصلاة
   IconData getPrayerIcon(String prayerName) =>
     ThemeConstants.getPrayerIcon(prayerName);
 
   // ===== دوال الفئات المبسطة =====
   
-  /// الحصول على لون فئة الأذكار
   Color getCategoryColor(String categoryId) {
-    switch (categoryId) {
-      case 'morning':
-      case 'الصباح':
-      case 'أذكار الصباح':
-        return ThemeConstants.primary;
-      case 'evening':
-      case 'المساء':
-      case 'أذكار المساء':
-        return ThemeConstants.accent;
-      case 'sleep':
-      case 'النوم':
-      case 'أذكار النوم':
-        return ThemeConstants.tertiary;
-      case 'prayer':
-      case 'بعد الصلاة':
-      case 'أذكار بعد الصلاة':
-        return ThemeConstants.primaryLight;
-      default:
-        return ThemeConstants.primary;
-    }
+    return AppColorSystem.getPrimaryColor(categoryId);
   }
   
-  /// الحصول على تدرج فئة الأذكار
   LinearGradient getCategoryGradient(String categoryId) {
-    final color = getCategoryColor(categoryId);
-    return LinearGradient(
-      colors: [color, color.darken(0.1)],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
+    return AppColorSystem.getGradient(categoryId);
   }
 
   // ===== حالة الثيم =====
@@ -166,7 +74,7 @@ extension ThemeExtension on BuildContext {
   bool get isDarkMode => theme.brightness == Brightness.dark;
   bool get isLightMode => !isDarkMode;
 
-  // ===== أنماط النصوص - مباشرة من TextTheme =====
+  // ===== أنماط النصوص المباشرة =====
   
   TextStyle? get displayLarge => textTheme.displayLarge;
   TextStyle? get displayMedium => textTheme.displayMedium;
@@ -203,6 +111,10 @@ extension ThemeExtension on BuildContext {
   bool get isTablet => screenWidth >= ThemeConstants.breakpointMobile && screenWidth < ThemeConstants.breakpointTablet;
   bool get isDesktop => screenWidth >= ThemeConstants.breakpointTablet;
 
+  // ===== الحجم المتجاوب =====
+  
+  ComponentSize get responsiveSize => AppSizeSystem.getResponsiveSize(this);
+
   // ===== الحشوات المتجاوبة =====
   
   EdgeInsets get responsivePadding {
@@ -229,13 +141,11 @@ extension ThemeExtension on BuildContext {
 
 /// Extensions للألوان - موحدة مع إصلاح withValues
 extension ColorExtensions on Color {
-  /// ✅ إنشاء لون بشفافية - مُصحح لـ Flutter 3.27+
   Color withOpacitySafe(double opacity) {
     final safeOpacity = opacity.clamp(0.0, 1.0);
     return withValues(alpha: safeOpacity);
   }
 
-  /// تفتيح اللون
   Color lighten([double amount = 0.1]) {
     assert(amount >= 0 && amount <= 1);
     final hsl = HSLColor.fromColor(this);
@@ -243,7 +153,6 @@ extension ColorExtensions on Color {
     return hsl.withLightness(lightness).toColor();
   }
 
-  /// تغميق اللون
   Color darken([double amount = 0.1]) {
     assert(amount >= 0 && amount <= 1);
     final hsl = HSLColor.fromColor(this);
@@ -251,14 +160,12 @@ extension ColorExtensions on Color {
     return hsl.withLightness(lightness).toColor();
   }
 
-  /// الحصول على لون متباين للنص
   Color get contrastingTextColor {
     return ThemeData.estimateBrightnessForColor(this) == Brightness.dark
         ? Colors.white
         : Colors.black87;
   }
 
-  /// تحويل إلى Material Color
   MaterialColor toMaterialColor() {
     final strengths = <double>[.05, .1, .2, .3, .4, .5, .6, .7, .8, .9];
     final swatch = <int, Color>{};
@@ -270,7 +177,7 @@ extension ColorExtensions on Color {
           : darken(strength - 0.5);
     }
     
-    return MaterialColor(value, swatch);
+    return MaterialColor(toARGB32(), swatch);
   }
 }
 
@@ -306,13 +213,6 @@ extension EdgeInsetsExtensions on EdgeInsets {
     top: (top - other.top).clamp(0.0, double.infinity),
     right: (right - other.right).clamp(0.0, double.infinity),
     bottom: (bottom - other.bottom).clamp(0.0, double.infinity),
-  );
-
-  EdgeInsets get copyWith => EdgeInsets.only(
-    left: left,
-    top: top,
-    right: right,
-    bottom: bottom,
   );
 }
 
@@ -422,7 +322,7 @@ extension WidgetExtensions on Widget {
     child: this,
   );
 
-  /// ✅ إضافة تأثير تلاشي - مُصحح
+  /// إضافة تأثير تلاشي
   Widget opacity(double opacity) {
     final safeOpacity = opacity.clamp(0.0, 1.0);
     return Opacity(
@@ -444,48 +344,26 @@ extension WidgetExtensions on Widget {
   );
 }
 
-// ✅ SnackBar Extensions - في ملف منفصل ولكن ستوضع هنا حتى يصلح المشروع
-// سيتم استيرادها من AppSnackBar مباشرة في الـ screens
-extension SnackBarHelperExtension on BuildContext {
-  void showSuccessSnackBar(
-    String message, {
-    Duration? duration, 
-    SnackBarAction? action,
-    bool enableGlass = true,
-  }) {
+/// Extensions للـ SnackBar - مبسطة (ستستدعي AppSnackBar مباشرة)
+extension SnackBarExtension on BuildContext {
+  void showSuccessSnackBar(String message, {SnackBarAction? action}) {
     // سيتم استدعاء AppSnackBar.showSuccess مباشرة في الشاشات
-    // هذا extension للمساعدة فقط
   }
 
-  void showErrorSnackBar(
-    String message, {
-    Duration? duration, 
-    SnackBarAction? action,
-    bool enableGlass = true,
-  }) {
+  void showErrorSnackBar(String message, {SnackBarAction? action}) {
     // سيتم استدعاء AppSnackBar.showError مباشرة في الشاشات
   }
 
-  void showInfoSnackBar(
-    String message, {
-    Duration? duration, 
-    SnackBarAction? action,
-    bool enableGlass = true,
-  }) {
+  void showInfoSnackBar(String message, {SnackBarAction? action}) {
     // سيتم استدعاء AppSnackBar.showInfo مباشرة في الشاشات
   }
 
-  void showWarningSnackBar(
-    String message, {
-    Duration? duration, 
+  void showSnackBar(String message, {
+    IconData? icon,
+    Color? backgroundColor,
     SnackBarAction? action,
-    bool enableGlass = true,
   }) {
-    // سيتم استدعاء AppSnackBar.showWarning مباشرة في الشاشات
-  }
-
-  void showLoadingSnackBar(String message, {bool enableGlass = true}) {
-    // سيتم استدعاء AppSnackBar.showLoading مباشرة في الشاشات
+    // سيتم استدعاء AppSnackBar.show مباشرة في الشاشات
   }
 
   void hideSnackBars() {

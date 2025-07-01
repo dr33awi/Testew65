@@ -1,7 +1,6 @@
-// lib/app/themes/core/systems/app_color_system.dart
-import 'package:athkar_app/app/themes/theme_constants.dart';
+// lib/app/themes/core/systems/app_color_system.dart - مصحح
 import 'package:flutter/material.dart';
-
+import 'package:athkar_app/app/themes/theme_constants.dart';
 
 /// نظام الألوان الموحد للتطبيق
 /// يزيل التكرار ويوحد منطق الألوان في مكان واحد
@@ -49,7 +48,7 @@ class AppColorSystem {
     'آية': ThemeConstants.primary,
     'hadith': ThemeConstants.accent,
     'حديث': ThemeConstants.accent,
-    'دua_quote': ThemeConstants.tertiary,
+    'dua_quote': ThemeConstants.tertiary,
     'دعاء': ThemeConstants.tertiary,
     
     // الألوان الدلالية
@@ -232,29 +231,6 @@ class AppColorSystem {
     );
   }
 
-  /// الحصول على مجموعة ألوان كاملة
-  static ColorScheme getColorScheme(String key) {
-    final primary = getPrimaryColor(key);
-    final light = getLightColor(key);
-    final dark = getDarkColor(key);
-    
-    return ColorScheme(
-      primary: primary,
-      primaryLight: light,
-      primaryDark: dark,
-      secondary: light,
-      surface: Colors.white,
-      background: Colors.white,
-      error: ThemeConstants.error,
-      onPrimary: primary.contrastingTextColor,
-      onSecondary: light.contrastingTextColor,
-      onSurface: Colors.black87,
-      onBackground: Colors.black87,
-      onError: Colors.white,
-      brightness: Brightness.light,
-    );
-  }
-
   /// الحصول على لون الظل المناسب
   static Color getShadowColor(String key, {double opacity = 0.3}) {
     final primary = getPrimaryColor(key);
@@ -314,18 +290,6 @@ class AppColorSystem {
   @Deprecated('استخدم getPrimaryColor بدلاً منها')
   static Color getPrayerColor(String name) {
     return getPrimaryColor(name);
-  }
-
-  // ===== اختبار سريع للألوان =====
-  
-  /// دالة للاختبار السريع - يمكن حذفها لاحقاً
-  static void debugPrintColors() {
-    print('🎨 AppColorSystem - Available Colors:');
-    for (final key in _primaryColors.keys.take(10)) {
-      final color = _primaryColors[key]!;
-      print('  $key: #${color.value.toRadixString(16).padLeft(8, '0')}');
-    }
-    print('  ... و ${_primaryColors.length - 10} لون آخر');
   }
 }
 

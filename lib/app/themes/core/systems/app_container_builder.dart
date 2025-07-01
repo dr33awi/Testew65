@@ -1,6 +1,6 @@
-// lib/app/themes/core/systems/app_container_builder.dart
-import 'package:athkar_app/app/themes/theme_constants.dart';
+// lib/app/themes/core/systems/app_container_builder.dart - مصحح
 import 'package:flutter/material.dart';
+import 'package:athkar_app/app/themes/theme_constants.dart';
 import 'app_color_system.dart';
 import 'app_size_system.dart';
 import 'app_shadow_system.dart';
@@ -133,6 +133,7 @@ class AppContainerBuilder {
       margin: margin,
       alignment: alignment,
       child: GlassEffect.withGradient(
+        child: child,
         gradientColors: colors,
         blur: blur,
         borderOpacity: borderOpacity,
@@ -141,7 +142,6 @@ class AppContainerBuilder {
             : BorderRadius.circular(ThemeConstants.radiusLg),
         padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
         shadows: shadows,
-        child: child,
       ),
     );
   }
@@ -418,7 +418,7 @@ class AppContainerBuilder {
       return glassGradient(
         colors: [
           color.withValues(alpha: 0.9),
-          color.darken(0.1).withValues(alpha: 0.7),
+          _darkenColor(color).withValues(alpha: 0.7),
         ],
         padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
         margin: margin,
@@ -430,7 +430,7 @@ class AppContainerBuilder {
     }
     
     return gradient(
-      colors: [color, color.darken(0.1)],
+      colors: [color, _darkenColor(color)],
       padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
       margin: margin,
       borderRadius: borderRadius ?? ThemeConstants.radiusLg,
@@ -544,6 +544,15 @@ class AppContainerBuilder {
     }
     
     return container;
+  }
+
+  // ===== دوال مساعدة داخلية =====
+  
+  /// دالة مساعدة لتغميق اللون
+  static Color _darkenColor(Color color, [double amount = 0.1]) {
+    final hsl = HSLColor.fromColor(color);
+    final lightness = (hsl.lightness - amount).clamp(0.0, 1.0);
+    return hsl.withLightness(lightness).toColor();
   }
 }
 

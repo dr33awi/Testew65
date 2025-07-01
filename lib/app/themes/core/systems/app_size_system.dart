@@ -1,6 +1,6 @@
-// lib/app/themes/core/systems/app_size_system.dart
-import 'package:athkar_app/app/themes/theme_constants.dart';
+// lib/app/themes/core/systems/app_size_system.dart - مصحح
 import 'package:flutter/material.dart';
+import 'package:athkar_app/app/themes/theme_constants.dart';
 
 /// نظام الأحجام والمقاييس الموحد للتطبيق
 /// يزيل التكرار ويوحد جميع الأحجام في مكان واحد
@@ -16,7 +16,7 @@ class AppSizeSystem {
       width: 64,
       iconSize: 16,
       fontSize: 12,
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.all(8), // تغيير من symmetric
       borderRadius: 6,
     ),
     ComponentSize.sm: ComponentSizes(
@@ -24,7 +24,7 @@ class AppSizeSystem {
       width: 80,
       iconSize: 18,
       fontSize: 13,
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: EdgeInsets.all(12),
       borderRadius: 8,
     ),
     ComponentSize.md: ComponentSizes(
@@ -32,7 +32,7 @@ class AppSizeSystem {
       width: 120,
       iconSize: 20,
       fontSize: 14,
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.all(16),
       borderRadius: 10,
     ),
     ComponentSize.lg: ComponentSizes(
@@ -40,7 +40,7 @@ class AppSizeSystem {
       width: 160,
       iconSize: 24,
       fontSize: 16,
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: EdgeInsets.all(20),
       borderRadius: 12,
     ),
     ComponentSize.xl: ComponentSizes(
@@ -48,7 +48,7 @@ class AppSizeSystem {
       width: 200,
       iconSize: 28,
       fontSize: 18,
-      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: EdgeInsets.all(24),
       borderRadius: 14,
     ),
     ComponentSize.xxl: ComponentSizes(
@@ -56,7 +56,7 @@ class AppSizeSystem {
       width: 240,
       iconSize: 32,
       fontSize: 20,
-      padding: EdgeInsets.symmetric(horizontal: 32, vertical: 20),
+      padding: EdgeInsets.all(32),
       borderRadius: 16,
     ),
   };
@@ -129,10 +129,7 @@ class AppSizeSystem {
   static CardSizes getCardSizes(ComponentSize size) {
     final base = getSizes(size);
     return CardSizes(
-      padding: base.padding.copyWith(
-        horizontal: base.padding.horizontal * 1.5,
-        vertical: base.padding.vertical * 1.5,
-      ),
+      padding: EdgeInsets.all(base.padding.left * 1.5), // استخدام left بدلاً من horizontal
       borderRadius: base.borderRadius,
       titleFontSize: base.fontSize + 2,
       contentFontSize: base.fontSize,
@@ -153,7 +150,7 @@ class AppSizeSystem {
   static DialogSizes getDialogSizes(ComponentSize size) {
     final base = getSizes(size);
     return DialogSizes(
-      padding: EdgeInsets.all(base.padding.horizontal * 1.5),
+      padding: EdgeInsets.all(base.padding.left * 1.5), // استخدام left بدلاً من horizontal
       borderRadius: base.borderRadius + 4,
       titleFontSize: base.fontSize + 4,
       contentFontSize: base.fontSize,

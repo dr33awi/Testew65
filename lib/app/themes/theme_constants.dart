@@ -1,4 +1,4 @@
-// lib/app/themes/theme_constants.dart - مُحدث مع خلفية التطبيق المناسبة
+// lib/app/themes/theme_constants.dart - مُحدث ومصحح
 import 'package:flutter/material.dart';
 
 /// كل ثوابت الثيم في ملف واحد
@@ -300,10 +300,10 @@ class ThemeConstants {
     end: Alignment.bottomRight,
   );
 
-  // ===== الظلال الجاهزة المحسنة =====
+  // ===== الظلال الجاهزة المحسنة - مصححة =====
   static List<BoxShadow> shadowSm = [
     BoxShadow(
-      color: primary.withOpacity(opacity5),
+      color: primary.withValues(alpha: opacity5),
       blurRadius: 4,
       offset: const Offset(0, 2),
     ),
@@ -311,7 +311,7 @@ class ThemeConstants {
 
   static List<BoxShadow> shadowMd = [
     BoxShadow(
-      color: primary.withOpacity(opacity10),
+      color: primary.withValues(alpha: opacity10),
       blurRadius: 8,
       offset: const Offset(0, 4),
     ),
@@ -319,7 +319,7 @@ class ThemeConstants {
 
   static List<BoxShadow> shadowLg = [
     BoxShadow(
-      color: primary.withOpacity(opacity10),
+      color: primary.withValues(alpha: opacity10),
       blurRadius: 16,
       offset: const Offset(0, 8),
     ),
@@ -327,7 +327,7 @@ class ThemeConstants {
 
   static List<BoxShadow> shadowXl = [
     BoxShadow(
-      color: primary.withOpacity(opacity20),
+      color: primary.withValues(alpha: opacity20),
       blurRadius: 24,
       offset: const Offset(0, 12),
     ),
@@ -335,7 +335,7 @@ class ThemeConstants {
 
   static List<BoxShadow> shadowInner = [
     BoxShadow(
-      color: primary.withOpacity(opacity10),
+      color: primary.withValues(alpha: opacity10),
       blurRadius: 4,
       offset: const Offset(0, -2),
       spreadRadius: -2,

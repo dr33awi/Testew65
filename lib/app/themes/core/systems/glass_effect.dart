@@ -1,6 +1,6 @@
-// lib/app/themes/core/systems/glass_effect.dart
-import 'package:athkar_app/app/themes/theme_constants.dart';
+// lib/app/themes/core/systems/glass_effect.dart - مصحح
 import 'package:flutter/material.dart';
+import 'package:athkar_app/app/themes/theme_constants.dart';
 import 'dart:ui';
 
 /// نظام Glass Morphism موحد للتطبيق
@@ -254,8 +254,8 @@ class GlassEffect extends StatelessWidget {
   }
 
   /// إنشاء حاوية زجاجية مع تدرج لوني
-  static Widget withGradient(
-    Widget child, {
+  static Widget withGradient({
+    required Widget child,
     required List<Color> gradientColors,
     double blur = 10,
     double borderOpacity = 0.2,
@@ -304,8 +304,8 @@ class GlassEffect extends StatelessWidget {
   }
 
   /// إنشاء حاوية زجاجية مع لون خلفية
-  static Widget withColor(
-    Widget child, {
+  static Widget withColor({
+    required Widget child,
     required Color backgroundColor,
     double blur = 10,
     double backgroundOpacity = 0.9,
@@ -315,10 +315,10 @@ class GlassEffect extends StatelessWidget {
     List<BoxShadow>? shadows,
   }) {
     return withGradient(
-      child,
+      child: child,
       gradientColors: [
         backgroundColor.withValues(alpha: backgroundOpacity),
-        backgroundColor.darken(0.1).withValues(alpha: backgroundOpacity * 0.8),
+        _darkenColor(backgroundColor, 0.1).withValues(alpha: backgroundOpacity * 0.8),
       ],
       blur: blur,
       borderOpacity: borderOpacity,
@@ -326,6 +326,15 @@ class GlassEffect extends StatelessWidget {
       padding: padding,
       shadows: shadows,
     );
+  }
+
+  // ===== دالة مساعدة داخلية =====
+  
+  /// دالة مساعدة لتغميق اللون
+  static Color _darkenColor(Color color, [double amount = 0.1]) {
+    final hsl = HSLColor.fromColor(color);
+    final lightness = (hsl.lightness - amount).clamp(0.0, 1.0);
+    return hsl.withLightness(lightness).toColor();
   }
 }
 
@@ -368,7 +377,7 @@ extension GlassEffectExtension on Widget {
     EdgeInsets? padding,
   }) {
     return GlassEffect.withGradient(
-      this,
+      child: this,
       gradientColors: gradientColors,
       blur: blur,
       borderOpacity: borderOpacity,
@@ -387,7 +396,7 @@ extension GlassEffectExtension on Widget {
     EdgeInsets? padding,
   }) {
     return GlassEffect.withColor(
-      this,
+      child: this,
       backgroundColor: backgroundColor,
       blur: blur,
       backgroundOpacity: backgroundOpacity,
