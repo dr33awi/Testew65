@@ -1,27 +1,16 @@
-// lib/app/themes/widgets/core/app_loading.dart - مُصحح
+// lib/app/themes/widgets/core/app_loading.dart - النسخة المبسطة (circular فقط)
 import 'package:flutter/material.dart';
 import '../../theme_constants.dart';
 import '../../text_styles.dart';
 
-/// أنواع مؤشرات التحميل
-enum LoadingType {
-  circular,
-  linear,
-  dots,
-  fade,
-  pulse,
-}
-
-/// أحجام مؤشرات التحميل
+/// أحجام مؤشرات التحميل - مبسطة
 enum LoadingSize {
-  small,
-  medium,
-  large,
+  medium,    // متوسط (الافتراضي)
+  large,     // كبير
 }
 
-/// مؤشر تحميل موحد
+/// مؤشر تحميل موحد - مبسط (circular فقط)
 class AppLoading extends StatelessWidget {
-  final LoadingType type;
   final LoadingSize size;
   final String? message;
   final Color? color;
@@ -31,7 +20,6 @@ class AppLoading extends StatelessWidget {
 
   const AppLoading({
     super.key,
-    this.type = LoadingType.circular,
     this.size = LoadingSize.medium,
     this.message,
     this.color,
@@ -45,25 +33,7 @@ class AppLoading extends StatelessWidget {
     final theme = Theme.of(context);
     final effectiveColor = color ?? theme.primaryColor;
     
-    Widget loadingIndicator;
-    
-    switch (type) {
-      case LoadingType.circular:
-        loadingIndicator = _buildCircular(effectiveColor);
-        break;
-      case LoadingType.linear:
-        loadingIndicator = _buildLinear(effectiveColor);
-        break;
-      case LoadingType.dots:
-        loadingIndicator = _buildDots(effectiveColor);
-        break;
-      case LoadingType.fade:
-        loadingIndicator = _buildFade(effectiveColor);
-        break;
-      case LoadingType.pulse:
-        loadingIndicator = _buildPulse(effectiveColor);
-        break;
-    }
+    Widget loadingIndicator = _buildCircular(effectiveColor);
 
     // إضافة الرسالة إذا وجدت
     if (message != null) {
@@ -114,42 +84,8 @@ class AppLoading extends StatelessWidget {
     );
   }
 
-  Widget _buildLinear(Color color) {
-    return SizedBox(
-      width: _getLinearWidth(),
-      child: LinearProgressIndicator(
-        value: value,
-        minHeight: _getLinearHeight(),
-        valueColor: AlwaysStoppedAnimation<Color>(color),
-      ),
-    );
-  }
-
-  Widget _buildDots(Color color) {
-    return DotsLoadingIndicator(
-      color: color,
-      size: size,
-    );
-  }
-
-  Widget _buildFade(Color color) {
-    return FadeLoadingIndicator(
-      color: color,
-      size: _getSize(),
-    );
-  }
-
-  Widget _buildPulse(Color color) {
-    return PulseLoadingIndicator(
-      color: color,
-      size: _getSize(),
-    );
-  }
-
   double _getSize() {
     switch (size) {
-      case LoadingSize.small:
-        return 24;
       case LoadingSize.medium:
         return 36;
       case LoadingSize.large:
@@ -159,8 +95,6 @@ class AppLoading extends StatelessWidget {
 
   double _getStrokeWidth() {
     switch (size) {
-      case LoadingSize.small:
-        return 2;
       case LoadingSize.medium:
         return 3;
       case LoadingSize.large:
@@ -168,264 +102,73 @@ class AppLoading extends StatelessWidget {
     }
   }
 
-  double _getLinearWidth() {
-    switch (size) {
-      case LoadingSize.small:
-        return 100;
-      case LoadingSize.medium:
-        return 150;
-      case LoadingSize.large:
-        return 200;
-    }
-  }
+  // Factory constructors - مبسطة
 
-  double _getLinearHeight() {
-    switch (size) {
-      case LoadingSize.small:
-        return 2;
-      case LoadingSize.medium:
-        return 4;
-      case LoadingSize.large:
-        return 6;
-    }
-  }
-
-  // Factory constructors
+  /// مؤشر تحميل دائري عادي
   factory AppLoading.circular({
     LoadingSize size = LoadingSize.medium,
     Color? color,
     double? value,
   }) {
     return AppLoading(
-      type: LoadingType.circular,
       size: size,
       color: color,
       value: value,
     );
   }
 
-  factory AppLoading.linear({
-    LoadingSize size = LoadingSize.medium,
-    Color? color,
-    double? value,
-  }) {
-    return AppLoading(
-      type: LoadingType.linear,
-      size: size,
-      color: color,
-      value: value,
-    );
-  }
-
+  /// مؤشر تحميل للصفحة الكاملة
   factory AppLoading.page({
     String? message,
-    LoadingType type = LoadingType.circular,
+    LoadingSize size = LoadingSize.large,
+    Color? color,
   }) {
     return AppLoading(
-      type: type,
-      size: LoadingSize.large,
+      size: size,
       message: message,
       showBackground: true,
-    );
-  }
-}
-
-/// مؤشر تحميل بنقاط متحركة
-class DotsLoadingIndicator extends StatefulWidget {
-  final Color color;
-  final LoadingSize size;
-
-  const DotsLoadingIndicator({
-    super.key,
-    required this.color,
-    required this.size,
-  });
-
-  @override
-  State<DotsLoadingIndicator> createState() => _DotsLoadingIndicatorState();
-}
-
-class _DotsLoadingIndicatorState extends State<DotsLoadingIndicator>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late List<Animation<double>> _animations;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    )..repeat();
-
-    _animations = List.generate(3, (index) {
-      return Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(
-          parent: _controller,
-          curve: Interval(
-            index * 0.2,
-            0.6 + index * 0.2,
-            curve: Curves.easeInOut,
-          ),
-        ),
-      );
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final dotSize = widget.size == LoadingSize.small ? 8.0
-        : widget.size == LoadingSize.medium ? 10.0
-        : 12.0;
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(3, (index) {
-        return AnimatedBuilder(
-          animation: _animations[index],
-          builder: (context, child) {
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 2),
-              width: dotSize,
-              height: dotSize,
-              decoration: BoxDecoration(
-                color: widget.color.withAlpha(
-                  (76 + _animations[index].value * 179).round() // 0.3 + value * 0.7
-                ),
-                shape: BoxShape.circle,
-              ),
-            );
-          },
-        );
-      }),
-    );
-  }
-}
-
-/// مؤشر تحميل بتلاشي
-class FadeLoadingIndicator extends StatefulWidget {
-  final Color color;
-  final double size;
-
-  const FadeLoadingIndicator({
-    super.key,
-    required this.color,
-    required this.size,
-  });
-
-  @override
-  State<FadeLoadingIndicator> createState() => _FadeLoadingIndicatorState();
-}
-
-class _FadeLoadingIndicatorState extends State<FadeLoadingIndicator>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 1),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _animation = Tween<double>(begin: 0.2, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+      color: color,
     );
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Container(
-          width: widget.size,
-          height: widget.size,
-          decoration: BoxDecoration(
-            color: widget.color.withAlpha((_animation.value * 255).round()),
-            shape: BoxShape.circle,
-          ),
-        );
-      },
-    );
-  }
-}
-
-/// مؤشر تحميل بنبضات
-class PulseLoadingIndicator extends StatefulWidget {
-  final Color color;
-  final double size;
-
-  const PulseLoadingIndicator({
-    super.key,
-    required this.color,
-    required this.size,
-  });
-
-  @override
-  State<PulseLoadingIndicator> createState() => _PulseLoadingIndicatorState();
-}
-
-class _PulseLoadingIndicatorState extends State<PulseLoadingIndicator>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    )..repeat();
-
-    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-
-    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+  /// مؤشر تحميل مضمن (للأزرار مثلاً)
+  factory AppLoading.inline({
+    LoadingSize size = LoadingSize.medium,
+    Color? color,
+  }) {
+    return AppLoading(
+      size: size,
+      color: color,
     );
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  /// مؤشر تحميل مع نص
+  factory AppLoading.withMessage({
+    required String message,
+    LoadingSize size = LoadingSize.medium,
+    Color? color,
+    bool showBackground = false,
+  }) {
+    return AppLoading(
+      size: size,
+      message: message,
+      color: color,
+      showBackground: showBackground,
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Container(
-            width: widget.size,
-            height: widget.size,
-            decoration: BoxDecoration(
-              color: widget.color.withAlpha((_opacityAnimation.value * 255).round()),
-              shape: BoxShape.circle,
-            ),
-          ),
-        );
-      },
+  /// مؤشر تقدم (مع قيمة محددة)
+  factory AppLoading.progress({
+    required double value, // 0.0 - 1.0
+    LoadingSize size = LoadingSize.medium,
+    Color? color,
+    String? message,
+  }) {
+    return AppLoading(
+      size: size,
+      value: value,
+      color: color,
+      message: message,
     );
   }
 }

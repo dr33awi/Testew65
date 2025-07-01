@@ -1,11 +1,11 @@
-// lib/app/themes/widgets/cards/card_contents.dart
+// lib/app/themes/widgets/cards/card_contents.dart - النسخة المبسطة
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../theme_constants.dart';
 import '../../core/theme_extensions.dart';
 import 'card_types.dart';
 
-/// بناء محتويات البطاقات
+/// بناء محتويات البطاقات - مبسط
 class CardContentBuilder {
   CardContentBuilder._();
 
@@ -25,12 +25,8 @@ class CardContentBuilder {
         return AthkarContent.build(properties: properties, context: context);
       case CardType.quote:
         return QuoteContent.build(properties: properties, context: context);
-      case CardType.completion:
-        return CompletionContent.build(properties: properties, context: context);
       case CardType.info:
         return InfoContent.build(properties: properties, context: context);
-      case CardType.stat:
-        return StatContent.build(properties: properties, context: context);
       case CardType.normal:
         return NormalContent.build(properties: properties, context: context);
     }
@@ -38,7 +34,6 @@ class CardContentBuilder {
 
   /// فحص صحة الـ child
   static bool _isValidChild(Widget child) {
-    // إذا كان SizedBox فارغ، اعتبره غير صالح
     if (child is SizedBox) {
       final sizedBox = child;
       if ((sizedBox.width == null || sizedBox.width == 0.0) && 
@@ -48,7 +43,6 @@ class CardContentBuilder {
       }
     }
     
-    // إذا كان Container فارغ، اعتبره غير صالح
     if (child is Container) {
       final container = child;
       if (container.child == null) {
@@ -86,9 +80,7 @@ class CardContentBuilder {
 
   /// الحصول على لون النص المناسب
   static Color _getTextColor(BuildContext context, CardStyle style, {bool isSecondary = false}) {
-    if (style == CardStyle.gradient || 
-        style == CardStyle.glassmorphism ||
-        style == CardStyle.glassWelcome) {
+    if (style == CardStyle.gradient || style == CardStyle.glassmorphism) {
       return isSecondary 
           ? Colors.white.withValues(alpha: 0.85)
           : Colors.white;
@@ -286,7 +278,7 @@ class AthkarContent {
             color: Colors.white.withValues(alpha: 0.8),
             size: 16,
           ),
-            const SizedBox(width: 8),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,72 +368,6 @@ class QuoteContent {
   }
 }
 
-/// محتوى الإكمال
-class CompletionContent {
-  static Widget build({
-    required CardProperties properties,
-    required BuildContext context,
-  }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            properties.icon ?? Icons.check_circle_outline,
-            color: Colors.white,
-            size: 40,
-          ),
-        ),
-        
-        const SizedBox(height: ThemeConstants.space4),
-        
-        if (properties.title != null)
-          Text(
-            properties.title!,
-            style: context.headlineMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: ThemeConstants.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        
-        if (properties.content != null) ...[
-          const SizedBox(height: ThemeConstants.space3),
-          Text(
-            properties.content!,
-            textAlign: TextAlign.center,
-            style: context.bodyLarge?.copyWith(
-              color: Colors.white.withValues(alpha: 0.9),
-            ),
-          ),
-        ],
-        
-        if (properties.subtitle != null) ...[
-          const SizedBox(height: ThemeConstants.space2),
-          Text(
-            properties.subtitle!,
-            textAlign: TextAlign.center,
-            style: context.bodyMedium?.copyWith(
-              color: Colors.white.withValues(alpha: 0.7),
-            ),
-          ),
-        ],
-        
-        if (properties.actions != null && properties.actions!.isNotEmpty) ...[
-          const SizedBox(height: ThemeConstants.space6),
-          CardActionsBuilder.buildActions(properties: properties, context: context),
-        ],
-      ],
-    );
-  }
-}
-
 /// محتوى المعلومات
 class InfoContent {
   static Widget build({
@@ -496,79 +422,6 @@ class InfoContent {
         ),
         
         if (properties.trailing != null) properties.trailing!,
-      ],
-    );
-  }
-}
-
-/// محتوى الإحصائيات
-class StatContent {
-  static Widget build({
-    required CardProperties properties,
-    required BuildContext context,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            if (properties.icon != null)
-              Container(
-                padding: const EdgeInsets.all(ThemeConstants.space2),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                ),
-                child: Icon(
-                  properties.icon,
-                  color: Colors.white,
-                  size: ThemeConstants.iconLg,
-                ),
-              ),
-            if (properties.onTap != null)
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: ThemeConstants.iconSm,
-                color: Colors.white.withValues(alpha: 0.7),
-              ),
-          ],
-        ),
-        
-        const SizedBox(height: ThemeConstants.space2),
-        
-        if (properties.value != null)
-          Text(
-            properties.value!,
-            style: context.headlineMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: ThemeConstants.bold,
-            ),
-          ),
-        
-        if (properties.title != null) ...[
-          const SizedBox(height: ThemeConstants.space1),
-          Text(
-            properties.title!,
-            style: context.bodyMedium?.copyWith(
-              color: Colors.white.withValues(alpha: 0.8),
-            ),
-          ),
-        ],
-        
-        if (properties.progress != null) ...[
-          const SizedBox(height: ThemeConstants.space3),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-            child: LinearProgressIndicator(
-              value: properties.progress!,
-              minHeight: 6,
-              backgroundColor: Colors.white.withValues(alpha: 0.2),
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
-          ),
-        ],
       ],
     );
   }
@@ -700,74 +553,34 @@ class NormalContent {
         
         if (properties.actions != null && properties.actions!.isNotEmpty) ...[
           const SizedBox(height: ThemeConstants.space4),
-          CardActionsBuilder.buildActions(properties: properties, context: context),
+          _buildActions(properties, context),
         ],
       ],
     );
   }
-}
 
-/// بناء الإجراءات
-class CardActionsBuilder {
-  static Widget buildActions({
-    required CardProperties properties,
-    required BuildContext context,
-  }) {
+  static Widget _buildActions(CardProperties properties, BuildContext context) {
     if (properties.actions == null || properties.actions!.isEmpty) {
       return const SizedBox.shrink();
-    }
-
-    if (properties.type == CardType.completion) {
-      return Column(
-        children: properties.actions!.map((action) => Padding(
-          padding: const EdgeInsets.only(bottom: ThemeConstants.space3),
-          child: _buildActionButton(action, properties, context, fullWidth: true),
-        )).toList(),
-      );
     }
     
     return Wrap(
       spacing: ThemeConstants.space2,
       runSpacing: ThemeConstants.space2,
-      children: properties.actions!.map((action) => _buildActionButton(action, properties, context)).toList(),
-    );
-  }
-
-  static Widget _buildActionButton(
-    CardAction action, 
-    CardProperties properties, 
-    BuildContext context, {
-    bool fullWidth = false,
-  }) {
-    if (action.isPrimary) {
-      return SizedBox(
-        width: fullWidth ? double.infinity : null,
-        child: ElevatedButton.icon(
+      children: properties.actions!.map((action) => 
+        OutlinedButton.icon(
           onPressed: () {
             HapticFeedback.lightImpact();
             action.onPressed();
           },
           icon: Icon(action.icon, size: 18),
           label: Text(action.label),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: properties.primaryColor ?? context.primaryColor,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.white,
+            side: const BorderSide(color: Colors.white),
           ),
         ),
-      );
-    }
-    
-    return OutlinedButton.icon(
-      onPressed: () {
-        HapticFeedback.lightImpact();
-        action.onPressed();
-      },
-      icon: Icon(action.icon, size: 18),
-      label: Text(action.label),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.white,
-        side: const BorderSide(color: Colors.white),
-      ),
+      ).toList(),
     );
   }
 }

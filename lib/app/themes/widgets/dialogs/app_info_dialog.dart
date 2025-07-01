@@ -1,4 +1,4 @@
-// lib/app/themes/widgets/dialogs/app_info_dialog.dart - محسن مع Glass Morphism
+// lib/app/themes/widgets/dialogs/app_info_dialog.dart - النسخة المبسطة
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
@@ -6,57 +6,39 @@ import '../../theme_constants.dart';
 import '../../text_styles.dart';
 import '../../core/theme_extensions.dart';
 
-/// حوار عام لعرض المعلومات مع Glass Morphism
+/// حوار موحد لعرض المعلومات - مبسط
 class AppInfoDialog extends StatelessWidget {
   final String title;
   final String? content;
-  final String? subtitle;
   final IconData icon;
   final Color? accentColor;
   final String closeButtonText;
   final List<DialogAction>? actions;
-  final Widget? customContent;
   final bool barrierDismissible;
-  final double? width;
-  final double? height;
-  final bool enableGlass;
 
   const AppInfoDialog({
     super.key,
     required this.title,
     this.content,
-    this.subtitle,
     this.icon = Icons.info_outline,
     this.accentColor,
     this.closeButtonText = 'إغلاق',
     this.actions,
-    this.customContent,
     this.barrierDismissible = true,
-    this.width,
-    this.height,
-    this.enableGlass = true,
   });
 
-  /// عرض الحوار
+  /// عرض حوار عام
   static Future<T?> show<T>({
     required BuildContext context,
     required String title,
     String? content,
-    String? subtitle,
     IconData icon = Icons.info_outline,
     Color? accentColor,
     String closeButtonText = 'إغلاق',
     List<DialogAction>? actions,
-    Widget? customContent,
     bool barrierDismissible = true,
-    bool hapticFeedback = true,
-    double? width,
-    double? height,
-    bool enableGlass = true,
   }) {
-    if (hapticFeedback) {
-      HapticFeedback.lightImpact();
-    }
+    HapticFeedback.lightImpact();
     
     return showGeneralDialog<T>(
       context: context,
@@ -68,16 +50,11 @@ class AppInfoDialog extends StatelessWidget {
         return AppInfoDialog(
           title: title,
           content: content,
-          subtitle: subtitle,
           icon: icon,
           accentColor: accentColor,
           closeButtonText: closeButtonText,
           actions: actions,
-          customContent: customContent,
           barrierDismissible: barrierDismissible,
-          width: width,
-          height: height,
-          enableGlass: enableGlass,
         );
       },
       transitionBuilder: (context, animation, secondaryAnimation, child) {
@@ -105,24 +82,21 @@ class AppInfoDialog extends StatelessWidget {
     required String content,
     String confirmText = 'تأكيد',
     String cancelText = 'إلغاء',
-    IconData icon = Icons.help_outline,
-    Color? accentColor,
-    bool destructive = false,
-    Color? confirmButtonColor,
+    bool isDestructive = false,
   }) {
     return show<bool>(
       context: context,
       title: title,
       content: content,
-      icon: icon,
-      accentColor: destructive ? ThemeConstants.error : accentColor,
+      icon: isDestructive ? Icons.warning_amber_outlined : Icons.help_outline,
+      accentColor: isDestructive ? ThemeConstants.error : null,
       closeButtonText: cancelText,
       actions: [
         DialogAction(
           label: confirmText,
           onPressed: () => Navigator.of(context).pop(true),
           isPrimary: true,
-          isDestructive: destructive,
+          isDestructive: isDestructive,
         ),
       ],
     );
@@ -134,7 +108,6 @@ class AppInfoDialog extends StatelessWidget {
     required String title,
     String? message,
     String buttonText = 'تم',
-    List<DialogAction>? actions,
   }) {
     return show<T>(
       context: context,
@@ -143,7 +116,6 @@ class AppInfoDialog extends StatelessWidget {
       icon: Icons.check_circle_outline,
       accentColor: ThemeConstants.success,
       closeButtonText: buttonText,
-      actions: actions,
     );
   }
 
@@ -153,7 +125,6 @@ class AppInfoDialog extends StatelessWidget {
     required String title,
     String? message,
     String buttonText = 'حسناً',
-    List<DialogAction>? actions,
   }) {
     return show<T>(
       context: context,
@@ -162,26 +133,6 @@ class AppInfoDialog extends StatelessWidget {
       icon: Icons.error_outline,
       accentColor: ThemeConstants.error,
       closeButtonText: buttonText,
-      actions: actions,
-    );
-  }
-
-  /// عرض حوار تحذير
-  static Future<T?> showWarning<T>({
-    required BuildContext context,
-    required String title,
-    String? message,
-    String buttonText = 'فهمت',
-    List<DialogAction>? actions,
-  }) {
-    return show<T>(
-      context: context,
-      title: title,
-      content: message,
-      icon: Icons.warning_amber_rounded,
-      accentColor: ThemeConstants.warning,
-      closeButtonText: buttonText,
-      actions: actions,
     );
   }
 
@@ -189,63 +140,51 @@ class AppInfoDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final color = accentColor ?? theme.primaryColor;
-    final isDark = theme.brightness == Brightness.dark;
     
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.all(ThemeConstants.space6),
       child: Container(
-        width: width,
-        height: height,
-        constraints: BoxConstraints(
-          maxWidth: 400,
-          maxHeight: MediaQuery.of(context).size.height * 0.8,
-        ),
-        child: _buildGlassContainer(context, color, isDark),
+        constraints: const BoxConstraints(maxWidth: 400),
+        child: _buildGlassContainer(context, color),
       ),
     );
   }
 
-  Widget _buildGlassContainer(BuildContext context, Color color, bool isDark) {
+  Widget _buildGlassContainer(BuildContext context, Color color) {
     final gradientColors = [
-      color.withValues(alpha: enableGlass ? 0.9 : 1.0),
-      color.darken(0.1).withValues(alpha: enableGlass ? 0.7 : 0.9),
+      color.withValues(alpha: 0.9),
+      color.darken(0.1).withValues(alpha: 0.7),
     ];
 
-    Widget container = Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: gradientColors,
-        ),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: gradientColors,
+            ),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.2),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.4),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: _buildContent(context, color),
-    );
-
-    if (enableGlass) {
-      container = ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: container,
+          child: _buildContent(context, color),
         ),
-      );
-    }
-
-    return container;
+      ),
+    );
   }
 
   Widget _buildContent(BuildContext context, Color color) {
@@ -255,25 +194,23 @@ class AppInfoDialog extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // الرأس مع الأيقونة والعنوان
-          _buildHeader(context, color),
+          _buildHeader(context),
           
           // المحتوى
-          if (customContent != null || content != null || subtitle != null) ...[
-            ThemeConstants.space4.h,
-            Flexible(
-              child: customContent ?? _buildDefaultContent(context, color) ?? const SizedBox(),
-            ),
+          if (content != null) ...[
+            const SizedBox(height: ThemeConstants.space4),
+            _buildContentSection(context),
           ],
           
           // الإجراءات
-          ThemeConstants.space6.h,
+          const SizedBox(height: ThemeConstants.space6),
           _buildActions(context, color),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context, Color color) {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       children: [
         // الأيقونة
@@ -295,7 +232,7 @@ class AppInfoDialog extends StatelessWidget {
           ),
         ),
         
-        ThemeConstants.space4.w,
+        const SizedBox(width: ThemeConstants.space4),
         
         // العنوان
         Expanded(
@@ -318,73 +255,25 @@ class AppInfoDialog extends StatelessWidget {
     );
   }
 
-  Widget? _buildDefaultContent(BuildContext context, Color color) {
-    if (content == null && subtitle == null) return null;
-    
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (content != null)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(ThemeConstants.space4),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  width: 1,
-                ),
-              ),
-              child: Text(
-                content!,
-                style: AppTextStyles.body1.copyWith(
-                  color: Colors.white,
-                  height: 1.6,
-                ),
-              ),
-            ),
-          
-          if (subtitle != null) ...[
-            if (content != null) ThemeConstants.space3.h,
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: ThemeConstants.space4,
-                vertical: ThemeConstants.space3,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: Colors.white.withValues(alpha: 0.9),
-                    size: ThemeConstants.iconSm,
-                  ),
-                  ThemeConstants.space2.w,
-                  Expanded(
-                    child: Text(
-                      subtitle!,
-                      style: AppTextStyles.body2.copyWith(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontWeight: ThemeConstants.medium,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
+  Widget _buildContentSection(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(ThemeConstants.space4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        content!,
+        style: AppTextStyles.body1.copyWith(
+          color: Colors.white,
+          height: 1.6,
+        ),
+        textAlign: TextAlign.center,
       ),
     );
   }
@@ -396,7 +285,6 @@ class AppInfoDialog extends StatelessWidget {
         label: closeButtonText,
         onPressed: () => Navigator.of(context).pop(),
         isPrimary: actions == null || actions!.isEmpty,
-        isSecondary: actions != null && actions!.isNotEmpty,
       ),
     ];
     
@@ -507,9 +395,7 @@ class AppInfoDialog extends StatelessWidget {
             child: Text(
               action.label,
               style: AppTextStyles.buttonSmall.copyWith(
-                color: action.isDestructive 
-                  ? ThemeConstants.error.lighten(0.3)
-                  : Colors.white,
+                color: Colors.white,
                 fontWeight: ThemeConstants.medium,
               ),
               textAlign: TextAlign.center,
@@ -521,19 +407,17 @@ class AppInfoDialog extends StatelessWidget {
   }
 }
 
-/// إجراء في الحوار - محسن
+/// إجراء في الحوار - مبسط
 class DialogAction {
   final String label;
   final VoidCallback onPressed;
   final bool isPrimary;
-  final bool isSecondary;
   final bool isDestructive;
   
   const DialogAction({
     required this.label,
     required this.onPressed,
     this.isPrimary = false,
-    this.isSecondary = false,
     this.isDestructive = false,
   });
 }

@@ -1,21 +1,16 @@
-// lib/app/themes/widgets/core/app_text_field.dart
+// lib/app/themes/widgets/core/app_text_field.dart - النسخة القصوى (نوعين فقط)
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../theme_constants.dart';
 import '../../text_styles.dart';
 
-/// أنواع حقول النص
+/// أنواع حقول النص - النسخة القصوى
 enum TextFieldType {
-  normal,
-  email,
-  password,
-  phone,
-  number,
-  multiline,
-  search,
+  normal,     // حقل عادي
+  search,     // بحث
 }
 
-/// حقل نص موحد للتطبيق
+/// حقل نص موحد للتطبيق - النسخة القصوى والأبسط
 class AppTextField extends StatefulWidget {
   final String? label;
   final String? hint;
@@ -26,8 +21,6 @@ class AppTextField extends StatefulWidget {
   final bool enabled;
   final bool readOnly;
   final bool autofocus;
-  final bool obscureText;
-  final bool showPasswordToggle;
   final int? maxLines;
   final int? minLines;
   final int? maxLength;
@@ -39,8 +32,6 @@ class AppTextField extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
-  final String? prefixText;
-  final String? suffixText;
   final EdgeInsetsGeometry? contentPadding;
   final double? borderRadius;
   final Color? fillColor;
@@ -61,8 +52,6 @@ class AppTextField extends StatefulWidget {
     this.enabled = true,
     this.readOnly = false,
     this.autofocus = false,
-    this.obscureText = false,
-    this.showPasswordToggle = false,
     this.maxLines,
     this.minLines,
     this.maxLength,
@@ -74,8 +63,6 @@ class AppTextField extends StatefulWidget {
     this.inputFormatters,
     this.prefixIcon,
     this.suffixIcon,
-    this.prefixText,
-    this.suffixText,
     this.contentPadding,
     this.borderRadius,
     this.fillColor,
@@ -89,75 +76,16 @@ class AppTextField extends StatefulWidget {
   @override
   State<AppTextField> createState() => _AppTextFieldState();
 
-  // Factory constructors
-  factory AppTextField.email({
-    String? label,
-    String? hint,
-    TextEditingController? controller,
-    ValueChanged<String>? onChanged,
-    FormFieldValidator<String>? validator,
-    bool enabled = true,
-  }) {
-    return AppTextField(
-      label: label ?? 'البريد الإلكتروني',
-      hint: hint ?? 'example@email.com',
-      controller: controller,
-      type: TextFieldType.email,
-      onChanged: onChanged,
-      validator: validator,
-      enabled: enabled,
-      textInputAction: TextInputAction.next,
-    );
-  }
+  // Factory constructors - النسخة القصوى
 
-  factory AppTextField.password({
-    String? label,
-    String? hint,
-    TextEditingController? controller,
-    ValueChanged<String>? onChanged,
-    FormFieldValidator<String>? validator,
-    bool enabled = true,
-    bool showToggle = true,
-  }) {
-    return AppTextField(
-      label: label ?? 'كلمة المرور',
-      hint: hint ?? '••••••••',
-      controller: controller,
-      type: TextFieldType.password,
-      onChanged: onChanged,
-      validator: validator,
-      enabled: enabled,
-      showPasswordToggle: showToggle,
-      textInputAction: TextInputAction.done,
-    );
-  }
-
-  factory AppTextField.phone({
-    String? label,
-    String? hint,
-    TextEditingController? controller,
-    ValueChanged<String>? onChanged,
-    FormFieldValidator<String>? validator,
-    bool enabled = true,
-  }) {
-    return AppTextField(
-      label: label ?? 'رقم الهاتف',
-      hint: hint ?? '05xxxxxxxx',
-      controller: controller,
-      type: TextFieldType.phone,
-      onChanged: onChanged,
-      validator: validator,
-      enabled: enabled,
-      textInputAction: TextInputAction.next,
-    );
-  }
-
+  /// حقل بحث (الأكثر استخداماً)
   factory AppTextField.search({
     String? hint,
     TextEditingController? controller,
     ValueChanged<String>? onChanged,
     ValueChanged<String>? onSubmitted,
     bool enabled = true,
+    bool autofocus = false,
   }) {
     return AppTextField(
       hint: hint ?? 'بحث...',
@@ -166,42 +94,77 @@ class AppTextField extends StatefulWidget {
       onChanged: onChanged,
       onSubmitted: onSubmitted,
       enabled: enabled,
+      autofocus: autofocus,
       textInputAction: TextInputAction.search,
     );
   }
 
+  /// حقل متعدد الأسطر
   factory AppTextField.multiline({
     String? label,
     String? hint,
     TextEditingController? controller,
     ValueChanged<String>? onChanged,
     FormFieldValidator<String>? validator,
-    int? maxLines = 5,
-    int? minLines = 3,
+    int maxLines = 5,
+    int minLines = 3,
     bool enabled = true,
   }) {
     return AppTextField(
       label: label,
       hint: hint,
       controller: controller,
-      type: TextFieldType.multiline,
+      type: TextFieldType.normal,
       onChanged: onChanged,
       validator: validator,
       maxLines: maxLines,
       minLines: minLines,
       enabled: enabled,
+      textInputAction: TextInputAction.newline,
+    );
+  }
+
+  /// حقل للإضافة السريعة (عند الحاجة لاحقاً)
+  /// 
+  /// يمكن استخدامه للحقول الخاصة مثل:
+  /// - البريد الإلكتروني (مع keyboardType)
+  /// - كلمة المرور (مع obscureText)
+  /// - رقم الهاتف (مع inputFormatters)
+  factory AppTextField.custom({
+    String? label,
+    String? hint,
+    TextEditingController? controller,
+    ValueChanged<String>? onChanged,
+    FormFieldValidator<String>? validator,
+    bool enabled = true,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    List<TextInputFormatter>? inputFormatters,
+    Widget? prefixIcon,
+    Widget? suffixIcon,
+    TextInputAction? textInputAction,
+  }) {
+    return AppTextField(
+      label: label,
+      hint: hint,
+      controller: controller,
+      onChanged: onChanged,
+      validator: validator,
+      enabled: enabled,
+      inputFormatters: inputFormatters,
+      prefixIcon: prefixIcon,
+      suffixIcon: suffixIcon,
+      textInputAction: textInputAction,
     );
   }
 }
 
 class _AppTextFieldState extends State<AppTextField> {
-  late bool _obscureText;
   late FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
-    _obscureText = widget.obscureText || widget.type == TextFieldType.password;
     _focusNode = widget.focusNode ?? FocusNode();
   }
 
@@ -211,13 +174,6 @@ class _AppTextFieldState extends State<AppTextField> {
       _focusNode.dispose();
     }
     super.dispose();
-  }
-
-  void _togglePasswordVisibility() {
-    setState(() {
-      _obscureText = !_obscureText;
-    });
-    HapticFeedback.lightImpact();
   }
 
   @override
@@ -230,8 +186,7 @@ class _AppTextFieldState extends State<AppTextField> {
       enabled: widget.enabled,
       readOnly: widget.readOnly,
       autofocus: widget.autofocus,
-      obscureText: _obscureText,
-      maxLines: widget.type == TextFieldType.multiline ? widget.maxLines : 1,
+      maxLines: widget.maxLines ?? 1,
       minLines: widget.minLines,
       maxLength: widget.maxLength,
       keyboardType: _getKeyboardType(),
@@ -240,7 +195,7 @@ class _AppTextFieldState extends State<AppTextField> {
       onTap: widget.onTap,
       onFieldSubmitted: widget.onSubmitted,
       validator: widget.validator,
-      inputFormatters: widget.inputFormatters ?? _getInputFormatters(),
+      inputFormatters: widget.inputFormatters,
       style: AppTextStyles.body1.copyWith(
         color: widget.enabled ? theme.textTheme.bodyLarge?.color : theme.disabledColor,
       ),
@@ -254,16 +209,12 @@ class _AppTextFieldState extends State<AppTextField> {
         fillColor: widget.fillColor ?? (widget.enabled 
             ? theme.inputDecorationTheme.fillColor 
             : theme.disabledColor.withValues(alpha: 0.05)),
-        contentPadding: widget.contentPadding ?? EdgeInsets.symmetric(
+        contentPadding: widget.contentPadding ?? const EdgeInsets.symmetric(
           horizontal: ThemeConstants.space4,
-          vertical: widget.type == TextFieldType.multiline 
-              ? ThemeConstants.space4 
-              : ThemeConstants.space3,
+          vertical: ThemeConstants.space3,
         ),
         prefixIcon: _buildPrefixIcon(),
         suffixIcon: _buildSuffixIcon(),
-        prefixText: widget.prefixText,
-        suffixText: widget.suffixText,
         border: _buildBorder(theme),
         enabledBorder: _buildBorder(theme),
         focusedBorder: _buildFocusedBorder(theme),
@@ -277,39 +228,20 @@ class _AppTextFieldState extends State<AppTextField> {
   Widget? _buildPrefixIcon() {
     if (widget.prefixIcon != null) return widget.prefixIcon;
     
-    IconData? icon;
-    switch (widget.type) {
-      case TextFieldType.email:
-        icon = Icons.email_outlined;
-        break;
-      case TextFieldType.phone:
-        icon = Icons.phone_outlined;
-        break;
-      case TextFieldType.search:
-        icon = Icons.search;
-        break;
-      default:
-        return null;
+    // أيقونة البحث تلقائياً للبحث
+    if (widget.type == TextFieldType.search) {
+      return const Icon(Icons.search, size: ThemeConstants.iconMd);
     }
     
-    return Icon(icon, size: ThemeConstants.iconMd);
+    return null;
   }
 
   Widget? _buildSuffixIcon() {
     if (widget.suffixIcon != null) return widget.suffixIcon;
     
-    if (widget.type == TextFieldType.password && widget.showPasswordToggle) {
-      return IconButton(
-        icon: Icon(
-          _obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-          size: ThemeConstants.iconMd,
-        ),
-        onPressed: _togglePasswordVisibility,
-        tooltip: _obscureText ? 'إظهار كلمة المرور' : 'إخفاء كلمة المرور',
-      );
-    }
-    
-    if (widget.type == TextFieldType.search && widget.controller?.text.isNotEmpty == true) {
+    // زر مسح للبحث عندما يكون هناك نص
+    if (widget.type == TextFieldType.search && 
+        widget.controller?.text.isNotEmpty == true) {
       return IconButton(
         icon: const Icon(Icons.clear, size: ThemeConstants.iconSm),
         onPressed: () {
@@ -324,40 +256,16 @@ class _AppTextFieldState extends State<AppTextField> {
   }
 
   TextInputType _getKeyboardType() {
-    switch (widget.type) {
-      case TextFieldType.email:
-        return TextInputType.emailAddress;
-      case TextFieldType.phone:
-        return TextInputType.phone;
-      case TextFieldType.number:
-        return const TextInputType.numberWithOptions(decimal: true);
-      case TextFieldType.multiline:
-        return TextInputType.multiline;
-      default:
-        return TextInputType.text;
-    }
+    // نوع واحد فقط للبساطة
+    return TextInputType.text;
   }
 
   TextInputAction _getTextInputAction() {
-    if (widget.type == TextFieldType.multiline) {
-      return TextInputAction.newline;
-    }
-    return TextInputAction.done;
-  }
-
-  List<TextInputFormatter>? _getInputFormatters() {
     switch (widget.type) {
-      case TextFieldType.phone:
-        return [
-          FilteringTextInputFormatter.digitsOnly,
-          LengthLimitingTextInputFormatter(15),
-        ];
-      case TextFieldType.number:
-        return [
-          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-        ];
+      case TextFieldType.search:
+        return TextInputAction.search;
       default:
-        return null;
+        return TextInputAction.done;
     }
   }
 

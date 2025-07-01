@@ -1,9 +1,9 @@
-// lib/app/themes/widgets/feedback/app_notice_card.dart - منظف ومحسن
+// lib/app/themes/widgets/feedback/app_notice_card.dart - النسخة المبسطة
 import 'package:flutter/material.dart';
 import '../../theme_constants.dart';
 import '../../core/theme_extensions.dart';
 
-/// أنواع بطاقات التنبيه
+/// أنواع بطاقات التنبيه - مبسطة
 enum NoticeType {
   info,
   warning,
@@ -11,19 +11,13 @@ enum NoticeType {
   success,
 }
 
-/// بطاقة تنبيه موحدة ومحسنة
+/// بطاقة تنبيه موحدة - مبسطة وأنيقة
 class AppNoticeCard extends StatelessWidget {
   final NoticeType type;
   final String title;
   final String? message;
   final Widget? action;
   final VoidCallback? onClose;
-  final bool showIcon;
-  final IconData? customIcon;
-  final EdgeInsetsGeometry? margin;
-  final EdgeInsetsGeometry? padding;
-  final double? borderRadius;
-  final bool isDismissible;
 
   const AppNoticeCard({
     super.key,
@@ -32,25 +26,20 @@ class AppNoticeCard extends StatelessWidget {
     this.message,
     this.action,
     this.onClose,
-    this.showIcon = true,
-    this.customIcon,
-    this.margin,
-    this.padding,
-    this.borderRadius,
-    this.isDismissible = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final colors = _getColors(context);
-    final effectiveBorderRadius = borderRadius ?? ThemeConstants.radiusLg;
-    final effectivePadding = padding ?? const EdgeInsets.all(ThemeConstants.space4);
     
-    Widget child = Container(
-      margin: margin ?? EdgeInsets.zero,
+    return Container(
+      margin: const EdgeInsets.symmetric(
+        horizontal: ThemeConstants.space4,
+        vertical: ThemeConstants.space2,
+      ),
       decoration: BoxDecoration(
         color: colors.backgroundColor,
-        borderRadius: BorderRadius.circular(effectiveBorderRadius),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
         border: Border.all(
           color: colors.borderColor,
           width: ThemeConstants.borderLight,
@@ -64,15 +53,16 @@ class AppNoticeCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: effectivePadding,
+        padding: const EdgeInsets.all(ThemeConstants.space4),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (showIcon) ...[
-              _buildIcon(colors),
-              ThemeConstants.space3.w,
-            ],
+            // الأيقونة
+            _buildIcon(colors),
             
+            const SizedBox(width: ThemeConstants.space3),
+            
+            // المحتوى
             Expanded(
               child: _buildContent(context, colors),
             ),
@@ -80,30 +70,6 @@ class AppNoticeCard extends StatelessWidget {
         ),
       ),
     );
-
-    // إضافة إمكانية السحب للإزالة
-    if (isDismissible && onClose != null) {
-      child = Dismissible(
-        key: UniqueKey(),
-        direction: DismissDirection.endToStart,
-        onDismissed: (_) => onClose!(),
-        background: Container(
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: ThemeConstants.space4),
-          decoration: BoxDecoration(
-            color: colors.iconColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(effectiveBorderRadius),
-          ),
-          child: Icon(
-            Icons.close,
-            color: colors.iconColor,
-          ),
-        ),
-        child: child,
-      );
-    }
-
-    return child;
   }
 
   Widget _buildIcon(_NoticeColors colors) {
@@ -114,7 +80,7 @@ class AppNoticeCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
       ),
       child: Icon(
-        customIcon ?? _getIcon(),
+        _getIcon(),
         color: colors.iconColor,
         size: ThemeConstants.iconMd,
       ),
@@ -126,6 +92,7 @@ class AppNoticeCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
+        // العنوان مع زر الإغلاق
         Row(
           children: [
             Expanded(
@@ -137,13 +104,14 @@ class AppNoticeCard extends StatelessWidget {
                 ),
               ),
             ),
-            if (onClose != null && !isDismissible)
+            if (onClose != null)
               _buildCloseButton(colors),
           ],
         ),
         
+        // الرسالة
         if (message != null) ...[
-          ThemeConstants.space1.h,
+          const SizedBox(height: ThemeConstants.space1),
           Text(
             message!,
             style: context.bodyMedium?.copyWith(
@@ -153,8 +121,9 @@ class AppNoticeCard extends StatelessWidget {
           ),
         ],
         
+        // الإجراء
         if (action != null) ...[
-          ThemeConstants.space3.h,
+          const SizedBox(height: ThemeConstants.space3),
           action!,
         ],
       ],
@@ -238,14 +207,14 @@ class AppNoticeCard extends StatelessWidget {
     }
   }
 
-  // Factory constructors للاستخدام السهل
+  // Factory constructors - مبسطة
+  
+  /// بطاقة معلومات
   factory AppNoticeCard.info({
     required String title,
     String? message,
     Widget? action,
     VoidCallback? onClose,
-    EdgeInsetsGeometry? margin,
-    bool isDismissible = false,
   }) {
     return AppNoticeCard(
       type: NoticeType.info,
@@ -253,18 +222,15 @@ class AppNoticeCard extends StatelessWidget {
       message: message,
       action: action,
       onClose: onClose,
-      margin: margin,
-      isDismissible: isDismissible,
     );
   }
 
+  /// بطاقة تحذير
   factory AppNoticeCard.warning({
     required String title,
     String? message,
     Widget? action,
     VoidCallback? onClose,
-    EdgeInsetsGeometry? margin,
-    bool isDismissible = false,
   }) {
     return AppNoticeCard(
       type: NoticeType.warning,
@@ -272,18 +238,15 @@ class AppNoticeCard extends StatelessWidget {
       message: message,
       action: action,
       onClose: onClose,
-      margin: margin,
-      isDismissible: isDismissible,
     );
   }
 
+  /// بطاقة خطأ
   factory AppNoticeCard.error({
     required String title,
     String? message,
     Widget? action,
     VoidCallback? onClose,
-    EdgeInsetsGeometry? margin,
-    bool isDismissible = false,
   }) {
     return AppNoticeCard(
       type: NoticeType.error,
@@ -291,18 +254,15 @@ class AppNoticeCard extends StatelessWidget {
       message: message,
       action: action,
       onClose: onClose,
-      margin: margin,
-      isDismissible: isDismissible,
     );
   }
 
+  /// بطاقة نجاح
   factory AppNoticeCard.success({
     required String title,
     String? message,
     Widget? action,
     VoidCallback? onClose,
-    EdgeInsetsGeometry? margin,
-    bool isDismissible = false,
   }) {
     return AppNoticeCard(
       type: NoticeType.success,
@@ -310,13 +270,11 @@ class AppNoticeCard extends StatelessWidget {
       message: message,
       action: action,
       onClose: onClose,
-      margin: margin,
-      isDismissible: isDismissible,
     );
   }
 }
 
-/// ألوان بطاقة التنبيه
+/// ألوان بطاقة التنبيه - مبسطة
 class _NoticeColors {
   final Color backgroundColor;
   final Color borderColor;
@@ -332,4 +290,3 @@ class _NoticeColors {
     required this.shadowColor,
   });
 }
-

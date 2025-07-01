@@ -1,4 +1,4 @@
-// lib/app/themes/widgets/cards/app_card.dart - الملف الرئيسي المُبسط
+// lib/app/themes/widgets/cards/app_card.dart - النسخة المبسطة
 import 'package:flutter/material.dart';
 import '../../theme_constants.dart';
 import 'card_types.dart';
@@ -10,7 +10,7 @@ import 'card_factory.dart';
 export 'card_types.dart';
 export 'card_factory.dart';
 
-/// بطاقة موحدة لجميع الاستخدامات - مُبسطة ومُحسنة
+/// بطاقة موحدة لجميع الاستخدامات - مبسطة
 class AppCard extends StatefulWidget {
   /// خصائص البطاقة
   final CardProperties properties;
@@ -31,22 +31,16 @@ class AppCard extends StatefulWidget {
     String? content,
     Widget? child,
     IconData? icon,
-    Widget? leading,
     Widget? trailing,
-    String? imageUrl,
     Color? primaryColor,
     Color? backgroundColor,
     List<Color>? gradientColors,
-    double? elevation,
     double? borderRadius,
     EdgeInsetsGeometry? padding,
     EdgeInsetsGeometry? margin,
     VoidCallback? onTap,
     VoidCallback? onLongPress,
     List<CardAction>? actions,
-    String? badge,
-    Color? badgeColor,
-    bool isSelected = false,
     bool showShadow = true,
     int? currentCount,
     int? totalCount,
@@ -56,7 +50,6 @@ class AppCard extends StatefulWidget {
     VoidCallback? onFavoriteToggle,
     String? value,
     String? unit,
-    double? progress,
   }) : properties = CardProperties(
           type: type,
           style: style,
@@ -65,22 +58,16 @@ class AppCard extends StatefulWidget {
           content: content,
           child: child,
           icon: icon,
-          leading: leading,
           trailing: trailing,
-          imageUrl: imageUrl,
           primaryColor: primaryColor,
           backgroundColor: backgroundColor,
           gradientColors: gradientColors,
-          elevation: elevation,
           borderRadius: borderRadius,
           padding: padding,
           margin: margin,
           onTap: onTap,
           onLongPress: onLongPress,
           actions: actions,
-          badge: badge,
-          badgeColor: badgeColor,
-          isSelected: isSelected,
           showShadow: showShadow,
           currentCount: currentCount,
           totalCount: totalCount,
@@ -90,13 +77,12 @@ class AppCard extends StatefulWidget {
           onFavoriteToggle: onFavoriteToggle,
           value: value,
           unit: unit,
-          progress: progress,
         );
 
   @override
   State<AppCard> createState() => _AppCardState();
 
-  // ===== Factory Constructors السريعة =====
+  // ===== Factory Constructors الأساسية =====
 
   /// بطاقة بسيطة
   factory AppCard.simple({
@@ -165,27 +151,6 @@ class AppCard extends StatefulWidget {
     );
   }
 
-  /// بطاقة إكمال
-  factory AppCard.completion({
-    required String title,
-    required String message,
-    String? subMessage,
-    IconData icon = Icons.check_circle_outline,
-    Color? primaryColor,
-    List<CardAction> actions = const [],
-  }) {
-    return AppCard(
-      properties: CardFactory.completion(
-        title: title,
-        message: message,
-        subMessage: subMessage,
-        icon: icon,
-        primaryColor: primaryColor,
-        actions: actions,
-      ),
-    );
-  }
-
   /// بطاقة معلومات
   factory AppCard.info({
     required String title,
@@ -203,48 +168,6 @@ class AppCard extends StatefulWidget {
         onTap: onTap,
         iconColor: iconColor,
         trailing: trailing,
-      ),
-    );
-  }
-
-  /// بطاقة إحصائيات
-  factory AppCard.stat({
-    required String title,
-    required String value,
-    required IconData icon,
-    Color? color,
-    VoidCallback? onTap,
-    double? progress,
-  }) {
-    return AppCard(
-      properties: CardFactory.stat(
-        title: title,
-        value: value,
-        icon: icon,
-        color: color,
-        onTap: onTap,
-        progress: progress,
-      ),
-    );
-  }
-
-  /// بطاقة ترحيب زجاجية
-  factory AppCard.glassWelcome({
-    required String title,
-    String? subtitle,
-    required Color primaryColor,
-    required VoidCallback onTap,
-    EdgeInsetsGeometry? margin,
-    EdgeInsetsGeometry? padding,
-  }) {
-    return AppCard(
-      properties: CardFactory.glassWelcome(
-        title: title,
-        subtitle: subtitle,
-        primaryColor: primaryColor,
-        onTap: onTap,
-        margin: margin,
-        padding: padding,
       ),
     );
   }
@@ -384,75 +307,6 @@ class AppCard extends StatefulWidget {
         dua: dua,
         source: source,
         primaryColor: primaryColor,
-      ),
-    );
-  }
-
-  // ===== Factory Constructors للبطاقات المتخصصة =====
-
-  /// بطاقة إنجاز
-  factory AppCard.achievement({
-    required String title,
-    required String description,
-    required IconData icon,
-    required VoidCallback onShare,
-    required VoidCallback onRestart,
-    Color? primaryColor,
-  }) {
-    return AppCard(
-      properties: SpecializedCardFactory.achievement(
-        title: title,
-        description: description,
-        icon: icon,
-        onShare: onShare,
-        onRestart: onRestart,
-        primaryColor: primaryColor,
-      ),
-    );
-  }
-
-  /// بطاقة إحصائية للتقدم
-  factory AppCard.progressStat({
-    required String title,
-    required int completed,
-    required int total,
-    required IconData icon,
-    VoidCallback? onTap,
-    Color? primaryColor,
-  }) {
-    return AppCard(
-      properties: SpecializedCardFactory.progressStat(
-        title: title,
-        completed: completed,
-        total: total,
-        icon: icon,
-        onTap: onTap,
-        primaryColor: primaryColor,
-      ),
-    );
-  }
-
-  /// بطاقة تفاعلية مع عداد
-  factory AppCard.interactiveCounter({
-    required String title,
-    required String content,
-    required int currentCount,
-    required int targetCount,
-    required VoidCallback onIncrement,
-    required VoidCallback onReset,
-    Color? primaryColor,
-    String? source,
-  }) {
-    return AppCard(
-      properties: InteractiveCardFactory.interactiveCounter(
-        title: title,
-        content: content,
-        currentCount: currentCount,
-        targetCount: targetCount,
-        onIncrement: onIncrement,
-        onReset: onReset,
-        primaryColor: primaryColor,
-        source: source,
       ),
     );
   }
