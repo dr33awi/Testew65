@@ -1,7 +1,7 @@
-// lib/app/themes/widgets/states/app_empty_state.dart - النسخة المبسطة والنهائية
+// lib/app/themes/widgets/states/app_empty_state.dart - مُصلح بالكامل
 import 'package:flutter/material.dart';
 import '../../theme_constants.dart';
-import '../../core/theme_extensions.dart';
+import '../../core/systems/app_color_system.dart';
 import '../core/app_button.dart';
 
 /// Widget للحالات الفارغة - مبسط ومتكامل
@@ -31,7 +31,7 @@ class AppEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveIconColor = iconColor ?? context.textSecondaryColor.withValues(alpha: 0.6);
+    final effectiveIconColor = iconColor ?? AppColorSystem.getTextSecondary(context).withValues(alpha: 0.6);
     final effectivePadding = padding ?? const EdgeInsets.all(ThemeConstants.space6);
     
     return Center(
@@ -52,7 +52,7 @@ class AppEmptyState extends StatelessWidget {
             // العنوان
             Text(
               title,
-              style: context.titleLarge?.copyWith(
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: ThemeConstants.semiBold,
               ),
               textAlign: TextAlign.center,
@@ -63,8 +63,8 @@ class AppEmptyState extends StatelessWidget {
               const SizedBox(height: ThemeConstants.space3),
               Text(
                 message!,
-                style: context.bodyMedium?.copyWith(
-                  color: context.textSecondaryColor,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColorSystem.getTextSecondary(context),
                   height: 1.5,
                 ),
                 textAlign: TextAlign.center,
@@ -126,7 +126,7 @@ class AppEmptyState extends StatelessWidget {
       icon: Icons.inbox_outlined,
       onAction: onRefresh,
       actionText: actionText,
-      iconColor: ThemeConstants.info,
+      iconColor: AppColorSystem.info,
     );
   }
 
@@ -143,7 +143,7 @@ class AppEmptyState extends StatelessWidget {
       icon: Icons.search_off,
       onAction: onClearSearch,
       actionText: onClearSearch != null ? 'مسح البحث' : null,
-      iconColor: ThemeConstants.warning,
+      iconColor: AppColorSystem.warning,
     );
   }
 
@@ -157,7 +157,7 @@ class AppEmptyState extends StatelessWidget {
       title: 'حدث خطأ',
       message: message ?? 'حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى',
       icon: Icons.error_outline,
-      iconColor: ThemeConstants.error,
+      iconColor: AppColorSystem.error,
       onAction: onRetry,
       actionText: actionText ?? 'إعادة المحاولة',
     );
@@ -172,7 +172,7 @@ class AppEmptyState extends StatelessWidget {
       title: 'لا يوجد اتصال',
       message: message ?? 'تحقق من اتصالك بالإنترنت وحاول مرة أخرى',
       icon: Icons.wifi_off,
-      iconColor: ThemeConstants.warning,
+      iconColor: AppColorSystem.warning,
       onAction: onRetry,
       actionText: 'إعادة المحاولة',
     );
@@ -212,7 +212,7 @@ class AppEmptyState extends StatelessWidget {
       title: 'لا توجد $categoryName',
       message: 'لم يتم العثور على أذكار في هذه الفئة',
       icon: Icons.auto_awesome_outlined,
-      iconColor: ThemeConstants.primary,
+      iconColor: AppColorSystem.primary,
       onAction: onRefresh,
       actionText: onRefresh != null ? 'تحديث' : null,
     );
@@ -226,7 +226,7 @@ class AppEmptyState extends StatelessWidget {
       title: 'لا توجد مفضلة',
       message: 'لم تقم بإضافة أي أذكار إلى المفضلة بعد',
       icon: Icons.favorite_border,
-      iconColor: ThemeConstants.accent,
+      iconColor: AppColorSystem.accent,
       onAction: onBrowse,
       actionText: onBrowse != null ? 'تصفح الأذكار' : null,
     );
@@ -240,7 +240,7 @@ class AppEmptyState extends StatelessWidget {
       title: 'لا يوجد تاريخ',
       message: 'لم تقم بقراءة أي أذكار بعد',
       icon: Icons.history,
-      iconColor: ThemeConstants.tertiary,
+      iconColor: AppColorSystem.tertiary,
       onAction: onBrowse,
       actionText: onBrowse != null ? 'ابدأ القراءة' : null,
     );

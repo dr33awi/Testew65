@@ -1,8 +1,8 @@
-// lib/app/themes/widgets/cards/card_contents.dart - النسخة المبسطة
+// lib/app/themes/widgets/cards/card_contents.dart - إصلاح استدعاءات البناء السياقي
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../theme_constants.dart';
-import '../../core/theme_extensions.dart';
+import '../../core/systems/app_color_system.dart';
 import 'card_types.dart';
 
 /// بناء محتويات البطاقات - مبسط
@@ -68,7 +68,7 @@ class CardContentBuilder {
           const SizedBox(height: ThemeConstants.space2),
           Text(
             message,
-            style: context.bodyMedium?.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: _getTextColor(context, CardStyle.normal),
             ),
             textAlign: TextAlign.center,
@@ -87,8 +87,8 @@ class CardContentBuilder {
     }
     
     return isSecondary 
-        ? context.textSecondaryColor 
-        : context.textPrimaryColor;
+        ? AppColorSystem.getTextSecondary(context)
+        : AppColorSystem.getTextPrimary(context);
   }
 }
 
@@ -148,7 +148,7 @@ class AthkarContent {
             ),
             child: Text(
               '${properties.currentCount}/${properties.totalCount}',
-              style: context.labelMedium?.copyWith(
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 shadows: [
@@ -208,7 +208,7 @@ class AthkarContent {
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: context.bodyLarge?.copyWith(
+        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
           color: Colors.white,
           fontSize: 20,
           fontWeight: ThemeConstants.semiBold,
@@ -244,7 +244,7 @@ class AthkarContent {
         ),
         child: Text(
           properties.source!,
-          style: context.labelLarge?.copyWith(
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
             color: Colors.white,
             fontWeight: ThemeConstants.bold,
             shadows: [
@@ -285,7 +285,7 @@ class AthkarContent {
               children: [
                 Text(
                   'الفضل',
-                  style: context.labelSmall?.copyWith(
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: Colors.white.withValues(alpha: 0.9),
                     fontWeight: FontWeight.bold,
                   ),
@@ -293,7 +293,7 @@ class AthkarContent {
                 const SizedBox(height: 4),
                 Text(
                   properties.fadl!,
-                  style: context.bodySmall?.copyWith(
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Colors.white.withValues(alpha: 0.8),
                     height: 1.4,
                   ),
@@ -333,7 +333,7 @@ class QuoteContent {
             ),
             child: Text(
               properties.subtitle!,
-              style: context.labelMedium?.copyWith(
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: ThemeConstants.semiBold,
               ),
@@ -351,7 +351,7 @@ class QuoteContent {
           child: Text(
             properties.content ?? properties.title ?? '',
             textAlign: TextAlign.center,
-            style: context.bodyLarge?.copyWith(
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: Colors.white,
               fontSize: 18,
               height: 1.8,
@@ -385,12 +385,12 @@ class InfoContent {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: (properties.primaryColor ?? context.primaryColor).withValues(alpha: 0.1),
+              color: (properties.primaryColor ?? AppColorSystem.primary).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
             ),
             child: Icon(
               properties.icon,
-              color: properties.primaryColor ?? context.primaryColor,
+              color: properties.primaryColor ?? AppColorSystem.primary,
               size: ThemeConstants.iconLg,
             ),
           ),
@@ -404,7 +404,7 @@ class InfoContent {
               if (properties.title != null)
                 Text(
                   properties.title!,
-                  style: context.titleMedium?.copyWith(
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: ThemeConstants.semiBold,
                   ),
                 ),
@@ -412,8 +412,8 @@ class InfoContent {
                 const SizedBox(height: ThemeConstants.space1),
                 Text(
                   properties.subtitle!,
-                  style: context.bodyMedium?.copyWith(
-                    color: context.textSecondaryColor,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColorSystem.getTextSecondary(context),
                   ),
                 ),
               ],
@@ -474,7 +474,7 @@ class NormalContent {
           Text(
             properties.title!,
             style: CardContentBuilder._getTextColor(context, properties.style) == Colors.white
-                ? context.titleLarge?.copyWith(
+                ? Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: Colors.white,
                     fontWeight: ThemeConstants.bold,
                     fontSize: 18,
@@ -488,7 +488,7 @@ class NormalContent {
                       ),
                     ],
                   )
-                : context.titleLarge?.copyWith(
+                : Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: CardContentBuilder._getTextColor(context, properties.style),
                     fontWeight: ThemeConstants.semiBold,
                   ),
@@ -501,7 +501,7 @@ class NormalContent {
           Text(
             properties.subtitle!,
             style: CardContentBuilder._getTextColor(context, properties.style) == Colors.white
-                ? context.bodyMedium?.copyWith(
+                ? Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 13,
                     shadows: [
@@ -512,7 +512,7 @@ class NormalContent {
                       ),
                     ],
                   )
-                : context.bodyMedium?.copyWith(
+                : Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: CardContentBuilder._getTextColor(context, properties.style, isSecondary: true),
                   ),
             maxLines: 1,
@@ -524,7 +524,7 @@ class NormalContent {
           const SizedBox(height: ThemeConstants.space3),
           Text(
             properties.content!,
-            style: context.bodyLarge?.copyWith(
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: CardContentBuilder._getTextColor(context, properties.style),
             ),
           ),

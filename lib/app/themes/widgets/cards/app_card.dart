@@ -1,4 +1,4 @@
-// lib/app/themes/widgets/cards/app_card.dart - النسخة المبسطة
+// lib/app/themes/widgets/cards/app_card.dart - إزالة الاستدعاءات المحذوفة
 import 'package:flutter/material.dart';
 import '../../theme_constants.dart';
 import 'card_types.dart';
@@ -19,7 +19,45 @@ class AppCard extends StatefulWidget {
   const AppCard({
     super.key,
     required this.properties,
-  });
+}
+
+/// حالة البطاقة الرئيسية
+class _AppCardState extends State<AppCard> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: widget.properties.margin ?? const EdgeInsets.symmetric(
+        horizontal: ThemeConstants.space4,
+        vertical: ThemeConstants.space2,
+      ),
+      child: _buildCard(),
+    );
+  }
+
+  /// بناء البطاقة
+  Widget _buildCard() {
+    // التحقق من صحة البطاقة
+    if (!widget.properties.isValid) {
+      return CardContentBuilder.buildFallbackContent(
+        context, 
+        'بيانات البطاقة غير صحيحة',
+      );
+    }
+
+    // بناء المحتوى
+    final content = CardContentBuilder.buildContent(
+      properties: widget.properties,
+      context: context,
+    );
+
+    // تطبيق النمط
+    return CardStyleBuilder.buildStyled(
+      properties: widget.properties,
+      content: content,
+      context: context,
+    );
+  }
+});
 
   /// إنشاء بطاقة مخصصة
   AppCard.custom({
@@ -193,9 +231,9 @@ class AppCard extends StatefulWidget {
     );
   }
 
-  // ===== Factory Constructors للأذكار المتخصصة =====
+  // ===== Factory Methods مبسطة - استخدام CardFactory مباشرة =====
 
-  /// ذكر الصباح
+  /// أذكار الصباح
   factory AppCard.morningAthkar({
     required String content,
     String? source,
@@ -206,7 +244,7 @@ class AppCard extends StatefulWidget {
     List<CardAction>? actions,
   }) {
     return AppCard(
-      properties: AthkarCardFactory.morningAthkar(
+      properties: CardFactory.morningAthkar(
         content: content,
         source: source,
         fadl: fadl,
@@ -218,7 +256,7 @@ class AppCard extends StatefulWidget {
     );
   }
 
-  /// ذكر المساء
+  /// أذكار المساء
   factory AppCard.eveningAthkar({
     required String content,
     String? source,
@@ -229,7 +267,7 @@ class AppCard extends StatefulWidget {
     List<CardAction>? actions,
   }) {
     return AppCard(
-      properties: AthkarCardFactory.eveningAthkar(
+      properties: CardFactory.eveningAthkar(
         content: content,
         source: source,
         fadl: fadl,
@@ -241,7 +279,7 @@ class AppCard extends StatefulWidget {
     );
   }
 
-  /// ذكر النوم
+  /// أذكار النوم
   factory AppCard.sleepAthkar({
     required String content,
     String? source,
@@ -252,7 +290,7 @@ class AppCard extends StatefulWidget {
     List<CardAction>? actions,
   }) {
     return AppCard(
-      properties: AthkarCardFactory.sleepAthkar(
+      properties: CardFactory.sleepAthkar(
         content: content,
         source: source,
         fadl: fadl,
@@ -264,8 +302,6 @@ class AppCard extends StatefulWidget {
     );
   }
 
-  // ===== Factory Constructors للاقتباسات المتخصصة =====
-
   /// آية قرآنية
   factory AppCard.verse({
     required String verse,
@@ -273,7 +309,7 @@ class AppCard extends StatefulWidget {
     Color? primaryColor,
   }) {
     return AppCard(
-      properties: QuoteCardFactory.verse(
+      properties: CardFactory.verse(
         verse: verse,
         surah: surah,
         primaryColor: primaryColor,
@@ -288,7 +324,7 @@ class AppCard extends StatefulWidget {
     Color? primaryColor,
   }) {
     return AppCard(
-      properties: QuoteCardFactory.hadith(
+      properties: CardFactory.hadith(
         hadith: hadith,
         narrator: narrator,
         primaryColor: primaryColor,
@@ -303,49 +339,10 @@ class AppCard extends StatefulWidget {
     Color? primaryColor,
   }) {
     return AppCard(
-      properties: QuoteCardFactory.dua(
+      properties: CardFactory.dua(
         dua: dua,
         source: source,
         primaryColor: primaryColor,
       ),
     );
   }
-}
-
-/// حالة البطاقة الرئيسية
-class _AppCardState extends State<AppCard> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: widget.properties.margin ?? const EdgeInsets.symmetric(
-        horizontal: ThemeConstants.space4,
-        vertical: ThemeConstants.space2,
-      ),
-      child: _buildCard(),
-    );
-  }
-
-  /// بناء البطاقة
-  Widget _buildCard() {
-    // التحقق من صحة البطاقة
-    if (!widget.properties.isValid) {
-      return CardContentBuilder.buildFallbackContent(
-        context, 
-        'بيانات البطاقة غير صحيحة',
-      );
-    }
-
-    // بناء المحتوى
-    final content = CardContentBuilder.buildContent(
-      properties: widget.properties,
-      context: context,
-    );
-
-    // تطبيق النمط
-    return CardStyleBuilder.buildStyled(
-      properties: widget.properties,
-      content: content,
-      context: context,
-    );
-  }
-}

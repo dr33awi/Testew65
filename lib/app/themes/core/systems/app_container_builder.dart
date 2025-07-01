@@ -1,4 +1,4 @@
-// lib/app/themes/core/systems/app_container_builder.dart - مصحح
+// lib/app/themes/core/systems/app_container_builder.dart - إصلاح استدعاءات AppColorSystem
 import 'package:flutter/material.dart';
 import 'package:athkar_app/app/themes/theme_constants.dart';
 import 'app_color_system.dart';
@@ -161,14 +161,14 @@ class AppContainerBuilder {
   }) {
     final cardSizes = size.cardSizes;
     final effectiveColor = backgroundColor ?? 
-        (colorKey != null ? AppColorSystem.getPrimaryColor(colorKey) : null);
+        (colorKey != null ? AppColorSystem.getCategoryColor(colorKey) : null);
     
     if (withGlass) {
       return glassGradient(
         colors: colorKey != null 
             ? [
-                AppColorSystem.getPrimaryColor(colorKey).withValues(alpha: 0.9),
-                AppColorSystem.getDarkColor(colorKey).withValues(alpha: 0.7),
+                AppColorSystem.getCategoryColor(colorKey).withValues(alpha: 0.9),
+                AppColorSystem.getCategoryDarkColor(colorKey).withValues(alpha: 0.7),
               ]
             : [
                 Colors.white.withValues(alpha: 0.9),
@@ -187,8 +187,8 @@ class AppContainerBuilder {
       return gradient(
         colors: colorKey != null 
             ? [
-                AppColorSystem.getPrimaryColor(colorKey),
-                AppColorSystem.getDarkColor(colorKey),
+                AppColorSystem.getCategoryColor(colorKey),
+                AppColorSystem.getCategoryDarkColor(colorKey),
               ]
             : [effectiveColor, effectiveColor],
         padding: cardSizes.padding,
@@ -224,7 +224,7 @@ class AppContainerBuilder {
   }) {
     final buttonSizes = size.buttonSizes;
     final effectiveColor = backgroundColor ?? 
-        (colorKey != null ? AppColorSystem.getPrimaryColor(colorKey) : null);
+        (colorKey != null ? AppColorSystem.getCategoryColor(colorKey) : null);
     
     Widget container;
     
@@ -245,8 +245,8 @@ class AppContainerBuilder {
       container = gradient(
         colors: colorKey != null 
             ? [
-                AppColorSystem.getPrimaryColor(colorKey),
-                AppColorSystem.getDarkColor(colorKey),
+                AppColorSystem.getCategoryColor(colorKey),
+                AppColorSystem.getCategoryDarkColor(colorKey),
               ]
             : [effectiveColor, effectiveColor],
         padding: buttonSizes.padding,
@@ -297,8 +297,8 @@ class AppContainerBuilder {
         ),
         child: glassGradient(
           colors: [
-            AppColorSystem.getPrimaryColor(colorKey).withValues(alpha: 0.9),
-            AppColorSystem.getDarkColor(colorKey).withValues(alpha: 0.7),
+            AppColorSystem.getCategoryColor(colorKey).withValues(alpha: 0.9),
+            AppColorSystem.getCategoryDarkColor(colorKey).withValues(alpha: 0.7),
           ],
           padding: dialogSizes.padding,
           margin: margin,
@@ -339,9 +339,9 @@ class AppContainerBuilder {
   }) {
     final inputSizes = size.inputSizes;
     final effectiveBorderColor = hasError 
-        ? ThemeConstants.error
+        ? AppColorSystem.error
         : isFocused 
-            ? (borderColor ?? ThemeConstants.primary)
+            ? (borderColor ?? AppColorSystem.primary)
             : Colors.grey.shade300;
     
     return basic(
@@ -412,7 +412,7 @@ class AppContainerBuilder {
     bool withGlass = false,
     AlignmentGeometry? alignment,
   }) {
-    final color = AppColorSystem.getPrimaryColor(type);
+    final color = AppColorSystem.getCategoryColor(type);
     
     if (withGlass) {
       return glassGradient(
@@ -484,8 +484,8 @@ class AppContainerBuilder {
           colors: gradientColors ?? 
               (colorKey != null 
                   ? [
-                      AppColorSystem.getPrimaryColor(colorKey),
-                      AppColorSystem.getDarkColor(colorKey),
+                      AppColorSystem.getCategoryColor(colorKey),
+                      AppColorSystem.getCategoryDarkColor(colorKey),
                     ]
                   : [Colors.grey, Colors.grey.shade700]),
           padding: padding,
@@ -518,8 +518,8 @@ class AppContainerBuilder {
           colors: gradientColors ?? 
               (colorKey != null 
                   ? [
-                      AppColorSystem.getPrimaryColor(colorKey).withValues(alpha: 0.9),
-                      AppColorSystem.getDarkColor(colorKey).withValues(alpha: 0.7),
+                      AppColorSystem.getCategoryColor(colorKey).withValues(alpha: 0.9),
+                      AppColorSystem.getCategoryDarkColor(colorKey).withValues(alpha: 0.7),
                     ]
                   : [
                       Colors.white.withValues(alpha: 0.9),

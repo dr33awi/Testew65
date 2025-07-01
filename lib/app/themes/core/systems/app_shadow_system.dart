@@ -1,76 +1,29 @@
-// lib/app/themes/core/systems/app_shadow_system.dart
+// lib/app/themes/core/systems/app_shadow_system.dart - النسخة النظيفة (يستخدم ThemeConstants)
 import 'package:athkar_app/app/themes/theme_constants.dart';
 import 'package:flutter/material.dart';
 
-/// نظام الظلال الموحد للتطبيق
-/// يوفر ظلال متسقة وقابلة للتخصيص
+/// نظام الظلال الموحد - يستخدم ThemeConstants لتجنب التكرار
 class AppShadowSystem {
   AppShadowSystem._();
 
-  // ===== الظلال الأساسية =====
+  // ===== استخدام ظلال ThemeConstants مباشرة =====
   
   /// ظل خفيف جداً
   static List<BoxShadow> get none => [];
   
-  /// ظل خفيف للعناصر البسيطة
-  static List<BoxShadow> get light => [
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.05),
-      blurRadius: 4,
-      offset: const Offset(0, 2),
-      spreadRadius: 0,
-    ),
-  ];
+  /// ظل خفيف للعناصر البسيطة - من ThemeConstants
+  static List<BoxShadow> get light => ThemeConstants.shadowSm;
   
-  /// ظل متوسط للبطاقات
-  static List<BoxShadow> get medium => [
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.08),
-      blurRadius: 8,
-      offset: const Offset(0, 4),
-      spreadRadius: 0,
-    ),
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.04),
-      blurRadius: 3,
-      offset: const Offset(0, 1),
-      spreadRadius: 0,
-    ),
-  ];
+  /// ظل متوسط للبطاقات - من ThemeConstants
+  static List<BoxShadow> get medium => ThemeConstants.shadowMd;
   
-  /// ظل قوي للعناصر المرتفعة
-  static List<BoxShadow> get strong => [
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.12),
-      blurRadius: 16,
-      offset: const Offset(0, 8),
-      spreadRadius: 0,
-    ),
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.08),
-      blurRadius: 6,
-      offset: const Offset(0, 2),
-      spreadRadius: 0,
-    ),
-  ];
+  /// ظل قوي للعناصر المرتفعة - من ThemeConstants
+  static List<BoxShadow> get strong => ThemeConstants.shadowLg;
   
-  /// ظل شديد للحوارات والعناصر العائمة
-  static List<BoxShadow> get intense => [
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.15),
-      blurRadius: 24,
-      offset: const Offset(0, 12),
-      spreadRadius: 0,
-    ),
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.10),
-      blurRadius: 8,
-      offset: const Offset(0, 4),
-      spreadRadius: 0,
-    ),
-  ];
+  /// ظل شديد للحوارات والعناصر العائمة - من ThemeConstants
+  static List<BoxShadow> get intense => ThemeConstants.shadowXl;
 
-  // ===== ظلال ملونة =====
+  // ===== ظلال ملونة - الوحيدة المفيدة في هذا الملف =====
   
   /// ظل ملون مخصص
   static List<BoxShadow> colored({
@@ -184,15 +137,12 @@ class AppShadowSystem {
     ];
   }
 
-  // ===== ظلال حسب الارتفاع =====
+  // ===== ظلال حسب الارتفاع - يستخدم ThemeConstants =====
   
   /// الحصول على ظل حسب الارتفاع (Material Design)
   static List<BoxShadow> elevation(double elevation) {
-    if (elevation <= 0) return none;
-    if (elevation <= 1) return light;
-    if (elevation <= 4) return medium;
-    if (elevation <= 8) return strong;
-    return intense;
+    // استخدام دالة ThemeConstants مباشرة
+    return ThemeConstants.shadowForElevation(elevation);
   }
 
   // ===== ظلال متجاوبة =====
@@ -252,38 +202,38 @@ class AppShadowSystem {
     }
   }
   
-  /// الحصول على الظل الأساسي حسب الشدة
+  /// الحصول على الظل الأساسي حسب الشدة - يستخدم ThemeConstants
   static List<BoxShadow> _getBasicShadow(ShadowIntensity intensity) {
     switch (intensity) {
       case ShadowIntensity.none:
         return none;
       case ShadowIntensity.light:
-        return light;
+        return ThemeConstants.shadowSm;
       case ShadowIntensity.medium:
-        return medium;
+        return ThemeConstants.shadowMd;
       case ShadowIntensity.strong:
-        return strong;
+        return ThemeConstants.shadowLg;
       case ShadowIntensity.intense:
-        return intense;
+        return ThemeConstants.shadowXl;
     }
   }
 
-  // ===== ظلال مُسبقة الإعداد للمكونات =====
+  // ===== ظلال مُسبقة الإعداد للمكونات - تستخدم ThemeConstants =====
   
   /// ظل للبطاقات
-  static List<BoxShadow> get card => medium;
+  static List<BoxShadow> get card => ThemeConstants.shadowMd;
   
   /// ظل للأزرار
-  static List<BoxShadow> get button => light;
+  static List<BoxShadow> get button => ThemeConstants.shadowSm;
   
   /// ظل للحوارات
-  static List<BoxShadow> get dialog => intense;
+  static List<BoxShadow> get dialog => ThemeConstants.shadowXl;
   
   /// ظل للقوائم المنسدلة
-  static List<BoxShadow> get dropdown => strong;
+  static List<BoxShadow> get dropdown => ThemeConstants.shadowLg;
   
   /// ظل لشريط التطبيق
-  static List<BoxShadow> get appBar => light;
+  static List<BoxShadow> get appBar => ThemeConstants.shadowSm;
   
   /// ظل للعناصر المحددة
   static List<BoxShadow> selected({required Color color}) => colored(
@@ -300,14 +250,6 @@ class AppShadowSystem {
       offset: const Offset(0, 1),
     ),
   ];
-
-  // ===== دوال للتوافق مع الكود الموجود =====
-  
-  /// للتوافق مع ThemeConstants
-  @Deprecated('استخدم AppShadowSystem بدلاً منها')
-  static List<BoxShadow> shadowForElevation(double elevation) {
-    return AppShadowSystem.elevation(elevation);
-  }
 }
 
 /// شدة الظل

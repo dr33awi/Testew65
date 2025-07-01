@@ -1,10 +1,11 @@
-// lib/app/themes/widgets/dialogs/app_info_dialog.dart - النسخة المبسطة
+// lib/app/themes/widgets/dialogs/app_info_dialog.dart - مُصلح بالكامل
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
 import '../../theme_constants.dart';
 import '../../text_styles.dart';
 import '../../core/theme_extensions.dart';
+import '../../core/systems/app_color_system.dart';
 
 /// حوار موحد لعرض المعلومات - مبسط
 class AppInfoDialog extends StatelessWidget {
@@ -89,7 +90,7 @@ class AppInfoDialog extends StatelessWidget {
       title: title,
       content: content,
       icon: isDestructive ? Icons.warning_amber_outlined : Icons.help_outline,
-      accentColor: isDestructive ? ThemeConstants.error : null,
+      accentColor: isDestructive ? AppColorSystem.error : null,
       closeButtonText: cancelText,
       actions: [
         DialogAction(
@@ -114,7 +115,7 @@ class AppInfoDialog extends StatelessWidget {
       title: title,
       content: message,
       icon: Icons.check_circle_outline,
-      accentColor: ThemeConstants.success,
+      accentColor: AppColorSystem.success,
       closeButtonText: buttonText,
     );
   }
@@ -131,7 +132,7 @@ class AppInfoDialog extends StatelessWidget {
       title: title,
       content: message,
       icon: Icons.error_outline,
-      accentColor: ThemeConstants.error,
+      accentColor: AppColorSystem.error,
       closeButtonText: buttonText,
     );
   }
@@ -329,7 +330,7 @@ class AppInfoDialog extends StatelessWidget {
       return Container(
         decoration: BoxDecoration(
           color: action.isDestructive 
-            ? ThemeConstants.error
+            ? AppColorSystem.error
             : Colors.white.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
           boxShadow: [

@@ -1,7 +1,8 @@
-// lib/app/themes/widgets/feedback/app_notice_card.dart - النسخة المبسطة
+// lib/app/themes/widgets/feedback/app_notice_card.dart - مُصلح بالكامل
 import 'package:flutter/material.dart';
 import '../../theme_constants.dart';
 import '../../core/theme_extensions.dart';
+import '../../core/systems/app_color_system.dart';
 
 /// أنواع بطاقات التنبيه - مبسطة
 enum NoticeType {
@@ -98,7 +99,7 @@ class AppNoticeCard extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: context.titleMedium?.copyWith(
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: colors.textColor,
                   fontWeight: ThemeConstants.semiBold,
                 ),
@@ -114,7 +115,7 @@ class AppNoticeCard extends StatelessWidget {
           const SizedBox(height: ThemeConstants.space1),
           Text(
             message!,
-            style: context.bodyMedium?.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: colors.textColor.withValues(alpha: 0.8),
               height: 1.5,
             ),
@@ -166,43 +167,43 @@ class AppNoticeCard extends StatelessWidget {
     switch (type) {
       case NoticeType.info:
         return _NoticeColors(
-          backgroundColor: ThemeConstants.info.withValues(alpha: 0.1),
-          borderColor: ThemeConstants.info.withValues(alpha: 0.3),
-          iconColor: ThemeConstants.info,
+          backgroundColor: AppColorSystem.info.withValues(alpha: 0.1),
+          borderColor: AppColorSystem.info.withValues(alpha: 0.3),
+          iconColor: AppColorSystem.info,
           textColor: context.isDarkMode 
-              ? ThemeConstants.info.lighten(0.2)
-              : ThemeConstants.info.darken(0.2),
-          shadowColor: ThemeConstants.info.withValues(alpha: 0.1),
+              ? AppColorSystem.info.lighten(0.2)
+              : AppColorSystem.info.darken(0.2),
+          shadowColor: AppColorSystem.info.withValues(alpha: 0.1),
         );
       case NoticeType.warning:
         return _NoticeColors(
-          backgroundColor: ThemeConstants.warning.withValues(alpha: 0.1),
-          borderColor: ThemeConstants.warning.withValues(alpha: 0.3),
-          iconColor: ThemeConstants.warning,
+          backgroundColor: AppColorSystem.warning.withValues(alpha: 0.1),
+          borderColor: AppColorSystem.warning.withValues(alpha: 0.3),
+          iconColor: AppColorSystem.warning,
           textColor: context.isDarkMode 
-              ? ThemeConstants.warning.lighten(0.1)
-              : ThemeConstants.warning.darken(0.2),
-          shadowColor: ThemeConstants.warning.withValues(alpha: 0.1),
+              ? AppColorSystem.warning.lighten(0.1)
+              : AppColorSystem.warning.darken(0.2),
+          shadowColor: AppColorSystem.warning.withValues(alpha: 0.1),
         );
       case NoticeType.error:
         return _NoticeColors(
-          backgroundColor: ThemeConstants.error.withValues(alpha: 0.1),
-          borderColor: ThemeConstants.error.withValues(alpha: 0.3),
-          iconColor: ThemeConstants.error,
+          backgroundColor: AppColorSystem.error.withValues(alpha: 0.1),
+          borderColor: AppColorSystem.error.withValues(alpha: 0.3),
+          iconColor: AppColorSystem.error,
           textColor: context.isDarkMode 
-              ? ThemeConstants.error.lighten(0.1)
-              : ThemeConstants.error.darken(0.1),
-          shadowColor: ThemeConstants.error.withValues(alpha: 0.1),
+              ? AppColorSystem.error.lighten(0.1)
+              : AppColorSystem.error.darken(0.1),
+          shadowColor: AppColorSystem.error.withValues(alpha: 0.1),
         );
       case NoticeType.success:
         return _NoticeColors(
-          backgroundColor: ThemeConstants.success.withValues(alpha: 0.1),
-          borderColor: ThemeConstants.success.withValues(alpha: 0.3),
-          iconColor: ThemeConstants.success,
+          backgroundColor: AppColorSystem.success.withValues(alpha: 0.1),
+          borderColor: AppColorSystem.success.withValues(alpha: 0.3),
+          iconColor: AppColorSystem.success,
           textColor: context.isDarkMode 
-              ? ThemeConstants.success.lighten(0.1)
-              : ThemeConstants.success.darken(0.2),
-          shadowColor: ThemeConstants.success.withValues(alpha: 0.1),
+              ? AppColorSystem.success.lighten(0.1)
+              : AppColorSystem.success.darken(0.2),
+          shadowColor: AppColorSystem.success.withValues(alpha: 0.1),
         );
     }
   }

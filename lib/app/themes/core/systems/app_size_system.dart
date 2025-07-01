@@ -1,63 +1,62 @@
-// lib/app/themes/core/systems/app_size_system.dart - مصحح
+// lib/app/themes/core/systems/app_size_system.dart - النسخة النظيفة (موحدة مع ThemeConstants)
 import 'package:flutter/material.dart';
 import 'package:athkar_app/app/themes/theme_constants.dart';
 
-/// نظام الأحجام والمقاييس الموحد للتطبيق
-/// يزيل التكرار ويوحد جميع الأحجام في مكان واحد
+/// نظام الأحجام الموحد - يستخدم قيم ThemeConstants لتجنب التضارب
 class AppSizeSystem {
   AppSizeSystem._();
 
-  // ===== تعريف أحجام المكونات =====
+  // ===== استخدام قيم ThemeConstants مباشرة لتجنب التضارب =====
   
-  /// أحجام المكونات المختلفة
+  /// أحجام المكونات المختلفة - موحدة مع ThemeConstants
   static const Map<ComponentSize, ComponentSizes> _componentSizes = {
     ComponentSize.xs: ComponentSizes(
-      height: 28,
+      height: ThemeConstants.heightXs,
       width: 64,
-      iconSize: 16,
-      fontSize: 12,
-      padding: EdgeInsets.all(8), // تغيير من symmetric
-      borderRadius: 6,
+      iconSize: ThemeConstants.iconXs,
+      fontSize: ThemeConstants.textSizeXs,
+      padding: EdgeInsets.all(ThemeConstants.space2),
+      borderRadius: ThemeConstants.radiusXs,
     ),
     ComponentSize.sm: ComponentSizes(
-      height: 32,
+      height: ThemeConstants.heightSm,
       width: 80,
-      iconSize: 18,
-      fontSize: 13,
-      padding: EdgeInsets.all(12),
-      borderRadius: 8,
+      iconSize: ThemeConstants.iconSm,
+      fontSize: ThemeConstants.textSizeSm,
+      padding: EdgeInsets.all(ThemeConstants.space3),
+      borderRadius: ThemeConstants.radiusSm,
     ),
     ComponentSize.md: ComponentSizes(
-      height: 40,
+      height: ThemeConstants.heightMd,
       width: 120,
-      iconSize: 20,
-      fontSize: 14,
-      padding: EdgeInsets.all(16),
-      borderRadius: 10,
+      iconSize: ThemeConstants.iconMd, // ✅ موحد مع ThemeConstants
+      fontSize: ThemeConstants.textSizeMd,
+      padding: EdgeInsets.all(ThemeConstants.space4),
+      borderRadius: ThemeConstants.radiusMd,
     ),
     ComponentSize.lg: ComponentSizes(
-      height: 48,
+      height: ThemeConstants.heightLg,
       width: 160,
-      iconSize: 24,
-      fontSize: 16,
-      padding: EdgeInsets.all(20),
-      borderRadius: 12,
+      iconSize: ThemeConstants.iconLg,
+      fontSize: ThemeConstants.textSizeLg,
+      padding: EdgeInsets.all(ThemeConstants.space5),
+      borderRadius: ThemeConstants.radiusLg,
     ),
     ComponentSize.xl: ComponentSizes(
-      height: 56,
+      height: ThemeConstants.heightXl,
       width: 200,
-      iconSize: 28,
-      fontSize: 18,
-      padding: EdgeInsets.all(24),
-      borderRadius: 14,
+      iconSize: ThemeConstants.iconXl,
+      fontSize: ThemeConstants.textSizeXl,
+      padding: EdgeInsets.all(ThemeConstants.space6),
+      borderRadius: ThemeConstants.radiusXl,
     ),
     ComponentSize.xxl: ComponentSizes(
-      height: 64,
+      height: ThemeConstants.height2xl,
       width: 240,
-      iconSize: 32,
-      fontSize: 20,
-      padding: EdgeInsets.all(32),
-      borderRadius: 16,
+      iconSize: ThemeConstants.icon2xl,
+      fontSize: ThemeConstants.textSize2xl,
+      padding: EdgeInsets.all(ThemeConstants.space8),
+      borderRadius: ThemeConstants.radius2xl,
     ),
   };
 
@@ -65,32 +64,32 @@ class AppSizeSystem {
 
   /// الحصول على ارتفاع المكون
   static double getHeight(ComponentSize size) {
-    return _componentSizes[size]?.height ?? _componentSizes[ComponentSize.md]!.height;
+    return _componentSizes[size]?.height ?? ThemeConstants.heightMd;
   }
 
   /// الحصول على عرض المكون
   static double getWidth(ComponentSize size) {
-    return _componentSizes[size]?.width ?? _componentSizes[ComponentSize.md]!.width;
+    return _componentSizes[size]?.width ?? 120;
   }
 
   /// الحصول على حجم الأيقونة
   static double getIconSize(ComponentSize size) {
-    return _componentSizes[size]?.iconSize ?? _componentSizes[ComponentSize.md]!.iconSize;
+    return _componentSizes[size]?.iconSize ?? ThemeConstants.iconMd;
   }
 
   /// الحصول على حجم الخط
   static double getFontSize(ComponentSize size) {
-    return _componentSizes[size]?.fontSize ?? _componentSizes[ComponentSize.md]!.fontSize;
+    return _componentSizes[size]?.fontSize ?? ThemeConstants.textSizeMd;
   }
 
   /// الحصول على الحشو الداخلي
   static EdgeInsets getPadding(ComponentSize size) {
-    return _componentSizes[size]?.padding ?? _componentSizes[ComponentSize.md]!.padding;
+    return _componentSizes[size]?.padding ?? const EdgeInsets.all(ThemeConstants.space4);
   }
 
   /// الحصول على نصف قطر الحدود
   static double getBorderRadius(ComponentSize size) {
-    return _componentSizes[size]?.borderRadius ?? _componentSizes[ComponentSize.md]!.borderRadius;
+    return _componentSizes[size]?.borderRadius ?? ThemeConstants.radiusMd;
   }
 
   /// الحصول على جميع أحجام المكون
@@ -129,7 +128,7 @@ class AppSizeSystem {
   static CardSizes getCardSizes(ComponentSize size) {
     final base = getSizes(size);
     return CardSizes(
-      padding: EdgeInsets.all(base.padding.left * 1.5), // استخدام left بدلاً من horizontal
+      padding: EdgeInsets.all(base.padding.left * 1.5),
       borderRadius: base.borderRadius,
       titleFontSize: base.fontSize + 2,
       contentFontSize: base.fontSize,
@@ -150,7 +149,7 @@ class AppSizeSystem {
   static DialogSizes getDialogSizes(ComponentSize size) {
     final base = getSizes(size);
     return DialogSizes(
-      padding: EdgeInsets.all(base.padding.left * 1.5), // استخدام left بدلاً من horizontal
+      padding: EdgeInsets.all(base.padding.left * 1.5),
       borderRadius: base.borderRadius + 4,
       titleFontSize: base.fontSize + 4,
       contentFontSize: base.fontSize,
@@ -206,30 +205,6 @@ class AppSizeSystem {
       return ComponentSize.values[currentIndex - 1];
     }
     return null;
-  }
-
-  // ===== دوال للتوافق مع الكود الموجود =====
-
-  /// للتوافق مع AppButton
-  @Deprecated('استخدم getButtonSizes بدلاً منها')
-  static double getButtonHeight(String size) {
-    switch (size.toLowerCase()) {
-      case 'small': return getHeight(ComponentSize.sm);
-      case 'medium': return getHeight(ComponentSize.md);
-      case 'large': return getHeight(ComponentSize.lg);
-      default: return getHeight(ComponentSize.md);
-    }
-  }
-
-  /// للتوافق مع AppLoading
-  @Deprecated('استخدم getLoadingSizes بدلاً منها')
-  static double getLoadingSize(String size) {
-    switch (size.toLowerCase()) {
-      case 'small': return getLoadingSizes(ComponentSize.sm).size;
-      case 'medium': return getLoadingSizes(ComponentSize.md).size;
-      case 'large': return getLoadingSizes(ComponentSize.lg).size;
-      default: return getLoadingSizes(ComponentSize.md).size;
-    }
   }
 }
 

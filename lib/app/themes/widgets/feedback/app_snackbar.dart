@@ -1,10 +1,11 @@
-// lib/app/themes/widgets/feedback/app_snackbar.dart - النسخة المبسطة
+// lib/app/themes/widgets/feedback/app_snackbar.dart - مُصلح بالكامل
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
 import '../../theme_constants.dart';
 import '../../text_styles.dart';
 import '../../core/theme_extensions.dart';
+import '../../core/systems/app_color_system.dart';
 
 /// SnackBar موحد للتطبيق - مبسط مع Glass Morphism
 class AppSnackBar {
@@ -69,7 +70,7 @@ class AppSnackBar {
       context: context,
       message: message,
       icon: Icons.check_circle_outline,
-      backgroundColor: ThemeConstants.success,
+      backgroundColor: AppColorSystem.success,
       action: action,
       duration: duration ?? const Duration(seconds: 3),
     );
@@ -86,7 +87,7 @@ class AppSnackBar {
       context: context,
       message: message,
       icon: Icons.error_outline,
-      backgroundColor: ThemeConstants.error,
+      backgroundColor: AppColorSystem.error,
       action: action,
       duration: duration ?? const Duration(seconds: 4),
     );
@@ -103,7 +104,7 @@ class AppSnackBar {
       context: context,
       message: message,
       icon: Icons.info_outline,
-      backgroundColor: ThemeConstants.info,
+      backgroundColor: AppColorSystem.info,
       action: action,
       duration: duration ?? const Duration(seconds: 3),
     );

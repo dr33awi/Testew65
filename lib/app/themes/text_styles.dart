@@ -1,5 +1,6 @@
-// lib/app/themes/text_styles.dart
+// lib/app/themes/text_styles.dart - إصلاح استدعاءات الألوان
 import 'package:athkar_app/app/themes/theme_constants.dart';
+import 'package:athkar_app/app/themes/core/systems/app_color_system.dart';
 import 'package:flutter/material.dart';
 
 /// أنماط النصوص الموحدة للتطبيق
@@ -156,49 +157,49 @@ static TextTheme createTextTheme({
   /// نص للعناوين الرئيسية في الصفحات
   static TextStyle pageTitle(BuildContext context) {
     return h2.copyWith(
-      color: ThemeConstants.textPrimary(context),
+      color: AppColorSystem.getTextPrimary(context),
     );
   }
 
   /// نص للعناوين الفرعية
   static TextStyle sectionTitle(BuildContext context) {
     return h4.copyWith(
-      color: ThemeConstants.textPrimary(context),
+      color: AppColorSystem.getTextPrimary(context),
     );
   }
 
   /// نص للمحتوى الرئيسي
   static TextStyle contentText(BuildContext context) {
     return body1.copyWith(
-      color: ThemeConstants.textPrimary(context),
+      color: AppColorSystem.getTextPrimary(context),
     );
   }
 
   /// نص للمعلومات الثانوية
   static TextStyle secondaryText(BuildContext context) {
     return body2.copyWith(
-      color: ThemeConstants.textSecondary(context),
+      color: AppColorSystem.getTextSecondary(context),
     );
   }
 
   /// نص للتلميحات
   static TextStyle hintText(BuildContext context) {
     return caption.copyWith(
-      color: ThemeConstants.textSecondary(context).withValues(alpha: 0.7),
+      color: AppColorSystem.getTextSecondary(context).withValues(alpha: 0.7),
     );
   }
 
   /// نص للأخطاء
   static TextStyle errorText(BuildContext context) {
     return caption.copyWith(
-      color: ThemeConstants.error,
+      color: AppColorSystem.error,
     );
   }
 
   /// نص للنجاح
   static TextStyle successText(BuildContext context) {
     return body2.copyWith(
-      color: ThemeConstants.success,
+      color: AppColorSystem.success,
       fontWeight: ThemeConstants.medium,
     );
   }
@@ -206,7 +207,7 @@ static TextTheme createTextTheme({
   /// نص للتحذيرات
   static TextStyle warningText(BuildContext context) {
     return body2.copyWith(
-      color: ThemeConstants.warning,
+      color: AppColorSystem.warning,
       fontWeight: ThemeConstants.medium,
     );
   }
@@ -214,14 +215,14 @@ static TextTheme createTextTheme({
   /// نص للمعلومات
   static TextStyle infoText(BuildContext context) {
     return body2.copyWith(
-      color: ThemeConstants.info,
+      color: AppColorSystem.info,
     );
   }
 
   /// نص للروابط
   static TextStyle linkText(BuildContext context) {
     return body2.copyWith(
-      color: ThemeConstants.primary,
+      color: AppColorSystem.primary,
       decoration: TextDecoration.underline,
     );
   }
