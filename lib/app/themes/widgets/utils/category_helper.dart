@@ -1,6 +1,5 @@
 // lib/app/themes/widgets/utils/category_helper.dart
 import 'package:flutter/material.dart';
-import '../../theme_constants.dart';
 import '../../core/theme_extensions.dart';
 
 /// مساعد موحد للتعامل مع الفئات وألوانها وأيقوناتها
