@@ -50,6 +50,8 @@ class AppIconsSystem {
   static const IconData warning = Icons.warning_rounded;
   static const IconData loading = Icons.hourglass_empty_rounded;
   static const IconData empty = Icons.inbox_rounded;
+  static const IconData progress = Icons.trending_up_rounded;
+  static const IconData notifications = Icons.notifications_rounded;
 
   // ===== دوال مساعدة =====
 
