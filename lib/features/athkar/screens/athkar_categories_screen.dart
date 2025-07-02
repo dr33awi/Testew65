@@ -1,11 +1,9 @@
-// lib/features/athkar/screens/athkar_categories_screen.dart - محدث للنظام الموحد
+// lib/features/athkar/screens/athkar_categories_screen.dart - مُصحح
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../app/routes/app_router.dart';
-import '../../../core/infrastructure/services/permissions/permission_service.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
 import '../services/athkar_service.dart';
 import '../models/athkar_model.dart';
@@ -21,45 +19,23 @@ class AthkarCategoriesScreen extends StatefulWidget {
 class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> 
     with TickerProviderStateMixin {
   late final AthkarService _service;
-  late final PermissionService _permissionService;
+
   late final StorageService _storage;
   
   late Future<List<AthkarCategory>> _futureCategories;
   final Map<String, int> _progress = {};
-  bool _notificationsEnabled = false;
   
   List<AnimationController>? _controllers;
   List<Animation<double>>? _scaleAnimations;
   List<Animation<double>>? _fadeAnimations;
-  
-  // انيميشن التلميع للكارد الترحيبي
-  late AnimationController _shimmerController;
-  late Animation<double> _shimmerAnimation;
 
   @override
   void initState() {
     super.initState();
     _service = getIt<AthkarService>();
     _storage = getIt<StorageService>();
-    _permissionService = getIt<PermissionService>();
     
-    _setupShimmerAnimation();
     _initialize();
-  }
-
-  void _setupShimmerAnimation() {
-    _shimmerController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat();
-
-    _shimmerAnimation = Tween<double>(
-      begin: -2.0,
-      end: 2.0,
-    ).animate(CurvedAnimation(
-      parent: _shimmerController,
-      curve: Curves.easeInOut,
-    ));
   }
 
   @override
@@ -70,7 +46,6 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
 
   Future<void> _initialize() async {
     _futureCategories = _service.loadCategories();
-    _checkNotificationPermission();
     _loadProgress();
   }
 
@@ -121,24 +96,12 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
 
   @override
   void dispose() {
-    _shimmerController.dispose();
     if (_controllers != null) {
       for (var controller in _controllers!) {
         controller.dispose();
       }
     }
     super.dispose();
-  }
-
-  Future<void> _checkNotificationPermission() async {
-    final status = await _permissionService.checkPermissionStatus(
-      AppPermissionType.notification,
-    );
-    if (mounted) {
-      setState(() {
-        _notificationsEnabled = status == AppPermissionStatus.granted;
-      });
-    }
   }
 
   Future<void> _loadProgress() async {
@@ -189,7 +152,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColorSystem.getBackground(context),
+      backgroundColor: context.backgroundColor,
       appBar: CustomAppBar.simple(
         title: 'أذكار المسلم',
         actions: [
@@ -212,9 +175,9 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
-            // رسالة الترحيب مدمجة في الصفحة
+            // رسالة الترحيب
             SliverToBoxAdapter(
-              child: _buildWelcomeSection(context),
+              child: _buildWelcomeSection(),
             ),
             
             const SliverToBoxAdapter(
@@ -264,13 +227,13 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                 });
                 
                 return SliverPadding(
-                  padding: const EdgeInsets.all(ThemeConstants.space4),
+                  padding: context.appResponsivePadding,
                   sliver: SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: context.responsiveColumns(mobile: 1, tablet: 2, desktop: 3),
                       mainAxisSpacing: ThemeConstants.space3,
                       crossAxisSpacing: ThemeConstants.space3,
-                      childAspectRatio: 0.95,
+                      childAspectRatio: context.isMobile ? 1.2 : 0.95,
                     ),
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
@@ -280,7 +243,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                         // إذا لم يتم إعداد الانيميشن بعد، أرجع البطاقة بدون انيميشن
                         if (_scaleAnimations == null || _fadeAnimations == null || 
                             index >= _scaleAnimations!.length || index >= _fadeAnimations!.length) {
-                          return _buildCategoryCard(context, category, progress, index);
+                          return _buildCategoryCard(category, progress);
                         }
                         
                         return AnimatedBuilder(
@@ -293,7 +256,7 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
                               opacity: _fadeAnimations![index],
                               child: ScaleTransition(
                                 scale: _scaleAnimations![index],
-                                child: _buildCategoryCard(context, category, progress, index),
+                                child: _buildCategoryCard(category, progress),
                               ),
                             );
                           },
@@ -315,33 +278,32 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     );
   }
 
-  Widget _buildWelcomeSection(BuildContext context) {
+  Widget _buildWelcomeSection() {
     return Padding(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: AppCard.glassCategory(
-        title: 'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
-        icon: AppIconsSystem.athkar,
-        primaryColor: AppColorSystem.primary,
-        onTap: () {
-          HapticFeedback.lightImpact();
-          // يمكن إضافة إجراء عند الضغط على كارد الترحيب
-        },
-        padding: const EdgeInsets.all(ThemeConstants.space5),
+      padding: context.appResponsivePadding,
+      child: AppCard.quote(
+        quote: 'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
+        author: 'سورة آل عمران - آية 41',
+        category: 'آية قرآنية',
+        primaryColor: 'verse'.themeColor,
+        gradientColors: [
+          'verse'.themeColor,
+          'verse'.themeColor.lighten(0.1),
+        ],
       ),
     );
   }
 
-  Widget _buildCategoryCard(BuildContext context, AthkarCategory category, int progress, int index) {
-    final categoryColor = AppColorSystem.getCategoryColor(category.id);
-    final categoryIcon = AppIconsSystem.getCategoryIcon(category.id);
-    
+  Widget _buildCategoryCard(AthkarCategory category, int progress) {
     return AppCard.glassCategory(
       title: category.title,
-      icon: categoryIcon,
-      primaryColor: categoryColor,
+      icon: category.id.themeCategoryIcon,
+      primaryColor: category.id.themeCategoryColor,
       onTap: () => _openCategoryDetails(category),
       margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(ThemeConstants.space5),
+    ).animatedPress(
+      onTap: () => _openCategoryDetails(category),
     );
   }
 }

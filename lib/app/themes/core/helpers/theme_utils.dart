@@ -1,11 +1,9 @@
-// lib/app/themes/core/helpers/theme_utils.dart - مُصحح لحل تعارض GradientType
-
+// lib/app/themes/core/helpers/theme_utils.dart - بدون Extensions مكررة
 import 'package:flutter/material.dart';
 import '../../theme_constants.dart';
-// ✅ إزالة الاستيراد غير المستخدم
-// import '../systems/app_color_system.dart';
 
 /// أدوات مساعدة موحدة لتجنب التكرار في الثيم
+/// ✅ بدون Extensions مكررة لتجنب التعارض
 class ThemeUtils {
   ThemeUtils._();
 
@@ -128,7 +126,7 @@ class ThemeUtils {
 
   /// إنشاء تدرج لوني موحد
   static List<Color> createGradient(Color baseColor, {
-    ThemeGradientType type = ThemeGradientType.lightToDark, // ✅ اسم مختلف لتجنب التعارض
+    ThemeGradientType type = ThemeGradientType.lightToDark,
     double intensity = 0.2,
   }) {
     switch (type) {
@@ -212,7 +210,7 @@ class ThemeUtils {
   // ===== دوال مساعدة للأجهزة =====
 
   /// التحقق من نوع الجهاز - موحد
-  static ThemeDeviceType getDeviceType(BuildContext context) { // ✅ اسم مختلف لتجنب التعارض
+  static ThemeDeviceType getDeviceType(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     
     if (width < ThemeConstants.breakpointMobile) {
@@ -305,36 +303,14 @@ class ThemeUtils {
 
 // ===== Enums مساعدة - أسماء مختلفة لتجنب التعارض =====
 
-enum ThemeGradientType { // ✅ اسم مختلف لتجنب التعارض مع auto_color_helper
+enum ThemeGradientType {
   lightToDark,
   transparent,
   simple,
 }
 
-enum ThemeDeviceType { // ✅ اسم مختلف لتجنب التعارض
+enum ThemeDeviceType {
   mobile,
   tablet,
   desktop,
 }
-
-// ===== Extensions مساعدة موحدة =====
-
-extension ColorUtilsExtension on Color {
-  /// شفافية آمنة
-  Color opacity(double opacity) => ThemeUtils.applyOpacity(this, opacity);
-  
-  /// ألوان جاهزة بشفافيات مختلفة
-  Color get subtle => opacity(0.1);
-  Color get light => opacity(0.3);
-  Color get medium => opacity(0.6);
-  Color get strong => opacity(0.8);
-  
-  /// تفتيح وتغميق
-  Color lighten([double amount = 0.1]) => ThemeUtils.lightenColor(this, amount);
-  Color darken([double amount = 0.1]) => ThemeUtils.darkenColor(this, amount);
-  
-  /// لون النص المتباين
-  Color get contrastingText => ThemeUtils.getContrastingTextColor(this);
-}
-
-// ✅ إزالة ContextUtilsExtension من هنا لتجنب التعارض

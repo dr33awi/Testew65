@@ -1,5 +1,4 @@
-// lib/app/themes/core/theme_extensions.dart - مُصحح لحل تعارض responsivePadding
-
+// lib/app/themes/core/theme_extensions.dart - حل مشكلة التعارض نهائياً
 import 'package:flutter/material.dart';
 import '../theme_constants.dart';
 import 'systems/app_color_system.dart';
@@ -8,7 +7,7 @@ import 'systems/app_size_system.dart';
 import 'helpers/category_helper.dart';
 import 'helpers/theme_utils.dart';
 
-/// Extension رئيسي للـ BuildContext - مُبسط ومُنظف
+/// Extension رئيسي للـ BuildContext - مُوحد وبدون تكرار
 extension AppThemeExtension on BuildContext {
   // ===== الوصول المباشر للثيم =====
   ThemeData get theme => Theme.of(this);
@@ -97,9 +96,9 @@ extension AppThemeExtension on BuildContext {
   // ===== الحجم المتجاوب =====
   ComponentSize get responsiveSize => AppSizeSystem.getResponsiveSize(this);
 
-  // ===== الحشوات المتجاوبة - استخدام ThemeUtils مع اسم مختلف =====
-  EdgeInsets get appResponsivePadding => ThemeUtils.getResponsivePadding(this); // ✅ اسم مختلف لتجنب التعارض
-  EdgeInsets get appResponsiveMargin => ThemeUtils.getResponsiveMargin(this);   // ✅ اسم مختلف لتجنب التعارض
+  // ===== الحشوات المتجاوبة - اسم فريد لتجنب التعارض =====
+  EdgeInsets get appResponsivePadding => ThemeUtils.getResponsivePadding(this);
+  EdgeInsets get appResponsiveMargin => ThemeUtils.getResponsiveMargin(this);
 
   // ===== لوحة المفاتيح =====
   bool get isKeyboardOpen => viewInsets.bottom > 0;
@@ -110,15 +109,15 @@ extension AppThemeExtension on BuildContext {
   double get safeBottom => screenPadding.bottom;
 }
 
-/// Extension للألوان - مُبسط باستخدام ThemeUtils
-extension ColorExtensions on Color {
+/// Extension للألوان - مُوحد وبدون تعارض
+extension AppColorExtensions on Color {
   /// شفافية آمنة - استخدام ThemeUtils
   Color withOpacitySafe(double opacity) => ThemeUtils.applyOpacity(this, opacity);
 
-  /// تفتيح اللون - استخدام ThemeUtils
+  /// تفتيح اللون - استخدام ThemeUtils (اسم فريد)
   Color lighten([double amount = 0.1]) => ThemeUtils.lightenColor(this, amount);
 
-  /// تغميق اللون - استخدام ThemeUtils
+  /// تغميق اللون - استخدام ThemeUtils (اسم فريد)
   Color darken([double amount = 0.1]) => ThemeUtils.darkenColor(this, amount);
 
   /// الحصول على لون النص المتباين - استخدام ThemeUtils
@@ -151,7 +150,7 @@ extension ColorExtensions on Color {
 }
 
 /// Extension للنصوص - مُبسط
-extension TextStyleExtensions on TextStyle {
+extension AppTextStyleExtensions on TextStyle {
   // أوزان الخط
   TextStyle get bold => copyWith(fontWeight: ThemeConstants.bold);
   TextStyle get semiBold => copyWith(fontWeight: ThemeConstants.semiBold);
@@ -195,7 +194,7 @@ extension TextStyleExtensions on TextStyle {
 }
 
 /// Extension للأرقام - للتطوير السريع
-extension NumberExtensions on num {
+extension AppNumberExtensions on num {
   // مسافات
   SizedBox get w => SizedBox(width: toDouble());
   SizedBox get h => SizedBox(height: toDouble());
@@ -228,15 +227,15 @@ extension NumberExtensions on num {
 }
 
 /// Extension للـ Widgets - مُبسط
-extension WidgetExtensions on Widget {
+extension AppWidgetExtensions on Widget {
   /// إضافة padding
   Widget padded(EdgeInsetsGeometry padding) => Padding(
     padding: padding,
     child: this,
   );
 
-  /// padding ذكي حسب حجم الشاشة - استخدام ThemeUtils مع اسم محدد
-  Widget withAppResponsivePadding(BuildContext context) => Padding(  // ✅ اسم مختلف لتجنب التعارض
+  /// padding ذكي حسب حجم الشاشة - اسم فريد
+  Widget withAppResponsivePadding(BuildContext context) => Padding(
     padding: context.appResponsivePadding,
     child: this,
   );
@@ -278,46 +277,46 @@ extension WidgetExtensions on Widget {
   }
 }
 
-/// Extension موحد للـ String - مُبسط ومُنظف
-extension StringAppExtension on String {
-  // ===== الألوان من AppColorSystem =====
-  Color get color => AppColorSystem.getColor(this);
-  Color get lightColor => AppColorSystem.getLightColor(this);
-  Color get darkColor => AppColorSystem.getDarkColor(this);
+/// Extension موحد للـ String - مُوحد وبدون تعارض
+extension AppStringExtension on String {
+  // ===== الألوان من AppColorSystem - أسماء فريدة =====
+  Color get themeColor => AppColorSystem.getColor(this);
+  Color get themeLightColor => AppColorSystem.getLightColor(this);
+  Color get themeDarkColor => AppColorSystem.getDarkColor(this);
   
   /// الحصول على لون مع fallback
-  Color colorOr(Color fallback) => AppColorSystem.getColorOrFallback(this, fallback);
+  Color themeColorOr(Color fallback) => AppColorSystem.getColorOrFallback(this, fallback);
   
-  // للتوافق مع الكود الموجود
-  Color get categoryColor => AppColorSystem.getCategoryColor(this);
-  Color get prayerColor => AppColorSystem.getPrayerColor(this);
-  Color get quoteColor => AppColorSystem.getQuoteColor(this);
+  // للتوافق مع الكود الموجود - أسماء فريدة
+  Color get themeCategoryColor => AppColorSystem.getCategoryColor(this);
+  Color get themePrayerColor => AppColorSystem.getPrayerColor(this);
+  Color get themeQuoteColor => AppColorSystem.getQuoteColor(this);
   
-  // ===== الأيقونات من AppIconsSystem =====
-  IconData get categoryIcon => AppIconsSystem.getCategoryIcon(this);
-  IconData get prayerIcon => AppIconsSystem.getPrayerIcon(this);
-  IconData get quoteTypeIcon => AppIconsSystem.getQuoteTypeIcon(this);
-  IconData get stateIcon => AppIconsSystem.getStateIcon(this);
+  // ===== الأيقونات من AppIconsSystem - أسماء فريدة =====
+  IconData get themeCategoryIcon => AppIconsSystem.getCategoryIcon(this);
+  IconData get themePrayerIcon => AppIconsSystem.getPrayerIcon(this);
+  IconData get themeQuoteTypeIcon => AppIconsSystem.getQuoteTypeIcon(this);
+  IconData get themeStateIcon => AppIconsSystem.getStateIcon(this);
   
-  // ===== التدرجات من AppColorSystem =====
-  LinearGradient get gradient => AppColorSystem.getGradient(this);
-  LinearGradient get categoryGradient => AppColorSystem.getCategoryGradient(this);
-  LinearGradient get prayerGradient => AppColorSystem.getPrayerGradient(this);
-  LinearGradient get lightGradient => AppColorSystem.getLightGradient(this);
+  // ===== التدرجات من AppColorSystem - أسماء فريدة =====
+  LinearGradient get themeGradient => AppColorSystem.getGradient(this);
+  LinearGradient get themeCategoryGradient => AppColorSystem.getCategoryGradient(this);
+  LinearGradient get themePrayerGradient => AppColorSystem.getPrayerGradient(this);
+  LinearGradient get themeLightGradient => AppColorSystem.getLightGradient(this);
   
-  // ===== خصائص الفئات من CategoryHelper =====
-  String get categoryDescription => CategoryHelper.getCategoryDescription(this);
-  bool get shouldAutoEnable => CategoryHelper.shouldAutoEnable(this);
-  TimeOfDay get defaultReminderTime => CategoryHelper.getDefaultReminderTime(this);
-  int get categoryPriority => CategoryHelper.getCategoryPriority(this);
+  // ===== خصائص الفئات من CategoryHelper - أسماء فريدة =====
+  String get themeCategoryDescription => CategoryHelper.getCategoryDescription(this);
+  bool get themeShouldAutoEnable => CategoryHelper.shouldAutoEnable(this);
+  TimeOfDay get themeDefaultReminderTime => CategoryHelper.getDefaultReminderTime(this);
+  int get themeCategoryPriority => CategoryHelper.getCategoryPriority(this);
   
   // ===== دوال مساعدة - استخدام ThemeUtils =====
   /// الحصول على لون الظل
-  Color colorShadow([double opacity = 0.3]) => 
+  Color themeColorShadow([double opacity = 0.3]) => 
       AppColorSystem.getColor(this).withValues(alpha: ThemeUtils.safeOpacity(opacity));
       
   /// التحقق من وجود اللون
-  bool get hasColor => AppColorSystem.hasColor(this);
+  bool get hasThemeColor => AppColorSystem.hasColor(this);
   
   // ===== تحويلات آمنة =====
   int? get toIntSafe => int.tryParse(this);
@@ -335,7 +334,7 @@ extension StringAppExtension on String {
 }
 
 /// Extension لأحجام المكونات - مُبسط
-extension ComponentSizeExtension on ComponentSize {
+extension AppComponentSizeExtension on ComponentSize {
   /// الحصول على الارتفاع
   double get height => AppSizeSystem.getHeight(this);
   double get width => AppSizeSystem.getWidth(this);
@@ -356,7 +355,7 @@ extension ComponentSizeExtension on ComponentSize {
 }
 
 /// Extension للسياق للحصول على التخطيط المتجاوب - استخدام ThemeUtils
-extension ResponsiveSizeExtension on BuildContext {
+extension AppResponsiveSizeExtension on BuildContext {
   ComponentSize get responsiveSize => AppSizeSystem.getResponsiveSize(this);
   
   CrossAxisAlignment get responsiveAlignment {
