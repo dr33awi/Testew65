@@ -1,14 +1,14 @@
-// lib/app/themes/core/helpers/category_helper.dart - مساعد الفئات الموحد
+// lib/app/themes/core/helpers/category_helper.dart - النسخة المُبسطة
 import 'package:flutter/material.dart';
 import '../systems/app_color_system.dart';
 import '../systems/app_icons_system.dart';
 
-/// مساعد موحد للفئات في التطبيق
+/// مساعد بسيط للفئات - يعيد التوجيه فقط لـ AppColorSystem
 class CategoryHelper {
   CategoryHelper._();
 
   /// الحصول على لون الفئة
-  static Color getCategoryColor(BuildContext context, String categoryId) {
+  static Color getCategoryColor(String categoryId) {
     return AppColorSystem.getCategoryColor(categoryId);
   }
 
@@ -24,40 +24,7 @@ class CategoryHelper {
 
   /// الحصول على أيقونة الفئة
   static IconData getCategoryIcon(String categoryId) {
-    switch (categoryId.toLowerCase()) {
-      case 'prayer_times':
-      case 'مواقيت الصلاة':
-        return AppIconsSystem.prayerTime;
-      case 'athkar':
-      case 'الأذكار':
-        return AppIconsSystem.athkar;
-      case 'qibla':
-      case 'اتجاه القبلة':
-        return AppIconsSystem.qibla;
-      case 'tasbih':
-      case 'المسبحة':
-        return Icons.radio_button_checked;
-      case 'quran':
-      case 'القرآن':
-        return AppIconsSystem.quran;
-      case 'dua':
-      case 'الدعاء':
-        return AppIconsSystem.dua;
-      case 'morning':
-      case 'الصباح':
-        return AppIconsSystem.morningAthkar;
-      case 'evening':
-      case 'المساء':
-        return AppIconsSystem.eveningAthkar;
-      case 'sleep':
-      case 'النوم':
-        return AppIconsSystem.sleepAthkar;
-      case 'prayer':
-      case 'بعد الصلاة':
-        return AppIconsSystem.prayerAthkar;
-      default:
-        return AppIconsSystem.athkar;
-    }
+    return AppIconsSystem.getCategoryIcon(categoryId);
   }
 
   /// الحصول على تدرج لوني للفئة
@@ -68,18 +35,6 @@ class CategoryHelper {
   /// الحصول على وصف الفئة
   static String getCategoryDescription(String categoryId) {
     switch (categoryId.toLowerCase()) {
-      case 'prayer_times':
-        return 'أوقات الصلوات الخمس';
-      case 'athkar':
-        return 'أذكار الصباح والمساء';
-      case 'qibla':
-        return 'البوصلة الإسلامية';
-      case 'tasbih':
-        return 'تسبيح رقمي';
-      case 'quran':
-        return 'القرآن الكريم';
-      case 'dua':
-        return 'الأدعية المأثورة';
       case 'morning':
       case 'الصباح':
         return 'أذكار بعد صلاة الفجر';
@@ -92,6 +47,16 @@ class CategoryHelper {
       case 'prayer':
       case 'بعد الصلاة':
         return 'أذكار بعد كل صلاة';
+      case 'prayer_times':
+        return 'أوقات الصلوات الخمس';
+      case 'qibla':
+        return 'البوصلة الإسلامية';
+      case 'tasbih':
+        return 'تسبيح رقمي';
+      case 'quran':
+        return 'القرآن الكريم';
+      case 'dua':
+        return 'الأدعية المأثورة';
       default:
         return '';
     }
@@ -130,55 +95,65 @@ class CategoryHelper {
     }
   }
 
-  /// الحصول على لون النص المناسب للفئة
-  static Color getCategoryTextColor(String categoryId, {bool isDark = false}) {
-    return Colors.white;
-  }
-
   /// الحصول على أولوية الفئة للترتيب
   static int getCategoryPriority(String categoryId) {
     switch (categoryId.toLowerCase()) {
       case 'prayer_times':
         return 1;
-      case 'athkar':
+      case 'morning':
+      case 'الصباح':
         return 2;
-      case 'qibla':
+      case 'evening':
+      case 'المساء':
         return 3;
-      case 'tasbih':
+      case 'prayer':
+      case 'بعد الصلاة':
         return 4;
-      case 'quran':
+      case 'sleep':
+      case 'النوم':
         return 5;
-      case 'dua':
+      case 'qibla':
         return 6;
+      case 'tasbih':
+        return 7;
+      case 'quran':
+        return 8;
+      case 'dua':
+        return 9;
       default:
         return 99;
     }
   }
 
-  /// تحديد ما إذا كانت الفئة متاحة
-  static bool isCategoryAvailable(String categoryId) {
-    // يمكن إضافة منطق للتحقق من توفر الفئة
-    return true;
+  /// ترتيب الفئات حسب الأولوية
+  static List<T> sortCategoriesByPriority<T>(
+    List<T> categories,
+    String Function(T) getIdFunction,
+  ) {
+    final sortedList = List<T>.from(categories);
+    sortedList.sort((a, b) {
+      final priorityA = getCategoryPriority(getIdFunction(a));
+      final priorityB = getCategoryPriority(getIdFunction(b));
+      return priorityA.compareTo(priorityB);
+    });
+    return sortedList;
   }
 
-  /// الحصول على رسالة التطوير للفئة
-  static String getDevelopmentMessage(String categoryId) {
-    switch (categoryId.toLowerCase()) {
-      case 'qibla':
-        return 'البوصلة الإسلامية قيد التطوير';
-      case 'tasbih':
-        return 'المسبحة الرقمية قيد التطوير';
-      default:
-        return 'هذه الميزة قيد التطوير';
-    }
+  /// فلترة الفئات الأساسية فقط
+  static List<T> filterEssentialCategories<T>(
+    List<T> categories,
+    String Function(T) getIdFunction,
+  ) {
+    return categories.where((category) {
+      return shouldAutoEnable(getIdFunction(category));
+    }).toList();
   }
 }
 
 /// Extension لتسهيل الاستخدام
 extension CategoryExtension on String {
   /// الحصول على لون الفئة
-  Color getCategoryColor(BuildContext context) => 
-      CategoryHelper.getCategoryColor(context, this);
+  Color get categoryColor => CategoryHelper.getCategoryColor(this);
   
   /// الحصول على أيقونة الفئة
   IconData get categoryIcon => CategoryHelper.getCategoryIcon(this);

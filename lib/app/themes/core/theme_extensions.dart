@@ -1,12 +1,12 @@
-// lib/app/themes/core/theme_extensions.dart - النسخة المصححة
+// lib/app/themes/core/theme_extensions.dart - النسخة المُبسطة والموحدة
 import 'package:flutter/material.dart';
 import '../theme_constants.dart';
 import 'systems/app_color_system.dart';
 import 'systems/app_icons_system.dart';
 import 'systems/app_size_system.dart';
 
-/// Extensions مفيدة - تستخدم الأنظمة الجديدة
-extension ThemeExtension on BuildContext {
+/// Extension رئيسي للـ BuildContext - كل شيء في مكان واحد
+extension AppThemeExtension on BuildContext {
   // ===== الوصول المباشر للثيم =====
   ThemeData get theme => Theme.of(this);
   TextTheme get textTheme => theme.textTheme;
@@ -16,7 +16,7 @@ extension ThemeExtension on BuildContext {
   bool get isDarkMode => theme.brightness == Brightness.dark;
   bool get isLightMode => !isDarkMode;
 
-  // ===== الألوان الأساسية من AppColorSystem =====
+  // ===== الألوان الأساسية =====
   Color get primaryColor => AppColorSystem.primary;
   Color get primaryLightColor => AppColorSystem.primaryLight;
   Color get primaryDarkColor => AppColorSystem.primaryDark;
@@ -49,24 +49,10 @@ extension ThemeExtension on BuildContext {
   LinearGradient get accentGradient => AppColorSystem.accentGradient;
   LinearGradient get tertiaryGradient => AppColorSystem.tertiaryGradient;
 
-  // ===== دوال الألوان المتخصصة =====
-  LinearGradient prayerGradient(String prayerName) => 
-    AppColorSystem.getPrayerGradient(prayerName);
-  LinearGradient getTimeBasedGradient({DateTime? dateTime}) => 
-    AppColorSystem.getTimeBasedGradient();
-  Color getPrayerColor(String prayerName) => 
-    AppColorSystem.getPrayerColor(prayerName);
-  IconData getPrayerIcon(String prayerName) =>
-    AppIconsSystem.getPrayerIcon(prayerName);
-
-  // ===== دوال الفئات والاقتباسات =====
-  Color getCategoryColor(String categoryId) {
-    return AppColorSystem.getCategoryColor(categoryId);
-  }
-  
-  LinearGradient getCategoryGradient(String categoryId) {
-    return AppColorSystem.getCategoryGradient(categoryId);
-  }
+  // ===== دوال الألوان والتدرجات =====
+  Color getColor(String key) => AppColorSystem.getColor(key);
+  LinearGradient getGradient(String key) => AppColorSystem.getGradient(key);
+  LinearGradient getTimeBasedGradient() => AppColorSystem.getTimeBasedGradient();
 
   // ===== معلومات الشاشة =====
   double get screenWidth => MediaQuery.sizeOf(this).width;
@@ -102,13 +88,15 @@ extension ThemeExtension on BuildContext {
   double get safeBottom => screenPadding.bottom;
 }
 
-/// Extensions للألوان - محدثة
+/// Extension للألوان - مُبسط ومُحسن
 extension ColorExtensions on Color {
+  /// إضافة شفافية آمنة
   Color withOpacitySafe(double opacity) {
     final safeOpacity = opacity.clamp(0.0, 1.0);
     return withValues(alpha: safeOpacity);
   }
 
+  /// تفتيح اللون
   Color lighten([double amount = 0.1]) {
     assert(amount >= 0 && amount <= 1);
     final hsl = HSLColor.fromColor(this);
@@ -116,6 +104,7 @@ extension ColorExtensions on Color {
     return hsl.withLightness(lightness).toColor();
   }
 
+  /// تغميق اللون
   Color darken([double amount = 0.1]) {
     assert(amount >= 0 && amount <= 1);
     final hsl = HSLColor.fromColor(this);
@@ -123,32 +112,40 @@ extension ColorExtensions on Color {
     return hsl.withLightness(lightness).toColor();
   }
 
+  /// الحصول على لون النص المتباين
   Color get contrastingTextColor {
     return ThemeData.estimateBrightnessForColor(this) == Brightness.dark
         ? Colors.white
         : Colors.black87;
   }
+
+  /// الحصول على نسخة شفافة
+  Color get transparent => withValues(alpha: 0.0);
+  Color get semiTransparent => withValues(alpha: 0.5);
 }
 
-/// Extensions للنصوص
+/// Extension للنصوص - مُبسط
 extension TextStyleExtensions on TextStyle {
+  // أوزان الخط
   TextStyle get bold => copyWith(fontWeight: ThemeConstants.bold);
   TextStyle get semiBold => copyWith(fontWeight: ThemeConstants.semiBold);
   TextStyle get medium => copyWith(fontWeight: ThemeConstants.medium);
   TextStyle get regular => copyWith(fontWeight: ThemeConstants.regular);
   TextStyle get light => copyWith(fontWeight: ThemeConstants.light);
 
+  // تعديلات النص
   TextStyle size(double fontSize) => copyWith(fontSize: fontSize);
   TextStyle textColor(Color color) => copyWith(color: color);
   TextStyle withHeight(double height) => copyWith(height: height);
   TextStyle withSpacing(double letterSpacing) => copyWith(letterSpacing: letterSpacing);
   
+  // أنماط النص
   TextStyle get italic => copyWith(fontStyle: FontStyle.italic);
   TextStyle get underline => copyWith(decoration: TextDecoration.underline);
   TextStyle get lineThrough => copyWith(decoration: TextDecoration.lineThrough);
 }
 
-/// Extensions للأرقام - مفيدة للتطوير السريع
+/// Extension للأرقام - للتطوير السريع
 extension NumberExtensions on num {
   // مسافات
   SizedBox get w => SizedBox(width: toDouble());
@@ -176,7 +173,7 @@ extension NumberExtensions on num {
   );
 }
 
-/// Extensions للـ Widgets - مفيدة للتطوير السريع
+/// Extension للـ Widgets - للتطوير السريع
 extension WidgetExtensions on Widget {
   /// إضافة padding
   Widget padded(EdgeInsetsGeometry padding) => Padding(
@@ -219,67 +216,36 @@ extension WidgetExtensions on Widget {
   );
 }
 
-/// Extensions للفئات والألوان - بديل للـ Utils المحذوفة
-extension StringThemeExtension on String {
-  /// الحصول على لون الفئة/الصلاة
-  Color getCategoryColor(BuildContext? context) {
-    return AppColorSystem.getCategoryColor(this);
-  }
+/// Extension موحد للـ String - كل شيء في مكان واحد
+extension StringAppExtension on String {
+  // ===== الألوان =====
+  Color get color => AppColorSystem.getColor(this);
+  Color get lightColor => AppColorSystem.getLightColor(this);
+  Color get darkColor => AppColorSystem.getDarkColor(this);
   
-  /// الحصول على لون فاتح للفئة
-  Color getCategoryLightColor() {
-    return AppColorSystem.getCategoryLightColor(this);
-  }
-  
-  /// الحصول على لون داكن للفئة
-  Color getCategoryDarkColor() {
-    return AppColorSystem.getCategoryDarkColor(this);
-  }
-  
-  /// الحصول على تدرج الفئة/الصلاة
-  LinearGradient getCategoryGradient() {
-    return AppColorSystem.getCategoryGradient(this);
-  }
-  
-  /// الحصول على تدرج فاتح للفئة
-  LinearGradient getCategoryLightGradient() {
-    return AppColorSystem.getCategoryLightGradient(this);
-  }
-  
-  /// الحصول على تدرج ثلاثي للفئة
-  LinearGradient getCategoryTripleGradient() {
-    return AppColorSystem.getCategoryTripleGradient(this);
-  }
-  
-  /// الحصول على أيقونة الفئة/الصلاة
-  IconData getCategoryIcon() {
-    return AppIconsSystem.getCategoryIcon(this);
-  }
-
-  /// الحصول على لون للصلاة (مرادف)
-  Color get prayerColor => AppColorSystem.getPrayerColor(this);
-  
-  /// الحصول على تدرج للصلاة (مرادف)
-  LinearGradient get prayerGradient => AppColorSystem.getPrayerGradient(this);
-  
-  /// الحصول على أيقونة للصلاة (مرادف)
-  IconData get prayerIcon => AppIconsSystem.getPrayerIcon(this);
-}
-
-/// Extension لـ AppColorSystem في String - للراحة
-extension AppColorExtension on String {
-  /// الوصول السريع للألوان
+  // للتوافق مع الكود الموجود
   Color get categoryColor => AppColorSystem.getCategoryColor(this);
-  Color get categoryLightColor => AppColorSystem.getCategoryLightColor(this);
-  Color get categoryDarkColor => AppColorSystem.getCategoryDarkColor(this);
-  LinearGradient get categoryGradient => AppColorSystem.getCategoryGradient(this);
-}
-
-/// Extension لـ AppIconsSystem في String - للراحة (اسم مختلف لتجنب التضارب)
-extension AppIconsThemeExtension on String {
-  /// الوصول السريع للأيقونات
+  Color get prayerColor => AppColorSystem.getPrayerColor(this);
+  Color get quoteColor => AppColorSystem.getQuoteColor(this);
+  
+  // ===== الأيقونات =====
   IconData get categoryIcon => AppIconsSystem.getCategoryIcon(this);
   IconData get prayerIcon => AppIconsSystem.getPrayerIcon(this);
   IconData get quoteTypeIcon => AppIconsSystem.getQuoteTypeIcon(this);
   IconData get stateIcon => AppIconsSystem.getStateIcon(this);
+  
+  // ===== التدرجات =====
+  LinearGradient get gradient => AppColorSystem.getGradient(this);
+  LinearGradient get categoryGradient => AppColorSystem.getCategoryGradient(this);
+  LinearGradient get prayerGradient => AppColorSystem.getPrayerGradient(this);
+  LinearGradient get lightGradient => AppColorSystem.getLightGradient(this);
+  LinearGradient get tripleGradient => AppColorSystem.getTripleGradient(this);
+  
+  // ===== دوال مساعدة =====
+  /// الحصول على لون الظل
+  Color colorShadow([double opacity = 0.3]) => 
+      AppColorSystem.getColor(this).withValues(alpha: opacity);
+      
+  /// التحقق من وجود اللون
+  bool get hasColor => AppColorSystem.hasColor(this);
 }

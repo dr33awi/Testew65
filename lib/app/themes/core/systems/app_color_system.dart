@@ -1,4 +1,4 @@
-// lib/app/themes/core/systems/app_color_system.dart - المصدر الأساسي الموحد للألوان
+// lib/app/themes/core/systems/app_color_system.dart - النسخة المُحسنة
 import 'package:flutter/material.dart';
 
 /// نظام الألوان الموحد - المصدر الأساسي الوحيد لجميع ألوان التطبيق
@@ -53,14 +53,8 @@ class AppColorSystem {
   static const Color darkTextSecondary = Color(0xFFC0BDB0);
   static const Color darkTextHint = Color(0xFF8D8A80);
 
-  // ===== ألوان خاصة بالميزات =====
-  static const Color athkarBackground = Color(0xFFF0F4EC);
-  static const Color prayerActive = primary;
-  static const Color qiblaAccent = accent;
-  static const Color tasbihAccent = tertiary;
-
-  // ===== خريطة الألوان للفئات والاقتباسات =====
-  static const Map<String, Color> _categoryColors = {
+  // ===== خريطة الألوان الموحدة - مُبسطة =====
+  static const Map<String, Color> _colorMap = {
     // فئات الأذكار
     'morning': primary,
     'الصباح': primary,
@@ -76,16 +70,6 @@ class AppColorSystem {
     'أذكار بعد الصلاة': primaryLight,
     'wakeup': primarySoft,
     'الاستيقاظ': primarySoft,
-    'أذكار الاستيقاظ': primarySoft,
-    'travel': accentDark,
-    'السفر': accentDark,
-    'أذكار السفر': accentDark,
-    'eating': tertiaryLight,
-    'الطعام': tertiaryLight,
-    'أذكار الطعام': tertiaryLight,
-    'general': tertiaryDark,
-    'عامة': tertiaryDark,
-    'أذكار عامة': tertiaryDark,
     
     // فئات التطبيق الرئيسية
     'prayer_times': primary,
@@ -94,6 +78,20 @@ class AppColorSystem {
     'qibla': primaryDark,
     'tasbih': accentDark,
     'dua': tertiaryDark,
+    
+    // الصلوات
+    'fajr': primary,
+    'الفجر': primary,
+    'dhuhr': accent,
+    'الظهر': accent,
+    'asr': primaryLight,
+    'العصر': primaryLight,
+    'maghrib': tertiary,
+    'المغرب': tertiary,
+    'isha': Color(0xFF3A453A),
+    'العشاء': Color(0xFF3A453A),
+    'sunrise': accentLight,
+    'الشروق': accentLight,
     
     // أنواع الاقتباسات
     'verse': primary,
@@ -110,99 +108,136 @@ class AppColorSystem {
     'info': info,
   };
 
-  static const Map<String, Color> _categoryLightColors = {
+  // خريطة الألوان الفاتحة
+  static const Map<String, Color> _lightColorMap = {
     'morning': primaryLight,
     'الصباح': primaryLight,
-    'أذكار الصباح': primaryLight,
     'evening': accentLight,
     'المساء': accentLight,
-    'أذكار المساء': accentLight,
     'sleep': tertiaryLight,
     'النوم': tertiaryLight,
-    'أذكار النوم': tertiaryLight,
     'prayer': primarySoft,
     'بعد الصلاة': primarySoft,
-    'أذكار بعد الصلاة': primarySoft,
-    'wakeup': primaryLight,
-    'الاستيقاظ': primaryLight,
-    'أذكار الاستيقاظ': primaryLight,
-    'travel': accent,
-    'السفر': accent,
-    'أذكار السفر': accent,
-    'eating': tertiary,
-    'الطعام': tertiary,
-    'أذكار الطعام': tertiary,
-    'general': tertiary,
-    'عامة': tertiary,
-    'أذكار عامة': tertiary,
-    
-    'prayer_times': primaryLight,
-    'athkar': accentLight,
-    'quran': tertiaryLight,
-    'qibla': primary,
-    'tasbih': accent,
-    'dua': tertiary,
-    
+    'fajr': primaryLight,
+    'الفجر': primaryLight,
+    'dhuhr': accentLight,
+    'الظهر': accentLight,
+    'maghrib': tertiaryLight,
+    'المغرب': tertiaryLight,
     'verse': primaryLight,
     'آية': primaryLight,
     'hadith': accentLight,
     'حديث': accentLight,
-    'dua_quote': tertiaryLight,
-    'دعاء': tertiaryLight,
-    
     'success': successLight,
-    'error': error,
     'warning': warningLight,
     'info': infoLight,
   };
 
-  static const Map<String, Color> _categoryDarkColors = {
+  // خريطة الألوان الداكنة
+  static const Map<String, Color> _darkColorMap = {
     'morning': primaryDark,
     'الصباح': primaryDark,
-    'أذكار الصباح': primaryDark,
     'evening': accentDark,
     'المساء': accentDark,
-    'أذكار المساء': accentDark,
     'sleep': tertiaryDark,
     'النوم': tertiaryDark,
-    'أذكار النوم': tertiaryDark,
     'prayer': primary,
     'بعد الصلاة': primary,
-    'أذكار بعد الصلاة': primary,
-    'wakeup': primary,
-    'الاستيقاظ': primary,
-    'أذكار الاستيقاظ': primary,
-    'travel': accentDark,
-    'السفر': accentDark,
-    'أذكار السفر': accentDark,
-    'eating': tertiaryDark,
-    'الطعام': tertiaryDark,
-    'أذكار الطعام': tertiaryDark,
-    'general': tertiaryDark,
-    'عامة': tertiaryDark,
-    'أذكار عامة': tertiaryDark,
-    
-    'prayer_times': primaryDark,
-    'athkar': accentDark,
-    'quran': tertiaryDark,
-    'qibla': primaryDark,
-    'tasbih': accentDark,
-    'dua': tertiaryDark,
-    
+    'fajr': primaryDark,
+    'الفجر': primaryDark,
+    'dhuhr': accentDark,
+    'الظهر': accentDark,
+    'maghrib': tertiaryDark,
+    'المغرب': tertiaryDark,
     'verse': primaryDark,
     'آية': primaryDark,
     'hadith': accentDark,
     'حديث': accentDark,
-    'dua_quote': tertiaryDark,
-    'دعاء': tertiaryDark,
-    
     'success': primary,
     'error': error,
     'warning': warning,
     'info': info,
   };
 
-  // ===== التدرجات الأساسية =====
+  // ===== الدوال الأساسية الموحدة =====
+
+  /// الحصول على اللون الأساسي - دالة واحدة لكل شيء
+  static Color getColor(String key) {
+    final normalizedKey = _normalizeKey(key);
+    return _colorMap[normalizedKey] ?? primary;
+  }
+
+  /// الحصول على اللون الفاتح
+  static Color getLightColor(String key) {
+    final normalizedKey = _normalizeKey(key);
+    return _lightColorMap[normalizedKey] ?? primaryLight;
+  }
+
+  /// الحصول على اللون الداكن
+  static Color getDarkColor(String key) {
+    final normalizedKey = _normalizeKey(key);
+    return _darkColorMap[normalizedKey] ?? primaryDark;
+  }
+
+  // ===== Aliases للتوافق مع الكود الموجود =====
+  
+  /// للفئات
+  static Color getCategoryColor(String key) => getColor(key);
+  static Color getCategoryLightColor(String key) => getLightColor(key);
+  static Color getCategoryDarkColor(String key) => getDarkColor(key);
+
+  /// للصلوات
+  static Color getPrayerColor(String prayerName) => getColor(prayerName);
+
+  /// للاقتباسات
+  static Color getQuoteColor(String quoteType) => getColor(quoteType);
+
+  // ===== التدرجات اللونية =====
+
+  /// تدرج أساسي لأي مفتاح
+  static LinearGradient getGradient(String key) {
+    final primaryColor = getColor(key);
+    final darkColor = getDarkColor(key);
+    
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [primaryColor, darkColor],
+    );
+  }
+
+  // Aliases للتدرجات
+  static LinearGradient getCategoryGradient(String key) => getGradient(key);
+  static LinearGradient getPrayerGradient(String key) => getGradient(key);
+  static LinearGradient getQuoteGradient(String key) => getGradient(key);
+
+  /// تدرج فاتح
+  static LinearGradient getLightGradient(String key) {
+    final lightColor = getLightColor(key);
+    final primaryColor = getColor(key);
+    
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [lightColor, primaryColor],
+    );
+  }
+
+  /// تدرج ثلاثي
+  static LinearGradient getTripleGradient(String key) {
+    final lightColor = getLightColor(key);
+    final primaryColor = getColor(key);
+    final darkColor = getDarkColor(key);
+    
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [lightColor, primaryColor, darkColor],
+      stops: const [0.0, 0.5, 1.0],
+    );
+  }
+
+  // ===== التدرجات الأساسية الثابتة =====
   static const LinearGradient primaryGradient = LinearGradient(
     colors: [primaryLight, primary],
     begin: Alignment.topLeft,
@@ -234,182 +269,6 @@ class AppColorSystem {
     end: Alignment.bottomCenter,
     stops: [0.0, 0.6, 1.0],
   );
-
-  static const LinearGradient athkarBackgroundGradient = LinearGradient(
-    colors: [Color(0xFFF5F3EB), athkarBackground],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-  );
-
-  static const LinearGradient darkAthkarBackgroundGradient = LinearGradient(
-    colors: [darkSurface, darkCard],
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-  );
-
-  // ===== تدرجات الصلوات =====
-  static const LinearGradient fajrGradient = LinearGradient(
-    colors: [primary, primaryDark],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  static const LinearGradient dhuhrGradient = LinearGradient(
-    colors: [accentLight, accent],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  static const LinearGradient asrGradient = LinearGradient(
-    colors: [primarySoft, primaryLight],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  static const LinearGradient maghribGradient = LinearGradient(
-    colors: [tertiaryLight, tertiary],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  static const LinearGradient ishaGradient = LinearGradient(
-    colors: [Color(0xFF3A453A), Color(0xFF2D352D)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  static const LinearGradient sunriseGradient = LinearGradient(
-    colors: [warningLight, accentLight],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  // ===== الدوال الأساسية =====
-
-  /// الحصول على اللون الأساسي للفئة/النوع
-  static Color getCategoryColor(String key) {
-    final normalizedKey = _normalizeKey(key);
-    return _categoryColors[normalizedKey] ?? primary;
-  }
-
-  /// الحصول على اللون الفاتح للفئة/النوع
-  static Color getCategoryLightColor(String key) {
-    final normalizedKey = _normalizeKey(key);
-    return _categoryLightColors[normalizedKey] ?? primaryLight;
-  }
-
-  /// الحصول على اللون الداكن للفئة/النوع
-  static Color getCategoryDarkColor(String key) {
-    final normalizedKey = _normalizeKey(key);
-    return _categoryDarkColors[normalizedKey] ?? primaryDark;
-  }
-
-  /// الحصول على تدرج لوني للفئة/النوع
-  static LinearGradient getCategoryGradient(String key) {
-    final primaryColor = getCategoryColor(key);
-    final darkColor = getCategoryDarkColor(key);
-    
-    return LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [primaryColor, darkColor],
-    );
-  }
-
-  /// الحصول على تدرج لوني فاتح
-  static LinearGradient getCategoryLightGradient(String key) {
-    final primaryColor = getCategoryColor(key);
-    final lightColor = getCategoryLightColor(key);
-    
-    return LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [lightColor, primaryColor],
-    );
-  }
-
-  /// الحصول على تدرج لوني ثلاثي
-  static LinearGradient getCategoryTripleGradient(String key) {
-    final lightColor = getCategoryLightColor(key);
-    final primaryColor = getCategoryColor(key);
-    final darkColor = getCategoryDarkColor(key);
-    
-    return LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [lightColor, primaryColor, darkColor],
-      stops: const [0.0, 0.5, 1.0],
-    );
-  }
-
-  /// الحصول على تدرج لوني مع شفافية
-  static LinearGradient getCategoryGradientWithOpacity(String key, {double opacity = 0.9}) {
-    final primaryColor = getCategoryColor(key);
-    final darkColor = getCategoryDarkColor(key);
-    
-    return LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [
-        primaryColor.withValues(alpha: opacity),
-        darkColor.withValues(alpha: opacity * 0.8),
-      ],
-    );
-  }
-
-  // ===== دوال الصلوات =====
-
-  /// الحصول على لون الصلاة
-  static Color getPrayerColor(String prayerName) {
-    switch (prayerName.toLowerCase()) {
-      case 'fajr':
-      case 'الفجر':
-        return primary;
-      case 'dhuhr':
-      case 'الظهر':
-        return accent;
-      case 'asr':
-      case 'العصر':
-        return primaryLight;
-      case 'maghrib':
-      case 'المغرب':
-        return tertiary;
-      case 'isha':
-      case 'العشاء':
-        return const Color(0xFF3A453A);
-      case 'sunrise':
-      case 'الشروق':
-        return accentLight;
-      default:
-        return primary;
-    }
-  }
-
-  /// الحصول على تدرج الصلاة
-  static LinearGradient getPrayerGradient(String prayerName) {
-    switch (prayerName.toLowerCase()) {
-      case 'fajr':
-      case 'الفجر':
-        return fajrGradient;
-      case 'dhuhr':
-      case 'الظهر':
-        return dhuhrGradient;
-      case 'asr':
-      case 'العصر':
-        return asrGradient;
-      case 'maghrib':
-      case 'المغرب':
-        return maghribGradient;
-      case 'isha':
-      case 'العشاء':
-        return ishaGradient;
-      case 'sunrise':
-      case 'الشروق':
-        return sunriseGradient;
-      default:
-        return primaryGradient;
-    }
-  }
 
   // ===== دوال الألوان حسب السياق =====
 
@@ -464,13 +323,6 @@ class AppColorSystem {
         : backgroundGradient;
   }
 
-  /// الحصول على تدرج خلفية الأذكار
-  static LinearGradient getAthkarBackgroundGradient(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark
-        ? darkAthkarBackgroundGradient
-        : athkarBackgroundGradient;
-  }
-
   /// الحصول على تدرج حسب الوقت
   static LinearGradient getTimeBasedGradient() {
     final hour = DateTime.now().hour;
@@ -482,7 +334,7 @@ class AppColorSystem {
         end: Alignment.bottomRight,
       );
     } else if (hour < 8) {
-      return fajrGradient;
+      return getGradient('fajr');
     } else if (hour < 12) {
       return const LinearGradient(
         colors: [primaryLight, primarySoft],
@@ -490,13 +342,13 @@ class AppColorSystem {
         end: Alignment.bottomRight,
       );
     } else if (hour < 15) {
-      return dhuhrGradient;
+      return getGradient('dhuhr');
     } else if (hour < 17) {
-      return asrGradient;
+      return getGradient('asr');
     } else if (hour < 20) {
-      return maghribGradient;
+      return getGradient('maghrib');
     } else {
-      return ishaGradient;
+      return getGradient('isha');
     }
   }
 
@@ -510,19 +362,12 @@ class AppColorSystem {
   /// التحقق من وجود مفتاح
   static bool hasColor(String key) {
     final normalizedKey = _normalizeKey(key);
-    return _categoryColors.containsKey(normalizedKey);
+    return _colorMap.containsKey(normalizedKey);
   }
 
   /// الحصول على جميع المفاتيح المتاحة
   static List<String> getAllKeys() {
-    return _categoryColors.keys.toList();
-  }
-
-  /// الحصول على ألوان عشوائية للتجربة
-  static Color getRandomColor() {
-    final keys = _categoryColors.keys.toList();
-    final randomKey = keys[DateTime.now().millisecondsSinceEpoch % keys.length];
-    return _categoryColors[randomKey]!;
+    return _colorMap.keys.toList();
   }
 
   /// إنشاء تدرج مخصص
@@ -541,21 +386,24 @@ class AppColorSystem {
   }
 }
 
-/// Extension لتسهيل الاستخدام
+/// Extension موحد للاستخدام السهل
 extension AppColorSystemExtension on String {
   /// الحصول على اللون الأساسي مباشرة من النص
+  Color get color => AppColorSystem.getColor(this);
+  Color get lightColor => AppColorSystem.getLightColor(this);
+  Color get darkColor => AppColorSystem.getDarkColor(this);
+  
+  /// للتوافق مع الكود الموجود
   Color get categoryColor => AppColorSystem.getCategoryColor(this);
+  Color get prayerColor => AppColorSystem.getPrayerColor(this);
+  Color get quoteColor => AppColorSystem.getQuoteColor(this);
   
-  /// الحصول على اللون الفاتح
-  Color get categoryLightColor => AppColorSystem.getCategoryLightColor(this);
-  
-  /// الحصول على اللون الداكن  
-  Color get categoryDarkColor => AppColorSystem.getCategoryDarkColor(this);
-  
-  /// الحصول على التدرج اللوني
+  /// التدرجات
+  LinearGradient get gradient => AppColorSystem.getGradient(this);
   LinearGradient get categoryGradient => AppColorSystem.getCategoryGradient(this);
+  LinearGradient get prayerGradient => AppColorSystem.getPrayerGradient(this);
   
   /// الحصول على لون الظل
-  Color categoryShadowColor([double opacity = 0.3]) => 
-      AppColorSystem.getCategoryColor(this).withValues(alpha: opacity);
+  Color colorShadow([double opacity = 0.3]) => 
+      AppColorSystem.getColor(this).withValues(alpha: opacity);
 }

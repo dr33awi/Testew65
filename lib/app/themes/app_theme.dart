@@ -1,4 +1,4 @@
-// lib/app/themes/app_theme.dart - إصلاح DialogTheme
+// lib/app/themes/app_theme.dart - النسخة المُحدثة والمُنظفة
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -7,7 +7,7 @@ import 'theme_constants.dart';
 import 'text_styles.dart';
 import 'core/systems/app_color_system.dart';
 
-// ===== تصدير كل شيء للاستخدام الخارجي =====
+// ===== تصدير كل شيء للاستخدام الخارجي - مُنظف =====
 
 // الأساسيات - النظام الجديد
 export 'theme_constants.dart';
@@ -22,6 +22,9 @@ export 'core/systems/app_size_system.dart';
 export 'core/systems/app_shadow_system.dart';
 export 'core/systems/app_container_builder.dart';
 export 'core/systems/glass_effect.dart';
+
+// المساعدين - مُبسط
+export 'core/helpers/category_helper.dart'; // الوحيد المتبقي
 
 // المكونات الأساسية  
 export 'widgets/core/app_button.dart';
@@ -57,7 +60,7 @@ export 'package:flutter_staggered_animations/flutter_staggered_animations.dart'
         ScaleAnimation,
         FlipAnimation;
 
-/// نظام الثيم الموحد للتطبيق - يستخدم AppColorSystem
+/// نظام الثيم الموحد للتطبيق - مُحسن ومُبسط
 class AppTheme {
   AppTheme._();
 
@@ -85,7 +88,7 @@ class AppTheme {
     dividerColor: AppColorSystem.darkDivider,
   );
 
-  /// بناء الثيم - محدث لاستخدام AppColorSystem والألوان الجديدة
+  /// بناء الثيم - محدث ومُبسط
   static ThemeData _buildTheme({
     required Brightness brightness,
     required Color primaryColor,
@@ -217,9 +220,8 @@ class AppTheme {
         circularTrackColor: dividerColor.withValues(alpha: ThemeConstants.opacity50),
       ),
 
-      // ===== إضافات جديدة للمكونات =====
+      // ===== المكونات الإضافية =====
       
-      // SnackBar Theme - محدث
       snackBarTheme: SnackBarThemeData(
         backgroundColor: isDark ? AppColorSystem.darkCard : AppColorSystem.lightCard,
         contentTextStyle: AppTextStyles.body2.copyWith(color: textPrimaryColor),
@@ -230,7 +232,6 @@ class AppTheme {
         elevation: ThemeConstants.elevation4,
       ),
 
-      // Dialog Theme - تم إصلاح النوع
       dialogTheme: DialogThemeData(
         backgroundColor: cardColor,
         shape: RoundedRectangleBorder(
@@ -241,7 +242,6 @@ class AppTheme {
         contentTextStyle: AppTextStyles.body1.copyWith(color: textSecondaryColor),
       ),
 
-      // Bottom Sheet Theme - جديد
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: cardColor,
         shape: const RoundedRectangleBorder(
@@ -253,7 +253,6 @@ class AppTheme {
         elevation: ThemeConstants.elevation16,
       ),
 
-      // FloatingActionButton Theme - محدث
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primaryColor,
         foregroundColor: onPrimaryColor,
@@ -266,7 +265,6 @@ class AppTheme {
         ),
       ),
 
-      // Navigation Bar Theme - جديد
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: cardColor,
         indicatorColor: primaryColor.withValues(alpha: ThemeConstants.opacity20),
@@ -283,7 +281,6 @@ class AppTheme {
         elevation: ThemeConstants.elevation4,
       ),
 
-      // Chip Theme - جديد
       chipTheme: ChipThemeData(
         backgroundColor: surfaceColor,
         selectedColor: primaryColor.withValues(alpha: ThemeConstants.opacity20),
@@ -309,13 +306,12 @@ class AppTheme {
         : Colors.black87;
   }
 
-  // ===== دوال مساعدة إضافية =====
+  // ===== دوال مساعدة مُبسطة =====
 
   /// الحصول على ثيم مخصص بلون أساسي مختلف
   static ThemeData getCustomTheme({
     required Brightness brightness,
     required Color primaryColor,
-    Color? accentColor,
     Color? backgroundColor,
   }) {
     final bool isDark = brightness == Brightness.dark;
@@ -341,18 +337,6 @@ class AppTheme {
       dividerColor: isDark 
           ? AppColorSystem.darkDivider 
           : AppColorSystem.lightDivider,
-    );
-  }
-
-  /// الحصول على ثيم مع تدرج خلفية
-  static ThemeData getGradientTheme({
-    required Brightness brightness,
-    required LinearGradient backgroundGradient,
-  }) {
-    final baseTheme = brightness == Brightness.dark ? darkTheme : lightTheme;
-    
-    return baseTheme.copyWith(
-      scaffoldBackgroundColor: Colors.transparent,
     );
   }
 

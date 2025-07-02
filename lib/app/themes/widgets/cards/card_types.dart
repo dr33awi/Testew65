@@ -1,7 +1,7 @@
-// lib/app/themes/widgets/cards/card_types.dart - النسخة المبسطة
+// lib/app/themes/widgets/cards/card_types.dart - بنفس الأسماء الأصلية تماماً
 import 'package:flutter/material.dart';
 
-/// أنواع البطاقات - مبسطة
+/// أنواع البطاقات - بنفس الأسماء الأصلية
 enum CardType {
   normal,   // بطاقة عادية
   athkar,   // بطاقة أذكار
@@ -9,14 +9,14 @@ enum CardType {
   info,     // بطاقة معلومات
 }
 
-/// أنماط البطاقات - مبسطة
+/// أنماط البطاقات - بنفس الأسماء الأصلية
 enum CardStyle {
   normal,        // عادي
   gradient,      // متدرج
   glassmorphism, // زجاجي
 }
 
-/// إجراءات البطاقة
+/// إجراءات البطاقة - بنفس الاسم الأصلي
 class CardAction {
   final IconData icon;
   final String label;
@@ -33,7 +33,7 @@ class CardAction {
   });
 }
 
-/// خصائص البطاقة - مبسطة
+/// خصائص البطاقة - بنفس الاسم الأصلي CardProperties
 class CardProperties {
   // النوع والأسلوب
   final CardType type;

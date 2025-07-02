@@ -1,11 +1,13 @@
-// lib/app/themes/widgets/cards/card_contents.dart - إصلاح استدعاءات البناء السياقي
+// lib/app/themes/widgets/cards/card_contents.dart - النسخة المُنظفة والمُحسنة
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../theme_constants.dart';
-import '../../core/systems/app_color_system.dart';
+import '../../core/theme_extensions.dart';
 import 'card_types.dart';
 
-/// بناء محتويات البطاقات - مبسط
+/// بناء محتويات البطاقات - مُنظف ومُحسن
+/// 
+/// يستخدم النظام الموحد للألوان والـ Extensions الجديدة
 class CardContentBuilder {
   CardContentBuilder._();
 
@@ -63,13 +65,13 @@ class CardContentBuilder {
           Icon(
             Icons.info_outline,
             size: 48,
-            color: _getTextColor(context, CardStyle.normal).withValues(alpha: 0.5),
+            color: context.textSecondaryColor.withValues(alpha: 0.5), // ✅ استخدام Extension
           ),
           const SizedBox(height: ThemeConstants.space2),
           Text(
             message,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: _getTextColor(context, CardStyle.normal),
+            style: context.textTheme.bodyMedium?.copyWith(
+              color: context.textSecondaryColor, // ✅ استخدام Extension
             ),
             textAlign: TextAlign.center,
           ),
@@ -78,8 +80,8 @@ class CardContentBuilder {
     );
   }
 
-  /// الحصول على لون النص المناسب
-  static Color _getTextColor(BuildContext context, CardStyle style, {bool isSecondary = false}) {
+  /// الحصول على لون النص المناسب - مُحسن
+  static Color getTextColor(BuildContext context, CardStyle style, {bool isSecondary = false}) {
     if (style == CardStyle.gradient || style == CardStyle.glassmorphism) {
       return isSecondary 
           ? Colors.white.withValues(alpha: 0.85)
@@ -87,12 +89,12 @@ class CardContentBuilder {
     }
     
     return isSecondary 
-        ? AppColorSystem.getTextSecondary(context)
-        : AppColorSystem.getTextPrimary(context);
+        ? context.textSecondaryColor // ✅ استخدام Extension
+        : context.textPrimaryColor;  // ✅ استخدام Extension
   }
 }
 
-/// محتوى الأذكار
+/// محتوى الأذكار - مُحسن
 class AthkarContent {
   static Widget build({
     required CardProperties properties,
@@ -148,7 +150,7 @@ class AthkarContent {
             ),
             child: Text(
               '${properties.currentCount}/${properties.totalCount}',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              style: context.textTheme.labelMedium?.copyWith( // ✅ استخدام Extension
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 shadows: [
@@ -208,7 +210,7 @@ class AthkarContent {
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+        style: context.textTheme.bodyLarge?.copyWith( // ✅ استخدام Extension
           color: Colors.white,
           fontSize: 20,
           fontWeight: ThemeConstants.semiBold,
@@ -244,7 +246,7 @@ class AthkarContent {
         ),
         child: Text(
           properties.source!,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+          style: context.textTheme.labelLarge?.copyWith( // ✅ استخدام Extension
             color: Colors.white,
             fontWeight: ThemeConstants.bold,
             shadows: [
@@ -285,7 +287,7 @@ class AthkarContent {
               children: [
                 Text(
                   'الفضل',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  style: context.textTheme.labelSmall?.copyWith( // ✅ استخدام Extension
                     color: Colors.white.withValues(alpha: 0.9),
                     fontWeight: FontWeight.bold,
                   ),
@@ -293,7 +295,7 @@ class AthkarContent {
                 const SizedBox(height: 4),
                 Text(
                   properties.fadl!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  style: context.textTheme.bodySmall?.copyWith( // ✅ استخدام Extension
                     color: Colors.white.withValues(alpha: 0.8),
                     height: 1.4,
                   ),
@@ -307,7 +309,7 @@ class AthkarContent {
   }
 }
 
-/// محتوى الاقتباسات
+/// محتوى الاقتباسات - مُحسن
 class QuoteContent {
   static Widget build({
     required CardProperties properties,
@@ -333,7 +335,7 @@ class QuoteContent {
             ),
             child: Text(
               properties.subtitle!,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              style: context.textTheme.labelMedium?.copyWith( // ✅ استخدام Extension
                 color: Colors.white,
                 fontWeight: ThemeConstants.semiBold,
               ),
@@ -351,7 +353,7 @@ class QuoteContent {
           child: Text(
             properties.content ?? properties.title ?? '',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+            style: context.textTheme.bodyLarge?.copyWith( // ✅ استخدام Extension
               color: Colors.white,
               fontSize: 18,
               height: 1.8,
@@ -368,7 +370,7 @@ class QuoteContent {
   }
 }
 
-/// محتوى المعلومات
+/// محتوى المعلومات - مُحسن
 class InfoContent {
   static Widget build({
     required CardProperties properties,
@@ -385,12 +387,12 @@ class InfoContent {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: (properties.primaryColor ?? AppColorSystem.primary).withValues(alpha: 0.1),
+              color: (properties.primaryColor ?? context.primaryColor).withValues(alpha: 0.1), // ✅ استخدام Extension
               borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
             ),
             child: Icon(
               properties.icon,
-              color: properties.primaryColor ?? AppColorSystem.primary,
+              color: properties.primaryColor ?? context.primaryColor, // ✅ استخدام Extension
               size: ThemeConstants.iconLg,
             ),
           ),
@@ -404,16 +406,17 @@ class InfoContent {
               if (properties.title != null)
                 Text(
                   properties.title!,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: context.textTheme.titleMedium?.copyWith( // ✅ استخدام Extension
                     fontWeight: ThemeConstants.semiBold,
+                    color: CardContentBuilder.getTextColor(context, properties.style), // ✅ استخدام الدالة المُحسنة
                   ),
                 ),
               if (properties.subtitle != null) ...[
                 const SizedBox(height: ThemeConstants.space1),
                 Text(
                   properties.subtitle!,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColorSystem.getTextSecondary(context),
+                  style: context.textTheme.bodyMedium?.copyWith( // ✅ استخدام Extension
+                    color: CardContentBuilder.getTextColor(context, properties.style, isSecondary: true), // ✅ استخدام الدالة المُحسنة
                   ),
                 ),
               ],
@@ -427,7 +430,7 @@ class InfoContent {
   }
 }
 
-/// محتوى عادي
+/// محتوى عادي - مُحسن
 class NormalContent {
   static Widget build({
     required CardProperties properties,
@@ -436,6 +439,9 @@ class NormalContent {
     if (!properties.hasContent) {
       return CardContentBuilder.buildFallbackContent(context, 'محتوى البطاقة');
     }
+
+    final textColor = CardContentBuilder.getTextColor(context, properties.style);
+    final isGradientStyle = properties.style == CardStyle.gradient || properties.style == CardStyle.glassmorphism;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,22 +454,22 @@ class NormalContent {
             margin: const EdgeInsets.only(bottom: ThemeConstants.space4),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.25),
+              color: Colors.white.withValues(alpha: isGradientStyle ? 0.25 : 0.1),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.4),
+                color: Colors.white.withValues(alpha: isGradientStyle ? 0.4 : 0.2),
                 width: 2,
               ),
-              boxShadow: [
+              boxShadow: isGradientStyle ? [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.15),
                   blurRadius: 12,
                   offset: const Offset(0, 6),
                 ),
-              ],
+              ] : null,
             ),
             child: Icon(
               properties.icon,
-              color: Colors.white,
+              color: isGradientStyle ? Colors.white : (properties.primaryColor ?? context.primaryColor), // ✅ استخدام Extension
               size: 28,
             ),
           ),
@@ -473,8 +479,8 @@ class NormalContent {
         if (properties.title != null)
           Text(
             properties.title!,
-            style: CardContentBuilder._getTextColor(context, properties.style) == Colors.white
-                ? Theme.of(context).textTheme.titleLarge?.copyWith(
+            style: isGradientStyle
+                ? context.textTheme.titleLarge?.copyWith( // ✅ استخدام Extension
                     color: Colors.white,
                     fontWeight: ThemeConstants.bold,
                     fontSize: 18,
@@ -488,8 +494,8 @@ class NormalContent {
                       ),
                     ],
                   )
-                : Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: CardContentBuilder._getTextColor(context, properties.style),
+                : context.textTheme.titleLarge?.copyWith( // ✅ استخدام Extension
+                    color: textColor,
                     fontWeight: ThemeConstants.semiBold,
                   ),
             maxLines: 2,
@@ -500,8 +506,8 @@ class NormalContent {
           const SizedBox(height: ThemeConstants.space1),
           Text(
             properties.subtitle!,
-            style: CardContentBuilder._getTextColor(context, properties.style) == Colors.white
-                ? Theme.of(context).textTheme.bodyMedium?.copyWith(
+            style: isGradientStyle
+                ? context.textTheme.bodyMedium?.copyWith( // ✅ استخدام Extension
                     color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 13,
                     shadows: [
@@ -512,8 +518,8 @@ class NormalContent {
                       ),
                     ],
                   )
-                : Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: CardContentBuilder._getTextColor(context, properties.style, isSecondary: true),
+                : context.textTheme.bodyMedium?.copyWith( // ✅ استخدام Extension
+                    color: CardContentBuilder.getTextColor(context, properties.style, isSecondary: true),
                   ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -524,8 +530,8 @@ class NormalContent {
           const SizedBox(height: ThemeConstants.space3),
           Text(
             properties.content!,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: CardContentBuilder._getTextColor(context, properties.style),
+            style: context.textTheme.bodyLarge?.copyWith( // ✅ استخدام Extension
+              color: textColor,
             ),
           ),
         ],
@@ -538,12 +544,12 @@ class NormalContent {
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withValues(alpha: isGradientStyle ? 0.2 : 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.arrow_forward_ios_rounded,
-                  color: Colors.white,
+                  color: isGradientStyle ? Colors.white : context.primaryColor, // ✅ استخدام Extension
                   size: 14,
                 ),
               ),

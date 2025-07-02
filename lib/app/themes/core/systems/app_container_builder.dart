@@ -1,4 +1,4 @@
-// lib/app/themes/core/systems/app_container_builder.dart - إصلاح استدعاءات AppColorSystem
+// lib/app/themes/core/systems/app_container_builder.dart - النسخة المُنظفة والمُحسنة
 import 'package:flutter/material.dart';
 import 'package:athkar_app/app/themes/theme_constants.dart';
 import 'app_color_system.dart';
@@ -6,7 +6,7 @@ import 'app_size_system.dart';
 import 'app_shadow_system.dart';
 import 'glass_effect.dart';
 
-/// نظام بناء الحاويات الموحد
+/// نظام بناء الحاويات الموحد - مُنظف ومُحسن
 /// يوفر طرق سهلة ومتسقة لإنشاء الحاويات المختلفة
 class AppContainerBuilder {
   AppContainerBuilder._();
@@ -161,14 +161,14 @@ class AppContainerBuilder {
   }) {
     final cardSizes = size.cardSizes;
     final effectiveColor = backgroundColor ?? 
-        (colorKey != null ? AppColorSystem.getCategoryColor(colorKey) : null);
+        (colorKey != null ? AppColorSystem.getColor(colorKey) : null);
     
     if (withGlass) {
       return glassGradient(
         colors: colorKey != null 
             ? [
-                AppColorSystem.getCategoryColor(colorKey).withValues(alpha: 0.9),
-                AppColorSystem.getCategoryDarkColor(colorKey).withValues(alpha: 0.7),
+                AppColorSystem.getColor(colorKey).withValues(alpha: 0.9),
+                AppColorSystem.getDarkColor(colorKey).withValues(alpha: 0.7),
               ]
             : [
                 Colors.white.withValues(alpha: 0.9),
@@ -187,8 +187,8 @@ class AppContainerBuilder {
       return gradient(
         colors: colorKey != null 
             ? [
-                AppColorSystem.getCategoryColor(colorKey),
-                AppColorSystem.getCategoryDarkColor(colorKey),
+                AppColorSystem.getColor(colorKey),
+                AppColorSystem.getDarkColor(colorKey),
               ]
             : [effectiveColor, effectiveColor],
         padding: cardSizes.padding,
@@ -224,7 +224,7 @@ class AppContainerBuilder {
   }) {
     final buttonSizes = size.buttonSizes;
     final effectiveColor = backgroundColor ?? 
-        (colorKey != null ? AppColorSystem.getCategoryColor(colorKey) : null);
+        (colorKey != null ? AppColorSystem.getColor(colorKey) : null);
     
     Widget container;
     
@@ -245,8 +245,8 @@ class AppContainerBuilder {
       container = gradient(
         colors: colorKey != null 
             ? [
-                AppColorSystem.getCategoryColor(colorKey),
-                AppColorSystem.getCategoryDarkColor(colorKey),
+                AppColorSystem.getColor(colorKey),
+                AppColorSystem.getDarkColor(colorKey),
               ]
             : [effectiveColor, effectiveColor],
         padding: buttonSizes.padding,
@@ -297,8 +297,8 @@ class AppContainerBuilder {
         ),
         child: glassGradient(
           colors: [
-            AppColorSystem.getCategoryColor(colorKey).withValues(alpha: 0.9),
-            AppColorSystem.getCategoryDarkColor(colorKey).withValues(alpha: 0.7),
+            AppColorSystem.getColor(colorKey).withValues(alpha: 0.9),
+            AppColorSystem.getDarkColor(colorKey).withValues(alpha: 0.7),
           ],
           padding: dialogSizes.padding,
           margin: margin,
@@ -412,13 +412,13 @@ class AppContainerBuilder {
     bool withGlass = false,
     AlignmentGeometry? alignment,
   }) {
-    final color = AppColorSystem.getCategoryColor(type);
+    final color = AppColorSystem.getColor(type);
     
     if (withGlass) {
       return glassGradient(
         colors: [
           color.withValues(alpha: 0.9),
-          _darkenColor(color).withValues(alpha: 0.7),
+          color.darken(0.1).withValues(alpha: 0.7),
         ],
         padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
         margin: margin,
@@ -430,7 +430,7 @@ class AppContainerBuilder {
     }
     
     return gradient(
-      colors: [color, _darkenColor(color)],
+      colors: [color, color.darken(0.1)],
       padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
       margin: margin,
       borderRadius: borderRadius ?? ThemeConstants.radiusLg,
@@ -484,8 +484,8 @@ class AppContainerBuilder {
           colors: gradientColors ?? 
               (colorKey != null 
                   ? [
-                      AppColorSystem.getCategoryColor(colorKey),
-                      AppColorSystem.getCategoryDarkColor(colorKey),
+                      AppColorSystem.getColor(colorKey),
+                      AppColorSystem.getDarkColor(colorKey),
                     ]
                   : [Colors.grey, Colors.grey.shade700]),
           padding: padding,
@@ -518,8 +518,8 @@ class AppContainerBuilder {
           colors: gradientColors ?? 
               (colorKey != null 
                   ? [
-                      AppColorSystem.getCategoryColor(colorKey).withValues(alpha: 0.9),
-                      AppColorSystem.getCategoryDarkColor(colorKey).withValues(alpha: 0.7),
+                      AppColorSystem.getColor(colorKey).withValues(alpha: 0.9),
+                      AppColorSystem.getDarkColor(colorKey).withValues(alpha: 0.7),
                     ]
                   : [
                       Colors.white.withValues(alpha: 0.9),
@@ -546,13 +546,70 @@ class AppContainerBuilder {
     return container;
   }
 
-  // ===== دوال مساعدة داخلية =====
-  
-  /// دالة مساعدة لتغميق اللون
-  static Color _darkenColor(Color color, [double amount = 0.1]) {
-    final hsl = HSLColor.fromColor(color);
-    final lightness = (hsl.lightness - amount).clamp(0.0, 1.0);
-    return hsl.withLightness(lightness).toColor();
+  // ===== حاويات خاصة للأذكار والمحتوى الإسلامي =====
+
+  /// حاوية لعرض الأذكار
+  static Widget athkar({
+    required Widget child,
+    String categoryType = 'morning',
+    bool withGlass = true,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+  }) {
+    if (withGlass) {
+      return glassGradient(
+        colors: [
+          AppColorSystem.getColor(categoryType).withValues(alpha: 0.95),
+          AppColorSystem.getDarkColor(categoryType).withValues(alpha: 0.85),
+          AppColorSystem.getDarkColor(categoryType).withValues(alpha: 0.75),
+        ],
+        padding: padding ?? const EdgeInsets.all(ThemeConstants.space5),
+        margin: margin,
+        borderRadius: ThemeConstants.radiusXl,
+        shadows: AppShadowSystem.colored(
+          color: AppColorSystem.getColor(categoryType),
+          intensity: ShadowIntensity.medium,
+        ),
+        child: child,
+      );
+    }
+
+    return gradient(
+      colors: [
+        AppColorSystem.getColor(categoryType),
+        AppColorSystem.getDarkColor(categoryType),
+      ],
+      padding: padding ?? const EdgeInsets.all(ThemeConstants.space5),
+      margin: margin,
+      borderRadius: ThemeConstants.radiusXl,
+      shadows: AppShadowSystem.colored(
+        color: AppColorSystem.getColor(categoryType),
+      ),
+      child: child,
+    );
+  }
+
+  /// حاوية لعرض آية أو حديث
+  static Widget quote({
+    required Widget child,
+    String quoteType = 'verse',
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+  }) {
+    return glassGradient(
+      colors: [
+        AppColorSystem.getColor(quoteType).withValues(alpha: 0.9),
+        AppColorSystem.getDarkColor(quoteType).withValues(alpha: 0.7),
+      ],
+      padding: padding ?? const EdgeInsets.all(ThemeConstants.space6),
+      margin: margin,
+      borderRadius: ThemeConstants.radius2xl,
+      shadows: AppShadowSystem.colored(
+        color: AppColorSystem.getColor(quoteType),
+        intensity: ShadowIntensity.strong,
+      ),
+      child: child,
+    );
   }
 }
 
@@ -564,7 +621,7 @@ enum ContainerStyle {
   glassGradient, // حاوية زجاجية مع تدرج
 }
 
-/// Extension لتسهيل الاستخدام
+/// Extension لتسهيل الاستخدام - مُحسن
 extension AppContainerExtension on Widget {
   /// تطبيق حاوية أساسية
   Widget container({
@@ -598,6 +655,28 @@ extension AppContainerExtension on Widget {
     return AppContainerBuilder.gradient(
       child: this,
       colors: colors,
+      padding: padding,
+      margin: margin,
+      borderRadius: borderRadius,
+    ).let((container) => onTap != null 
+        ? GestureDetector(onTap: onTap, child: container)
+        : container);
+  }
+  
+  /// تطبيق حاوية مع تدرج بناءً على مفتاح لوني
+  Widget categoryContainer({
+    required String colorKey,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+    double? borderRadius,
+    VoidCallback? onTap,
+  }) {
+    return AppContainerBuilder.gradient(
+      child: this,
+      colors: [
+        AppColorSystem.getColor(colorKey),
+        AppColorSystem.getDarkColor(colorKey),
+      ],
       padding: padding,
       margin: margin,
       borderRadius: borderRadius,
@@ -643,9 +722,48 @@ extension AppContainerExtension on Widget {
         ? GestureDetector(onTap: onTap, child: container)
         : container);
   }
+
+  /// تطبيق حاوية للأذكار
+  Widget athkarContainer({
+    String categoryType = 'morning',
+    bool withGlass = true,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+  }) {
+    return AppContainerBuilder.athkar(
+      child: this,
+      categoryType: categoryType,
+      withGlass: withGlass,
+      padding: padding,
+      margin: margin,
+    );
+  }
+
+  /// تطبيق حاوية للاقتباسات
+  Widget quoteContainer({
+    String quoteType = 'verse',
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+  }) {
+    return AppContainerBuilder.quote(
+      child: this,
+      quoteType: quoteType,
+      padding: padding,
+      margin: margin,
+    );
+  }
 }
 
 /// Extension مساعدة
 extension WidgetExtension on Widget {
   T let<T>(T Function(Widget) operation) => operation(this);
+}
+
+/// Extension للألوان - محلي لتجنب التضارب
+extension _ColorHelper on Color {
+  Color darken([double amount = 0.1]) {
+    final hsl = HSLColor.fromColor(this);
+    final lightness = (hsl.lightness - amount).clamp(0.0, 1.0);
+    return hsl.withLightness(lightness).toColor();
+  }
 }
