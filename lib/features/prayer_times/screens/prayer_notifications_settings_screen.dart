@@ -1,4 +1,4 @@
-// lib/features/prayer_times/screens/prayer_notifications_settings_screen.dart - الإصلاح النهائي
+// lib/features/prayer_times/screens/prayer_notifications_settings_screen.dart - مُصحح
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -51,6 +51,8 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
   }
 
   Future<void> _saveSettings() async {
+    if (!mounted) return; // ✅ فحص mounted أولاً
+    
     setState(() => _isSaving = true);
     
     try {
@@ -61,12 +63,10 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
         'enabled_prayers_count': _notificationSettings.enabledPrayers.values.where((v) => v).length,
       });
       
-      if (!mounted) return;
+      if (!mounted) return; // ✅ فحص mounted قبل استخدام context
       
-      AppSnackBar.showSuccess(
-        context: context,
-        message: 'تم حفظ إعدادات الإشعارات بنجاح',
-      );
+      // ✅ استخدام النظام الموحد للإشعارات
+      context.showSuccessSnackBar('تم حفظ إعدادات الإشعارات بنجاح');
       
       setState(() {
         _hasChanges = false;
@@ -77,14 +77,11 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
         error: e,
       );
       
-      if (!mounted) return;
+      if (!mounted) return; // ✅ فحص mounted قبل استخدام context
       
-      AppSnackBar.showError(
-        context: context,
-        message: 'فشل حفظ إعدادات الإشعارات',
-      );
+      context.showErrorSnackBar('فشل حفظ إعدادات الإشعارات');
     } finally {
-      if (mounted) {
+      if (mounted) { // ✅ فحص mounted قبل setState
         setState(() => _isSaving = false);
       }
     }
@@ -93,23 +90,18 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColorSystem.getBackground(context),
+      backgroundColor: context.backgroundColor,
+      // ✅ استخدام CustomAppBar الموحد
       appBar: CustomAppBar.simple(
         title: 'إعدادات إشعارات الصلوات',
-        onBack: () {
-          if (_hasChanges) {
-            _showUnsavedChangesDialog();
-          } else {
-            Navigator.pop(context);
-          }
-        },
+        onBack: () => _handleBackPress(),
         actions: [
           if (_hasChanges && !_isSaving)
             AppBarAction(
               icon: AppIconsSystem.save,
-              onPressed: _saveSettings,
+              onPressed: () => _saveSettings(), // ✅ wrapper function
               tooltip: 'حفظ التغييرات',
-              color: AppColorSystem.primary,
+              color: context.primaryColor,
             ),
         ],
       ),
@@ -138,63 +130,25 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
         ),
         
         // مساحة في الأسفل
-        const SliverToBoxAdapter(
-          child: SizedBox(height: ThemeConstants.space8),
+        SliverToBoxAdapter(
+          child: ThemeConstants.space8.h,
         ),
       ],
     );
   }
 
   Widget _buildMainSettingsSection() {
-    return Container(
-      margin: const EdgeInsets.all(ThemeConstants.space4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-        color: AppColorSystem.getCard(context),
-        boxShadow: AppShadowSystem.card,
-      ),
+    // ✅ استخدام AppCard الموحد
+    return AppCard.custom(
+      margin: ThemeConstants.space4.all,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // عنوان القسم
-          Padding(
-            padding: const EdgeInsets.all(ThemeConstants.space4),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(ThemeConstants.space2),
-                  decoration: BoxDecoration(
-                    color: AppColorSystem.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                  ),
-                  child: Icon(
-                    AppIconsSystem.notifications,
-                    color: AppColorSystem.primary,
-                    size: ThemeConstants.iconMd,
-                  ),
-                ),
-                const SizedBox(width: ThemeConstants.space3),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'إعدادات الإشعارات العامة',
-                        style: AppTextStyles.h5.copyWith(
-                          color: AppColorSystem.getTextPrimary(context),
-                        ),
-                      ),
-                      Text(
-                        'تفعيل أو تعطيل الإشعارات لجميع الصلوات',
-                        style: AppTextStyles.body2.copyWith(
-                          color: AppColorSystem.getTextSecondary(context),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          _buildSectionHeader(
+            'إعدادات الإشعارات العامة',
+            'تفعيل أو تعطيل الإشعارات لجميع الصلوات',
+            AppIconsSystem.notifications,
           ),
           
           const Divider(),
@@ -204,13 +158,13 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
             title: Text(
               'تفعيل الإشعارات',
               style: AppTextStyles.label1.copyWith(
-                color: AppColorSystem.getTextPrimary(context),
+                color: context.textPrimaryColor,
               ),
             ),
             subtitle: Text(
               'تلقي تنبيهات أوقات الصلاة',
               style: AppTextStyles.body2.copyWith(
-                color: AppColorSystem.getTextSecondary(context),
+                color: context.textSecondaryColor,
               ),
             ),
             value: _notificationSettings.enabled,
@@ -222,7 +176,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 _markAsChanged();
               });
             },
-            activeThumbColor: AppColorSystem.primary,
+            activeThumbColor: context.primaryColor,
           ),
           
           // الاهتزاز
@@ -230,13 +184,13 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
             title: Text(
               'الاهتزاز',
               style: AppTextStyles.label1.copyWith(
-                color: AppColorSystem.getTextPrimary(context),
+                color: context.textPrimaryColor,
               ),
             ),
             subtitle: Text(
               'اهتزاز الجهاز عند التنبيه',
               style: AppTextStyles.body2.copyWith(
-                color: AppColorSystem.getTextSecondary(context),
+                color: context.textSecondaryColor,
               ),
             ),
             value: _notificationSettings.vibrate,
@@ -250,10 +204,51 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                     });
                   }
                 : null,
-            activeThumbColor: AppColorSystem.primary,
+            activeThumbColor: context.primaryColor,
           ),
           
-          const SizedBox(height: ThemeConstants.space2),
+          ThemeConstants.space2.h,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, String subtitle, IconData icon) {
+    return Padding(
+      padding: ThemeConstants.space4.all,
+      child: Row(
+        children: [
+          // ✅ استخدام AppContainerBuilder الموحد
+          AppContainerBuilder.basic(
+            child: Icon(
+              icon,
+              color: context.primaryColor,
+              size: ThemeConstants.iconMd,
+            ),
+            backgroundColor: context.primaryColor.withOpacitySafe(0.1),
+            borderRadius: ThemeConstants.radiusMd,
+            padding: ThemeConstants.space2.all,
+          ),
+          ThemeConstants.space3.w,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.h5.copyWith(
+                    color: context.textPrimaryColor,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: AppTextStyles.body2.copyWith(
+                    color: context.textSecondaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -268,55 +263,17 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
       (PrayerType.isha, 'العشاء', Icons.bedtime),
     ];
     
-    return Container(
-      margin: const EdgeInsets.all(ThemeConstants.space4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-        color: AppColorSystem.getCard(context),
-        boxShadow: AppShadowSystem.card,
-      ),
+    // ✅ استخدام AppCard الموحد
+    return AppCard.custom(
+      margin: ThemeConstants.space4.all,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // عنوان القسم
-          Padding(
-            padding: const EdgeInsets.all(ThemeConstants.space4),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(ThemeConstants.space2),
-                  decoration: BoxDecoration(
-                    color: AppColorSystem.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                  ),
-                  child: Icon(
-                    AppIconsSystem.prayer,
-                    color: AppColorSystem.primary,
-                    size: ThemeConstants.iconMd,
-                  ),
-                ),
-                const SizedBox(width: ThemeConstants.space3),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'إعدادات إشعارات الصلوات',
-                        style: AppTextStyles.h5.copyWith(
-                          color: AppColorSystem.getTextPrimary(context),
-                        ),
-                      ),
-                      Text(
-                        'تخصيص الإشعارات لكل صلاة على حدة',
-                        style: AppTextStyles.body2.copyWith(
-                          color: AppColorSystem.getTextSecondary(context),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          _buildSectionHeader(
+            'إعدادات إشعارات الصلوات',
+            'تخصيص الإشعارات لكل صلاة على حدة',
+            AppIconsSystem.prayer,
           ),
           
           const Divider(),
@@ -341,23 +298,20 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
     final minutesBefore = _notificationSettings.minutesBefore[type] ?? 0;
     
     return ExpansionTile(
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: AppColorSystem.primary.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-        ),
+      leading: AppContainerBuilder.basic(
         child: Icon(
           icon,
-          color: AppColorSystem.primary,
+          color: context.primaryColor,
           size: ThemeConstants.iconMd,
         ),
+        backgroundColor: context.primaryColor.withOpacitySafe(0.1),
+        borderRadius: ThemeConstants.radiusMd,
+        padding: const EdgeInsets.all(8),
       ),
       title: Text(
         name,
         style: AppTextStyles.label1.copyWith(
-          color: AppColorSystem.getTextPrimary(context),
+          color: context.textPrimaryColor,
         ),
       ),
       subtitle: Text(
@@ -365,7 +319,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
             ? 'تنبيه قبل $minutesBefore دقيقة'
             : 'التنبيه معطل',
         style: AppTextStyles.body2.copyWith(
-          color: AppColorSystem.getTextSecondary(context),
+          color: context.textSecondaryColor,
         ),
       ),
       trailing: Switch(
@@ -386,7 +340,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                 });
               }
             : null,
-        activeThumbColor: AppColorSystem.primary,
+        activeThumbColor: context.primaryColor,
       ),
       children: [
         if (isEnabled && _notificationSettings.enabled)
@@ -406,24 +360,24 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
           Text(
             'التنبيه قبل',
             style: AppTextStyles.body2.copyWith(
-              color: AppColorSystem.getTextPrimary(context),
+              color: context.textPrimaryColor,
             ),
           ),
           
-          const SizedBox(width: ThemeConstants.space3),
+          ThemeConstants.space3.w,
           
           SizedBox(
             width: 80,
             child: DropdownButtonFormField<int>(
               value: minutesBefore,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 isDense: true,
-                contentPadding: EdgeInsets.symmetric(
+                contentPadding: const EdgeInsets.symmetric(
                   horizontal: ThemeConstants.space3,
                   vertical: ThemeConstants.space2,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(ThemeConstants.radiusMd)),
+                  borderRadius: ThemeConstants.radiusMd.circular,
                 ),
               ),
               items: [0, 5, 10, 15, 20, 25, 30, 45, 60]
@@ -432,7 +386,7 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
                         child: Text(
                           '$minutes',
                           style: AppTextStyles.body2.copyWith(
-                            color: AppColorSystem.getTextPrimary(context),
+                            color: context.textPrimaryColor,
                           ),
                         ),
                       ))
@@ -456,12 +410,12 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
             ),
           ),
           
-          const SizedBox(width: ThemeConstants.space2),
+          ThemeConstants.space2.w,
           
           Text(
             'دقيقة',
             style: AppTextStyles.body2.copyWith(
-              color: AppColorSystem.getTextPrimary(context),
+              color: context.textPrimaryColor,
             ),
           ),
         ],
@@ -471,16 +425,24 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
 
   Widget _buildSaveButton() {
     return Padding(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
+      padding: ThemeConstants.space4.all,
       child: AppButton.primary(
         text: 'حفظ الإعدادات',
-        onPressed: _isSaving || !_hasChanges ? null : _saveSettings,
+        onPressed: _isSaving || !_hasChanges ? null : () => _saveSettings(), // ✅ wrapper function
         isLoading: _isSaving,
         isFullWidth: true,
         icon: AppIconsSystem.save,
-        backgroundColor: AppColorSystem.primary,
+        backgroundColor: context.primaryColor,
       ),
     );
+  }
+
+  void _handleBackPress() {
+    if (_hasChanges) {
+      _showUnsavedChangesDialog();
+    } else {
+      Navigator.pop(context);
+    }
   }
 
   void _showUnsavedChangesDialog() {
@@ -491,9 +453,11 @@ class _PrayerNotificationsSettingsScreenState extends State<PrayerNotificationsS
       confirmText: 'حفظ وخروج',
       cancelText: 'تجاهل التغييرات',
     ).then((result) async {
+      if (!mounted) return; // ✅ فحص mounted
+      
       if (result == true) {
         await _saveSettings();
-        if (mounted) Navigator.pop(context);
+        if (mounted) Navigator.pop(context); // ✅ فحص mounted مرة أخرى
       } else {
         Navigator.pop(context);
       }

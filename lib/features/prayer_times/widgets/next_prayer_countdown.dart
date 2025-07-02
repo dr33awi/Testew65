@@ -1,4 +1,5 @@
-// lib/features/prayer_times/widgets/next_prayer_countdown.dart - مُصحح نهائياً
+// lib/features/prayer_times/widgets/next_prayer_countdown.dart - النسخة الموحدة
+
 import 'package:flutter/material.dart';
 import '../../../app/themes/app_theme.dart';
 import '../models/prayer_time_model.dart';
@@ -21,19 +22,21 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
 
   @override
   Widget build(BuildContext context) {
-    return AppContainerBuilder.gradient(
-      colors: [
-        AppColorSystem.getPrayerColor(widget.nextPrayer.type.name),
-        AppColorSystem.getPrayerColor(widget.nextPrayer.type.name).darken(0.2),
+    // ✅ استخدام AppCard مع تدرج لوني موحد
+    return AppCard.custom(
+      style: CardStyle.glassmorphism,
+      gradientColors: [
+        widget.nextPrayer.type.name.themeColor,
+        widget.nextPrayer.type.name.themeColor.darken(0.2),
       ],
       child: Column(
         children: [
           _buildHeader(context),
-          const SizedBox(height: ThemeConstants.space4),
+          ThemeConstants.space4.h,
           _buildPrayerInfo(context),
-          const SizedBox(height: ThemeConstants.space4),
+          ThemeConstants.space4.h,
           _buildCountdown(context),
-          const SizedBox(height: ThemeConstants.space4),
+          ThemeConstants.space4.h,
           _buildProgressBar(context),
         ],
       ),
@@ -44,20 +47,21 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        // ✅ استخدام النظام الموحد للحاويات
         Container(
-          padding: const EdgeInsets.all(ThemeConstants.space2),
+          padding: ThemeConstants.space2.all,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
+            color: Colors.white.withOpacitySafe(0.2),
             shape: BoxShape.circle,
           ),
           child: const Icon(
-            Icons.access_time_filled,
+            AppIconsSystem.time,
             color: Colors.white,
             size: ThemeConstants.iconMd,
           ),
         ),
         
-        const SizedBox(width: ThemeConstants.space3),
+        ThemeConstants.space3.w,
         
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,7 +76,7 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
             Text(
               'استعد لأداء الصلاة',
               style: AppTextStyles.body2.copyWith(
-                color: Colors.white.withValues(alpha: 0.8),
+                color: Colors.white.withOpacitySafe(0.8),
               ),
             ),
           ],
@@ -96,72 +100,70 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
                 ),
               ),
               
-              const SizedBox(height: ThemeConstants.space1),
+              ThemeConstants.space1.h,
               
+              // ✅ استخدام النظام الموحد للمعلومات الإضافية
               if (widget.currentPrayer != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: ThemeConstants.space3,
-                    vertical: ThemeConstants.space1,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.radio_button_checked,
-                        color: Colors.white,
-                        size: ThemeConstants.iconXs,
-                      ),
-                      const SizedBox(width: ThemeConstants.space1),
-                      Text(
-                        'الحالية: ${widget.currentPrayer!.nameAr}',
-                        style: AppTextStyles.label2.copyWith(
-                          color: Colors.white.withValues(alpha: 0.8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                _buildCurrentPrayerInfo(),
             ],
           ),
         ),
         
+        // ✅ استخدام النظام الموحد للأيقونات والحاويات
         Container(
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
+            color: Colors.white.withOpacitySafe(0.2),
             shape: BoxShape.circle,
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
-              width: 2,
+              color: Colors.white.withOpacitySafe(0.3),
+              width: ThemeConstants.borderMedium,
             ),
           ),
           child: Icon(
-            AppIconsSystem.getPrayerIcon(widget.nextPrayer.type.name),
+            widget.nextPrayer.type.name.themePrayerIcon,
             color: Colors.white,
-            size: 40,
+            size: ThemeConstants.iconXl,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildCountdown(BuildContext context) {
+  Widget _buildCurrentPrayerInfo() {
     return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.3),
-          width: 1,
-        ),
+      padding: const EdgeInsets.symmetric(
+        horizontal: ThemeConstants.space3,
+        vertical: ThemeConstants.space1,
       ),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacitySafe(0.2),
+        borderRadius: ThemeConstants.radiusFull.circular,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            AppIconsSystem.current,
+            color: Colors.white,
+            size: ThemeConstants.iconXs,
+          ),
+          ThemeConstants.space1.w,
+          Text(
+            'الحالية: ${widget.currentPrayer!.nameAr}',
+            style: AppTextStyles.label2.copyWith(
+              color: Colors.white.withOpacitySafe(0.8),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCountdown(BuildContext context) {
+    // ✅ استخدام AppContainerBuilder للحاوية الموحدة
+    return AppContainerBuilder.glassGradient(
       child: StreamBuilder(
         stream: Stream.periodic(const Duration(seconds: 1)),
         builder: (context, snapshot) {
@@ -182,20 +184,23 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
           );
         },
       ),
+      padding: ThemeConstants.space4.all,
+      borderRadius: ThemeConstants.radiusXl,
     );
   }
 
   Widget _buildTimeUnit(BuildContext context, String value, String unit) {
     return Column(
       children: [
+        // ✅ استخدام النظام الموحد للحاويات
         Container(
           width: 60,
           height: 60,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+            color: Colors.white.withOpacitySafe(0.2),
+            borderRadius: ThemeConstants.radiusMd.circular,
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
+              color: Colors.white.withOpacitySafe(0.3),
             ),
           ),
           child: Center(
@@ -209,12 +214,12 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
           ),
         ),
         
-        const SizedBox(height: ThemeConstants.space1),
+        ThemeConstants.space1.h,
         
         Text(
           unit,
           style: AppTextStyles.caption.copyWith(
-            color: Colors.white.withValues(alpha: 0.8),
+            color: Colors.white.withOpacitySafe(0.8),
           ),
         ),
       ],
@@ -240,7 +245,7 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
             Text(
               'التقدم نحو الصلاة',
               style: AppTextStyles.label2.copyWith(
-                color: Colors.white.withValues(alpha: 0.8),
+                color: Colors.white.withOpacitySafe(0.8),
               ),
             ),
             Text(
@@ -253,16 +258,17 @@ class _NextPrayerCountdownState extends State<NextPrayerCountdown> {
           ],
         ),
         
-        const SizedBox(height: ThemeConstants.space2),
+        ThemeConstants.space2.h,
         
+        // ✅ استخدام النظام الموحد لشريط التقدم
         Container(
           height: 8,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(4),
+            color: Colors.white.withOpacitySafe(0.2),
+            borderRadius: 4.circular,
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: 4.circular,
             child: StreamBuilder(
               stream: Stream.periodic(const Duration(seconds: 1)),
               builder: (context, snapshot) {

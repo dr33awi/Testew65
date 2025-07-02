@@ -1,4 +1,4 @@
-// lib/features/prayer_times/screens/prayer_times_screen.dart - محدث بالنظام الموحد
+// lib/features/prayer_times/screens/prayer_times_screen.dart - النسخة الموحدة
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,17 +23,14 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   late final LoggerService _logger;
   late final PrayerTimesService _prayerService;
   
-  // Controllers
   final _scrollController = ScrollController();
   
-  // State
   DailyPrayerTimes? _dailyTimes;
   PrayerTime? _nextPrayer;
   bool _isLoading = true;
   bool _isRetryingLocation = false;
   String? _errorMessage;
   
-  // Subscriptions
   StreamSubscription<DailyPrayerTimes>? _timesSubscription;
   StreamSubscription<PrayerTime?>? _nextPrayerSubscription;
 
@@ -48,7 +45,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     _logger = getIt<LoggerService>();
     _prayerService = getIt<PrayerTimesService>();
     
-    // الاستماع للتحديثات
+    // ✅ استخدام النظام الموحد للاستماع للتحديثات
     _timesSubscription = _prayerService.prayerTimesStream.listen((times) {
       if (mounted) {
         setState(() {
@@ -75,7 +72,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
     });
     
     try {
-      // تحقق من وجود مواقيت مخزنة مسبقاً لعرضها أثناء تحديث الموقع
+      // تحقق من وجود مواقيت مخزنة مسبقاً
       final cachedTimes = await _prayerService.getCachedPrayerTimes(DateTime.now());
       if (cachedTimes != null) {
         setState(() {
@@ -85,12 +82,10 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
         });
       }
       
-      // التحقق من وجود موقع محفوظ
+      // تحديث الموقع والمواقيت
       if (_prayerService.currentLocation == null) {
-        // طلب الموقع
         await _requestLocation();
       } else {
-        // تحديث المواقيت
         await _prayerService.updatePrayerTimes();
       }
     } catch (e) {
@@ -124,7 +119,6 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
         },
       );
       
-      // تحديث مواقيت الصلاة بعد تحديد الموقع
       await _prayerService.updatePrayerTimes();
       
       if (mounted) {
@@ -145,14 +139,9 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
           _isRetryingLocation = false;
         });
         
-        // استخدام النظام الموحد للإشعارات
-        AppSnackBar.showError(
-          context: context,
-          message: 'لم نتمكن من تحديد موقعك. يرجى التحقق من إعدادات الموقع.',
-          action: SnackBarAction(
-            label: 'حاول مجدداً',
-            onPressed: _requestLocation,
-          ),
+        // ✅ استخدام النظام الموحد للإشعارات
+        context.showErrorSnackBar(
+          'لم نتمكن من تحديد موقعك. يرجى التحقق من إعدادات الموقع.',
         );
       }
     }
@@ -169,36 +158,37 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColorSystem.getBackground(context),
+      backgroundColor: context.backgroundColor,
+      // ✅ استخدام CustomAppBar الموحد
       appBar: CustomAppBar.simple(
         title: 'مواقيت الصلاة',
         actions: [
-          // زر تحديث الموقع
+          // ✅ استخدام AppBarAction الموحد
           AppBarAction(
-            icon: Icons.my_location,
-            onPressed: _isRetryingLocation ? () {} : _requestLocation,
+            icon: 'location'.themeCategoryIcon,
+            onPressed: _isRetryingLocation 
+                ? () {} // ✅ دالة فارغة بدلاً من null
+                : () => _requestLocation(),
             tooltip: 'تحديث الموقع',
-            color: _isRetryingLocation ? AppColorSystem.getTextSecondary(context) : AppColorSystem.primary,
+            color: _isRetryingLocation ? context.textSecondaryColor : context.primaryColor,
           ),
           
-          // زر إعدادات الإشعارات
           AppBarAction(
-            icon: AppIconsSystem.notifications,
+            icon: 'notifications'.themeCategoryIcon,
             onPressed: () {
               Navigator.pushNamed(context, '/prayer-notifications-settings');
             },
             tooltip: 'إعدادات الإشعارات',
-            color: AppColorSystem.primary,
+            color: context.primaryColor,
           ),
           
-          // زر الإعدادات
           AppBarAction(
             icon: AppIconsSystem.settings,
             onPressed: () {
               Navigator.pushNamed(context, '/prayer-settings');
             },
             tooltip: 'الإعدادات',
-            color: AppColorSystem.primary,
+            color: context.primaryColor,
           ),
         ],
       ),
@@ -208,7 +198,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
           controller: _scrollController,
           physics: const BouncingScrollPhysics(),
           slivers: [
-            // معلومات الموقع
+            // ✅ معلومات الموقع باستخدام المكونات الموحدة
             if (_dailyTimes?.location != null)
               SliverToBoxAdapter(
                 child: LocationHeader(
@@ -217,7 +207,7 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
                 ),
               ),
             
-            // المحتوى الرئيسي
+            // ✅ المحتوى الرئيسي
             if (_isLoading && _dailyTimes == null)
               _buildLoadingState()
             else if (_errorMessage != null && _dailyTimes == null)
@@ -234,45 +224,50 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
 
   List<Widget> _buildContent() {
     return [
-      // العد التنازلي للصلاة التالية
+      // ✅ العد التنازلي للصلاة التالية
       if (_nextPrayer != null)
         SliverToBoxAdapter(
-          child: NextPrayerCountdown(
-            nextPrayer: _nextPrayer!,
-            currentPrayer: _dailyTimes!.currentPrayer,
+          child: Container(
+            margin: ThemeConstants.space4.all,
+            child: NextPrayerCountdown(
+              nextPrayer: _nextPrayer!,
+              currentPrayer: _dailyTimes!.currentPrayer,
+            ),
           ),
         ),
       
-      // قائمة الصلوات مباشرة
+      // ✅ قائمة الصلوات باستخدام AnimationConfiguration
       SliverPadding(
-        padding: const EdgeInsets.all(ThemeConstants.space4),
-        sliver: SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              final prayers = _dailyTimes!.prayers.where((prayer) => 
-                prayer.type != PrayerType.sunrise
-              ).toList();
-              
-              if (index >= prayers.length) return null;
-              
-              final prayer = prayers[index];
-              
-              return PrayerTimeCard(
-                prayer: prayer,
-                forceColored: true,
-                onNotificationToggle: (enabled) {
-                  _togglePrayerNotification(prayer, enabled);
-                },
-              );
-            },
-            childCount: _dailyTimes!.prayers.where((prayer) => 
-              prayer.type != PrayerType.sunrise
-            ).length,
-          ),
+        padding: ThemeConstants.space4.all,
+        sliver: SliverAnimatedList(
+          initialItemCount: _getMainPrayers().length,
+          itemBuilder: (context, index, animation) {
+            final prayers = _getMainPrayers();
+            if (index >= prayers.length) return const SizedBox.shrink();
+            
+            final prayer = prayers[index];
+            
+            return AnimationConfiguration.staggeredList(
+              position: index,
+              duration: ThemeConstants.durationNormal,
+              child: SlideAnimation(
+                verticalOffset: 50.0,
+                child: FadeInAnimation(
+                  child: PrayerTimeCard(
+                    prayer: prayer,
+                    forceColored: true,
+                    onNotificationToggle: (enabled) {
+                      _togglePrayerNotification(prayer, enabled);
+                    },
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
       
-      // مساحة في الأسفل
+      // ✅ مساحة في الأسفل
       SliverToBoxAdapter(
         child: ThemeConstants.space8.h,
       ),
@@ -302,12 +297,20 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
       child: AppEmptyState.custom(
         title: 'لم يتم تحديد الموقع',
         message: 'نحتاج لتحديد موقعك لعرض مواقيت الصلاة الصحيحة',
-        icon: Icons.my_location,
+        icon: AppIconsSystem.location,
         actionText: 'تحديد الموقع',
         onAction: _loadPrayerTimes,
-        iconColor: AppColorSystem.primary,
+        iconColor: context.primaryColor,
       ),
     );
+  }
+
+  List<PrayerTime> _getMainPrayers() {
+    if (_dailyTimes == null) return [];
+    
+    return _dailyTimes!.prayers.where((prayer) => 
+      prayer.type != PrayerType.sunrise
+    ).toList();
   }
 
   void _togglePrayerNotification(PrayerTime prayer, bool enabled) {
@@ -321,10 +324,9 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
       settings.copyWith(enabledPrayers: updatedPrayers),
     );
     
-    // استخدام النظام الموحد للإشعارات
-    AppSnackBar.showSuccess(
-      context: context, 
-      message: enabled 
+    // ✅ استخدام النظام الموحد للإشعارات
+    context.showSuccessSnackBar(
+      enabled 
           ? 'تم تفعيل تنبيه ${prayer.nameAr}'
           : 'تم إيقاف تنبيه ${prayer.nameAr}',
     );

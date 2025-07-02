@@ -52,6 +52,8 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
   }
 
   Future<void> _saveSettings() async {
+    if (!mounted) return; // ✅ فحص mounted أولاً
+    
     setState(() => _isSaving = true);
     
     try {
@@ -62,12 +64,10 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
         'calculation_method': _calculationSettings.method.toString(),
       });
       
-      if (!mounted) return;
+      if (!mounted) return; // ✅ فحص mounted قبل استخدام context
       
-      AppSnackBar.showSuccess(
-        context: context, 
-        message: 'تم حفظ الإعدادات بنجاح',
-      );
+      // ✅ استخدام النظام الموحد للإشعارات
+      context.showSuccessSnackBar('تم حفظ الإعدادات بنجاح');
       
       setState(() {
         _hasChanges = false;
@@ -81,14 +81,11 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
         error: e,
       );
       
-      if (!mounted) return;
+      if (!mounted) return; // ✅ فحص mounted قبل استخدام context
       
-      AppSnackBar.showError(
-        context: context,
-        message: 'فشل حفظ الإعدادات',
-      );
+      context.showErrorSnackBar('فشل حفظ الإعدادات');
     } finally {
-      if (mounted) {
+      if (mounted) { // ✅ فحص mounted قبل setState
         setState(() => _isSaving = false);
       }
     }
@@ -97,23 +94,18 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColorSystem.getBackground(context),
+      backgroundColor: context.backgroundColor,
+      // ✅ استخدام CustomAppBar الموحد
       appBar: CustomAppBar.simple(
         title: 'إعدادات مواقيت الصلاة',
-        onBack: () {
-          if (_hasChanges) {
-            _showUnsavedChangesDialog();
-          } else {
-            Navigator.pop(context);
-          }
-        },
+        onBack: () => _handleBackPress(),
         actions: [
           if (_hasChanges && !_isSaving)
             AppBarAction(
               icon: AppIconsSystem.save,
-              onPressed: _saveSettings,
+              onPressed: () => _saveSettings(), // ✅ wrapper function
               tooltip: 'حفظ التغييرات',
-              color: AppColorSystem.primary,
+              color: context.primaryColor,
             ),
         ],
       ),
@@ -150,6 +142,14 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
     );
   }
 
+  void _handleBackPress() {
+    if (_hasChanges) {
+      _showUnsavedChangesDialog();
+    } else {
+      Navigator.pop(context);
+    }
+  }
+
   void _showUnsavedChangesDialog() {
     AppInfoDialog.showConfirmation(
       context: context,
@@ -157,9 +157,12 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       content: 'لديك تغييرات لم يتم حفظها. هل تريد حفظ التغييرات قبل المغادرة؟',
       confirmText: 'حفظ وخروج',
       cancelText: 'تجاهل التغييرات',
-    ).then((result) {
+    ).then((result) async {
+      if (!mounted) return; // ✅ فحص mounted
+      
       if (result == true) {
-        _saveSettings();
+        await _saveSettings();
+        if (mounted) Navigator.pop(context); // ✅ فحص mounted مرة أخرى
       } else {
         Navigator.pop(context);
       }
@@ -194,18 +197,18 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       title: Text(
         'طريقة الحساب',
         style: AppTextStyles.label1.copyWith(
-          color: AppColorSystem.getTextPrimary(context),
+          color: context.textPrimaryColor,
         ),
       ),
       subtitle: Text(
         methodNames[_calculationSettings.method] ?? '',
         style: AppTextStyles.body2.copyWith(
-          color: AppColorSystem.getTextSecondary(context),
+          color: context.textSecondaryColor,
         ),
       ),
       trailing: Icon(
         Icons.chevron_right,
-        color: AppColorSystem.getTextSecondary(context),
+        color: context.textSecondaryColor,
       ),
       onTap: _showCalculationMethodDialog,
     );
@@ -238,13 +241,13 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
           title: Text(
             'الجمهور',
             style: AppTextStyles.label1.copyWith(
-              color: AppColorSystem.getTextPrimary(context),
+              color: context.textPrimaryColor,
             ),
           ),
           subtitle: Text(
             'الشافعي، المالكي، الحنبلي',
             style: AppTextStyles.caption.copyWith(
-              color: AppColorSystem.getTextSecondary(context),
+              color: context.textSecondaryColor,
             ),
           ),
           value: AsrJuristic.standard,
@@ -259,19 +262,19 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
               });
             }
           },
-          activeColor: AppColorSystem.primary,
+          activeColor: context.primaryColor,
         ),
         RadioListTile<AsrJuristic>(
           title: Text(
             'الحنفي',
             style: AppTextStyles.label1.copyWith(
-              color: AppColorSystem.getTextPrimary(context),
+              color: context.textPrimaryColor,
             ),
           ),
           subtitle: Text(
             'المذهب الحنفي',
             style: AppTextStyles.caption.copyWith(
-              color: AppColorSystem.getTextSecondary(context),
+              color: context.textSecondaryColor,
             ),
           ),
           value: AsrJuristic.hanafi,
@@ -286,7 +289,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
               });
             }
           },
-          activeColor: AppColorSystem.primary,
+          activeColor: context.primaryColor,
         ),
       ],
     );
@@ -315,7 +318,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
       title: Text(
         name,
         style: AppTextStyles.label1.copyWith(
-          color: AppColorSystem.getTextPrimary(context),
+          color: context.textPrimaryColor,
         ),
       ),
       trailing: Row(
@@ -323,7 +326,7 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
         children: [
           IconButton(
             icon: const Icon(Icons.remove_circle_outline),
-            color: AppColorSystem.primary,
+            color: context.primaryColor,
             onPressed: () {
               _updateAdjustment(key, adjustment - 1);
             },
@@ -334,14 +337,14 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
               adjustment > 0 ? '+$adjustment' : adjustment.toString(),
               textAlign: TextAlign.center,
               style: AppTextStyles.label1.copyWith(
-                color: AppColorSystem.getTextPrimary(context),
+                color: context.textPrimaryColor,
                 fontWeight: ThemeConstants.semiBold,
               ),
             ),
           ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
-            color: AppColorSystem.primary,
+            color: context.primaryColor,
             onPressed: () {
               _updateAdjustment(key, adjustment + 1);
             },
@@ -367,20 +370,20 @@ class _PrayerSettingsScreenState extends State<PrayerSettingsScreen> {
 
   Widget _buildSaveButton() {
     return Padding(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
+      padding: ThemeConstants.space4.all,
       child: AppButton.primary(
         text: 'حفظ الإعدادات',
-        onPressed: _isSaving || !_hasChanges ? null : _saveSettings,
+        onPressed: _isSaving || !_hasChanges ? null : () => _saveSettings(), // ✅ wrapper function
         isLoading: _isSaving,
         isFullWidth: true,
         icon: AppIconsSystem.save,
-        backgroundColor: AppColorSystem.primary,
+        backgroundColor: context.primaryColor,
       ),
     );
   }
 }
 
-/// قسم في شاشة الإعدادات - مُصحح
+/// قسم في شاشة الإعدادات - مُصحح مع النظام الموحد
 class SettingsSection extends StatelessWidget {
   final String title;
   final String? subtitle;
@@ -401,20 +404,19 @@ class SettingsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.all(ThemeConstants.space4),
+          padding: ThemeConstants.space4.all,
           child: Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(ThemeConstants.space2),
-                decoration: BoxDecoration(
-                  color: AppColorSystem.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                ),
+              // ✅ استخدام AppContainerBuilder الموحد
+              AppContainerBuilder.basic(
                 child: Icon(
                   icon,
-                  color: AppColorSystem.primary,
+                  color: context.primaryColor,
                   size: ThemeConstants.iconMd,
                 ),
+                backgroundColor: context.primaryColor.withOpacitySafe(0.1),
+                borderRadius: ThemeConstants.radiusMd,
+                padding: ThemeConstants.space2.all,
               ),
               ThemeConstants.space3.w,
               Expanded(
@@ -424,7 +426,7 @@ class SettingsSection extends StatelessWidget {
                     Text(
                       title,
                       style: AppTextStyles.h5.copyWith(
-                        color: AppColorSystem.getTextPrimary(context),
+                        color: context.textPrimaryColor,
                       ),
                     ),
                     if (subtitle != null) ...[
@@ -432,7 +434,7 @@ class SettingsSection extends StatelessWidget {
                       Text(
                         subtitle!,
                         style: AppTextStyles.caption.copyWith(
-                          color: AppColorSystem.getTextSecondary(context),
+                          color: context.textSecondaryColor,
                         ),
                       ),
                     ],
@@ -443,15 +445,11 @@ class SettingsSection extends StatelessWidget {
           ),
         ),
         
-        Container(
+        // ✅ استخدام AppCard الموحد
+        AppCard.custom(
           margin: const EdgeInsets.symmetric(
             horizontal: ThemeConstants.space4,
             vertical: ThemeConstants.space2,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-            color: AppColorSystem.getCard(context),
-            boxShadow: AppShadowSystem.card,
           ),
           child: Column(children: children),
         ),
@@ -487,18 +485,18 @@ class CalculationMethodDialog extends StatelessWidget {
     
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        borderRadius: ThemeConstants.radiusLg.circular,
       ),
-      backgroundColor: AppColorSystem.getCard(context),
+      backgroundColor: context.cardColor,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            padding: const EdgeInsets.all(ThemeConstants.space4),
+            padding: ThemeConstants.space4.all,
             child: Text(
               'اختر طريقة الحساب',
               style: AppTextStyles.h4.copyWith(
-                color: AppColorSystem.getTextPrimary(context),
+                color: context.textPrimaryColor,
               ),
             ),
           ),
@@ -513,13 +511,13 @@ class CalculationMethodDialog extends StatelessWidget {
                     title: Text(
                       method.$2,
                       style: AppTextStyles.label1.copyWith(
-                        color: AppColorSystem.getTextPrimary(context),
+                        color: context.textPrimaryColor,
                       ),
                     ),
                     subtitle: Text(
                       method.$3,
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColorSystem.getTextSecondary(context),
+                        color: context.textSecondaryColor,
                       ),
                     ),
                     value: method.$1,
@@ -529,7 +527,7 @@ class CalculationMethodDialog extends StatelessWidget {
                         onMethodSelected(value);
                       }
                     },
-                    activeColor: AppColorSystem.primary,
+                    activeColor: context.primaryColor,
                   );
                 }).toList(),
               ),
@@ -539,11 +537,11 @@ class CalculationMethodDialog extends StatelessWidget {
           const Divider(),
           
           Padding(
-            padding: const EdgeInsets.all(ThemeConstants.space3),
+            padding: ThemeConstants.space3.all,
             child: AppButton.text(
               text: 'إلغاء',
               onPressed: () => Navigator.pop(context),
-              color: AppColorSystem.primary,
+              color: context.primaryColor,
             ),
           ),
         ],

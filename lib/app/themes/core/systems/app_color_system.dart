@@ -1,8 +1,8 @@
-// lib/app/themes/core/systems/app_color_system.dart - النسخة المُصححة بالكامل
+// lib/app/themes/core/systems/app_color_system.dart - النسخة الكاملة والمحسنة
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
-/// نظام الألوان الموحد - النسخة المُصححة مع معالجة أخطاء أفضل
+/// نظام الألوان الموحد الكامل - النسخة المتقدمة
 class AppColorSystem {
   AppColorSystem._();
 
@@ -25,6 +25,7 @@ class AppColorSystem {
   static const Color success = primary;
   static const Color successLight = primaryLight;
   static const Color error = Color(0xFFB85450);
+  static const Color errorLight = Color(0xFFD32F2F);
   static const Color warning = Color(0xFFD4A574);
   static const Color warningLight = Color(0xFFE8C899);
   static const Color info = Color(0xFF6B8E9F);
@@ -59,6 +60,8 @@ class AppColorSystem {
     'بعد الصلاة': primaryLight,
     'wakeup': primarySoft,
     'الاستيقاظ': primarySoft,
+    'general': Color(0xFF8FA584),
+    'عامة': Color(0xFF8FA584),
     
     // الصلوات
     'fajr': primary,
@@ -71,28 +74,80 @@ class AppColorSystem {
     'المغرب': tertiary,
     'isha': Color(0xFF3A453A),
     'العشاء': Color(0xFF3A453A),
+    'sunrise': Color(0xFFFFD700),
+    'الشروق': Color(0xFFFFD700),
+    
+    // الميزات الرئيسية
+    'prayer_times': Color(0xFF6B8E9F),
+    'مواقيت الصلاة': Color(0xFF6B8E9F),
+    'qibla': Color(0xFF795548),
+    'القبلة': Color(0xFF795548),
+    'tasbih': Color(0xFF9C27B0),
+    'المسبحة': Color(0xFF9C27B0),
+    'quran': Color(0xFF2E7D32),
+    'القرآن': Color(0xFF2E7D32),
+    'hadith': Color(0xFFF57C00),
+    'الحديث': Color(0xFFF57C00),
+    'dua': Color(0xFF1976D2),
+    'الدعاء': Color(0xFF1976D2),
     
     // الألوان الدلالية
     'success': success,
+    'نجح': success,
     'error': error,
+    'خطأ': error,
     'warning': warning,
+    'تحذير': warning,
     'info': info,
+    'معلومات': info,
     
     // أنواع الاقتباسات
     'verse': primary,
     'آية': primary,
-    'hadith': accent,
-    'حديث': accent,
-    'dua': tertiary,
-    'دعاء': tertiary,
+    'quote': accent,
+    'اقتباس': accent,
+    
+    // الحالات العاطفية
+    'happy': Color(0xFFFFD700),
+    'سعيد': Color(0xFFFFD700),
+    'calm': primary,
+    'هادئ': primary,
+    'focused': info,
+    'مركز': info,
+    'grateful': accent,
+    'شاكر': accent,
+    'peaceful': tertiary,
+    'مطمئن': tertiary,
+    
+    // أوقات اليوم
+    'dawn': Color(0xFF4A5568),
+    'الفجر_الوقت': Color(0xFF4A5568),
+    'noon': Color(0xFFED8936),
+    'الظهيرة': Color(0xFFED8936),
+    'afternoon': Color(0xFFD69E2E),
+    'العصر_الوقت': Color(0xFFD69E2E),
+    'sunset': Color(0xFFE53E3E),
+    'المغرب_الوقت': Color(0xFFE53E3E),
+    'night': Color(0xFF2D3748),
+    'الليل': Color(0xFF2D3748),
+    
+    // المواسم
+    'spring': Color(0xFF4CAF50),
+    'الربيع': Color(0xFF4CAF50),
+    'summer': Color(0xFFFF9800),
+    'الصيف': Color(0xFFFF9800),
+    'autumn': Color(0xFF795548),
+    'الخريف': Color(0xFF795548),
+    'winter': Color(0xFF607D8B),
+    'الشتاء': Color(0xFF607D8B),
   };
 
-  // ===== الدوال الأساسية الموحدة - نسخة مُصححة =====
+  // ===== الدوال الأساسية الموحدة =====
 
   /// الدالة الأساسية للحصول على أي لون - مع معالجة محسنة للأخطاء
   static Color getColor(String key) {
     if (key.isEmpty) {
-      if (kDebugMode) { // ✅ فقط في وضع التطوير
+      if (kDebugMode) {
         debugPrint('تحذير: مفتاح اللون فارغ، استخدام اللون الافتراضي');
       }
       return primary;
@@ -101,11 +156,8 @@ class AppColorSystem {
     final normalizedKey = key.toLowerCase().trim();
     final color = _colorMap[normalizedKey];
     
-    if (color == null) {
-      // ✅ تسجيل تحذير في وضع التطوير فقط
-      if (kDebugMode) {
-        debugPrint('تحذير: لون غير موجود "$key", استخدام اللون الافتراضي');
-      }
+    if (color == null && kDebugMode) {
+      debugPrint('تحذير: لون غير موجود "$key", استخدام اللون الافتراضي');
     }
     
     return color ?? primary;
@@ -148,10 +200,10 @@ class AppColorSystem {
       final lightness = (hsl.lightness + clampedAmount).clamp(0.0, 1.0);
       return hsl.withLightness(lightness).toColor();
     } catch (e) {
-      if (kDebugMode) { // ✅ فقط في وضع التطوير
+      if (kDebugMode) {
         debugPrint('خطأ في تفتيح اللون: $e');
       }
-      return color; // إرجاع اللون الأصلي في حالة الخطأ
+      return color;
     }
   }
 
@@ -163,14 +215,14 @@ class AppColorSystem {
       final lightness = (hsl.lightness - clampedAmount).clamp(0.0, 1.0);
       return hsl.withLightness(lightness).toColor();
     } catch (e) {
-      if (kDebugMode) { // ✅ فقط في وضع التطوير
+      if (kDebugMode) {
         debugPrint('خطأ في تغميق اللون: $e');
       }
-      return color; // إرجاع اللون الأصلي في حالة الخطأ
+      return color;
     }
   }
 
-  // ===== Aliases للتوافق مع الكود الموجود - مُصححة =====
+  // ===== Aliases للتوافق مع الكود الموجود =====
   
   static Color getCategoryColor(String key) => getColor(key);
   static Color getCategoryLightColor(String key) => getLightColor(key);
@@ -192,11 +244,10 @@ class AppColorSystem {
         colors: [primaryColor, darkColor],
       );
     } catch (e) {
-      if (kDebugMode) { // ✅ فقط في وضع التطوير
+      if (kDebugMode) {
         debugPrint('خطأ في إنشاء التدرج: $e');
       }
       
-      // تدرج احتياطي
       return const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -222,7 +273,7 @@ class AppColorSystem {
         colors: [lightColor, primaryColor],
       );
     } catch (e) {
-      return getGradient(key); // استخدام التدرج العادي كاحتياطي
+      return getGradient(key);
     }
   }
 
@@ -245,6 +296,18 @@ class AppColorSystem {
     end: Alignment.bottomRight,
   );
 
+  static const LinearGradient successGradient = LinearGradient(
+    colors: [successLight, success],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient errorGradient = LinearGradient(
+    colors: [errorLight, error],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
   // ===== دوال السياق - مُصححة مع معالجة null =====
 
   static Color getBackground(BuildContext context) {
@@ -253,7 +316,7 @@ class AppColorSystem {
           ? darkBackground
           : lightBackground;
     } catch (e) {
-      return lightBackground; // افتراضي آمن
+      return lightBackground;
     }
   }
 
@@ -307,6 +370,183 @@ class AppColorSystem {
     }
   }
 
+  // ===== التدرجات المتقدمة والديناميكية =====
+
+  /// الحصول على تدرج لوني حسب الوقت
+  static LinearGradient getTimeBasedGradient() {
+    final hour = DateTime.now().hour;
+    
+    if (hour < 5) {
+      // ليل
+      return const LinearGradient(
+        colors: [Color(0xFF2C3E50), Color(0xFF3A4E61)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    } else if (hour < 12) {
+      // صباح
+      return const LinearGradient(
+        colors: [primary, primaryLight],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    } else if (hour < 17) {
+      // نهار
+      return const LinearGradient(
+        colors: [accent, accentLight],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    } else if (hour < 20) {
+      // مساء
+      return const LinearGradient(
+        colors: [tertiary, tertiaryLight],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    } else {
+      // ليل
+      return const LinearGradient(
+        colors: [primaryDark, tertiary],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    }
+  }
+
+  /// الحصول على لون حسب الحالة العاطفية
+  static Color getMoodColor(String mood) {
+    return getColor(mood);
+  }
+
+  /// الحصول على لون للإشعارات
+  static Color getNotificationColor(String type) {
+    switch (type.toLowerCase()) {
+      case 'prayer':
+      case 'صلاة':
+        return primary;
+      case 'athkar':
+      case 'أذكار':
+        return accent;
+      case 'reminder':
+      case 'تذكير':
+        return info;
+      case 'achievement':
+      case 'إنجاز':
+        return success;
+      case 'warning':
+      case 'تحذير':
+        return warning;
+      default:
+        return primary;
+    }
+  }
+
+  /// إنشاء لوحة ألوان مخصصة للمواسم
+  static Map<String, Color> getSeasonalColors() {
+    final month = DateTime.now().month;
+    
+    if (month >= 3 && month <= 5) {
+      // ربيع
+      return {
+        'primary': getColor('spring'),
+        'secondary': const Color(0xFF8BC34A),
+        'accent': const Color(0xFFCDDC39),
+      };
+    } else if (month >= 6 && month <= 8) {
+      // صيف
+      return {
+        'primary': getColor('summer'),
+        'secondary': const Color(0xFFFFC107),
+        'accent': const Color(0xFFFFEB3B),
+      };
+    } else if (month >= 9 && month <= 11) {
+      // خريف
+      return {
+        'primary': getColor('autumn'),
+        'secondary': const Color(0xFFFF7043),
+        'accent': const Color(0xFFFF5722),
+      };
+    } else {
+      // شتاء
+      return {
+        'primary': getColor('winter'),
+        'secondary': const Color(0xFF546E7A),
+        'accent': const Color(0xFF455A64),
+      };
+    }
+  }
+
+  /// الحصول على لون للحالة الحالية
+  static Color getCurrentStateColor() {
+    final hour = DateTime.now().hour;
+    
+    if (hour >= 5 && hour < 12) {
+      return getCategoryColor('morning');
+    } else if (hour >= 12 && hour < 18) {
+      return primary;
+    } else if (hour >= 18 && hour < 21) {
+      return getCategoryColor('evening');
+    } else {
+      return getCategoryColor('sleep');
+    }
+  }
+
+  // ===== دوال إمكانية الوصول =====
+
+  /// الحصول على لون متوافق مع إمكانية الوصول
+  static Color getAccessibleColor({
+    required Color foreground,
+    required Color background,
+    double targetContrast = 4.5,
+  }) {
+    final contrast = _calculateContrast(foreground, background);
+    
+    if (contrast >= targetContrast) {
+      return foreground;
+    }
+    
+    // تعديل اللون لتحسين التباين
+    final hsl = HSLColor.fromColor(foreground);
+    
+    if (background.computeLuminance() > 0.5) {
+      // خلفية فاتحة - جعل النص أغمق
+      return hsl.withLightness(0.2).toColor();
+    } else {
+      // خلفية داكنة - جعل النص أفتح
+      return hsl.withLightness(0.9).toColor();
+    }
+  }
+
+  /// حساب نسبة التباين بين لونين
+  static double _calculateContrast(Color color1, Color color2) {
+    final luminance1 = color1.computeLuminance();
+    final luminance2 = color2.computeLuminance();
+    
+    final brightest = luminance1 > luminance2 ? luminance1 : luminance2;
+    final darkest = luminance1 > luminance2 ? luminance2 : luminance1;
+    
+    return (brightest + 0.05) / (darkest + 0.05);
+  }
+
+  /// إنشاء مجموعة ألوان متدرجة
+  static List<Color> createColorScale({
+    required Color baseColor,
+    int steps = 5,
+    double lightnessDelta = 0.15,
+  }) {
+    final hsl = HSLColor.fromColor(baseColor);
+    final colors = <Color>[];
+    
+    for (int i = 0; i < steps; i++) {
+      final lightness = (hsl.lightness + (i - steps ~/ 2) * lightnessDelta)
+          .clamp(0.0, 1.0);
+      colors.add(hsl.withLightness(lightness).toColor());
+    }
+    
+    return colors;
+  }
+
   // ===== دوال مساعدة مُصححة =====
 
   static bool hasColor(String key) {
@@ -337,11 +577,10 @@ class AppColorSystem {
         'primary': baseColor,
         'light': _lightenColor(baseColor, 0.2),
         'dark': _darkenColor(baseColor, 0.2),
-        'soft': baseColor.withValues(alpha: 0.7), // ✅ مُصحح
+        'soft': baseColor.withValues(alpha: 0.7),
         'contrast': _getContrastingTextColor(baseColor),
       };
     } catch (e) {
-      // إرجاع لوحة افتراضية في حالة الخطأ
       return {
         'primary': primary,
         'light': primaryLight,
@@ -359,7 +598,7 @@ class AppColorSystem {
           ? Colors.white
           : Colors.black87;
     } catch (e) {
-      return Colors.white; // افتراضي آمن
+      return Colors.white;
     }
   }
 
@@ -382,15 +621,98 @@ class AppColorSystem {
     final blackContrast = hasGoodContrast(Colors.black87, backgroundColor);
     
     if (whiteContrast && blackContrast) {
-      // إذا كان كلاهما مناسب، اختر الأفضل
       return _getContrastingTextColor(backgroundColor);
     } else if (whiteContrast) {
       return Colors.white;
     } else if (blackContrast) {
       return Colors.black87;
     } else {
-      // لا يوجد تباين جيد، استخدم الافتراضي
       return _getContrastingTextColor(backgroundColor);
     }
+  }
+
+  // ===== دوال التحليل والإحصائيات =====
+
+  /// الحصول على إحصائيات الألوان
+  static Map<String, int> getColorStats() {
+    final categories = <String, int>{};
+    
+    for (final key in _colorMap.keys) {
+      if (key.contains('morning') || key.contains('الصباح')) {
+        categories['morning'] = (categories['morning'] ?? 0) + 1;
+      } else if (key.contains('evening') || key.contains('المساء')) {
+        categories['evening'] = (categories['evening'] ?? 0) + 1;
+      } else if (key.contains('prayer') || key.contains('صلاة')) {
+        categories['prayer'] = (categories['prayer'] ?? 0) + 1;
+      }
+      // يمكن إضافة المزيد من التصنيفات
+    }
+    
+    return categories;
+  }
+
+  /// اختبار جودة النظام اللوني
+  static bool validateColorSystem() {
+    try {
+      // التحقق من وجود الألوان الأساسية
+      final requiredColors = ['morning', 'evening', 'sleep', 'prayer'];
+      for (final color in requiredColors) {
+        if (!hasColor(color)) {
+          if (kDebugMode) {
+            debugPrint('لون مطلوب مفقود: $color');
+          }
+          return false;
+        }
+      }
+      
+      // التحقق من التباين
+      if (!hasGoodContrast(lightTextPrimary, lightBackground)) {
+        if (kDebugMode) {
+          debugPrint('تباين ضعيف في الوضع الفاتح');
+        }
+        return false;
+      }
+      
+      if (!hasGoodContrast(darkTextPrimary, darkBackground)) {
+        if (kDebugMode) {
+          debugPrint('تباين ضعيف في الوضع الداكن');
+        }
+        return false;
+      }
+      
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('خطأ في التحقق من النظام اللوني: $e');
+      }
+      return false;
+    }
+  }
+
+  // ===== دوال cache للأداء =====
+  static final Map<String, Color> _lightColorCache = {};
+  static final Map<String, Color> _darkColorCache = {};
+  static final Map<String, LinearGradient> _gradientCache = {};
+
+  /// الحصول على لون فاتح مع cache
+  static Color getLightColorCached(String key) {
+    return _lightColorCache.putIfAbsent(key, () => getLightColor(key));
+  }
+
+  /// الحصول على لون داكن مع cache
+  static Color getDarkColorCached(String key) {
+    return _darkColorCache.putIfAbsent(key, () => getDarkColor(key));
+  }
+
+  /// الحصول على تدرج مع cache
+  static LinearGradient getGradientCached(String key) {
+    return _gradientCache.putIfAbsent(key, () => getGradient(key));
+  }
+
+  /// مسح الcache
+  static void clearCache() {
+    _lightColorCache.clear();
+    _darkColorCache.clear();
+    _gradientCache.clear();
   }
 }

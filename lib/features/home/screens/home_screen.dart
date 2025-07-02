@@ -1,11 +1,9 @@
-// lib/features/home/screens/home_screen.dart - محدث للنظام الموحد
+// lib/features/home/screens/home_screen.dart - النسخة المُصححة نهائياً
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
 import '../widgets/welcome_message.dart';
 import '../widgets/category_grid.dart';
-import '../../daily_quote/widgets/daily_quotes_card.dart';
-import '../../prayer_times/widgets/home_prayer_times_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -13,41 +11,58 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColorSystem.getBackground(context),
-      appBar: _buildCustomAppBar(context),
+      backgroundColor: context.backgroundColor,
+      appBar: _buildAppBar(context),
       body: RefreshIndicator(
         onRefresh: () => _handleRefresh(context),
-        color: AppColorSystem.primary,
-        backgroundColor: AppColorSystem.getCard(context),
-        child: const SingleChildScrollView(
-          physics: BouncingScrollPhysics(),
-          padding: EdgeInsets.symmetric(
-            horizontal: ThemeConstants.space4,
-            vertical: ThemeConstants.space2,
-          ),
+        color: context.primaryColor,
+        backgroundColor: context.cardColor,
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: context.appResponsivePadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // رسالة الترحيب
-              WelcomeMessage(),
+              const WelcomeMessage(),
               
-              SizedBox(height: ThemeConstants.space4),
+              const SizedBox(height: ThemeConstants.space4),
               
-              // مواقيت الصلاة
-              PrayerTimesCard(),
+              // مواقيت الصلاة - بطاقة موحدة
+              AppCard.info(
+                title: 'مواقيت الصلاة',
+                subtitle: 'الصلاة التالية: العصر في 3:45 م',
+                icon: 'prayer_times'.themeCategoryIcon,
+                iconColor: 'prayer_times'.themeColor,
+                onTap: () => _navigateToRoute(context, '/prayer-times'),
+                trailing: Icon(
+                  Icons.chevron_right,
+                  color: context.textSecondaryColor,
+                  size: ThemeConstants.iconSm,
+                ),
+              ),
               
-              SizedBox(height: ThemeConstants.space4),
+              const SizedBox(height: ThemeConstants.space4),
               
-              // الاقتباسات اليومية
-              DailyQuotesCard(),
+              // الاقتباس اليومي - بطاقة موحدة
+              AppCard.quote(
+                quote: 'وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا',
+                author: 'سورة الطلاق',
+                category: 'آية اليوم',
+                primaryColor: 'verse'.themeColor,
+              ),
               
-              SizedBox(height: ThemeConstants.space6),
+              const SizedBox(height: ThemeConstants.space6),
               
-              // شبكة الفئات مع العنوان المدمج
-              SimpleCategoryGrid(),
+              // عنوان الفئات
+              _buildSectionTitle(context, 'الفئات الرئيسية'),
               
-              // مساحة إضافية للأسفل
-              SizedBox(height: ThemeConstants.space8),
+              const SizedBox(height: ThemeConstants.space4),
+              
+              // شبكة الفئات - محسنة بالنظام الموحد
+              const SimpleCategoryGrid(),
+              
+              const SizedBox(height: ThemeConstants.space8), // مساحة إضافية
             ],
           ),
         ),
@@ -55,64 +70,42 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  PreferredSizeWidget _buildCustomAppBar(BuildContext context) {
-    return CustomAppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      toolbarHeight: 70,
-      automaticallyImplyLeading: false,
-      systemOverlayStyle: SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Theme.of(context).brightness == Brightness.dark
-            ? Brightness.light 
-            : Brightness.dark,
-      ),
-      flexibleSpace: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColorSystem.primary.withValues(alpha: 0.1),
-              AppColorSystem.primary.withValues(alpha: 0.05),
-              Colors.transparent,
-            ],
-          ),
-        ),
-      ),
+  /// شريط التطبيق محسن بالنظام الموحد
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return CustomAppBar.transparent(
       titleWidget: Row(
         children: [
-          // أيقونة التطبيق - محسنة بالنظام الموحد
+          // أيقونة التطبيق - بالنظام الموحد
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(ThemeConstants.space2),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppColorSystem.primary,
-                  AppColorSystem.primary.darken(0.2),
+                  context.primaryColor,
+                  context.primaryColor.darken(0.2),
                 ],
               ),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
               boxShadow: [
                 BoxShadow(
-                  color: AppColorSystem.primary.withValues(alpha: 0.3),
+                  color: context.primaryColor.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
-            child: Icon(
+            child: const Icon(
               AppIconsSystem.home,
               color: Colors.white,
-              size: 24,
+              size: ThemeConstants.iconMd,
             ),
           ),
           
           const SizedBox(width: ThemeConstants.space3),
           
-          // اسم التطبيق والترحيب
+          // النصوص
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,17 +115,13 @@ class HomeScreen extends StatelessWidget {
                   'مُسلم',
                   style: AppTextStyles.h4.copyWith(
                     fontWeight: ThemeConstants.bold,
-                    color: AppColorSystem.getTextPrimary(context),
-                    fontSize: 20,
-                    height: 1.1,
+                    color: context.textPrimaryColor,
                   ),
                 ),
                 Text(
                   'السلام عليكم ورحمة الله',
                   style: AppTextStyles.caption.copyWith(
-                    color: AppColorSystem.getTextSecondary(context),
-                    fontSize: 12,
-                    height: 1.2,
+                    color: context.textSecondaryColor,
                   ),
                 ),
               ],
@@ -141,19 +130,19 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       actions: [
-        // أيقونة الإعدادات - محسنة بالنظام الموحد
+        // زر الإعدادات - بالنظام الموحد
         Container(
-          margin: const EdgeInsets.only(left: ThemeConstants.space4),
+          margin: const EdgeInsets.all(ThemeConstants.space2),
           decoration: BoxDecoration(
-            color: AppColorSystem.getCard(context).withValues(alpha: 0.8),
-            borderRadius: BorderRadius.circular(12),
+            color: context.cardColor.withValues(alpha: 0.8),
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
             border: Border.all(
-              color: AppColorSystem.getDivider(context).withValues(alpha: 0.3),
+              color: context.dividerColor.withValues(alpha: 0.3),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: AppColorSystem.primary.withValues(alpha: 0.1),
+                color: context.primaryColor.withValues(alpha: 0.1),
                 blurRadius: 6,
                 offset: const Offset(0, 3),
               ),
@@ -162,19 +151,10 @@ class HomeScreen extends StatelessWidget {
           child: IconButton(
             icon: Icon(
               AppIconsSystem.settings,
-              color: AppColorSystem.primary,
-              size: 22,
+              color: context.primaryColor,
+              size: ThemeConstants.iconSm,
             ),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.pushNamed(context, '/settings').catchError((error) {
-                AppSnackBar.showInfo(
-                  context: context,
-                  message: 'هذه الميزة قيد التطوير',
-                );
-                return null;
-              });
-            },
+            onPressed: () => _navigateToRoute(context, '/settings'),
             tooltip: 'الإعدادات',
           ),
         ),
@@ -182,6 +162,56 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  /// عنوان القسم بالنظام الموحد
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space2),
+      child: Row(
+        children: [
+          Container(
+            width: 4,
+            height: 24,
+            decoration: BoxDecoration(
+              color: context.primaryColor,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
+            ),
+          ),
+          
+          const SizedBox(width: ThemeConstants.space3),
+          
+          Text(
+            title,
+            style: AppTextStyles.h5.copyWith(
+              fontWeight: ThemeConstants.semiBold,
+              color: context.textPrimaryColor,
+            ),
+          ),
+          
+          const Spacer(),
+          
+          AppButton.text(
+            text: 'عرض الكل',
+            onPressed: () => _navigateToRoute(context, '/categories'),
+            icon: Icons.arrow_forward_ios,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// التنقل الموحد مع معالجة الأخطاء
+  void _navigateToRoute(BuildContext context, String route) {
+    HapticFeedback.lightImpact();
+    
+    Navigator.pushNamed(context, route).catchError((error) {
+      if (context.mounted) {
+        context.showInfoSnackBar('هذه الميزة قيد التطوير');
+      }
+      return null;
+    });
+  }
+
+  /// تحديث البيانات مع النظام الموحد
   Future<void> _handleRefresh(BuildContext context) async {
     HapticFeedback.lightImpact();
     
@@ -189,10 +219,7 @@ class HomeScreen extends StatelessWidget {
     await Future.delayed(ThemeConstants.durationNormal);
     
     if (context.mounted) {
-      AppSnackBar.showSuccess(
-        context: context, 
-        message: 'تم تحديث البيانات بنجاح',
-      );
+      context.showSuccessSnackBar('تم تحديث البيانات بنجاح');
     }
   }
 }

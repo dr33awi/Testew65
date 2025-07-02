@@ -1,4 +1,5 @@
-// lib/features/prayer_times/widgets/location_header.dart - مُصحح نهائياً
+// lib/features/prayer_times/widgets/location_header.dart - النسخة الموحدة
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
@@ -16,123 +17,111 @@ class LocationHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppContainerBuilder.gradient(
-      colors: [
-        AppColorSystem.primary,
-        AppColorSystem.primary.darken(0.2),
+    // ✅ استخدام AppCard مع تدرج موحد
+    return AppCard.custom(
+      style: CardStyle.glassmorphism,
+      gradientColors: [
+        context.primaryColor,
+        context.primaryColor.darken(0.2),
       ],
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: GestureDetector(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onTap();
-        },
-        child: Row(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      child: Row(
+        children: [
+          _buildLocationIcon(),
+          ThemeConstants.space3.w,
+          Expanded(
+            child: _buildLocationInfo(context),
+          ),
+          ThemeConstants.space3.w,
+          _buildRefreshButton(context),
+        ],
+      ),
+    ).cardContainer(
+      margin: ThemeConstants.space4.horizontal,
+    );
+  }
+
+  Widget _buildLocationIcon() {
+    // ✅ استخدام النظام الموحد للحاويات
+    return AppContainerBuilder.glass(
+      child: const Icon(
+        AppIconsSystem.location,
+        color: Colors.white,
+        size: ThemeConstants.iconMd,
+      ),
+      backgroundColor: Colors.white.withOpacitySafe(0.2),
+      borderRadius: ThemeConstants.radiusLg,
+      padding: const EdgeInsets.all(12),
+    );
+  }
+
+  Widget _buildLocationInfo(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'موقعك الحالي',
+          style: AppTextStyles.label1.copyWith(
+            color: Colors.white.withOpacitySafe(0.8),
+            fontWeight: ThemeConstants.medium,
+          ),
+        ),
+        
+        ThemeConstants.space1.h,
+        
+        Row(
           children: [
-            // أيقونة الموقع
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  width: 2,
-                ),
-              ),
-              child: const Icon(
-                Icons.location_on,
-                color: Colors.white,
-                size: ThemeConstants.iconMd,
-              ),
-            ),
-            
-            const SizedBox(width: ThemeConstants.space3),
-            
-            // معلومات الموقع
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'موقعك الحالي',
-                    style: AppTextStyles.label1.copyWith(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      fontWeight: ThemeConstants.medium,
-                    ),
-                  ),
-                  
-                  const SizedBox(height: ThemeConstants.space1),
-                  
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          location.cityName ?? 'غير محدد',
-                          style: AppTextStyles.h5.copyWith(
-                            color: Colors.white,
-                            fontWeight: ThemeConstants.bold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (location.countryName != null) ...[
-                        const SizedBox(width: ThemeConstants.space2),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: ThemeConstants.space2,
-                            vertical: ThemeConstants.space1,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                          ),
-                          child: Text(
-                            location.countryName!,
-                            style: AppTextStyles.caption.copyWith(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontWeight: ThemeConstants.semiBold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(width: ThemeConstants.space3),
-            
-            // زر التحديث
-            AnimatedPress(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                onTap();
-              },
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
-                    width: 1,
-                  ),
-                ),
-                child: const Icon(
-                  Icons.refresh,
+              child: Text(
+                location.cityName ?? 'غير محدد',
+                style: AppTextStyles.h5.copyWith(
                   color: Colors.white,
-                  size: ThemeConstants.iconSm,
+                  fontWeight: ThemeConstants.bold,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
+            if (location.countryName != null) ...[
+              ThemeConstants.space2.w,
+              _buildCountryBadge(),
+            ],
           ],
         ),
+      ],
+    );
+  }
+
+  Widget _buildCountryBadge() {
+    // ✅ استخدام النظام الموحد للشارات
+    return AppNoticeCard.info(
+      title: location.countryName!,
+    ).padded(const EdgeInsets.symmetric(
+      horizontal: ThemeConstants.space2,
+      vertical: ThemeConstants.space1,
+    ));
+  }
+
+  Widget _buildRefreshButton(BuildContext context) {
+    // ✅ استخدام AnimatedPress الموحد
+    return AnimatedPress(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      child: AppContainerBuilder.glass(
+        child: const Icon(
+          AppIconsSystem.refresh,
+          color: Colors.white,
+          size: ThemeConstants.iconSm,
+        ),
+        backgroundColor: Colors.white.withOpacitySafe(0.2),
+        borderRadius: ThemeConstants.radiusLg,
+        padding: const EdgeInsets.all(8),
       ),
     );
   }

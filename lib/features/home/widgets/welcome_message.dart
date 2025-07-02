@@ -1,6 +1,5 @@
-// lib/features/home/widgets/welcome_message.dart - محدث للنظام الموحد
+// lib/features/home/widgets/welcome_message.dart - النسخة المُصححة نهائياً
 import 'package:flutter/material.dart';
-import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 
 class WelcomeMessage extends StatefulWidget {
@@ -14,7 +13,6 @@ class _WelcomeMessageState extends State<WelcomeMessage>
     with SingleTickerProviderStateMixin {
   
   late AnimationController _shimmerController;
-  late Animation<double> _shimmerAnimation;
   
   static const List<String> _arabicMonths = [
     'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
@@ -33,17 +31,9 @@ class _WelcomeMessageState extends State<WelcomeMessage>
 
   void _setupShimmerAnimation() {
     _shimmerController = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: ThemeConstants.durationExtraSlow,
       vsync: this,
     )..repeat();
-
-    _shimmerAnimation = Tween<double>(
-      begin: -2.0,
-      end: 2.0,
-    ).animate(CurvedAnimation(
-      parent: _shimmerController,
-      curve: Curves.easeInOut,
-    ));
   }
 
   @override
@@ -59,11 +49,11 @@ class _WelcomeMessageState extends State<WelcomeMessage>
     final greeting = _getGreeting(hour);
     final message = _getMessage(hour);
     final icon = _getGreetingIcon(hour);
-    final gradientColors = AppColorSystem.getTimeBasedGradient().colors;
+    final timeBasedColor = _getTimeBasedColor(hour);
     
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isTablet = constraints.maxWidth > 600;
+        final isTablet = context.isTablet;
         
         return Container(
           width: double.infinity,
@@ -73,9 +63,17 @@ class _WelcomeMessageState extends State<WelcomeMessage>
           ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                timeBasedColor.withValues(alpha: 0.9),
+                timeBasedColor.darken(0.2).withValues(alpha: 0.8),
+              ],
+            ),
             boxShadow: [
               BoxShadow(
-                color: gradientColors.first.withValues(alpha: 0.2),
+                color: timeBasedColor.withValues(alpha: 0.3),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
                 spreadRadius: -3,
@@ -84,72 +82,19 @@ class _WelcomeMessageState extends State<WelcomeMessage>
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-            child: Stack(
-              children: [
-                // الخلفية المتدرجة
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: gradientColors.map((c) => 
-                        c.withValues(alpha: 0.95)
-                      ).toList(),
-                    ),
-                  ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  width: 1,
                 ),
-                
-                // تأثير التلميع المتحرك
-                AnimatedBuilder(
-                  animation: _shimmerAnimation,
-                  builder: (context, child) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.transparent,
-                            Colors.white.withValues(alpha: 0.08),
-                            Colors.transparent,
-                          ],
-                          stops: [
-                            (_shimmerAnimation.value - 0.3).clamp(0.0, 1.0),
-                            _shimmerAnimation.value.clamp(0.0, 1.0),
-                            (_shimmerAnimation.value + 0.3).clamp(0.0, 1.0),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                
-                // الطبقة الزجاجية
-                BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-                    ),
-                  ),
-                ),
-                
-                // المحتوى الرئيسي
-                Padding(
-                  padding: EdgeInsets.all(
-                    isTablet ? ThemeConstants.space4 : ThemeConstants.space3,
-                  ),
-                  child: _buildContent(context, now, greeting, message, icon, isTablet),
-                ),
-                
-                // نقاط زخرفية مصغرة
-                _buildDecorativeElements(),
-              ],
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+              ),
+              padding: EdgeInsets.all(
+                isTablet ? ThemeConstants.space5 : ThemeConstants.space4,
+              ),
+              child: _buildContent(context, now, greeting, message, icon, isTablet),
             ),
           ),
         );
@@ -161,10 +106,10 @@ class _WelcomeMessageState extends State<WelcomeMessage>
                       String message, IconData icon, bool isTablet) {
     return Row(
       children: [
-        // الأيقونة المتحركة مصغرة
+        // الأيقونة المتحركة
         Container(
-          width: isTablet ? 60 : 45,
-          height: isTablet ? 60 : 45,
+          width: isTablet ? 60 : 50,
+          height: isTablet ? 60 : 50,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.white.withValues(alpha: 0.2),
@@ -182,8 +127,8 @@ class _WelcomeMessageState extends State<WelcomeMessage>
           ),
           child: TweenAnimationBuilder<double>(
             tween: Tween(begin: 0.0, end: 1.0),
-            duration: const Duration(milliseconds: 800),
-            curve: Curves.elasticOut,
+            duration: ThemeConstants.durationSlow,
+            curve: ThemeConstants.curveOvershoot,
             builder: (context, value, child) {
               return Transform.scale(
                 scale: value,
@@ -222,8 +167,8 @@ class _WelcomeMessageState extends State<WelcomeMessage>
                     shadows: [
                       Shadow(
                         color: Colors.black.withValues(alpha: 0.3),
-                        offset: const Offset(0, 1),
-                        blurRadius: 3,
+                        offset: const Offset(0, 2),
+                        blurRadius: 4,
                       ),
                     ],
                   ),
@@ -261,7 +206,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
     final dateStr = _getArabicDate(now);
     
     return Wrap(
-      spacing: ThemeConstants.space1,
+      spacing: ThemeConstants.space2,
       runSpacing: ThemeConstants.space1,
       children: [
         // الوقت
@@ -343,77 +288,6 @@ class _WelcomeMessageState extends State<WelcomeMessage>
     );
   }
 
-  Widget _buildDecorativeElements() {
-    return Positioned.fill(
-      child: Stack(
-        children: [
-          // دائرة زخرفية علوية يمين مصغرة
-          Positioned(
-            top: -15,
-            right: -15,
-            child: Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.08),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  width: 1,
-                ),
-              ),
-            ),
-          ),
-          
-          // دائرة زخرفية سفلية يسار مصغرة
-          Positioned(
-            bottom: -20,
-            left: -20,
-            child: Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.04),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.08),
-                  width: 1,
-                ),
-              ),
-            ),
-          ),
-          
-          // نقاط صغيرة متناثرة
-          Positioned(
-            top: 20,
-            left: 30,
-            child: Container(
-              width: 3,
-              height: 3,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.3),
-              ),
-            ),
-          ),
-          
-          Positioned(
-            bottom: 35,
-            right: 45,
-            child: Container(
-              width: 4,
-              height: 4,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.25),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   String _getGreeting(int hour) {
     if (hour < 5) {
       return 'ليلة مباركة';
@@ -465,6 +339,20 @@ class _WelcomeMessageState extends State<WelcomeMessage>
       return Icons.wb_twilight;
     } else {
       return Icons.nights_stay;
+    }
+  }
+
+  Color _getTimeBasedColor(int hour) {
+    if (hour < 5) {
+      return AppColorSystem.tertiary; // ليل
+    } else if (hour < 12) {
+      return 'morning'.themeColor;
+    } else if (hour < 17) {
+      return AppColorSystem.primary; // نهار
+    } else if (hour < 20) {
+      return 'evening'.themeColor;
+    } else {
+      return 'sleep'.themeColor;
     }
   }
 }
