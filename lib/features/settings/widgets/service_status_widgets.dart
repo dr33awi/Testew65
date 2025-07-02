@@ -1,11 +1,13 @@
-// lib/features/settings/widgets/service_status_widgets.dart - محدثة للنظام الموحد
+// lib/features/settings/widgets/service_status_widgets.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../app/themes/app_theme.dart'; // ✅ النظام الموحد
+import '../../../app/themes/app_theme.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
 import '../../../core/infrastructure/services/device/battery/battery_service.dart';
 import '../services/settings_services_manager.dart';
 
+/// ويدجت عرض حالة الخدمات الشاملة
 class ServiceStatusOverview extends StatefulWidget {
   final ServiceStatus status;
   final SettingsServicesManager servicesManager;
@@ -22,35 +24,101 @@ class ServiceStatusOverview extends StatefulWidget {
   State<ServiceStatusOverview> createState() => _ServiceStatusOverviewState();
 }
 
-class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
+class _ServiceStatusOverviewState extends State<ServiceStatusOverview>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAnimations();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _initializeAnimations() {
+    _animationController = AnimationController(
+      duration: ThemeConstants.durationNormal,
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: ThemeConstants.curveDefault,
+    ));
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: ThemeConstants.curveDefault,
+    ));
+
+    _animationController.forward();
+  }
 
   @override
   Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        return FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: _buildContent(context),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     final healthyServices = _getHealthyServicesCount();
     final totalServices = _getTotalServicesCount();
     final healthPercentage = (healthyServices / totalServices * 100).round();
 
     return Container(
       margin: const EdgeInsets.all(ThemeConstants.space4),
-      child: AppCard.custom(
-        type: CardType.normal,
-        style: CardStyle.gradient,
-        primaryColor: _getHealthColor(healthPercentage),
-        gradientColors: [
-          _getHealthColor(healthPercentage),
-          _getHealthColor(healthPercentage).darken(0.2),
+      decoration: BoxDecoration(
+        gradient: _getHealthGradient(healthPercentage),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        boxShadow: [
+          BoxShadow(
+            color: _getHealthColor(healthPercentage).withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
         ],
-        padding: const EdgeInsets.all(ThemeConstants.space5),
-        onTap: widget.onRefresh,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context, healthPercentage),
-            const SizedBox(height: ThemeConstants.space4),
-            _buildServicesGrid(context),
-            const SizedBox(height: ThemeConstants.space4),
-            _buildBatteryInfo(context),
-          ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: widget.onRefresh,
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+          child: Padding(
+            padding: const EdgeInsets.all(ThemeConstants.space5),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(context, healthPercentage),
+                ThemeConstants.space4.h,
+                _buildServicesGrid(context),
+                ThemeConstants.space4.h,
+                _buildBatteryInfo(context),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -64,10 +132,6 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
-              width: 1,
-            ),
           ),
           child: Icon(
             _getHealthIcon(healthPercentage),
@@ -75,21 +139,21 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
             size: 24,
           ),
         ),
-        const SizedBox(width: ThemeConstants.space3),
+        ThemeConstants.space3.w,
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'حالة الخدمات',
-                style: AppTextStyles.h5.copyWith(
+                style: context.titleMedium?.copyWith(
                   color: Colors.white,
                   fontWeight: ThemeConstants.bold,
                 ),
               ),
               Text(
                 _getHealthDescription(healthPercentage),
-                style: AppTextStyles.caption.copyWith(
+                style: context.bodySmall?.copyWith(
                   color: Colors.white.withValues(alpha: 0.9),
                 ),
               ),
@@ -104,14 +168,10 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
-              width: 1,
-            ),
           ),
           child: Text(
             '$healthPercentage%',
-            style: AppTextStyles.label1.copyWith(
+            style: context.labelLarge?.copyWith(
               color: Colors.white,
               fontWeight: ThemeConstants.bold,
             ),
@@ -126,13 +186,13 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
       children: [
         Expanded(
           child: _ServiceIndicator(
-            icon: AppIconsSystem.notifications,
+            icon: Icons.notifications,
             label: 'الإشعارات',
             isActive: widget.status.isNotificationEnabled,
             onTap: () => _handleNotificationTap(context),
           ),
         ),
-        const SizedBox(width: ThemeConstants.space3),
+        ThemeConstants.space3.w,
         Expanded(
           child: _ServiceIndicator(
             icon: Icons.location_on,
@@ -141,7 +201,7 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
             onTap: () => _handleLocationTap(context),
           ),
         ),
-        const SizedBox(width: ThemeConstants.space3),
+        ThemeConstants.space3.w,
         Expanded(
           child: _ServiceIndicator(
             icon: Icons.battery_saver,
@@ -162,10 +222,6 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-          width: 1,
-        ),
       ),
       child: Row(
         children: [
@@ -174,24 +230,24 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
             color: Colors.white.withValues(alpha: 0.8),
             size: 20,
           ),
-          const SizedBox(width: ThemeConstants.space2),
+          ThemeConstants.space2.w,
           Text(
             'البطارية: ${batteryState.level}%',
-            style: AppTextStyles.caption.copyWith(
+            style: context.bodySmall?.copyWith(
               color: Colors.white.withValues(alpha: 0.9),
             ),
           ),
           if (batteryState.isPowerSaveMode) ...[
-            const SizedBox(width: ThemeConstants.space2),
+            ThemeConstants.space2.w,
             Icon(
               Icons.power_settings_new,
               color: Colors.orange,
               size: 16,
             ),
-            const SizedBox(width: ThemeConstants.space1),
+            ThemeConstants.space1.w,
             Text(
               'وضع توفير الطاقة',
-              style: AppTextStyles.caption.copyWith(
+              style: context.labelSmall?.copyWith(
                 color: Colors.orange,
                 fontWeight: ThemeConstants.semiBold,
               ),
@@ -213,10 +269,17 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
         'إعدادات الإشعارات',
         [
           ServiceOption(
-            icon: AppIconsSystem.settings,
+            icon: Icons.settings,
             title: 'تخصيص الإشعارات',
             subtitle: 'إدارة أنواع الإشعارات والتوقيتات',
             onTap: () => Navigator.pushNamed(context, '/notification-settings'),
+          ),
+          ServiceOption(
+            icon: Icons.block,
+            title: 'تعطيل الإشعارات',
+            subtitle: 'إيقاف جميع الإشعارات مؤقتاً',
+            onTap: () => _disableNotifications(context),
+            isDestructive: true,
           ),
         ],
       );
@@ -242,7 +305,7 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
         'إعدادات الموقع',
         [
           ServiceOption(
-            icon: AppIconsSystem.loading,
+            icon: Icons.refresh,
             title: 'تحديث الموقع',
             subtitle: 'إعادة تحديد الموقع الحالي',
             onTap: () => _updateLocation(context),
@@ -277,13 +340,13 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
         'إعدادات البطارية',
         [
           ServiceOption(
-            icon: AppIconsSystem.info,
+            icon: Icons.info,
             title: 'معلومات البطارية',
             subtitle: 'عرض تفاصيل حالة البطارية الحالية',
             onTap: () => _showBatteryDetails(context),
           ),
           ServiceOption(
-            icon: AppIconsSystem.settings,
+            icon: Icons.settings,
             title: 'إعدادات النظام',
             subtitle: 'فتح إعدادات البطارية في النظام',
             onTap: () => widget.servicesManager.permissionService.openAppSettings(
@@ -316,15 +379,27 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
   int _getTotalServicesCount() => 3;
 
   Color _getHealthColor(int percentage) {
-    if (percentage >= 80) return AppColorSystem.success;
-    if (percentage >= 50) return AppColorSystem.warning;
-    return AppColorSystem.error;
+    if (percentage >= 80) return ThemeConstants.success;
+    if (percentage >= 50) return ThemeConstants.warning;
+    return ThemeConstants.error;
+  }
+
+  Gradient _getHealthGradient(int percentage) {
+    final color = _getHealthColor(percentage);
+    return LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        color,
+        color.withValues(alpha: 0.8),
+      ],
+    );
   }
 
   IconData _getHealthIcon(int percentage) {
-    if (percentage >= 80) return AppIconsSystem.success;
-    if (percentage >= 50) return AppIconsSystem.getStateIcon('warning');
-    return AppIconsSystem.getStateIcon('error');
+    if (percentage >= 80) return Icons.check_circle;
+    if (percentage >= 50) return Icons.warning;
+    return Icons.error;
   }
 
   String _getHealthDescription(int percentage) {
@@ -334,6 +409,10 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
   }
 
   // =============== العمليات ===============
+
+  Future<void> _disableNotifications(BuildContext context) async {
+    // Implementation for disabling notifications
+  }
 
   Future<void> _updateLocation(BuildContext context) async {
     final result = await widget.servicesManager.updatePrayerLocation();
@@ -348,38 +427,77 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
   void _showBatteryDetails(BuildContext context) {
     final batteryState = widget.status.batteryState;
     
-    AppInfoDialog.show(
+    showDialog(
       context: context,
-      title: 'معلومات البطارية',
-      content: '''مستوى الشحن: ${batteryState.level}%
-
-حالة الشحن: ${batteryState.isCharging ? 'يشحن' : 'لا يشحن'}
-
-وضع توفير الطاقة: ${batteryState.isPowerSaveMode ? 'مفعل' : 'معطل'}''',
-      icon: Icons.battery_std,
-      accentColor: AppColorSystem.info,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.battery_std, color: context.primaryColor),
+            ThemeConstants.space2.w,
+            const Text('معلومات البطارية'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _BatteryInfoRow(
+              icon: Icons.battery_std,
+              label: 'مستوى الشحن',
+              value: '${batteryState.level}%',
+            ),
+            _BatteryInfoRow(
+              icon: batteryState.isCharging ? Icons.power : Icons.power_off,
+              label: 'حالة الشحن',
+              value: batteryState.isCharging ? 'يشحن' : 'لا يشحن',
+            ),
+            _BatteryInfoRow(
+              icon: Icons.power_settings_new,
+              label: 'وضع توفير الطاقة',
+              value: batteryState.isPowerSaveMode ? 'مفعل' : 'معطل',
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('إغلاق'),
+          ),
+        ],
+      ),
     );
   }
 
   void _showBatteryOptimizationDialog(BuildContext context) {
-    AppInfoDialog.show(
+    showDialog(
       context: context,
-      title: 'تحسين البطارية',
-      content: 'لضمان عمل التذكيرات في الخلفية، يُنصح بإيقاف تحسين البطارية لهذا التطبيق من إعدادات النظام.',
-      icon: Icons.battery_saver,
-      accentColor: AppColorSystem.warning,
-      actions: [
-        DialogAction(
-          label: 'فتح الإعدادات',
-          onPressed: () {
-            Navigator.of(context).pop();
-            widget.servicesManager.permissionService.openAppSettings(
-              AppSettingsType.battery,
-            );
-          },
-          isPrimary: true,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.battery_saver, color: ThemeConstants.warning),
+            ThemeConstants.space2.w,
+            const Text('تحسين البطارية'),
+          ],
         ),
-      ],
+        content: const Text(
+          'لضمان عمل التذكيرات في الخلفية، يُنصح بإيقاف تحسين البطارية لهذا التطبيق من إعدادات النظام.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('لاحقاً'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              widget.servicesManager.permissionService.openAppSettings(
+                AppSettingsType.battery,
+              );
+            },
+            child: const Text('فتح الإعدادات'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -390,7 +508,6 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
   ) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColorSystem.getCard(context),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(ThemeConstants.radiusXl),
@@ -405,20 +522,20 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColorSystem.getDivider(context),
+                color: context.dividerColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: ThemeConstants.space4),
+            ThemeConstants.space4.h,
             Text(
               title,
-              style: AppTextStyles.h4.copyWith(
+              style: context.titleLarge?.copyWith(
                 fontWeight: ThemeConstants.bold,
               ),
             ),
-            const SizedBox(height: ThemeConstants.space4),
+            ThemeConstants.space4.h,
             ...options.map((option) => _ServiceOptionTile(option: option)),
-            const SizedBox(height: ThemeConstants.space2),
+            ThemeConstants.space2.h,
           ],
         ),
       ),
@@ -426,31 +543,66 @@ class _ServiceStatusOverviewState extends State<ServiceStatusOverview> {
   }
 
   void _showPermissionDeniedDialog(BuildContext context, String permissionName) {
-    AppInfoDialog.show(
+    showDialog(
       context: context,
-      title: 'إذن $permissionName مطلوب',
-      content: 'لاستخدام هذه الميزة، يجب منح إذن $permissionName. يمكنك تفعيله من إعدادات التطبيق.',
-      icon: AppIconsSystem.getStateIcon('warning'),
-      accentColor: AppColorSystem.warning,
-      actions: [
-        DialogAction(
-          label: 'فتح الإعدادات',
-          onPressed: () {
-            Navigator.of(context).pop();
-            widget.servicesManager.permissionService.openAppSettings();
-          },
-          isPrimary: true,
+      builder: (context) => AlertDialog(
+        title: Text('إذن $permissionName مطلوب'),
+        content: Text(
+          'لاستخدام هذه الميزة، يجب منح إذن $permissionName. يمكنك تفعيله من إعدادات التطبيق.',
         ),
-      ],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('لاحقاً'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              widget.servicesManager.permissionService.openAppSettings();
+            },
+            child: const Text('فتح الإعدادات'),
+          ),
+        ],
+      ),
     );
   }
 
   void _showSuccessMessage(BuildContext context, String message) {
-    AppSnackBar.showSuccess(context: context, message: message);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.white, size: 20),
+            ThemeConstants.space2.w,
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: ThemeConstants.success,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
+      ),
+    );
   }
 
   void _showErrorMessage(BuildContext context, String message) {
-    AppSnackBar.showError(context: context, message: message);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.error, color: Colors.white, size: 20),
+            ThemeConstants.space2.w,
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: ThemeConstants.error,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
+      ),
+    );
   }
 }
 
@@ -473,45 +625,77 @@ class _ServiceIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedPress(
-        onTap: onTap,
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: isActive ? 0.2 : 0.1),
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                border: isActive ? null : Border.all(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  width: 1,
-                ),
-                boxShadow: isActive ? [
-                  BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ] : null,
-              ),
-              child: Icon(
-                icon,
-                color: Colors.white.withValues(alpha: isActive ? 1.0 : 0.6),
-                size: 20,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: isActive ? 0.2 : 0.1),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              border: isActive ? null : Border.all(
+                color: Colors.white.withValues(alpha: 0.3),
+                width: 1,
               ),
             ),
-            const SizedBox(height: ThemeConstants.space2),
-            Text(
+            child: Icon(
+              icon,
+              color: Colors.white.withValues(alpha: isActive ? 1.0 : 0.6),
+              size: 20,
+            ),
+          ),
+          ThemeConstants.space2.h,
+          Text(
+            label,
+            style: context.labelSmall?.copyWith(
+              color: Colors.white.withValues(alpha: isActive ? 1.0 : 0.7),
+              fontSize: 11,
+              fontWeight: isActive ? ThemeConstants.semiBold : ThemeConstants.regular,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BatteryInfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _BatteryInfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: ThemeConstants.iconSm,
+            color: context.textSecondaryColor,
+          ),
+          ThemeConstants.space3.w,
+          Expanded(
+            child: Text(
               label,
-              style: AppTextStyles.caption.copyWith(
-                color: Colors.white.withValues(alpha: isActive ? 1.0 : 0.7),
-                fontSize: 11,
-                fontWeight: isActive ? ThemeConstants.semiBold : ThemeConstants.regular,
-              ),
-              textAlign: TextAlign.center,
+              style: context.bodyMedium,
             ),
-          ],
-        ),
+          ),
+          Text(
+            value,
+            style: context.bodyMedium?.copyWith(
+              fontWeight: ThemeConstants.semiBold,
+              color: context.primaryColor,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -526,71 +710,35 @@ class _ServiceOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: ThemeConstants.space2),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-        child: InkWell(
-          onTap: () {
-            Navigator.pop(context);
-            option.onTap?.call();
-          },
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-          child: Container(
-            padding: const EdgeInsets.all(ThemeConstants.space4),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: (option.isDestructive 
-                        ? AppColorSystem.error 
-                        : AppColorSystem.primary).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    option.icon,
-                    color: option.isDestructive 
-                        ? AppColorSystem.error 
-                        : AppColorSystem.primary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: ThemeConstants.space3),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        option.title,
-                        style: AppTextStyles.label1.copyWith(
-                          color: option.isDestructive 
-                              ? AppColorSystem.error 
-                              : AppColorSystem.getTextPrimary(context),
-                        ),
-                      ),
-                      if (option.subtitle != null) ...[
-                        const SizedBox(height: ThemeConstants.space1),
-                        Text(
-                          option.subtitle!,
-                          style: AppTextStyles.caption.copyWith(
-                            color: AppColorSystem.getTextSecondary(context),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: AppColorSystem.getTextSecondary(context),
-                ),
-              ],
-            ),
-          ),
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: (option.isDestructive ? ThemeConstants.error : context.primaryColor)
+              .withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
         ),
+        child: Icon(
+          option.icon,
+          color: option.isDestructive ? ThemeConstants.error : context.primaryColor,
+          size: 20,
+        ),
+      ),
+      title: Text(
+        option.title,
+        style: context.titleSmall?.copyWith(
+          color: option.isDestructive ? ThemeConstants.error : null,
+        ),
+      ),
+      subtitle: option.subtitle != null ? Text(option.subtitle!) : null,
+      onTap: () {
+        Navigator.pop(context);
+        option.onTap?.call();
+      },
+      trailing: Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+        color: context.textSecondaryColor,
       ),
     );
   }

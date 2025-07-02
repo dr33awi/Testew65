@@ -1,61 +1,27 @@
-// lib/app/themes/app_theme.dart - مُصحح لحل جميع الأخطاء
-
+// lib/app/themes/app_theme.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
-
-// استيراد الأنظمة الموحدة والمُحسنة
 import 'theme_constants.dart';
 import 'text_styles.dart';
-import 'core/systems/app_color_system.dart';
-import 'core/helpers/theme_utils.dart';
+import 'core/theme_extensions.dart';
 
-// تصدير جميع الأنظمة الموحدة
+// ===== Barrel Exports =====
 export 'theme_constants.dart';
 export 'text_styles.dart';
-export 'core/theme_notifier.dart';
 export 'core/theme_extensions.dart';
 
-// الأنظمة الموحدة
-export 'core/systems/app_color_system.dart';
-export 'core/systems/app_icons_system.dart';
-export 'core/systems/app_size_system.dart';
-export 'core/systems/app_shadow_system.dart';
-export 'core/systems/app_container_builder.dart';
-export 'core/systems/glass_effect.dart';
-
-// المساعدات الموحدة
-export 'core/helpers/theme_utils.dart';
-export 'core/helpers/category_helper.dart';
-// ✅ عدم تصدير auto_color_helper لتجنب تعارض GradientType
-// export 'core/helpers/auto_color_helper.dart';
-export 'core/helpers/theme_validator.dart';
-
-// المكونات الأساسية
+// Widgets exports
+export 'widgets/cards/app_card.dart';
+export 'widgets/dialogs/app_info_dialog.dart';
+export 'widgets/feedback/app_snackbar.dart';
+export 'widgets/feedback/app_notice_card.dart';
+export 'widgets/layout/app_bar.dart';
+export 'widgets/states/app_empty_state.dart';
 export 'widgets/core/app_button.dart';
 export 'widgets/core/app_text_field.dart';
 export 'widgets/core/app_loading.dart';
 
-// مكونات التخطيط
-export 'widgets/layout/app_bar.dart';
-
-// البطاقات الموحدة
-export 'widgets/cards/index.dart';
-
-// الحوارات والنوافذ المنبثقة
-export 'widgets/dialogs/app_info_dialog.dart';
-
-// مكونات التغذية الراجعة
-export 'widgets/feedback/app_snackbar.dart';
-export 'widgets/feedback/app_notice_card.dart';
-
-// مكونات الحالة
-export 'widgets/states/app_empty_state.dart';
-
-// الرسوم المتحركة
-export 'widgets/animations/animated_press.dart';
-
-// مكتبات الرسوم المتحركة الخارجية
+// Animation exports
 export 'package:flutter_staggered_animations/flutter_staggered_animations.dart'
     show
         AnimationConfiguration,
@@ -65,422 +31,510 @@ export 'package:flutter_staggered_animations/flutter_staggered_animations.dart'
         ScaleAnimation,
         FlipAnimation;
 
-/// نظام الثيم الموحد للتطبيق - مُحدث ومُصحح
+/// نظام الثيم الموحد للتطبيق
 class AppTheme {
   AppTheme._();
 
+  /// الثيم الفاتح
   static ThemeData get lightTheme => _buildTheme(
     brightness: Brightness.light,
-    colorSystem: _LightColorSystem(),
+    primaryColor: ThemeConstants.primary,
+    backgroundColor: ThemeConstants.lightBackground,
+    surfaceColor: ThemeConstants.lightSurface,
+    cardColor: ThemeConstants.lightCard,
+    textPrimaryColor: ThemeConstants.lightTextPrimary,
+    textSecondaryColor: ThemeConstants.lightTextSecondary,
+    dividerColor: ThemeConstants.lightDivider,
   );
 
+  /// الثيم الداكن
   static ThemeData get darkTheme => _buildTheme(
     brightness: Brightness.dark,
-    colorSystem: _DarkColorSystem(),
+    primaryColor: ThemeConstants.primaryLight,
+    backgroundColor: ThemeConstants.darkBackground,
+    surfaceColor: ThemeConstants.darkSurface,
+    cardColor: ThemeConstants.darkCard,
+    textPrimaryColor: ThemeConstants.darkTextPrimary,
+    textSecondaryColor: ThemeConstants.darkTextSecondary,
+    dividerColor: ThemeConstants.darkDivider,
   );
 
-  /// بناء الثيم - منطق موحد مُبسط
+  /// بناء الثيم
   static ThemeData _buildTheme({
     required Brightness brightness,
-    required _ColorSystemInterface colorSystem,
+    required Color primaryColor,
+    required Color backgroundColor,
+    required Color surfaceColor,
+    required Color cardColor,
+    required Color textPrimaryColor,
+    required Color textSecondaryColor,
+    required Color dividerColor,
   }) {
-    try {
-      final textTheme = AppTextStyles.createTextTheme(
-        color: colorSystem.textPrimary,
-        secondaryColor: colorSystem.textSecondary,
-      );
+    final bool isDark = brightness == Brightness.dark;
+    final Color onPrimaryColor = primaryColor.contrastingTextColor;
+    final Color onSecondaryColor = ThemeConstants.accent.contrastingTextColor;
 
-      return ThemeData(
-        brightness: brightness,
-        primaryColor: colorSystem.primary,
-        scaffoldBackgroundColor: colorSystem.background,
-        useMaterial3: true,
-        fontFamily: ThemeConstants.fontFamily,
-        
-        colorScheme: _buildColorScheme(brightness, colorSystem),
-        appBarTheme: _buildAppBarTheme(colorSystem),
-        cardTheme: _buildCardTheme(colorSystem),
-        textTheme: textTheme,
-        elevatedButtonTheme: _buildElevatedButtonTheme(colorSystem),
-        inputDecorationTheme: _buildInputDecorationTheme(colorSystem),
-        dividerTheme: _buildDividerTheme(colorSystem),
-        iconTheme: _buildIconTheme(colorSystem),
-        progressIndicatorTheme: _buildProgressIndicatorTheme(colorSystem),
-        snackBarTheme: _buildSnackBarTheme(colorSystem),
-        dialogTheme: _buildDialogTheme(colorSystem),
-        bottomSheetTheme: _buildBottomSheetTheme(colorSystem),
-        floatingActionButtonTheme: _buildFABTheme(colorSystem),
-        navigationBarTheme: _buildNavigationBarTheme(colorSystem),
-        chipTheme: _buildChipTheme(colorSystem, brightness),
-      );
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('خطأ في بناء الثيم: $e');
-      }
-      return _createFallbackTheme(brightness);
-    }
-  }
+    // Create text theme
+    final textTheme = _createTextTheme(textPrimaryColor, textSecondaryColor);
 
-  /// إنشاء ColorScheme مُوحد
-  static ColorScheme _buildColorScheme(
-    Brightness brightness, 
-    _ColorSystemInterface colorSystem,
-  ) {
-    return ColorScheme(
-      brightness: brightness,
-      primary: colorSystem.primary,
-      onPrimary: colorSystem.onPrimary,
-      secondary: AppColorSystem.accent,
-      onSecondary: ThemeUtils.getContrastingTextColor(AppColorSystem.accent),
-      tertiary: AppColorSystem.tertiary,
-      onTertiary: ThemeUtils.getContrastingTextColor(AppColorSystem.tertiary),
-      error: AppColorSystem.error,
-      onError: Colors.white,
-      surface: colorSystem.background,
-      onSurface: colorSystem.textPrimary,
-      surfaceContainerHighest: colorSystem.card,
-      onSurfaceVariant: colorSystem.textSecondary,
-      outline: colorSystem.divider,
-    );
-  }
-
-  /// إنشاء ثيم احتياطي في حالة الأخطاء
-  static ThemeData _createFallbackTheme(Brightness brightness) {
     return ThemeData(
       brightness: brightness,
-      primarySwatch: Colors.green,
+      primaryColor: primaryColor,
+      scaffoldBackgroundColor: backgroundColor,
+      useMaterial3: true,
       fontFamily: ThemeConstants.fontFamily,
-    );
-  }
-
-  // ===== دوال بناء المكونات - مُبسطة باستخدام ThemeUtils =====
-  
-  static AppBarTheme _buildAppBarTheme(_ColorSystemInterface colors) {
-    return AppBarTheme(
-      backgroundColor: colors.background,
-      foregroundColor: colors.textPrimary,
-      elevation: 0,
-      centerTitle: true,
-      titleTextStyle: AppTextStyles.h4.copyWith(color: colors.textPrimary),
+      
+      // ColorScheme
+      colorScheme: ColorScheme(
+        brightness: brightness,
+        primary: primaryColor,
+        onPrimary: onPrimaryColor,
+        secondary: ThemeConstants.accent,
+        onSecondary: onSecondaryColor,
+        tertiary: ThemeConstants.accentLight,
+        onTertiary: ThemeConstants.accentLight.contrastingTextColor,
+        error: ThemeConstants.error,
+        onError: Colors.white,
+        surface: backgroundColor,
+        onSurface: textPrimaryColor,
+        surfaceContainerHighest: cardColor,
+        onSurfaceVariant: textSecondaryColor,
+        outline: dividerColor,
+      ),
+      
+      // AppBar Theme
+      appBarTheme: AppBarTheme(
+        backgroundColor: backgroundColor,
+        foregroundColor: textPrimaryColor,
+        elevation: 0,
+        centerTitle: true,
+        titleTextStyle: AppTextStyles.h4.copyWith(color: textPrimaryColor),
+        iconTheme: IconThemeData(
+          color: textPrimaryColor,
+          size: ThemeConstants.iconMd,
+        ),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+          systemNavigationBarColor: backgroundColor,
+          systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        ),
+      ),
+      
+      // Card Theme
+      cardTheme: CardThemeData(
+        color: cardColor,
+        elevation: ThemeConstants.elevationNone,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
+      ),
+      
+      // Text Theme
+      textTheme: textTheme,
+      
+      // Button Themes
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: _elevatedButtonStyle(primaryColor, onPrimaryColor),
+      ),
+      
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: _outlinedButtonStyle(primaryColor),
+      ),
+      
+      textButtonTheme: TextButtonThemeData(
+        style: _textButtonStyle(primaryColor),
+      ),
+      
+      // Input Theme
+      inputDecorationTheme: _inputDecorationTheme(
+        isDark: isDark,
+        primaryColor: primaryColor,
+        surfaceColor: surfaceColor,
+        dividerColor: dividerColor,
+        textSecondaryColor: textSecondaryColor,
+      ),
+      
+      // Other Themes
+      dividerTheme: DividerThemeData(
+        color: dividerColor,
+        thickness: ThemeConstants.borderLight,
+        space: ThemeConstants.space1,
+      ),
+      
       iconTheme: IconThemeData(
-        color: colors.textPrimary,
+        color: textPrimaryColor,
         size: ThemeConstants.iconMd,
       ),
-      systemOverlayStyle: SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: colors.statusBarIconBrightness,
-        systemNavigationBarColor: colors.background,
-        systemNavigationBarIconBrightness: colors.statusBarIconBrightness,
+      
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: primaryColor,
+        linearTrackColor: dividerColor.withValues(alpha: ThemeConstants.opacity50),
+        circularTrackColor: dividerColor.withValues(alpha: ThemeConstants.opacity50),
+      ),
+      
+      // Page Transitions
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
+      
+      // Bottom Navigation
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: cardColor,
+        selectedItemColor: primaryColor,
+        unselectedItemColor: textSecondaryColor.withValues(alpha: ThemeConstants.opacity70),
+        type: BottomNavigationBarType.fixed,
+        elevation: ThemeConstants.elevation8,
+        selectedLabelStyle: AppTextStyles.label2.copyWith(
+          fontWeight: ThemeConstants.semiBold,
+        ),
+        unselectedLabelStyle: AppTextStyles.label2,
+        selectedIconTheme: const IconThemeData(size: ThemeConstants.iconMd),
+        unselectedIconTheme: const IconThemeData(size: ThemeConstants.iconMd),
+      ),
+      
+      // Chip Theme
+      chipTheme: ChipThemeData(
+        backgroundColor: surfaceColor,
+        deleteIconColor: textSecondaryColor,
+        disabledColor: ThemeConstants.lightTextHint.withValues(alpha: ThemeConstants.opacity30),
+        selectedColor: primaryColor,
+        secondarySelectedColor: ThemeConstants.accent,
+        labelPadding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space2),
+        padding: const EdgeInsets.symmetric(
+          horizontal: ThemeConstants.space3,
+          vertical: ThemeConstants.space1,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+        ),
+        labelStyle: AppTextStyles.label2.copyWith(color: textPrimaryColor),
+        secondaryLabelStyle: AppTextStyles.label2.copyWith(color: onPrimaryColor),
+        brightness: brightness,
+      ),
+      
+      // Tab Bar Theme
+      tabBarTheme: TabBarThemeData(
+        labelColor: primaryColor,
+        unselectedLabelColor: textSecondaryColor.withValues(alpha: ThemeConstants.opacity70),
+        indicatorSize: TabBarIndicatorSize.label,
+        indicator: UnderlineTabIndicator(
+          borderSide: BorderSide(
+            color: primaryColor,
+            width: ThemeConstants.borderThick,
+          ),
+        ),
+        labelStyle: AppTextStyles.label1.copyWith(
+          fontWeight: ThemeConstants.semiBold,
+        ),
+        unselectedLabelStyle: AppTextStyles.label1,
+      ),
+      
+      // FAB Theme
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primaryColor,
+        foregroundColor: onPrimaryColor,
+        elevation: ThemeConstants.elevation4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        ),
+      ),
+      
+      // Dialog Theme
+      dialogTheme: DialogThemeData(
+        backgroundColor: cardColor,
+        titleTextStyle: AppTextStyles.h5.copyWith(color: textPrimaryColor),
+        contentTextStyle: AppTextStyles.body2.copyWith(color: textSecondaryColor),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        ),
+        elevation: ThemeConstants.elevation8,
+      ),
+      
+      // Switch Theme
+      switchTheme: _switchTheme(isDark, primaryColor),
+      
+      // Checkbox Theme
+      checkboxTheme: _checkboxTheme(isDark, primaryColor, onPrimaryColor),
+      
+      // Radio Theme
+      radioTheme: _radioTheme(primaryColor, textSecondaryColor),
+      
+      // Slider Theme
+      sliderTheme: SliderThemeData(
+        activeTrackColor: primaryColor,
+        inactiveTrackColor: primaryColor.withValues(alpha: ThemeConstants.opacity30),
+        thumbColor: primaryColor,
+        overlayColor: primaryColor.withValues(alpha: ThemeConstants.opacity20),
+        valueIndicatorColor: primaryColor.darken(0.1),
+        valueIndicatorTextStyle: AppTextStyles.caption.copyWith(color: onPrimaryColor),
+      ),
+      
+      // Tooltip Theme
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: (isDark ? ThemeConstants.darkSurface : ThemeConstants.lightSurface)
+              .withValues(alpha: ThemeConstants.opacity90),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
+        ),
+        textStyle: AppTextStyles.caption.copyWith(color: textPrimaryColor),
+        preferBelow: false,
       ),
     );
   }
 
-  static CardThemeData _buildCardTheme(_ColorSystemInterface colors) {
-    return CardThemeData(
-      color: colors.card,
+  // ===== Private Helper Methods =====
+  
+  static TextTheme _createTextTheme(Color primaryColor, Color secondaryColor) {
+    // Using a map to reduce repetition
+    final styles = {
+      'displayLarge': AppTextStyles.h1,
+      'displayMedium': AppTextStyles.h2,
+      'displaySmall': AppTextStyles.h3,
+      'headlineLarge': AppTextStyles.h1,
+      'headlineMedium': AppTextStyles.h2,
+      'headlineSmall': AppTextStyles.h3,
+      'titleLarge': AppTextStyles.h4,
+      'titleMedium': AppTextStyles.h5,
+      'titleSmall': AppTextStyles.h5.copyWith(fontSize: ThemeConstants.textSizeMd),
+      'bodyLarge': AppTextStyles.body1,
+      'bodyMedium': AppTextStyles.body2,
+      'bodySmall': AppTextStyles.caption,
+      'labelLarge': AppTextStyles.label1,
+      'labelMedium': AppTextStyles.label2,
+      'labelSmall': AppTextStyles.caption,
+    };
+    
+    return TextTheme(
+      displayLarge: styles['displayLarge']!.copyWith(color: primaryColor),
+      displayMedium: styles['displayMedium']!.copyWith(color: primaryColor),
+      displaySmall: styles['displaySmall']!.copyWith(color: primaryColor),
+      headlineLarge: styles['headlineLarge']!.copyWith(color: primaryColor),
+      headlineMedium: styles['headlineMedium']!.copyWith(color: primaryColor),
+      headlineSmall: styles['headlineSmall']!.copyWith(color: primaryColor),
+      titleLarge: styles['titleLarge']!.copyWith(color: primaryColor),
+      titleMedium: styles['titleMedium']!.copyWith(color: primaryColor),
+      titleSmall: styles['titleSmall']!.copyWith(color: primaryColor),
+      bodyLarge: styles['bodyLarge']!.copyWith(color: primaryColor),
+      bodyMedium: styles['bodyMedium']!.copyWith(color: secondaryColor),
+      bodySmall: styles['bodySmall']!.copyWith(color: secondaryColor),
+      labelLarge: styles['labelLarge']!.copyWith(color: primaryColor),
+      labelMedium: styles['labelMedium']!.copyWith(color: secondaryColor),
+      labelSmall: styles['labelSmall']!.copyWith(color: secondaryColor),
+    );
+  }
+
+  // ===== Button Styles =====
+  
+  static ButtonStyle _elevatedButtonStyle(Color primaryColor, Color onPrimaryColor) {
+    return ElevatedButton.styleFrom(
+      backgroundColor: primaryColor,
+      foregroundColor: onPrimaryColor,
+      disabledBackgroundColor: ThemeConstants.lightTextHint.withValues(alpha: ThemeConstants.opacity30),
+      disabledForegroundColor: ThemeConstants.lightTextHint.withValues(alpha: ThemeConstants.opacity70),
       elevation: ThemeConstants.elevationNone,
-      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.symmetric(
+        horizontal: ThemeConstants.space6,
+        vertical: ThemeConstants.space4,
+      ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
       ),
+      textStyle: AppTextStyles.button,
+      minimumSize: const Size(ThemeConstants.heightLg, ThemeConstants.buttonHeight),
     );
   }
 
-  static ElevatedButtonThemeData _buildElevatedButtonTheme(_ColorSystemInterface colors) {
-    return ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: colors.primary,
-        foregroundColor: colors.onPrimary,
-        elevation: ThemeConstants.elevationNone,
-        padding: ThemeUtils.createPadding(
-          horizontal: ThemeConstants.space6,
-          vertical: ThemeConstants.space4,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: ThemeUtils.createBorderRadius(all: ThemeConstants.radiusMd),
-        ),
-        textStyle: AppTextStyles.button,
-        minimumSize: const Size(ThemeConstants.heightLg, ThemeConstants.buttonHeight),
+  static ButtonStyle _outlinedButtonStyle(Color primaryColor) {
+    return OutlinedButton.styleFrom(
+      foregroundColor: primaryColor,
+      side: BorderSide(
+        color: primaryColor,
+        width: ThemeConstants.borderMedium,
       ),
+      disabledForegroundColor: ThemeConstants.lightTextHint.withValues(alpha: ThemeConstants.opacity70),
+      padding: const EdgeInsets.symmetric(
+        horizontal: ThemeConstants.space6,
+        vertical: ThemeConstants.space4,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+      ),
+      textStyle: AppTextStyles.button,
+      minimumSize: const Size(ThemeConstants.heightLg, ThemeConstants.buttonHeight),
     );
   }
 
-  static InputDecorationTheme _buildInputDecorationTheme(_ColorSystemInterface colors) {
+  static ButtonStyle _textButtonStyle(Color primaryColor) {
+    return TextButton.styleFrom(
+      foregroundColor: primaryColor,
+      disabledForegroundColor: ThemeConstants.lightTextHint.withValues(alpha: ThemeConstants.opacity70),
+      padding: const EdgeInsets.symmetric(
+        horizontal: ThemeConstants.space4,
+        vertical: ThemeConstants.space2,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+      ),
+      textStyle: AppTextStyles.button,
+    );
+  }
+
+  // ===== Input Decoration Theme =====
+  
+  static InputDecorationTheme _inputDecorationTheme({
+    required bool isDark,
+    required Color primaryColor,
+    required Color surfaceColor,
+    required Color dividerColor,
+    required Color textSecondaryColor,
+  }) {
     return InputDecorationTheme(
-      fillColor: ThemeUtils.applyOpacity(colors.surface, colors.fillOpacity),
+      fillColor: surfaceColor.withValues(
+        alpha: isDark ? ThemeConstants.opacity10 : ThemeConstants.opacity50
+      ),
       filled: true,
-      contentPadding: ThemeUtils.createPadding(
+      contentPadding: const EdgeInsets.symmetric(
         horizontal: ThemeConstants.space4,
         vertical: ThemeConstants.space4,
       ),
       border: OutlineInputBorder(
-        borderRadius: ThemeUtils.createBorderRadius(all: ThemeConstants.radiusMd),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         borderSide: BorderSide(
-          color: colors.divider,
+          color: dividerColor,
+          width: ThemeConstants.borderLight,
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        borderSide: BorderSide(
+          color: dividerColor,
           width: ThemeConstants.borderLight,
         ),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: ThemeUtils.createBorderRadius(all: ThemeConstants.radiusMd),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         borderSide: BorderSide(
-          color: colors.primary,
+          color: primaryColor,
           width: ThemeConstants.borderThick,
         ),
       ),
-    );
-  }
-
-  static DividerThemeData _buildDividerTheme(_ColorSystemInterface colors) {
-    return DividerThemeData(
-      color: colors.divider,
-      thickness: ThemeConstants.borderLight,
-      space: ThemeConstants.space1,
-    );
-  }
-
-  static IconThemeData _buildIconTheme(_ColorSystemInterface colors) {
-    return IconThemeData(
-      color: colors.textPrimary,
-      size: ThemeConstants.iconMd,
-    );
-  }
-
-  static ProgressIndicatorThemeData _buildProgressIndicatorTheme(_ColorSystemInterface colors) {
-    return ProgressIndicatorThemeData(
-      color: colors.primary,
-      linearTrackColor: ThemeUtils.applyOpacity(colors.divider, ThemeConstants.opacity50),
-      circularTrackColor: ThemeUtils.applyOpacity(colors.divider, ThemeConstants.opacity50),
-    );
-  }
-
-  static SnackBarThemeData _buildSnackBarTheme(_ColorSystemInterface colors) {
-    return SnackBarThemeData(
-      backgroundColor: colors.card,
-      contentTextStyle: AppTextStyles.body2.copyWith(color: colors.textPrimary),
-      shape: RoundedRectangleBorder(
-        borderRadius: ThemeUtils.createBorderRadius(all: ThemeConstants.radiusLg),
-      ),
-      behavior: SnackBarBehavior.floating,
-      elevation: ThemeConstants.elevation4,
-    );
-  }
-
-  static DialogThemeData _buildDialogTheme(_ColorSystemInterface colors) {
-    return DialogThemeData(
-      backgroundColor: colors.card,
-      shape: RoundedRectangleBorder(
-        borderRadius: ThemeUtils.createBorderRadius(all: ThemeConstants.radiusXl),
-      ),
-      elevation: ThemeConstants.elevation16,
-      titleTextStyle: AppTextStyles.h4.copyWith(color: colors.textPrimary),
-      contentTextStyle: AppTextStyles.body1.copyWith(color: colors.textSecondary),
-    );
-  }
-
-  static BottomSheetThemeData _buildBottomSheetTheme(_ColorSystemInterface colors) {
-    return BottomSheetThemeData(
-      backgroundColor: colors.card,
-      shape: RoundedRectangleBorder(
-        borderRadius: ThemeUtils.createBorderRadius(
-          topLeft: ThemeConstants.radiusXl,
-          topRight: ThemeConstants.radiusXl,
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        borderSide: const BorderSide(
+          color: ThemeConstants.error,
+          width: ThemeConstants.borderLight,
         ),
       ),
-      elevation: ThemeConstants.elevation16,
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        borderSide: const BorderSide(
+          color: ThemeConstants.error,
+          width: ThemeConstants.borderThick,
+        ),
+      ),
+      hintStyle: AppTextStyles.body2.copyWith(
+        color: textSecondaryColor.withValues(alpha: ThemeConstants.opacity70),
+      ),
+      labelStyle: AppTextStyles.body2.copyWith(color: textSecondaryColor),
+      errorStyle: AppTextStyles.caption.copyWith(color: ThemeConstants.error),
+      alignLabelWithHint: true,
     );
   }
 
-  static FloatingActionButtonThemeData _buildFABTheme(_ColorSystemInterface colors) {
-    return FloatingActionButtonThemeData(
-      backgroundColor: colors.primary,
-      foregroundColor: colors.onPrimary,
-      elevation: ThemeConstants.elevation6,
-      focusElevation: ThemeConstants.elevation8,
-      hoverElevation: ThemeConstants.elevation8,
-      highlightElevation: ThemeConstants.elevation12,
-      shape: RoundedRectangleBorder(
-        borderRadius: ThemeUtils.createBorderRadius(all: ThemeConstants.fabSize / 2),
-      ),
-    );
-  }
-
-  static NavigationBarThemeData _buildNavigationBarTheme(_ColorSystemInterface colors) {
-    return NavigationBarThemeData(
-      backgroundColor: colors.card,
-      indicatorColor: ThemeUtils.applyOpacity(colors.primary, ThemeConstants.opacity20),
-      labelTextStyle: WidgetStateProperty.all(
-        AppTextStyles.label2.copyWith(color: colors.textSecondary),
-      ),
-      iconTheme: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return IconThemeData(color: colors.primary, size: ThemeConstants.iconMd);
+  // ===== Switch Theme =====
+  
+  static SwitchThemeData _switchTheme(bool isDark, Color primaryColor) {
+    return SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return primaryColor;
+        if (states.contains(WidgetState.disabled)) {
+          return isDark ? ThemeConstants.darkSurface : ThemeConstants.lightSurface;
         }
-        return IconThemeData(color: colors.textSecondary, size: ThemeConstants.iconMd);
+        return isDark ? ThemeConstants.darkTextSecondary : ThemeConstants.lightTextHint;
       }),
-      height: ThemeConstants.bottomNavHeight,
-      elevation: ThemeConstants.elevation4,
+      trackColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return primaryColor.withValues(alpha: ThemeConstants.opacity50);
+        }
+        if (states.contains(WidgetState.disabled)) {
+          return (isDark ? ThemeConstants.darkSurface : ThemeConstants.lightSurface)
+              .withValues(alpha: ThemeConstants.opacity50);
+        }
+        return (isDark ? ThemeConstants.darkTextSecondary : ThemeConstants.lightTextHint)
+            .withValues(alpha: ThemeConstants.opacity30);
+      }),
+      overlayColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) {
+          return primaryColor.withValues(alpha: ThemeConstants.opacity10);
+        }
+        return null;
+      }),
     );
   }
 
-  static ChipThemeData _buildChipTheme(_ColorSystemInterface colors, Brightness brightness) {
-    return ChipThemeData(
-      backgroundColor: colors.surface,
-      selectedColor: ThemeUtils.applyOpacity(colors.primary, ThemeConstants.opacity20),
-      disabledColor: colors.divider,
-      labelStyle: AppTextStyles.label2.copyWith(color: colors.textPrimary),
-      secondaryLabelStyle: AppTextStyles.label2.copyWith(color: colors.textSecondary),
-      brightness: brightness,
-      padding: ThemeUtils.createPadding(
-        horizontal: ThemeConstants.space3,
-        vertical: ThemeConstants.space2,
-      ),
+  // ===== Checkbox Theme =====
+  
+  static CheckboxThemeData _checkboxTheme(
+    bool isDark,
+    Color primaryColor,
+    Color onPrimaryColor,
+  ) {
+    return CheckboxThemeData(
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return primaryColor;
+        if (states.contains(WidgetState.disabled)) {
+          return isDark ? ThemeConstants.darkSurface : ThemeConstants.lightSurface;
+        }
+        return Colors.transparent;
+      }),
+      checkColor: WidgetStateProperty.all(onPrimaryColor),
+      side: WidgetStateBorderSide.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return BorderSide(
+            width: ThemeConstants.borderMedium,
+            color: (isDark ? ThemeConstants.darkTextSecondary : ThemeConstants.lightTextHint)
+                .withValues(alpha: ThemeConstants.opacity50),
+          );
+        }
+        return BorderSide(
+          width: ThemeConstants.borderMedium,
+          color: primaryColor,
+        );
+      }),
       shape: RoundedRectangleBorder(
-        borderRadius: ThemeUtils.createBorderRadius(all: ThemeConstants.radiusFull),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXs),
       ),
+      overlayColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) {
+          return primaryColor.withValues(alpha: ThemeConstants.opacity10);
+        }
+        return null;
+      }),
     );
   }
 
-  // ===== دوال مساعدة مُحسنة =====
-
-  /// الحصول على ثيم مخصص بلون أساسي مختلف - مُصحح
-  static ThemeData getCustomTheme({
-    required Brightness brightness,
-    required Color primaryColor,
-    Color? backgroundColor,
-  }) {
-    try {
-      final isDark = brightness == Brightness.dark;
-      final customColorSystem = _CustomColorSystem(
-        primary: primaryColor,
-        background: backgroundColor ?? (isDark 
-            ? AppColorSystem.darkBackground 
-            : AppColorSystem.lightBackground), // ✅ مُصحح - إزالة cast_from_null
-        isDark: isDark,
-      );
-      
-      return _buildTheme(
-        brightness: brightness,
-        colorSystem: customColorSystem,
-      );
-    } catch (e) {
-      return brightness == Brightness.dark ? darkTheme : lightTheme;
-    }
+  // ===== Radio Theme =====
+  
+  static RadioThemeData _radioTheme(Color primaryColor, Color textSecondaryColor) {
+    return RadioThemeData(
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return primaryColor;
+        if (states.contains(WidgetState.disabled)) {
+          return textSecondaryColor.withValues(alpha: ThemeConstants.opacity50);
+        }
+        return textSecondaryColor;
+      }),
+      overlayColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.hovered) || states.contains(WidgetState.focused)) {
+          return primaryColor.withValues(alpha: ThemeConstants.opacity10);
+        }
+        return null;
+      }),
+    );
   }
-
-  /// التحقق من توافق اللون مع الثيم
-  static bool isColorCompatible(Color color, Brightness brightness) {
-    try {
-      final colorBrightness = ThemeData.estimateBrightnessForColor(color);
-      return brightness == Brightness.dark 
-          ? colorBrightness == Brightness.light 
-          : colorBrightness == Brightness.dark;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  /// الحصول على لون متوافق مع الثيم
-  static Color getCompatibleColor(Color color, Brightness brightness) {
-    if (isColorCompatible(color, brightness)) {
-      return color;
-    }
-    
-    return brightness == Brightness.dark 
-        ? AppColorSystem.primaryLight 
-        : AppColorSystem.primary;
-  }
-}
-
-// ===== واجهات مساعدة داخلية - مُبسطة =====
-
-abstract class _ColorSystemInterface {
-  Color get primary;
-  Color get onPrimary;
-  Color get background;
-  Color get surface;
-  Color get card;
-  Color get divider;
-  Color get textPrimary;
-  Color get textSecondary;
-  Brightness get statusBarIconBrightness;
-  double get fillOpacity;
-}
-
-class _LightColorSystem implements _ColorSystemInterface {
-  @override
-  Color get primary => AppColorSystem.primary;
-  @override
-  Color get onPrimary => ThemeUtils.getContrastingTextColor(primary);
-  @override
-  Color get background => AppColorSystem.lightBackground;
-  @override
-  Color get surface => AppColorSystem.lightSurface;
-  @override
-  Color get card => AppColorSystem.lightCard;
-  @override
-  Color get divider => AppColorSystem.lightDivider;
-  @override
-  Color get textPrimary => AppColorSystem.lightTextPrimary;
-  @override
-  Color get textSecondary => AppColorSystem.lightTextSecondary;
-  @override
-  Brightness get statusBarIconBrightness => Brightness.dark;
-  @override
-  double get fillOpacity => ThemeConstants.opacity50;
-}
-
-class _DarkColorSystem implements _ColorSystemInterface {
-  @override
-  Color get primary => AppColorSystem.primaryLight;
-  @override
-  Color get onPrimary => ThemeUtils.getContrastingTextColor(primary);
-  @override
-  Color get background => AppColorSystem.darkBackground;
-  @override
-  Color get surface => AppColorSystem.darkSurface;
-  @override
-  Color get card => AppColorSystem.darkCard;
-  @override
-  Color get divider => AppColorSystem.darkDivider;
-  @override
-  Color get textPrimary => AppColorSystem.darkTextPrimary;
-  @override
-  Color get textSecondary => AppColorSystem.darkTextSecondary;
-  @override
-  Brightness get statusBarIconBrightness => Brightness.light;
-  @override
-  double get fillOpacity => ThemeConstants.opacity10;
-}
-
-class _CustomColorSystem implements _ColorSystemInterface {
-  final Color _primary;
-  final Color _background;
-  final bool _isDark;
-
-  _CustomColorSystem({
-    required Color primary,
-    required Color background,
-    required bool isDark,
-  }) : _primary = primary, _background = background, _isDark = isDark;
-
-  @override
-  Color get primary => _primary;
-  @override
-  Color get onPrimary => ThemeUtils.getContrastingTextColor(_primary);
-  @override
-  Color get background => _background;
-  @override
-  Color get surface => _isDark ? AppColorSystem.darkSurface : AppColorSystem.lightSurface;
-  @override
-  Color get card => _isDark ? AppColorSystem.darkCard : AppColorSystem.lightCard;
-  @override
-  Color get divider => _isDark ? AppColorSystem.darkDivider : AppColorSystem.lightDivider;
-  @override
-  Color get textPrimary => _isDark ? AppColorSystem.darkTextPrimary : AppColorSystem.lightTextPrimary;
-  @override
-  Color get textSecondary => _isDark ? AppColorSystem.darkTextSecondary : AppColorSystem.lightTextSecondary;
-  @override
-  Brightness get statusBarIconBrightness => _isDark ? Brightness.light : Brightness.dark;
-  @override
-  double get fillOpacity => _isDark ? ThemeConstants.opacity10 : ThemeConstants.opacity50;
 }

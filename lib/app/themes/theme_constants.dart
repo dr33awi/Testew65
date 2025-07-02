@@ -1,10 +1,55 @@
-// lib/app/themes/theme_constants.dart - النسخة المحسنة
+// lib/app/themes/theme_constants.dart
 import 'package:flutter/material.dart';
-import 'core/systems/app_icons_system.dart';
 
-/// ثوابت الثيم - النسخة المحسنة مع تنظيم أفضل ومجموعات منطقية
+/// كل ثوابت الثيم في ملف واحد
 class ThemeConstants {
   ThemeConstants._();
+
+  // ===== الألوان الأساسية - الهوية البصرية الجديدة =====
+  static const Color primary = Color(0xFF5D7052); // أخضر زيتي أنيق
+  static const Color primaryLight = Color(0xFF7A8B6F); // أخضر زيتي فاتح
+  static const Color primaryDark = Color(0xFF445A3B); // أخضر زيتي داكن
+  static const Color primarySoft = Color(0xFF8FA584); // أخضر زيتي ناعم
+
+  // ===== الألوان الثانوية =====
+  static const Color accent = Color(0xFFB8860B); // ذهبي دافئ
+  static const Color accentLight = Color(0xFFDAA520); // ذهبي فاتح
+  static const Color accentDark = Color(0xFF996515); // ذهبي داكن
+  
+  // ===== اللون الثالث =====
+  static const Color tertiary = Color(0xFF8B6F47); // بني دافئ
+  static const Color tertiaryLight = Color(0xFFA68B5B); // بني فاتح
+  static const Color tertiaryDark = Color(0xFF6B5637); // بني داكن
+
+  // ===== الألوان الدلالية =====
+  static const Color success = Color(0xFF5D7052); // نفس اللون الأساسي للتناسق
+  static const Color error = Color(0xFFB85450); // أحمر مخملي ناعم
+  static const Color warning = Color(0xFFD4A574); // برتقالي دافئ
+  static const Color info = Color(0xFF6B8E9F); // أزرق رمادي
+
+  // ===== ألوان الوضع الفاتح =====
+  static const Color lightBackground = Color(0xFFFAFAF8); // خلفية دافئة
+  static const Color lightSurface = Color(0xFFF5F5F0); // سطح دافئ
+  static const Color lightCard = Color(0xFFFFFFFF); // بطاقات بيضاء
+  static const Color lightDivider = Color(0xFFE0DDD4); // فواصل دافئة
+  static const Color lightTextPrimary = Color(0xFF2D2D2D); // نص أساسي
+  static const Color lightTextSecondary = Color(0xFF5F5F5F); // نص ثانوي
+  static const Color lightTextHint = Color(0xFF8F8F8F); // نص تلميحي
+
+  // ===== ألوان الوضع الداكن =====
+  static const Color darkBackground = Color(0xFF1A1F1A); // خلفية داكنة دافئة
+  static const Color darkSurface = Color(0xFF242B24); // سطح داكن
+  static const Color darkCard = Color(0xFF2D352D); // بطاقات داكنة
+  static const Color darkDivider = Color(0xFF3A453A); // فواصل داكنة
+  static const Color darkTextPrimary = Color(0xFFF5F5F0); // نص فاتح
+  static const Color darkTextSecondary = Color(0xFFBDBDB0); // نص ثانوي
+  static const Color darkTextHint = Color(0xFF8A8A80); // نص تلميحي
+
+  // ===== ألوان خاصة بالميزات =====
+  static const Color athkarBackground = Color(0xFFF0F4EC); // خلفية الأذكار
+  static const Color prayerActive = Color(0xFF5D7052); // الصلاة النشطة
+  static const Color qiblaAccent = Color(0xFFB8860B); // لون القبلة
+  static const Color tasbihAccent = Color(0xFF8B6F47); // لون التسبيح
 
   // ===== الخطوط =====
   static const String fontFamilyArabic = 'Cairo';
@@ -18,11 +63,6 @@ class ThemeConstants {
   static const FontWeight semiBold = FontWeight.w600;
   static const FontWeight bold = FontWeight.w700;
 
-  // قائمة أوزان الخطوط للمطورين
-  static const List<FontWeight> fontWeights = [
-    light, regular, medium, semiBold, bold
-  ];
-
   // ===== أحجام النصوص =====
   static const double textSizeXs = 11.0;
   static const double textSizeSm = 12.0;
@@ -33,12 +73,6 @@ class ThemeConstants {
   static const double textSize3xl = 24.0;
   static const double textSize4xl = 28.0;
   static const double textSize5xl = 32.0;
-
-  // مجموعة أحجام النصوص الشائعة
-  static const List<double> textSizes = [
-    textSizeXs, textSizeSm, textSizeMd, textSizeLg, textSizeXl,
-    textSize2xl, textSize3xl, textSize4xl, textSize5xl
-  ];
 
   // ===== المسافات =====
   static const double space0 = 0.0;
@@ -53,11 +87,6 @@ class ThemeConstants {
   static const double space12 = 48.0; // 5xl
   static const double space16 = 64.0; // 6xl
 
-  // مجموعة المسافات الشائعة للمطورين
-  static const List<double> spaces = [
-    space1, space2, space3, space4, space5, space6, space8
-  ];
-
   // ===== نصف القطر =====
   static const double radiusNone = 0.0;
   static const double radiusXs = 4.0;
@@ -69,11 +98,6 @@ class ThemeConstants {
   static const double radius3xl = 28.0;
   static const double radiusFull = 999.0;
 
-  // مجموعة نصف القطر الشائعة
-  static const List<double> borderRadii = [
-    radiusXs, radiusSm, radiusMd, radiusLg, radiusXl, radius2xl
-  ];
-
   // ===== الحدود =====
   static const double borderNone = 0.0;
   static const double borderThin = 0.5;
@@ -82,24 +106,11 @@ class ThemeConstants {
   static const double borderThick = 2.0;
   static const double borderHeavy = 3.0;
 
-  // مجموعة سماكات الحدود
-  static const List<double> borderWidths = [
-    borderThin, borderLight, borderMedium, borderThick, borderHeavy
-  ];
-
   // ===== نقاط التوقف للتصميم المتجاوب =====
   static const double breakpointMobile = 600.0;
   static const double breakpointTablet = 1024.0;
   static const double breakpointDesktop = 1440.0;
   static const double breakpointWide = 1920.0;
-  
-  // خريطة نقاط التوقف للمطورين
-  static const Map<String, double> breakpoints = {
-    'mobile': breakpointMobile,
-    'tablet': breakpointTablet,
-    'desktop': breakpointDesktop,
-    'wide': breakpointWide,
-  };
   
   // ===== أحجام الأيقونات =====
   static const double iconXs = 16.0;
@@ -110,11 +121,6 @@ class ThemeConstants {
   static const double icon2xl = 48.0;
   static const double icon3xl = 56.0;
 
-  // مجموعة أحجام الأيقونات
-  static const List<double> iconSizes = [
-    iconXs, iconSm, iconMd, iconLg, iconXl, icon2xl, icon3xl
-  ];
-
   // ===== الارتفاعات =====
   static const double heightXs = 32.0;
   static const double heightSm = 36.0;
@@ -124,30 +130,15 @@ class ThemeConstants {
   static const double height2xl = 64.0;
   static const double height3xl = 72.0;
 
-  // مجموعة الارتفاعات الشائعة
-  static const List<double> heights = [
-    heightXs, heightSm, heightMd, heightLg, heightXl, height2xl
-  ];
-
   // ===== مكونات خاصة =====
-  static const double appBarHeight = 64.0;
+  static const double appBarHeight = 64.0; // زيادة لإضافة شعار
   static const double bottomNavHeight = 64.0;
   static const double buttonHeight = 52.0;
   static const double inputHeight = 56.0;
   static const double fabSize = 56.0;
   static const double fabSizeMini = 40.0;
 
-  // خريطة أحجام المكونات الخاصة
-  static const Map<String, double> componentHeights = {
-    'appBar': appBarHeight,
-    'bottomNav': bottomNavHeight,
-    'button': buttonHeight,
-    'input': inputHeight,
-    'fab': fabSize,
-    'fabMini': fabSizeMini,
-  };
-
-  // ===== الارتفاعات (Material Design) =====
+  // ===== الظلال =====
   static const double elevationNone = 0.0;
   static const double elevation1 = 1.0;
   static const double elevation2 = 2.0;
@@ -156,12 +147,6 @@ class ThemeConstants {
   static const double elevation8 = 8.0;
   static const double elevation12 = 12.0;
   static const double elevation16 = 16.0;
-
-  // مجموعة الارتفاعات المادية
-  static const List<double> elevations = [
-    elevationNone, elevation1, elevation2, elevation4, 
-    elevation6, elevation8, elevation12, elevation16
-  ];
 
   // ===== الشفافية =====
   static const double opacity5 = 0.05;
@@ -175,20 +160,6 @@ class ThemeConstants {
   static const double opacity80 = 0.80;
   static const double opacity90 = 0.90;
 
-  // مجموعة مستويات الشفافية الشائعة
-  static const List<double> opacities = [
-    opacity10, opacity20, opacity30, opacity50, opacity70, opacity90
-  ];
-
-  // خريطة الشفافية مع الأسماء
-  static const Map<String, double> opacityLevels = {
-    'subtle': opacity10,
-    'light': opacity30,
-    'medium': opacity50,
-    'strong': opacity70,
-    'intense': opacity90,
-  };
-
   // ===== مدد الحركات =====
   static const Duration durationInstant = Duration(milliseconds: 100);
   static const Duration durationFast = Duration(milliseconds: 200);
@@ -196,22 +167,6 @@ class ThemeConstants {
   static const Duration durationSlow = Duration(milliseconds: 400);
   static const Duration durationVerySlow = Duration(milliseconds: 600);
   static const Duration durationExtraSlow = Duration(milliseconds: 1000);
-
-  // مجموعة مدد الحركات الشائعة
-  static const List<Duration> animationDurations = [
-    durationInstant, durationFast, durationNormal, 
-    durationSlow, durationVerySlow
-  ];
-
-  // خريطة مدد الحركات مع الأسماء
-  static const Map<String, Duration> durations = {
-    'instant': durationInstant,
-    'fast': durationFast,
-    'normal': durationNormal,
-    'slow': durationSlow,
-    'verySlow': durationVerySlow,
-    'extraSlow': durationExtraSlow,
-  };
 
   // ===== منحنيات الحركة =====
   static const Curve curveDefault = Curves.easeInOut;
@@ -221,20 +176,137 @@ class ThemeConstants {
   static const Curve curveOvershoot = Curves.easeOutBack;
   static const Curve curveAnticipate = Curves.easeInBack;
 
-  // مجموعة منحنيات الحركة الشائعة
-  static const List<Curve> animationCurves = [
-    curveDefault, curveSharp, curveSmooth, curveBounce
+  // ===== التدرجات اللونية الأساسية =====
+  static const LinearGradient primaryGradient = LinearGradient(
+    colors: [primaryLight, primary],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient accentGradient = LinearGradient(
+    colors: [accentLight, accent],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient tertiaryGradient = LinearGradient(
+    colors: [tertiaryLight, tertiary],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  // تدرجات خاصة بالخلفيات
+  static const LinearGradient backgroundGradient = LinearGradient(
+    colors: [
+      Color(0xFFFAFAF8),
+      Color(0xFFF5F5F0),
+    ],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  static const LinearGradient darkBackgroundGradient = LinearGradient(
+    colors: [
+      Color(0xFF1A1F1A),
+      Color(0xFF242B24),
+    ],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  // تدرجات الصلاة بألوان متناسقة مع الهوية البصرية
+  static const LinearGradient fajrGradient = LinearGradient(
+    colors: [Color(0xFF445A3B), Color(0xFF5D7052)], // أخضر زيتي داكن
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  static const LinearGradient dhuhrGradient = LinearGradient(
+    colors: [Color(0xFFDAA520), Color(0xFFB8860B)], // ذهبي
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  static const LinearGradient asrGradient = LinearGradient(
+    colors: [Color(0xFF8FA584), Color(0xFF7A8B6F)], // أخضر زيتي فاتح
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  static const LinearGradient maghribGradient = LinearGradient(
+    colors: [Color(0xFFA68B5B), Color(0xFF8B6F47)], // بني دافئ
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  static const LinearGradient ishaGradient = LinearGradient(
+    colors: [Color(0xFF2D352D), Color(0xFF1A1F1A)], // داكن أنيق
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+  );
+
+  // ===== الظلال الجاهزة المحسنة =====
+  static List<BoxShadow> shadowSm = [
+    BoxShadow(
+      color: primary.withOpacity(opacity5),
+      blurRadius: 4,
+      offset: const Offset(0, 2),
+    ),
   ];
 
-  // خريطة منحنيات الحركة مع الأسماء
-  static const Map<String, Curve> curves = {
-    'default': curveDefault,
-    'sharp': curveSharp,
-    'smooth': curveSmooth,
-    'bounce': curveBounce,
-    'overshoot': curveOvershoot,
-    'anticipate': curveAnticipate,
-  };
+  static List<BoxShadow> shadowMd = [
+    BoxShadow(
+      color: primary.withOpacity(opacity10),
+      blurRadius: 8,
+      offset: const Offset(0, 4),
+    ),
+  ];
+
+  static List<BoxShadow> shadowLg = [
+    BoxShadow(
+      color: primary.withOpacity(opacity10),
+      blurRadius: 16,
+      offset: const Offset(0, 8),
+    ),
+  ];
+
+  static List<BoxShadow> shadowXl = [
+    BoxShadow(
+      color: primary.withOpacity(opacity20),
+      blurRadius: 24,
+      offset: const Offset(0, 12),
+    ),
+  ];
+
+  static List<BoxShadow> shadowInner = [
+    BoxShadow(
+      color: primary.withOpacity(opacity10),
+      blurRadius: 4,
+      offset: const Offset(0, -2),
+      spreadRadius: -2,
+    ),
+  ];
+
+  // ===== الأيقونات =====
+  // أيقونات الصلاة
+  static const IconData iconPrayer = Icons.mosque;
+  static const IconData iconPrayerTime = Icons.access_time;
+  static const IconData iconQibla = Icons.explore;
+  static const IconData iconAdhan = Icons.volume_up;
+
+  // أيقونات الأذكار
+  static const IconData iconAthkar = Icons.menu_book;
+  static const IconData iconMorningAthkar = Icons.wb_sunny;
+  static const IconData iconEveningAthkar = Icons.nights_stay;
+  static const IconData iconSleepAthkar = Icons.bedtime;
+
+  // أيقونات عامة
+  static const IconData iconFavorite = Icons.favorite;
+  static const IconData iconFavoriteOutline = Icons.favorite_border;
+  static const IconData iconShare = Icons.share;
+  static const IconData iconCopy = Icons.content_copy;
+  static const IconData iconSettings = Icons.settings;
+  static const IconData iconNotifications = Icons.notifications;
 
   // ===== Avatar Sizes =====
   static const double avatarSm = 32.0;
@@ -242,12 +314,7 @@ class ThemeConstants {
   static const double avatarLg = 56.0;
   static const double avatarXl = 64.0;
 
-  // مجموعة أحجام الصور الشخصية
-  static const List<double> avatarSizes = [
-    avatarSm, avatarMd, avatarLg, avatarXl
-  ];
-
-  // ===== ثوابت التطبيق =====
+  // ===== ثوابت الإشعارات =====
   static const String athkarNotificationChannel = 'athkar_channel';
   static const String prayerNotificationChannel = 'prayer_channel';
   
@@ -260,195 +327,170 @@ class ThemeConstants {
   static const int defaultMinBatteryLevel = 15;
   static const int criticalBatteryLevel = 5;
 
-  // ===== مجموعات منطقية للمطورين =====
+  // ===== دوال مساعدة =====
   
-  /// مجموعة القيم الشائعة للتطوير السريع
-  static const Map<String, List<double>> commonValues = {
-    'spaces': spaces,
-    'textSizes': textSizes,
-    'iconSizes': iconSizes,
-    'borderRadii': borderRadii,
-    'elevations': elevations,
-    'opacities': opacities,
-  };
+  /// الحصول على اللون حسب الثيم
+  static Color background(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? darkBackground
+        : lightBackground;
+  }
 
-  /// إعدادات افتراضية مُجمعة
-  static const Map<String, double> defaults = {
-    'space': space4,
-    'textSize': textSizeMd,
-    'iconSize': iconMd,
-    'borderRadius': radiusMd,
-    'elevation': elevation2,
-    'opacity': opacity50,
-    'borderWidth': borderLight,
-  };
+  static Color surface(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? darkSurface
+        : lightSurface;
+  }
 
-  // ===== دوال مساعدة محسنة =====
+  static Color card(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? darkCard
+        : lightCard;
+  }
 
-  /// الحصول على مسافة حسب الاسم
-  static double getSpace(String name) {
+  static Color textPrimary(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? darkTextPrimary
+        : lightTextPrimary;
+  }
+
+  static Color textSecondary(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? darkTextSecondary
+        : lightTextSecondary;
+  }
+
+  static Color divider(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? darkDivider
+        : lightDivider;
+  }
+
+  /// الحصول على تدرج حسب وقت الصلاة
+  static LinearGradient prayerGradient(String prayerName) {
+    switch (prayerName.toLowerCase()) {
+      case 'fajr':
+      case 'الفجر':
+        return fajrGradient;
+      case 'dhuhr':
+      case 'الظهر':
+        return dhuhrGradient;
+      case 'asr':
+      case 'العصر':
+        return asrGradient;
+      case 'maghrib':
+      case 'المغرب':
+        return maghribGradient;
+      case 'isha':
+      case 'العشاء':
+        return ishaGradient;
+      default:
+        return primaryGradient;
+    }
+  }
+
+  /// الحصول على لون حسب اسم الصلاة
+  static Color getPrayerColor(String name) {
     switch (name.toLowerCase()) {
-      case 'xs': case 'tiny': return space1;
-      case 'sm': case 'small': return space2;
-      case 'md': case 'medium': return space4;
-      case 'lg': case 'large': return space6;
-      case 'xl': case 'xlarge': return space8;
-      default: return space4; // افتراضي
+      case 'fajr':
+      case 'الفجر':
+        return const Color(0xFF445A3B); // أخضر زيتي داكن
+      case 'dhuhr':
+      case 'الظهر':
+        return const Color(0xFFB8860B); // ذهبي
+      case 'asr':
+      case 'العصر':
+        return const Color(0xFF7A8B6F); // أخضر زيتي فاتح
+      case 'maghrib':
+      case 'المغرب':
+        return const Color(0xFF8B6F47); // بني دافئ
+      case 'isha':
+      case 'العشاء':
+        return const Color(0xFF2D352D); // داكن أنيق
+      case 'sunrise':
+      case 'الشروق':
+        return const Color(0xFFDAA520); // ذهبي فاتح
+      default:
+        return primary; // اللون الأساسي
     }
   }
 
-  /// الحصول على حجم نص حسب الاسم
-  static double getTextSize(String name) {
-    switch (name.toLowerCase()) {
-      case 'xs': case 'tiny': return textSizeXs;
-      case 'sm': case 'small': return textSizeSm;
-      case 'md': case 'medium': return textSizeMd;
-      case 'lg': case 'large': return textSizeLg;
-      case 'xl': case 'xlarge': return textSizeXl;
-      case '2xl': case 'xxlarge': return textSize2xl;
-      case '3xl': case 'xxxlarge': return textSize3xl;
-      default: return textSizeMd;
-    }
-  }
-
-  /// الحصول على حجم أيقونة حسب الاسم
-  static double getIconSize(String name) {
-    switch (name.toLowerCase()) {
-      case 'xs': case 'tiny': return iconXs;
-      case 'sm': case 'small': return iconSm;
-      case 'md': case 'medium': return iconMd;
-      case 'lg': case 'large': return iconLg;
-      case 'xl': case 'xlarge': return iconXl;
-      case '2xl': case 'xxlarge': return icon2xl;
-      default: return iconMd;
-    }
-  }
-
-  /// الحصول على مدة حركة حسب الاسم
-  static Duration getDuration(String name) {
-    return durations[name.toLowerCase()] ?? durationNormal;
-  }
-
-  /// الحصول على منحنى حركة حسب الاسم
-  static Curve getCurve(String name) {
-    return curves[name.toLowerCase()] ?? curveDefault;
-  }
-
-  /// التحقق من صحة القيم
-  static bool isValidSpace(double value) {
-    return spaces.contains(value);
-  }
-
-  static bool isValidTextSize(double value) {
-    return textSizes.contains(value);
-  }
-
-  static bool isValidOpacity(double value) {
-    return value >= 0.0 && value <= 1.0;
-  }
-
-  /// إنشاء EdgeInsets من قيمة واحدة
-  static EdgeInsets createPadding(double value) {
-    return EdgeInsets.all(value);
-  }
-
-  /// إنشاء EdgeInsets غير متماثل
-  static EdgeInsets createAsymmetricPadding({
-    double? horizontal,
-    double? vertical,
-    double? left,
-    double? top,
-    double? right,
-    double? bottom,
-  }) {
-    if (horizontal != null || vertical != null) {
-      return EdgeInsets.symmetric(
-        horizontal: horizontal ?? 0,
-        vertical: vertical ?? 0,
-      );
-    }
-    
-    return EdgeInsets.only(
-      left: left ?? 0,
-      top: top ?? 0,
-      right: right ?? 0,
-      bottom: bottom ?? 0,
-    );
-  }
-
-  /// إنشاء BorderRadius من قيمة واحدة
-  static BorderRadius createBorderRadius(double value) {
-    return BorderRadius.circular(value);
-  }
-
-  /// إنشاء BorderRadius غير متماثل
-  static BorderRadius createAsymmetricBorderRadius({
-    double? topLeft,
-    double? topRight,
-    double? bottomLeft,
-    double? bottomRight,
-  }) {
-    return BorderRadius.only(
-      topLeft: Radius.circular(topLeft ?? 0),
-      topRight: Radius.circular(topRight ?? 0),
-      bottomLeft: Radius.circular(bottomLeft ?? 0),
-      bottomRight: Radius.circular(bottomRight ?? 0),
-    );
-  }
-
-  // ===== دوال الأيقونات - تستدعي AppIconsSystem =====
-  
-  /// الحصول على أيقونة حسب اسم الصلاة (للتوافق مع الإصدارات القديمة)
-  /// يُنصح باستخدام AppIconsSystem.getPrayerIcon() مباشرة
-  @Deprecated('استخدم AppIconsSystem.getPrayerIcon() بدلاً من ذلك')
+  /// الحصول على أيقونة حسب اسم الصلاة
   static IconData getPrayerIcon(String name) {
-    return AppIconsSystem.getPrayerIcon(name);
-  }
-
-  /// الحصول على أيقونة حسب الفئة (للتوافق مع الإصدارات القديمة)
-  /// يُنصح باستخدام AppIconsSystem.getCategoryIcon() مباشرة
-  @Deprecated('استخدم AppIconsSystem.getCategoryIcon() بدلاً من ذلك')
-  static IconData getCategoryIcon(String categoryId) {
-    return AppIconsSystem.getCategoryIcon(categoryId);
-  }
-
-  // ===== دوال التحليل والإحصائيات =====
-
-  /// الحصول على إحصائيات الثوابت
-  static Map<String, int> getConstantsStats() {
-    return {
-      'spaces': spaces.length,
-      'textSizes': textSizes.length,
-      'iconSizes': iconSizes.length,
-      'borderRadii': borderRadii.length,
-      'elevations': elevations.length,
-      'opacities': opacities.length,
-      'durations': durations.length,
-      'curves': curves.length,
-    };
-  }
-
-  /// البحث في الثوابت
-  static Map<String, dynamic> searchConstants(String query) {
-    final results = <String, dynamic>{};
-    final lowerQuery = query.toLowerCase();
-
-    // البحث في المسافات
-    for (final space in spaces) {
-      if (space.toString().contains(lowerQuery)) {
-        results['space_$space'] = space;
-      }
+    switch (name.toLowerCase()) {
+      case 'fajr':
+      case 'الفجر':
+        return Icons.dark_mode;
+      case 'dhuhr':
+      case 'الظهر':
+        return Icons.light_mode;
+      case 'asr':
+      case 'العصر':
+        return Icons.wb_cloudy;
+      case 'maghrib':
+      case 'المغرب':
+        return Icons.wb_twilight;
+      case 'isha':
+      case 'العشاء':
+        return Icons.bedtime;
+      case 'sunrise':
+      case 'الشروق':
+        return Icons.wb_sunny;
+      default:
+        return Icons.access_time;
     }
+  }
 
-    // البحث في أحجام النصوص
-    for (final size in textSizes) {
-      if (size.toString().contains(lowerQuery)) {
-        results['textSize_$size'] = size;
-      }
+  /// إنشاء تدرج مخصص
+  static LinearGradient customGradient({
+    required List<Color> colors,
+    AlignmentGeometry begin = Alignment.topLeft,
+    AlignmentGeometry end = Alignment.bottomRight,
+    List<double>? stops,
+  }) {
+    return LinearGradient(
+      colors: colors,
+      begin: begin,
+      end: end,
+      stops: stops,
+    );
+  }
+
+  /// الحصول على ظل حسب الارتفاع
+  static List<BoxShadow> shadowForElevation(double elevation) {
+    if (elevation <= 0) return [];
+    if (elevation <= 2) return shadowSm;
+    if (elevation <= 4) return shadowMd;
+    if (elevation <= 8) return shadowLg;
+    return shadowXl;
+  }
+
+  /// الحصول على تدرج حسب الوقت
+  static LinearGradient getTimeBasedGradient() {
+    final hour = DateTime.now().hour;
+    
+    if (hour < 5) {
+      return LinearGradient(
+        colors: [darkCard, darkBackground],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    } else if (hour < 8) {
+      return fajrGradient;
+    } else if (hour < 12) {
+      return LinearGradient(
+        colors: [primaryLight, primarySoft],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    } else if (hour < 15) {
+      return dhuhrGradient;
+    } else if (hour < 17) {
+      return asrGradient;
+    } else if (hour < 20) {
+      return maghribGradient;
+    } else {
+      return ishaGradient;
     }
-
-    // يمكن إضافة المزيد من عمليات البحث هنا
-
-    return results;
   }
 }

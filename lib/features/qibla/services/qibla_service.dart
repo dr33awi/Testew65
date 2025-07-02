@@ -1,12 +1,12 @@
-// lib/features/qibla/services/qibla_service.dart - محسن بالنظام الموحد
+// lib/features/qibla/services/qibla_service.dart
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_compass/flutter_compass.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 
-import '../../../app/themes/app_theme.dart'; // ✅ النظام الموحد الكامل
 import '../../../core/infrastructure/services/logging/logger_service.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
@@ -17,32 +17,37 @@ class QiblaService extends ChangeNotifier {
   final StorageService _storage;
   final PermissionService _permissionService;
 
-  // ✅ استخدام ThemeConstants للقيم الثابتة
   static const String _qiblaDataKey = 'qibla_data';
+  static const String _lastUpdateKey = 'qibla_last_update';
   static const String _calibrationDataKey = 'compass_calibration';
-  static const Duration _locationTimeout = Duration(seconds: 20);
-  static const Duration _calibrationDuration = ThemeConstants.durationExtraSlow;
-  static const int _filterSize = 8;
-  static const double _highAccuracyThreshold = 0.8;
-  static const double _mediumAccuracyThreshold = 0.5;
-  static const double _movementThreshold = 100.0; // متر
 
-  // حالة البيانات
   QiblaModel? _qiblaData;
   bool _isLoading = false;
   String? _errorMessage;
 
-  // البوصلة
+  // البوصلة والحساسات
   StreamSubscription<CompassEvent>? _compassSubscription;
+  StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
+  StreamSubscription<MagnetometerEvent>? _magnetometerSubscription;
+
   double _currentDirection = 0.0;
+  double _filteredDirection = 0.0;
   bool _hasCompass = false;
   double _compassAccuracy = 0.0;
-  bool _isCalibrated = false;
 
-  // تصفية القراءات - محسن لدقة أعلى
+  // معايرة البوصلة
+  double _magneticDeclination = 0.0;
+  bool _isCalibrated = false;
+  final List<double> _calibrationReadings = [];
+
+  // تصفية القراءات
+  static const int _filterSize = 10;
   final List<double> _directionHistory = [];
-  DateTime? _lastUpdate;
-  Timer? _locationUpdateTimer;
+  final List<double> _magnetometerReadings = [];
+
+  // معدل التحديث
+  DateTime? _lastCompassUpdate;
+  static const Duration _updateThreshold = Duration(milliseconds: 100);
 
   QiblaService({
     required LoggerService logger,
@@ -54,213 +59,301 @@ class QiblaService extends ChangeNotifier {
     _init();
   }
 
-  // ✅ الخصائص مع استخدام AppColorSystem
+  // الخصائص العامة
   QiblaModel? get qiblaData => _qiblaData;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
-  double get currentDirection => _currentDirection;
+  double get currentDirection => _filteredDirection;
   bool get hasCompass => _hasCompass;
   double get compassAccuracy => _compassAccuracy;
   bool get isCalibrated => _isCalibrated;
 
-  // ✅ لون الدقة من النظام الموحد
-  Color get accuracyColor {
-    if (_compassAccuracy >= _highAccuracyThreshold) {
-      return AppColorSystem.success;
-    } else if (_compassAccuracy >= _mediumAccuracyThreshold) {
-      return AppColorSystem.warning;
-    } else {
-      return AppColorSystem.error;
-    }
-  }
-
-  // ✅ نص الدقة مع الألوان
-  String get accuracyText {
-    if (_compassAccuracy >= _highAccuracyThreshold) return 'عالية';
-    if (_compassAccuracy >= _mediumAccuracyThreshold) return 'متوسطة';
-    return 'منخفضة';
-  }
-
-  // ✅ أيقونة الدقة من النظام الموحد
-  IconData get accuracyIcon {
-    if (_compassAccuracy >= _highAccuracyThreshold) return AppIconsSystem.success;
-    if (_compassAccuracy >= _mediumAccuracyThreshold) return AppIconsSystem.warning;
-    return AppIconsSystem.error;
-  }
-
-  // اتجاه القبلة بالنسبة للاتجاه الحالي
+  // اتجاه القبلة بالنسبة للاتجاه الحالي (الزاوية المطلوبة للاستدارة)
   double get qiblaAngle {
     if (_qiblaData == null) return 0;
-    return (_qiblaData!.qiblaDirection - _currentDirection + 360) % 360;
+
+    // تطبيق الانحراف المغناطيسي على اتجاه القبلة
+    final adjustedQiblaDirection = (_qiblaData!.qiblaDirection + _magneticDeclination + 360) % 360;
+    return (adjustedQiblaDirection - _filteredDirection + 360) % 360;
   }
 
-  // ✅ حالة القبلة مع الألوان
-  QiblaStatus get qiblaStatus {
-    if (_qiblaData == null) return QiblaStatus.unknown;
-    
-    final angleDifference = _getAngleDifference();
-    if (angleDifference < 5) return QiblaStatus.perfect;
-    if (angleDifference < 15) return QiblaStatus.good;
-    if (angleDifference < 45) return QiblaStatus.fair;
-    return QiblaStatus.poor;
+  // دقة البوصلة كنسبة مئوية
+  double get accuracyPercentage {
+    if (!_hasCompass) return 0;
+    return math.min(_compassAccuracy * 100, 100);
   }
 
-  // التهيئة الأولية محسنة
+  // التهيئة الأولية
   Future<void> _init() async {
     try {
-      _logInfo('🚀 بدء تهيئة خدمة القبلة');
-      
-      await _loadStoredData();
+      // تحميل بيانات المعايرة المحفوظة
+      await _loadCalibrationData();
+
+      // التحقق من توفر البوصلة
       await _checkCompassAvailability();
-      
+
       if (_hasCompass) {
-        await _startCompassListener();
-        _logSuccess('✅ تم تهيئة خدمة القبلة بنجاح');
+        await _startSensorListeners();
       } else {
-        _logWarning('⚠️ البوصلة غير متوفرة');
+        _logger.warning(
+          message: '[QiblaService] البوصلة غير متوفرة على هذا الجهاز',
+        );
       }
-      
-      _startPeriodicLocationUpdate();
-      
+
+      // محاولة استرجاع بيانات القبلة المخزنة
+      await _loadStoredQiblaData();
     } catch (e) {
-      _errorMessage = 'خطأ في تهيئة خدمة القبلة';
-      _logError('❌ خطأ في التهيئة', e);
-    }
-  }
-
-  // ✅ تحديث دوري للموقع باستخدام ThemeConstants
-  void _startPeriodicLocationUpdate() {
-    _locationUpdateTimer = Timer.periodic(
-      ThemeConstants.durationExtraSlow,
-      (_) => _updateLocationIfMoved(),
-    );
-    _logInfo('📍 تم بدء التحديث الدوري للموقع');
-  }
-
-  Future<void> _updateLocationIfMoved() async {
-    try {
-      if (_qiblaData == null) return;
-      
-      final currentPosition = await _getCurrentPositionQuick();
-      if (currentPosition == null) return;
-      
-      final distance = Geolocator.distanceBetween(
-        _qiblaData!.latitude, _qiblaData!.longitude,
-        currentPosition.latitude, currentPosition.longitude,
+      _errorMessage = 'حدث خطأ أثناء تهيئة خدمة القبلة';
+      _logger.error(
+        message: '[QiblaService] خطأ في التهيئة',
+        error: e,
       );
-      
-      if (distance > _movementThreshold) {
-        _logInfo('📍 تم رصد حركة كبيرة (${distance.toInt()}م) - تحديث اتجاه القبلة');
-        await updateQiblaData();
-      }
-    } catch (e) {
-      _logWarning('⚠️ فشل في فحص الحركة', e);
     }
   }
 
-  Future<Position?> _getCurrentPositionQuick() async {
-    try {
-      return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.medium,
-        timeLimit: const Duration(seconds: 5),
-      );
-    } catch (e) {
-      return null;
-    }
-  }
-
-  // التحقق من توفر البوصلة مع سجلات ملونة
+  // التحقق من توفر البوصلة بشكل أكثر دقة
   Future<void> _checkCompassAvailability() async {
     try {
-      _logInfo('🧭 فحص توفر البوصلة...');
-      
-      final compassEvents = await FlutterCompass.events
-          ?.timeout(const Duration(seconds: 5))
-          .take(5)
-          .toList();
-      
-      _hasCompass = compassEvents != null && 
-                    compassEvents.isNotEmpty && 
-                    compassEvents.any((e) => e.heading != null && e.heading! >= 0);
-      
-      if (_hasCompass && compassEvents!.isNotEmpty) {
-        final lastEvent = compassEvents.last;
-        if (lastEvent.accuracy != null) {
-          _compassAccuracy = _calculateAccuracy(lastEvent.accuracy!);
+      final compassEvents = await FlutterCompass.events?.take(3).toList();
+
+      if (compassEvents != null && compassEvents.isNotEmpty) {
+        _hasCompass = compassEvents.any((event) => event.heading != null);
+
+        // حساب دقة البوصلة الأولية
+        if (_hasCompass && compassEvents.last.accuracy != null) {
+          _compassAccuracy = _calculateAccuracy(compassEvents.last.accuracy!);
         }
-        
-        _logSuccess('✅ البوصلة متوفرة - الدقة: ${accuracyText}');
-      } else {
-        _logWarning('⚠️ البوصلة غير متوفرة أو معطلة');
       }
     } catch (e) {
       _hasCompass = false;
-      _logError('❌ خطأ في فحص البوصلة', e);
+      _logger.error(
+        message: '[QiblaService] خطأ في التحقق من البوصلة',
+        error: e,
+      );
     }
   }
 
-  // بدء الاستماع للبوصلة مع تحسينات
-  Future<void> _startCompassListener() async {
+  // بدء الاستماع للحساسات المختلفة
+  Future<void> _startSensorListeners() async {
     if (!_hasCompass) return;
 
-    _compassSubscription = FlutterCompass.events
-        ?.where((event) => event.heading != null && event.heading! >= 0)
-        .listen((event) {
-          _processCompassReading(event);
-        }, onError: (error) {
-          _logError('❌ خطأ في قراءة البوصلة', error);
-        });
-    
-    _logSuccess('🧭 بدأ الاستماع للبوصلة');
+    // الاستماع للبوصلة
+    _compassSubscription = FlutterCompass.events?.listen((event) {
+      if (event.heading != null) {
+        _processCompassReading(event);
+      }
+    });
+
+    // الاستماع لمقياس التسارع للكشف عن استقرار الجهاز
+    _accelerometerSubscription = accelerometerEventStream().listen((event) {
+      _processAccelerometerReading(event);
+    });
+
+    // الاستماع للمغناطيسية لتحسين الدقة
+    _magnetometerSubscription = magnetometerEventStream().listen((event) {
+      _processMagnetometerReading(event);
+    });
+
+    _logger.info(
+      message: '[QiblaService] بدأ الاستماع لجميع الحساسات',
+    );
   }
 
-  // معالجة قراءة البوصلة محسنة مع ThemeConstants
+  // معالجة قراءة البوصلة مع التصفية المتقدمة
   void _processCompassReading(CompassEvent event) {
     final now = DateTime.now();
-    
-    // تقليل معدل التحديث باستخدام ThemeConstants
-    if (_lastUpdate != null && 
-        now.difference(_lastUpdate!) < ThemeConstants.durationInstant) {
+
+    // تقليل معدل التحديث لتوفير البطارية
+    if (_lastCompassUpdate != null &&
+        now.difference(_lastCompassUpdate!) < _updateThreshold) {
       return;
     }
-    
-    _lastUpdate = now;
-    
-    // تحديث الدقة
+
+    _lastCompassUpdate = now;
+    _currentDirection = event.heading!;
+
+    // حساب الدقة
     if (event.accuracy != null) {
       _compassAccuracy = _calculateAccuracy(event.accuracy!);
     }
 
-    // تصفية القراءة المحسنة
-    _directionHistory.add(event.heading!);
+    // إضافة القراءة للسجل
+    _directionHistory.add(_currentDirection);
     if (_directionHistory.length > _filterSize) {
       _directionHistory.removeAt(0);
     }
 
-    // حساب المتوسط المرشح مع أوزان
-    _currentDirection = _calculateWeightedFilteredDirection();
+    // تطبيق مرشح متوسط متحرك مع أوزان
+    _filteredDirection = _applyWeightedMovingAverage(_directionHistory);
+
+    // تحديث واجهة المستخدم
     notifyListeners();
   }
 
-  // بدء المعايرة محسن مع ThemeConstants
+  // معالجة قراءات مقياس التسارع
+  void _processAccelerometerReading(AccelerometerEvent event) {
+    // يمكن استخدام هذه البيانات لتحديد ما إذا كان الجهاز مستقرًا
+    final magnitude = math.sqrt(
+      event.x * event.x + event.y * event.y + event.z * event.z
+    );
+
+    // إذا كان الجهاز يتحرك بشدة، قلل من الثقة في القراءات
+    if ((magnitude - 9.8).abs() > 2.0) {
+      _compassAccuracy *= 0.8;
+    }
+  }
+
+  // معالجة قراءات المغناطيسية
+  void _processMagnetometerReading(MagnetometerEvent event) {
+    _magnetometerReadings.add(
+      math.sqrt(event.x * event.x + event.y * event.y + event.z * event.z)
+    );
+
+    if (_magnetometerReadings.length > 20) {
+      _magnetometerReadings.removeAt(0);
+    }
+
+    // كشف التشويش المغناطيسي
+    if (_magnetometerReadings.length >= 20) {
+      final stdDev = _calculateStandardDeviation(_magnetometerReadings);
+      if (stdDev > 50) {
+        _compassAccuracy *= 0.7; // تقليل الدقة في حالة التشويش
+      }
+    }
+  }
+
+  // تطبيق مرشح متوسط متحرك موزون
+  double _applyWeightedMovingAverage(List<double> readings) {
+    if (readings.isEmpty) return 0;
+
+    // تحويل الزوايا للتعامل مع الانتقال من 359 إلى 0
+    final sines = readings.map((angle) => math.sin(angle * math.pi / 180)).toList();
+    final cosines = readings.map((angle) => math.cos(angle * math.pi / 180)).toList();
+
+    // حساب الأوزان (القراءات الأحدث لها وزن أكبر)
+    final weights = List.generate(readings.length, (i) => i + 1.0);
+    final totalWeight = weights.reduce((a, b) => a + b);
+
+    double weightedSinSum = 0;
+    double weightedCosSum = 0;
+
+    for (int i = 0; i < readings.length; i++) {
+      weightedSinSum += sines[i] * weights[i] / totalWeight;
+      weightedCosSum += cosines[i] * weights[i] / totalWeight;
+    }
+
+    // حساب الزاوية المرشحة
+    double filteredAngle = math.atan2(weightedSinSum, weightedCosSum) * 180 / math.pi;
+
+    return (filteredAngle + 360) % 360;
+  }
+
+  // حساب الانحراف المعياري
+  double _calculateStandardDeviation(List<double> values) {
+    if (values.isEmpty) return 0;
+
+    final mean = values.reduce((a, b) => a + b) / values.length;
+    final squaredDifferences = values.map((v) => math.pow(v - mean, 2));
+    final variance = squaredDifferences.reduce((a, b) => a + b) / values.length;
+
+    return math.sqrt(variance);
+  }
+
+  // حساب دقة البوصلة
+  double _calculateAccuracy(double rawAccuracy) {
+    // تحويل القيمة الخام إلى نسبة من 0 إلى 1
+    // القيم الأقل تعني دقة أفضل
+    if (rawAccuracy < 0) return 1.0;
+    if (rawAccuracy > 180) return 0.0;
+
+    return 1.0 - (rawAccuracy / 180.0);
+  }
+
+  // بدء عملية المعايرة
   Future<void> startCalibration() async {
     _isCalibrated = false;
-    _directionHistory.clear();
+    _calibrationReadings.clear();
     notifyListeners();
 
-    _logInfo('🎯 بدء معايرة البوصلة...');
-
-    // فترة معايرة باستخدام ThemeConstants
-    await Future.delayed(_calibrationDuration);
-    
-    _isCalibrated = true;
-    await _saveCalibrationData();
-    notifyListeners();
-
-    _logSuccess('✅ تمت معايرة البوصلة بنجاح');
+    // جمع قراءات المعايرة لمدة 10 ثوان
+    Timer.periodic(const Duration(milliseconds: 200), (timer) {
+      if (_calibrationReadings.length >= 50) {
+        timer.cancel();
+        _completeCalibration();
+      } else {
+        _calibrationReadings.add(_currentDirection);
+      }
+    });
   }
 
-  // تحديث بيانات القبلة مع سجلات محسنة
+  // إكمال المعايرة
+  void _completeCalibration() {
+    if (_calibrationReadings.isEmpty) return;
+
+    // حساب الانحراف المغناطيسي بناءً على القراءات
+    // هذا مثال مبسط، في الواقع يجب استخدام بيانات الموقع الجغرافي
+    _magneticDeclination = 0; // يمكن تحسين هذا بناءً على الموقع
+
+    _isCalibrated = true;
+    _saveCalibrationData();
+    notifyListeners();
+
+    _logger.info(
+      message: '[QiblaService] تمت المعايرة بنجاح',
+      data: {'readings': _calibrationReadings.length},
+    );
+  }
+
+  // تحميل بيانات المعايرة
+  Future<void> _loadCalibrationData() async {
+    try {
+      final calibrationData = _storage.getMap(_calibrationDataKey);
+      if (calibrationData != null) {
+        _magneticDeclination = calibrationData['declination'] ?? 0.0;
+        _isCalibrated = calibrationData['isCalibrated'] ?? false;
+      }
+    } catch (e) {
+      _logger.error(
+        message: '[QiblaService] خطأ في تحميل بيانات المعايرة',
+        error: e,
+      );
+    }
+  }
+
+  // حفظ بيانات المعايرة
+  Future<void> _saveCalibrationData() async {
+    await _storage.setMap(_calibrationDataKey, {
+      'declination': _magneticDeclination,
+      'isCalibrated': _isCalibrated,
+      'lastCalibration': DateTime.now().toIso8601String(),
+    });
+  }
+
+  // تحميل بيانات القبلة المخزنة
+  Future<void> _loadStoredQiblaData() async {
+    try {
+      final qiblaJson = _storage.getMap(_qiblaDataKey);
+      if (qiblaJson != null && qiblaJson.isNotEmpty) {
+        _qiblaData = QiblaModel.fromJson(qiblaJson);
+
+        _logger.info(
+          message: '[QiblaService] تم تحميل بيانات القبلة المخزنة',
+          data: {
+            'direction': _qiblaData?.qiblaDirection,
+            'distance': _qiblaData?.distance,
+            'cityName': _qiblaData?.cityName,
+          },
+        );
+      }
+    } catch (e) {
+      _logger.error(
+        message: '[QiblaService] خطأ في تحميل بيانات القبلة المخزنة',
+        error: e,
+      );
+    }
+  }
+
+  // تحديث بيانات القبلة مع تحسينات الدقة
   Future<void> updateQiblaData() async {
     if (_isLoading) return;
 
@@ -269,264 +362,130 @@ class QiblaService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _logInfo('📍 بدء تحديث بيانات القبلة...');
-
-      // التحقق من الأذونات
-      if (!await _checkLocationPermission()) {
+      // التحقق من أذونات الموقع
+      final hasPermission = await _checkLocationPermission();
+      if (!hasPermission) {
         _errorMessage = 'لم يتم منح إذن الوصول إلى الموقع';
-        _logError('❌ إذن الموقع مرفوض', null);
+        _isLoading = false;
+        notifyListeners();
         return;
       }
 
-      // الحصول على الموقع بأعلى دقة ممكنة
+      // الحصول على الموقع الحالي بدقة عالية
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.bestForNavigation,
-        timeLimit: _locationTimeout,
+        timeLimit: const Duration(seconds: 15),
       );
 
-      _logSuccess('📍 تم الحصول على الموقع: ${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}');
+      // التحقق من دقة الموقع
+      if (position.accuracy > 50) {
+        _logger.warning(
+          message: '[QiblaService] دقة الموقع منخفضة',
+          data: {'accuracy': position.accuracy},
+        );
+      }
 
-      // الحصول على اسم المكان
+      // الحصول على اسم المدينة والدولة
       String? cityName;
       String? countryName;
-      
+
       try {
         final placemarks = await placemarkFromCoordinates(
           position.latitude,
           position.longitude,
         );
-        
+
         if (placemarks.isNotEmpty) {
           final placemark = placemarks.first;
-          cityName = placemark.locality ?? 
-                     placemark.subAdministrativeArea ?? 
+          cityName = placemark.locality ??
+                     placemark.subAdministrativeArea ??
                      placemark.administrativeArea;
           countryName = placemark.country;
-          
-          _logInfo('🏘️ المكان: $cityName, $countryName');
         }
       } catch (e) {
-        _logWarning('⚠️ لم يتم الحصول على اسم المكان', e);
+        _logger.warning(
+          message: '[QiblaService] لم يتم الحصول على اسم المدينة',
+          data: {'error': e.toString()},
+        );
       }
 
-      // إنشاء نموذج القبلة
-      _qiblaData = QiblaModel.fromCoordinates(
+      // حساب اتجاه القبلة مع الدقة المحسنة
+      final qiblaModel = QiblaModel.fromCoordinates(
         latitude: position.latitude,
         longitude: position.longitude,
         accuracy: position.accuracy,
         cityName: cityName,
         countryName: countryName,
+        magneticDeclination: _magneticDeclination,
       );
 
-      await _saveQiblaData();
+      // حفظ البيانات
+      _qiblaData = qiblaModel;
+      await _saveQiblaData(qiblaModel);
 
-      _logSuccess('✅ تم تحديث بيانات القبلة - الاتجاه: ${_qiblaData!.qiblaDirection.toStringAsFixed(2)}° (${_qiblaData!.directionDescription})');
-      _logInfo('📏 المسافة إلى مكة: ${_qiblaData!.distanceDescription}');
-
+      _logger.info(
+        message: '[QiblaService] تم تحديث بيانات القبلة بنجاح',
+        data: {
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+          'qiblaDirection': qiblaModel.qiblaDirection,
+          'distance': qiblaModel.distance,
+          'cityName': cityName,
+          'countryName': countryName,
+          'accuracy': position.accuracy,
+        },
+      );
     } catch (e) {
-      _errorMessage = 'فشل في تحديث بيانات القبلة: ${e.toString()}';
-      _logError('❌ خطأ في التحديث', e);
+      _errorMessage = 'حدث خطأ أثناء تحديث بيانات القبلة';
+      _logger.error(
+        message: '[QiblaService] خطأ في تحديث بيانات القبلة',
+        error: e,
+      );
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  // ✅ دوال السجلات الملونة باستخدام AppColorSystem
-  void _logSuccess(String message, [dynamic data]) {
-    _logger.info(
-      message: message,
-      data: data != null ? {'details': data} : null,
-      // يمكن إضافة لون للسجلات إذا كان LoggerService يدعم ذلك
-    );
-  }
-
-  void _logInfo(String message, [dynamic data]) {
-    _logger.info(
-      message: message,
-      data: data != null ? {'details': data} : null,
-    );
-  }
-
-  void _logWarning(String message, [dynamic error]) {
-    _logger.warning(
-      message: message,
-      data: error != null ? {'error': error.toString()} : null,
-    );
-  }
-
-  void _logError(String message, dynamic error) {
-    _logger.error(
-      message: message,
-      error: error,
-    );
-  }
-
-  // باقي الدوال كما هي مع تحسينات بسيطة...
-  
-  double _getAngleDifference() {
-    if (_qiblaData == null) return 360;
-    final relativeAngle = (qiblaAngle + 360) % 360;
-    return (relativeAngle > 180 ? 360 - relativeAngle : relativeAngle).abs();
-  }
-
-  double _calculateWeightedFilteredDirection() {
-    if (_directionHistory.isEmpty) return 0;
-
-    final sines = _directionHistory.map((a) => math.sin(a * math.pi / 180)).toList();
-    final cosines = _directionHistory.map((a) => math.cos(a * math.pi / 180)).toList();
-
-    double weightedSinSum = 0;
-    double weightedCosSum = 0;
-    double totalWeight = 0;
-
-    for (int i = 0; i < _directionHistory.length; i++) {
-      final weight = (i + 1).toDouble();
-      weightedSinSum += sines[i] * weight;
-      weightedCosSum += cosines[i] * weight;
-      totalWeight += weight;
-    }
-
-    final avgSin = weightedSinSum / totalWeight;
-    final avgCos = weightedCosSum / totalWeight;
-
-    final angle = math.atan2(avgSin, avgCos) * 180 / math.pi;
-    return (angle + 360) % 360;
-  }
-
-  double _calculateAccuracy(double rawAccuracy) {
-    if (rawAccuracy < 0) return 1.0;
-    if (rawAccuracy > 180) return 0.0;
-    
-    final normalizedAccuracy = rawAccuracy / 180.0;
-    return math.max(0.0, 1.0 - math.pow(normalizedAccuracy, 1.5));
-  }
-
+  // التحقق من أذونات الموقع
   Future<bool> _checkLocationPermission() async {
-    try {
-      final status = await _permissionService.checkPermissionStatus(
+    final status = await _permissionService.checkPermissionStatus(
+      AppPermissionType.location,
+    );
+
+    if (status != AppPermissionStatus.granted) {
+      final result = await _permissionService.requestPermission(
         AppPermissionType.location,
       );
-
-      if (status != AppPermissionStatus.granted) {
-        final result = await _permissionService.requestPermission(
-          AppPermissionType.location,
-        );
-        return result == AppPermissionStatus.granted;
-      }
-
-      return true;
-    } catch (e) {
-      _logError('❌ خطأ في فحص أذونات الموقع', e);
-      return false;
+      return result == AppPermissionStatus.granted;
     }
+
+    return true;
   }
 
-  Future<void> _loadStoredData() async {
-    try {
-      // تحميل بيانات القبلة
-      final qiblaJson = _storage.getMap(_qiblaDataKey);
-      if (qiblaJson != null && qiblaJson.isNotEmpty) {
-        _qiblaData = QiblaModel.fromJson(qiblaJson);
-        _logInfo('💾 تم تحميل بيانات القبلة المخزنة (عمر البيانات: ${_qiblaData!.age.inHours} ساعة)');
-      }
-
-      // تحميل بيانات المعايرة
-      final calibrationData = _storage.getMap(_calibrationDataKey);
-      if (calibrationData != null) {
-        _isCalibrated = calibrationData['isCalibrated'] ?? false;
-        _logInfo('🎯 تم تحميل بيانات المعايرة: ${_isCalibrated ? "معايرة" : "غير معايرة"}');
-      }
-    } catch (e) {
-      _logError('❌ خطأ في تحميل البيانات المخزنة', e);
-    }
+  // حفظ بيانات القبلة
+  Future<void> _saveQiblaData(QiblaModel qiblaModel) async {
+    await _storage.setMap(_qiblaDataKey, qiblaModel.toJson());
+    await _storage.setString(
+      _lastUpdateKey,
+      DateTime.now().toIso8601String(),
+    );
   }
 
-  Future<void> _saveQiblaData() async {
-    try {
-      if (_qiblaData != null) {
-        await _storage.setMap(_qiblaDataKey, _qiblaData!.toJson());
-        _logInfo('💾 تم حفظ بيانات القبلة');
-      }
-    } catch (e) {
-      _logError('❌ خطأ في حفظ بيانات القبلة', e);
-    }
-  }
-
-  Future<void> _saveCalibrationData() async {
-    try {
-      await _storage.setMap(_calibrationDataKey, {
-        'isCalibrated': _isCalibrated,
-        'lastCalibration': DateTime.now().toIso8601String(),
-      });
-      _logInfo('🎯 تم حفظ بيانات المعايرة');
-    } catch (e) {
-      _logError('❌ خطأ في حفظ بيانات المعايرة', e);
-    }
+  // إعادة تعيين المعايرة
+  void resetCalibration() {
+    _isCalibrated = false;
+    _magneticDeclination = 0;
+    _calibrationReadings.clear();
+    _saveCalibrationData();
+    notifyListeners();
   }
 
   @override
   void dispose() {
     _compassSubscription?.cancel();
-    _locationUpdateTimer?.cancel();
-    _logInfo('🔄 تم تحرير موارد خدمة القبلة');
+    _accelerometerSubscription?.cancel();
+    _magnetometerSubscription?.cancel();
     super.dispose();
-  }
-}
-
-// ✅ تعداد حالة القبلة مع الألوان
-enum QiblaStatus {
-  perfect,   // دقة مثالية < 5°
-  good,      // جيد < 15°
-  fair,      // مقبول < 45°
-  poor,      // ضعيف > 45°
-  unknown,   // غير معروف
-}
-
-// ✅ Extension لحالة القبلة مع النظام الموحد
-extension QiblaStatusExtension on QiblaStatus {
-  Color get color {
-    switch (this) {
-      case QiblaStatus.perfect:
-        return AppColorSystem.success;
-      case QiblaStatus.good:
-        return AppColorSystem.primary;
-      case QiblaStatus.fair:
-        return AppColorSystem.warning;
-      case QiblaStatus.poor:
-        return AppColorSystem.error;
-      case QiblaStatus.unknown:
-        return AppColorSystem.info;
-    }
-  }
-
-  String get text {
-    switch (this) {
-      case QiblaStatus.perfect:
-        return 'مثالي';
-      case QiblaStatus.good:
-        return 'جيد';
-      case QiblaStatus.fair:
-        return 'مقبول';
-      case QiblaStatus.poor:
-        return 'بحاجة تعديل';
-      case QiblaStatus.unknown:
-        return 'غير محدد';
-    }
-  }
-
-  IconData get icon {
-    switch (this) {
-      case QiblaStatus.perfect:
-        return AppIconsSystem.success;
-      case QiblaStatus.good:
-        return Icons.thumb_up;
-      case QiblaStatus.fair:
-        return AppIconsSystem.warning;
-      case QiblaStatus.poor:
-        return AppIconsSystem.error;
-      case QiblaStatus.unknown:
-        return AppIconsSystem.info;
-    }
   }
 }

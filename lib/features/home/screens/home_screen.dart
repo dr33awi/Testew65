@@ -1,92 +1,311 @@
-// lib/features/home/screens/home_screen.dart - النسخة المُصححة نهائياً
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import '../../../app/themes/app_theme.dart';
-import '../widgets/welcome_message.dart';
-import '../widgets/category_grid.dart';
+// lib/features/home/screens/home_screen.dart
 
-class HomeScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'dart:ui';
+import '../../../app/themes/app_theme.dart';
+import '../widgets/category_grid.dart';
+import 'package:athkar_app/features/home/widgets/daily_quotes_card.dart';
+import 'package:athkar_app/features/home/widgets/quick_stats_card.dart';
+import 'package:athkar_app/features/home/widgets/welcome_message.dart';
+import 'package:athkar_app/features/home/widgets/floating_action_menu.dart';
+import 'package:athkar_app/features/prayer_times/widgets/home_prayer_times_card.dart';
+
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> 
+    with TickerProviderStateMixin {
+  late ScrollController _scrollController;
+  late AnimationController _fadeController;
+  late AnimationController _slideController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+  
+  double _scrollOffset = 0.0;
+  bool _showFloatingMenu = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupAnimations();
+    _setupScrollController();
+  }
+
+  void _setupAnimations() {
+    _fadeController = AnimationController(
+      duration: ThemeConstants.durationSlow,
+      vsync: this,
+    );
+    
+    _slideController = AnimationController(
+      duration: ThemeConstants.durationNormal,
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fadeController,
+      curve: ThemeConstants.curveSmooth,
+    ));
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: ThemeConstants.curveSmooth,
+    ));
+
+    _fadeController.forward();
+    _slideController.forward();
+  }
+
+  void _setupScrollController() {
+    _scrollController = ScrollController()
+      ..addListener(() {
+        setState(() {
+          _scrollOffset = _scrollController.offset;
+          _showFloatingMenu = _scrollOffset > 200;
+        });
+      });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _fadeController.dispose();
+    _slideController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      appBar: _buildAppBar(context),
-      body: RefreshIndicator(
-        onRefresh: () => _handleRefresh(context),
-        color: context.primaryColor,
-        backgroundColor: context.cardColor,
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: context.appResponsivePadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // رسالة الترحيب
-              const WelcomeMessage(),
-              
-              const SizedBox(height: ThemeConstants.space4),
-              
-              // مواقيت الصلاة - بطاقة موحدة
-              AppCard.info(
-                title: 'مواقيت الصلاة',
-                subtitle: 'الصلاة التالية: العصر في 3:45 م',
-                icon: 'prayer_times'.themeCategoryIcon,
-                iconColor: 'prayer_times'.themeColor,
-                onTap: () => _navigateToRoute(context, '/prayer-times'),
-                trailing: Icon(
-                  Icons.chevron_right,
-                  color: context.textSecondaryColor,
-                  size: ThemeConstants.iconSm,
+      body: Stack(
+        children: [
+          // خلفية متدرجة متطورة
+          _buildEnhancedBackground(context),
+          
+          // المحتوى الرئيسي
+          _buildMainContent(context),
+          
+          // قائمة الإجراءات العائمة
+          FloatingActionMenu(
+            visible: _showFloatingMenu,
+            onScrollToTop: _scrollToTop,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEnhancedBackground(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: context.isDarkMode
+              ? [
+                  ThemeConstants.darkBackground,
+                  ThemeConstants.darkSurface.withValues(alpha: 0.8),
+                  ThemeConstants.darkBackground,
+                ]
+              : [
+                  ThemeConstants.lightBackground,
+                  ThemeConstants.primarySoft.withValues(alpha: 0.1),
+                  ThemeConstants.lightBackground,
+                ],
+          stops: const [0.0, 0.3, 1.0],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // نمط هندسي خفيف
+          Positioned.fill(
+            child: CustomPaint(
+              painter: GeometricPatternPainter(
+                color: context.primaryColor.withValues(alpha: 0.05),
+                isDark: context.isDarkMode,
+              ),
+            ),
+          ),
+          
+          // تأثير الضوء العلوي
+          Positioned(
+            top: -100,
+            right: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    context.primaryColor.withValues(alpha: 0.1),
+                    Colors.transparent,
+                  ],
                 ),
               ),
-              
-              const SizedBox(height: ThemeConstants.space4),
-              
-              // الاقتباس اليومي - بطاقة موحدة
-              AppCard.quote(
-                quote: 'وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا',
-                author: 'سورة الطلاق',
-                category: 'آية اليوم',
-                primaryColor: 'verse'.themeColor,
-              ),
-              
-              const SizedBox(height: ThemeConstants.space6),
-              
-              // عنوان الفئات
-              _buildSectionTitle(context, 'الفئات الرئيسية'),
-              
-              const SizedBox(height: ThemeConstants.space4),
-              
-              // شبكة الفئات - محسنة بالنظام الموحد
-              const SimpleCategoryGrid(),
-              
-              const SizedBox(height: ThemeConstants.space8), // مساحة إضافية
-            ],
+            ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainContent(BuildContext context) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // شريط التطبيق المطور
+            _buildEnhancedAppBar(context),
+            
+            // المحتوى الرئيسي
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: ThemeConstants.space4,
+              ),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  // رسالة الترحيب المطورة
+                  AnimationConfiguration.staggeredList(
+                    position: 0,
+                    duration: ThemeConstants.durationSlow,
+                    child: const SlideAnimation(
+                      verticalOffset: 50.0,
+                      child: FadeInAnimation(
+                        child: WelcomeMessage(),
+                      ),
+                    ),
+                  ),
+                  
+                  ThemeConstants.space4.h,
+                  
+                  // إحصائيات سريعة
+                  AnimationConfiguration.staggeredList(
+                    position: 1,
+                    duration: ThemeConstants.durationSlow,
+                    child: const SlideAnimation(
+                      verticalOffset: 50.0,
+                      child: FadeInAnimation(
+                        child: QuickStatsSection(),
+                      ),
+                    ),
+                  ),
+                  
+                  ThemeConstants.space4.h,
+                  
+                  // بطاقة مواقيت الصلاة المطورة
+                  AnimationConfiguration.staggeredList(
+                    position: 2,
+                    duration: ThemeConstants.durationSlow,
+                    child: const SlideAnimation(
+                      verticalOffset: 50.0,
+                      child: FadeInAnimation(
+                        child: PrayerTimesCard(),
+                      ),
+                    ),
+                  ),
+                  
+                  ThemeConstants.space4.h,
+                  
+                  // بطاقة الاقتباسات المطورة
+                  AnimationConfiguration.staggeredList(
+                    position: 3,
+                    duration: ThemeConstants.durationSlow,
+                    child: const SlideAnimation(
+                      verticalOffset: 50.0,
+                      child: FadeInAnimation(
+                        child: DailyQuotesCard(),
+                      ),
+                    ),
+                  ),
+                  
+                  ThemeConstants.space6.h,
+                  
+                  // عنوان الأقسام
+                  _buildSectionHeader(context),
+                  
+                  ThemeConstants.space4.h,
+                ]),
+              ),
+            ),
+            
+            // شبكة الفئات المطورة
+            AnimationLimiter(
+              child: const CategoryGrid(),
+            ),
+            
+            // مساحة في الأسفل
+            SliverToBoxAdapter(
+              child: ThemeConstants.space12.h,
+            ),
+          ],
         ),
       ),
     );
   }
 
-  /// شريط التطبيق محسن بالنظام الموحد
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return CustomAppBar.transparent(
-      titleWidget: Row(
-        children: [
-          // أيقونة التطبيق - بالنظام الموحد
-          Container(
-            padding: const EdgeInsets.all(ThemeConstants.space2),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  context.primaryColor,
-                  context.primaryColor.darken(0.2),
-                ],
+  Widget _buildEnhancedAppBar(BuildContext context) {
+    return SliverAppBar(
+      expandedHeight: 120.0,
+      floating: false,
+      pinned: true,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                context.primaryColor.withValues(alpha: 0.1),
+                Colors.transparent,
+              ],
+            ),
+          ),
+          child: ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: context.backgroundColor.withValues(alpha: 0.8),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: context.dividerColor.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                ),
               ),
+            ),
+          ),
+        ),
+      ),
+      
+      title: Row(
+        children: [
+          // أيقونة التطبيق
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              gradient: ThemeConstants.primaryGradient,
               borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
               boxShadow: [
                 BoxShadow(
@@ -97,30 +316,30 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
             child: const Icon(
-              AppIconsSystem.home,
+              Icons.mosque,
               color: Colors.white,
-              size: ThemeConstants.iconMd,
+              size: 24,
             ),
           ),
           
-          const SizedBox(width: ThemeConstants.space3),
+          ThemeConstants.space3.w,
           
-          // النصوص
+          // النص
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'مُسلم',
-                  style: AppTextStyles.h4.copyWith(
+                  'تطبيق الأذكار',
+                  style: context.titleLarge?.copyWith(
                     fontWeight: ThemeConstants.bold,
                     color: context.textPrimaryColor,
                   ),
                 ),
                 Text(
-                  'السلام عليكم ورحمة الله',
-                  style: AppTextStyles.caption.copyWith(
+                  'السلام عليكم',
+                  style: context.labelMedium?.copyWith(
                     color: context.textSecondaryColor,
                   ),
                 ),
@@ -129,97 +348,265 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
+      
       actions: [
-        // زر الإعدادات - بالنظام الموحد
-        Container(
-          margin: const EdgeInsets.all(ThemeConstants.space2),
-          decoration: BoxDecoration(
-            color: context.cardColor.withValues(alpha: 0.8),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-            border: Border.all(
-              color: context.dividerColor.withValues(alpha: 0.3),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: context.primaryColor.withValues(alpha: 0.1),
-                blurRadius: 6,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: IconButton(
-            icon: const Icon( // ✅ إضافة const
-              AppIconsSystem.settings,
-              color: null, // سيتم استخدام iconTheme
-              size: ThemeConstants.iconSm,
-            ),
-            color: context.primaryColor, // نقل اللون هنا
-            onPressed: () => _navigateToRoute(context, '/settings'),
-            tooltip: 'الإعدادات',
-          ),
+        // زر الإشعارات
+        _buildAppBarAction(
+          icon: Icons.notifications_outlined,
+          onPressed: () => Navigator.pushNamed(context, '/notifications'),
+          badge: '3',
+          tooltip: 'الإشعارات',
         ),
+        
+        // زر الإعدادات
+        _buildAppBarAction(
+          icon: Icons.settings_outlined,
+          onPressed: () => Navigator.pushNamed(context, '/settings'),
+          tooltip: 'الإعدادات',
+        ),
+        
+        ThemeConstants.space2.w,
       ],
     );
   }
 
-  /// عنوان القسم بالنظام الموحد
-  Widget _buildSectionTitle(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space2),
-      child: Row(
+  Widget _buildAppBarAction({
+    required IconData icon,
+    required VoidCallback onPressed,
+    String? badge,
+    required String tooltip,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(left: ThemeConstants.space2),
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          Container(
-            width: 4,
-            height: 24,
-            decoration: BoxDecoration(
-              color: context.primaryColor,
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
+          Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onPressed,
+              child: Container(
+                padding: const EdgeInsets.all(ThemeConstants.space2),
+                decoration: BoxDecoration(
+                  color: context.cardColor.withValues(alpha: 0.8),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: context.dividerColor.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: context.primaryColor.withValues(alpha: 0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  icon,
+                  color: context.textPrimaryColor,
+                  size: ThemeConstants.iconMd,
+                ),
+              ),
             ),
           ),
           
-          const SizedBox(width: ThemeConstants.space3),
-          
-          Text(
-            title,
-            style: AppTextStyles.h5.copyWith(
-              fontWeight: ThemeConstants.semiBold,
-              color: context.textPrimaryColor,
+          if (badge != null)
+            Positioned(
+              top: 4,
+              right: 4,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [ThemeConstants.accent, ThemeConstants.accentDark],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: ThemeConstants.accent.withValues(alpha: 0.5),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                constraints: const BoxConstraints(
+                  minWidth: 18,
+                  minHeight: 18,
+                ),
+                child: Text(
+                  badge,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ),
-          ),
-          
-          const Spacer(),
-          
-          AppButton.text(
-            text: 'عرض الكل',
-            onPressed: () => _navigateToRoute(context, '/categories'),
-            icon: const IconData(0xe5c8), // ✅ إضافة const مع Icons.arrow_forward_ios
-          ),
         ],
       ),
     );
   }
 
-  /// التنقل الموحد مع معالجة الأخطاء
-  void _navigateToRoute(BuildContext context, String route) {
-    HapticFeedback.lightImpact();
-    
-    Navigator.pushNamed(context, route).catchError((error) {
-      // ✅ لا نستخدم context هنا لتجنب مشكلة async
-      return null;
-    });
+  Widget _buildSectionHeader(BuildContext context) {
+    return AnimationConfiguration.staggeredList(
+      position: 4,
+      duration: ThemeConstants.durationSlow,
+      child: SlideAnimation(
+        verticalOffset: 30.0,
+        child: FadeInAnimation(
+          child: Container(
+            padding: const EdgeInsets.all(ThemeConstants.space4),
+            decoration: BoxDecoration(
+              color: context.cardColor,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+              border: Border.all(
+                color: context.dividerColor.withValues(alpha: 0.3),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: context.primaryColor.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                // المؤشر الجانبي
+                Container(
+                  width: 4,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    gradient: ThemeConstants.primaryGradient,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                
+                ThemeConstants.space4.w,
+                
+                // الأيقونة
+                Container(
+                  padding: const EdgeInsets.all(ThemeConstants.space2),
+                  decoration: BoxDecoration(
+                    color: context.primaryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                  ),
+                  child: Icon(
+                    Icons.apps_rounded,
+                    color: context.primaryColor,
+                    size: ThemeConstants.iconMd,
+                  ),
+                ),
+                
+                ThemeConstants.space3.w,
+                
+                // النص
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'الأقسام الرئيسية',
+                        style: context.titleLarge?.copyWith(
+                          fontWeight: ThemeConstants.bold,
+                          color: context.textPrimaryColor,
+                        ),
+                      ),
+                      Text(
+                        'اختر القسم المناسب لك',
+                        style: context.labelMedium?.copyWith(
+                          color: context.textSecondaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // زر المزيد
+                Container(
+                  padding: const EdgeInsets.all(ThemeConstants.space2),
+                  decoration: BoxDecoration(
+                    color: context.primaryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                  ),
+                  child: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: ThemeConstants.iconSm,
+                    color: context.primaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
-  /// تحديث البيانات مع النظام الموحد
-  Future<void> _handleRefresh(BuildContext context) async {
-    HapticFeedback.lightImpact();
+  void _scrollToTop() {
+    _scrollController.animateTo(
+      0,
+      duration: ThemeConstants.durationSlow,
+      curve: ThemeConstants.curveSmooth,
+    );
+  }
+}
+
+/// رسام النمط الهندسي للخلفية
+class GeometricPatternPainter extends CustomPainter {
+  final Color color;
+  final bool isDark;
+
+  GeometricPatternPainter({
+    required this.color,
+    required this.isDark,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    const double spacing = 60.0;
     
-    // محاكاة تحديث البيانات
-    await Future.delayed(ThemeConstants.durationNormal);
-    
-    // ✅ حفظ context قبل await لاستخدامه بأمان
-    if (context.mounted) {
-      context.showSuccessSnackBar('تم تحديث البيانات بنجاح');
+    // رسم شبكة من الأشكال الهندسية
+    for (double x = 0; x < size.width + spacing; x += spacing) {
+      for (double y = 0; y < size.height + spacing; y += spacing) {
+        // رسم دائرة صغيرة
+        canvas.drawCircle(
+          Offset(x, y),
+          2,
+          paint,
+        );
+        
+        // رسم خطوط متقاطعة
+        if (x + spacing < size.width) {
+          canvas.drawLine(
+            Offset(x + 10, y),
+            Offset(x + spacing - 10, y),
+            paint,
+          );
+        }
+        
+        if (y + spacing < size.height) {
+          canvas.drawLine(
+            Offset(x, y + 10),
+            Offset(x, y + spacing - 10),
+            paint,
+          );
+        }
+      }
     }
   }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

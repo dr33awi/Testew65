@@ -1,7 +1,8 @@
 // lib/app/themes/widgets/feedback/app_notice_card.dart
+import 'package:athkar_app/app/themes/app_theme.dart';
+import 'package:athkar_app/app/themes/theme_constants.dart';
 import 'package:flutter/material.dart';
-import '../../theme_constants.dart';
-import '../../core/theme_extensions.dart';
+
 
 /// أنواع بطاقات التنبيه
 enum NoticeType {

@@ -1,61 +1,62 @@
-// lib/app/themes/widgets/feedback/app_snackbar.dart - مُصلح بالكامل
+// lib/app/themes/widgets/feedback/app_snackbar.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:ui';
 import '../../theme_constants.dart';
 import '../../text_styles.dart';
-import '../../core/theme_extensions.dart';
-import '../../core/systems/app_color_system.dart';
 
-/// SnackBar موحد للتطبيق - مبسط مع Glass Morphism
+/// SnackBar عام وموحد للتطبيق
 class AppSnackBar {
   AppSnackBar._();
 
-  /// عرض SnackBar عام مع Glass Effect
+  /// عرض SnackBar مخصص
   static void show({
     required BuildContext context,
     required String message,
     IconData? icon,
     Color? backgroundColor,
+    Color? textColor,
+    Duration duration = const Duration(seconds: 2),
+    EdgeInsetsGeometry? margin,
     SnackBarAction? action,
-    Duration duration = const Duration(seconds: 3),
+    bool hapticFeedback = true,
   }) {
-    HapticFeedback.lightImpact();
+    if (hapticFeedback) {
+      HapticFeedback.lightImpact();
+    }
 
     final theme = Theme.of(context);
-    final effectiveColor = backgroundColor ?? theme.primaryColor;
-    
-    // إخفاء أي SnackBar موجود
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: _GlassSnackBarContent(
-          message: message,
-          icon: icon,
-          backgroundColor: effectiveColor,
+        content: Row(
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                color: textColor ?? Colors.white,
+                size: ThemeConstants.iconMd,
+              ),
+              const SizedBox(width: ThemeConstants.space3),
+            ],
+            Expanded(
+              child: Text(
+                message,
+                style: AppTextStyles.body2.copyWith(
+                  color: textColor ?? Colors.white,
+                ),
+              ),
+            ),
+          ],
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(ThemeConstants.space4),
-        padding: EdgeInsets.zero,
-        duration: duration,
-        action: action != null ? _buildGlassAction(action) : null,
+        backgroundColor: backgroundColor ?? theme.primaryColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
         ),
-        dismissDirection: DismissDirection.horizontal,
+        margin: margin ?? const EdgeInsets.all(ThemeConstants.space4),
+        duration: duration,
+        action: action,
       ),
-    );
-  }
-
-  static SnackBarAction _buildGlassAction(SnackBarAction action) {
-    return SnackBarAction(
-      label: action.label,
-      textColor: Colors.white,
-      backgroundColor: Colors.white.withValues(alpha: 0.2),
-      onPressed: action.onPressed,
     );
   }
 
@@ -63,16 +64,17 @@ class AppSnackBar {
   static void showSuccess({
     required BuildContext context,
     required String message,
-    SnackBarAction? action,
     Duration? duration,
+    SnackBarAction? action,
   }) {
     show(
       context: context,
       message: message,
-      icon: Icons.check_circle_outline,
-      backgroundColor: AppColorSystem.success,
+      icon: Icons.check_circle,
+      backgroundColor: ThemeConstants.success,
+      textColor: Colors.white,
+      duration: duration ?? const Duration(seconds: 2),
       action: action,
-      duration: duration ?? const Duration(seconds: 3),
     );
   }
 
@@ -80,16 +82,35 @@ class AppSnackBar {
   static void showError({
     required BuildContext context,
     required String message,
-    SnackBarAction? action,
     Duration? duration,
+    SnackBarAction? action,
   }) {
     show(
       context: context,
       message: message,
       icon: Icons.error_outline,
-      backgroundColor: AppColorSystem.error,
+      backgroundColor: ThemeConstants.error,
+      textColor: Colors.white,
+      duration: duration ?? const Duration(seconds: 3),
       action: action,
-      duration: duration ?? const Duration(seconds: 4),
+    );
+  }
+
+  /// عرض رسالة تحذير
+  static void showWarning({
+    required BuildContext context,
+    required String message,
+    Duration? duration,
+    SnackBarAction? action,
+  }) {
+    show(
+      context: context,
+      message: message,
+      icon: Icons.warning_amber_rounded,
+      backgroundColor: ThemeConstants.warning,
+      textColor: ThemeConstants.lightTextPrimary,
+      duration: duration ?? const Duration(seconds: 3),
+      action: action,
     );
   }
 
@@ -97,16 +118,85 @@ class AppSnackBar {
   static void showInfo({
     required BuildContext context,
     required String message,
-    SnackBarAction? action,
     Duration? duration,
+    SnackBarAction? action,
   }) {
     show(
       context: context,
       message: message,
       icon: Icons.info_outline,
-      backgroundColor: AppColorSystem.info,
+      backgroundColor: ThemeConstants.info,
+      textColor: Colors.white,
+      duration: duration ?? const Duration(seconds: 2),
       action: action,
-      duration: duration ?? const Duration(seconds: 3),
+    );
+  }
+
+  /// عرض رسالة مع إجراء تراجع
+  static void showWithUndo({
+    required BuildContext context,
+    required String message,
+    required VoidCallback onUndo,
+    IconData? icon,
+    Color? backgroundColor,
+    String undoLabel = 'تراجع',
+    Duration duration = const Duration(seconds: 4),
+  }) {
+    final theme = Theme.of(context);
+    show(
+      context: context,
+      message: message,
+      icon: icon,
+      backgroundColor: backgroundColor,
+      duration: duration,
+      action: SnackBarAction(
+        label: undoLabel,
+        textColor: backgroundColor != null
+            ? (ThemeData.estimateBrightnessForColor(backgroundColor) == Brightness.dark ? Colors.white : Colors.black)
+            : (ThemeData.estimateBrightnessForColor(theme.primaryColor) == Brightness.dark ? Colors.white : Colors.black),
+        onPressed: onUndo,
+      ),
+    );
+  }
+
+  /// عرض رسالة تحميل (لا تختفي تلقائياً)
+  static ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showLoading({
+    required BuildContext context,
+    required String message,
+  }) {
+    final theme = Theme.of(context);
+
+    return ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const SizedBox(
+              width: ThemeConstants.iconMd,
+              height: ThemeConstants.iconMd,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+            const SizedBox(width: ThemeConstants.space3),
+            Expanded(
+              child: Text(
+                message,
+                style: AppTextStyles.body2.copyWith(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: theme.primaryColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        ),
+        margin: const EdgeInsets.all(ThemeConstants.space4),
+        duration: const Duration(days: 1), // لا تختفي تلقائياً
+      ),
     );
   }
 
@@ -116,140 +206,24 @@ class AppSnackBar {
   }
 }
 
-/// محتوى SnackBar مع Glass Effect - مبسط
-class _GlassSnackBarContent extends StatelessWidget {
-  final String message;
-  final IconData? icon;
-  final Color backgroundColor;
-
-  const _GlassSnackBarContent({
-    required this.message,
-    this.icon,
-    required this.backgroundColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: ThemeConstants.space4,
-            vertical: ThemeConstants.space4,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                backgroundColor.withValues(alpha: 0.9),
-                backgroundColor.darken(0.1).withValues(alpha: 0.7),
-              ],
-            ),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: backgroundColor.withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              // الأيقونة
-              if (icon != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(ThemeConstants.space1),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: Colors.white,
-                    size: ThemeConstants.iconSm,
-                  ),
-                ),
-                const SizedBox(width: ThemeConstants.space3),
-              ],
-              
-              // النص
-              Expanded(
-                child: Text(
-                  message,
-                  style: AppTextStyles.body2.copyWith(
-                    color: Colors.white,
-                    fontWeight: ThemeConstants.medium,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        offset: const Offset(0, 1),
-                        blurRadius: 2,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Extension لتسهيل الاستخدام - مبسط
+/// Extension لتسهيل استخدام SnackBar
 extension SnackBarExtension on BuildContext {
-  /// عرض SnackBar نجاح
-  void showSuccessSnackBar(String message, {SnackBarAction? action}) {
-    AppSnackBar.showSuccess(
-      context: this, 
-      message: message, 
-      action: action,
-    );
+  void showSuccessSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
+    AppSnackBar.showSuccess(context: this, message: message, duration: duration, action: action);
   }
 
-  /// عرض SnackBar خطأ
-  void showErrorSnackBar(String message, {SnackBarAction? action}) {
-    AppSnackBar.showError(
-      context: this, 
-      message: message, 
-      action: action,
-    );
+  void showErrorSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
+    AppSnackBar.showError(context: this, message: message, duration: duration, action: action);
   }
 
-  /// عرض SnackBar معلومات
-  void showInfoSnackBar(String message, {SnackBarAction? action}) {
-    AppSnackBar.showInfo(
-      context: this, 
-      message: message, 
-      action: action,
-    );
+  void showInfoSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
+    AppSnackBar.showInfo(context: this, message: message, duration: duration, action: action);
   }
 
-  /// عرض SnackBar مخصص
-  void showSnackBar(String message, {
-    IconData? icon,
-    Color? backgroundColor,
-    SnackBarAction? action,
-  }) {
-    AppSnackBar.show(
-      context: this,
-      message: message,
-      icon: icon,
-      backgroundColor: backgroundColor,
-      action: action,
-    );
+  void showWarningSnackBar(String message, {Duration? duration, SnackBarAction? action}) {
+    AppSnackBar.showWarning(context: this, message: message, duration: duration, action: action);
   }
 
-  /// إخفاء جميع SnackBars
   void hideSnackBars() {
     AppSnackBar.hideAll(this);
   }

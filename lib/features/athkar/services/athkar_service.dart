@@ -1,6 +1,5 @@
-// lib/features/athkar/services/athkar_service.dart (مُصلح نهائياً)
+// lib/features/athkar/services/athkar_service.dart (محدث مع الدوال المطلوبة)
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../../../core/constants/app_constants.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
@@ -10,7 +9,7 @@ import '../../../core/infrastructure/services/notifications/models/notification_
 import '../models/athkar_model.dart';
 import '../models/athkar_progress.dart';
 
-/// خدمة شاملة لإدارة الأذكار مع دعم محسن للإشعارات
+/// خدمة شاملة لإدارة الأذكار
 class AthkarService {
   final LoggerService _logger;
   final StorageService _storage;
@@ -19,7 +18,6 @@ class AthkarService {
   static const String _categoriesKey = 'athkar_categories';
   static const String _progressKey = AppConstants.athkarProgressKey;
   static const String _reminderKey = AppConstants.athkarReminderKey;
-  static const String _customTimesKey = 'athkar_custom_times';
   static const String _favoritesKey = '${AppConstants.favoritesKey}_athkar';
 
   // كاش البيانات
@@ -31,9 +29,6 @@ class AthkarService {
     required StorageService storage,
   })  : _logger = logger,
         _storage = storage;
-
-  /// للوصول للـ storage من خارج الخدمة (للإصلاحات المؤقتة)
-  StorageService get storage => _storage;
 
   // ==================== تحميل البيانات ====================
 
@@ -70,11 +65,18 @@ class AthkarService {
           .map((e) => AthkarCategory.fromJson(e as Map<String, dynamic>))
           .toList();
       
-      _logger.info(message: '[AthkarService] تم تحميل ${_categories!.length} فئة');
+      _logger.info(
+        message: '[AthkarService] تم تحميل الفئات',
+        data: {'count': _categories!.length},
+      );
       
       return _categories!;
-    } catch (e) {
-      _logger.error(message: '[AthkarService] فشل تحميل الفئات - $e');
+    } catch (e, stackTrace) {
+      _logger.error(
+        message: '[AthkarService] فشل تحميل الفئات',
+        error: e,
+        stackTrace: stackTrace,
+      );
       throw Exception('فشل تحميل بيانات الأذكار');
     }
   }
@@ -88,7 +90,10 @@ class AthkarService {
         orElse: () => throw Exception('الفئة غير موجودة'),
       );
     } catch (e) {
-      _logger.warning(message: '[AthkarService] فئة غير موجودة: $id');
+      _logger.warning(
+        message: '[AthkarService] فئة غير موجودة',
+        data: {'categoryId': id},
+      );
       return null;
     }
   }
@@ -146,9 +151,19 @@ class AthkarService {
       // تحديث الكاش
       _progressCache[categoryId] = progress;
 
-      _logger.debug(message: '[AthkarService] تم تحديث التقدم - $categoryId:$itemId = $count');
+      _logger.debug(
+        message: '[AthkarService] تم تحديث التقدم',
+        data: {
+          'categoryId': categoryId,
+          'itemId': itemId,
+          'count': count,
+        },
+      );
     } catch (e) {
-      _logger.error(message: '[AthkarService] فشل تحديث التقدم - $e');
+      _logger.error(
+        message: '[AthkarService] فشل تحديث التقدم',
+        error: e,
+      );
       rethrow;
     }
   }
@@ -160,9 +175,15 @@ class AthkarService {
       await _storage.remove(key);
       _progressCache.remove(categoryId);
 
-      _logger.info(message: '[AthkarService] تم إعادة تعيين التقدم للفئة: $categoryId');
+      _logger.info(
+        message: '[AthkarService] تم إعادة تعيين التقدم',
+        data: {'categoryId': categoryId},
+      );
     } catch (e) {
-      _logger.error(message: '[AthkarService] فشل إعادة تعيين التقدم - $e');
+      _logger.error(
+        message: '[AthkarService] فشل إعادة تعيين التقدم',
+        error: e,
+      );
       rethrow;
     }
   }
@@ -187,67 +208,45 @@ class AthkarService {
       if (totalRequired == 0) return 0;
       return ((totalCompleted / totalRequired) * 100).round();
     } catch (e) {
-      _logger.error(message: '[AthkarService] فشل حساب نسبة الإكمال - $e');
+      _logger.error(
+        message: '[AthkarService] فشل حساب نسبة الإكمال',
+        error: e,
+      );
       return 0;
     }
   }
 
-  // ==================== إدارة التذكيرات المحسنة ====================
+  // ==================== إدارة التذكيرات ====================
 
-  /// الحصول على NotificationManager مع التحقق من التهيئة
-  Future<NotificationManager?> _getNotificationManager() async {
-    try {
-      return NotificationManager.instance;
-    } catch (e) {
-      _logger.error(message: '[AthkarService] NotificationManager غير مهيأ - $e');
-      return null;
-    }
-  }
-
-  /// جدولة تذكيرات الفئات مع الأوقات المخصصة
+  /// جدولة تذكيرات الفئات
   Future<void> scheduleCategoryReminders() async {
     try {
-      final notificationManager = await _getNotificationManager();
-      if (notificationManager == null) {
-        _logger.warning(message: '[AthkarService] NotificationManager غير متاح');
-        return;
-      }
-
       final categories = await loadCategories();
       final enabledIds = getEnabledReminderCategories();
-      final customTimes = getCustomTimes();
 
-      _logger.info(message: '[AthkarService] بدء جدولة ${enabledIds.length} من ${categories.length} فئة');
-
-      // إلغاء جميع التذكيرات السابقة أولاً
-      await notificationManager.cancelAllAthkarReminders();
-
-      int scheduledCount = 0;
       for (final category in categories) {
-        if (enabledIds.contains(category.id)) {
-          // استخدام الوقت المخصص أو الوقت الأصلي
-          final time = customTimes[category.id] ?? category.notifyTime;
+        if (category.notifyTime != null && enabledIds.contains(category.id)) {
+          await NotificationManager.instance.scheduleAthkarReminder(
+            categoryId: category.id,
+            categoryName: category.title,
+            time: category.notifyTime!,
+            repeat: NotificationRepeat.daily,
+          );
           
-          if (time != null) {
-            await notificationManager.scheduleAthkarReminder(
-              categoryId: category.id,
-              categoryName: category.title,
-              time: time,
-              repeat: NotificationRepeat.daily,
-            );
-            
-            scheduledCount++;
-            
-            _logger.debug(message: '[AthkarService] جُدول تذكير: ${category.title} في ${time.hour}:${time.minute.toString().padLeft(2, '0')}');
-          } else {
-            _logger.warning(message: '[AthkarService] لا يوجد وقت محدد للفئة: ${category.id}');
-          }
+          _logger.info(
+            message: '[AthkarService] تم جدولة تذكير',
+            data: {
+              'categoryId': category.id,
+              'time': '${category.notifyTime!.hour}:${category.notifyTime!.minute.toString().padLeft(2, '0')}',
+            },
+          );
         }
       }
-
-      _logger.info(message: '[AthkarService] تم جدولة $scheduledCount تذكير');
     } catch (e) {
-      _logger.error(message: '[AthkarService] فشل جدولة التذكيرات - $e');
+      _logger.error(
+        message: '[AthkarService] فشل جدولة التذكيرات',
+        error: e,
+      );
       rethrow;
     }
   }
@@ -257,86 +256,25 @@ class AthkarService {
     return _storage.getStringList(_reminderKey) ?? [];
   }
 
-  /// تحديث الفئات المفعلة للتذكيرات
+  /// تحديث الفئات المفعلة للتذكيرات (الدالة المطلوبة)
   Future<void> setEnabledReminderCategories(List<String> enabledIds) async {
     try {
       await _storage.setStringList(_reminderKey, enabledIds);
-      _logger.info(message: '[AthkarService] تم تحديث ${enabledIds.length} فئة مفعلة للتذكيرات');
-    } catch (e) {
-      _logger.error(message: '[AthkarService] فشل تحديث الفئات المفعلة - $e');
-      rethrow;
-    }
-  }
-
-  /// الحصول على الأوقات المخصصة
-  Map<String, TimeOfDay> getCustomTimes() {
-    try {
-      final data = _storage.getMap(_customTimesKey);
-      if (data == null) return {};
-
-      final result = <String, TimeOfDay>{};
-      for (final entry in data.entries) {
-        final timeStr = entry.value as String?;
-        if (timeStr != null) {
-          final time = _parseTimeString(timeStr);
-          if (time != null) {
-            result[entry.key] = time;
-          }
-        }
-      }
-
-      return result;
-    } catch (e) {
-      _logger.warning(message: '[AthkarService] فشل تحميل الأوقات المخصصة - $e');
-      return {};
-    }
-  }
-
-  /// حفظ الأوقات المخصصة
-  Future<void> setCustomTimes(Map<String, TimeOfDay> customTimes) async {
-    try {
-      final data = <String, String>{};
-      for (final entry in customTimes.entries) {
-        data[entry.key] = _formatTimeOfDay(entry.value);
-      }
-
-      await _storage.setMap(_customTimesKey, data);
-      _logger.info(message: '[AthkarService] تم حفظ ${customTimes.length} وقت مخصص');
-    } catch (e) {
-      _logger.error(message: '[AthkarService] فشل حفظ الأوقات المخصصة - $e');
-      rethrow;
-    }
-  }
-
-  /// حفظ وقت مخصص لفئة واحدة
-  Future<void> setCustomTimeForCategory(String categoryId, TimeOfDay time) async {
-    try {
-      final customTimes = getCustomTimes();
-      customTimes[categoryId] = time;
-      await setCustomTimes(customTimes);
       
-      _logger.debug(message: '[AthkarService] تم حفظ وقت مخصص للفئة $categoryId: ${_formatTimeOfDay(time)}');
+      _logger.info(
+        message: '[AthkarService] تم تحديث الفئات المفعلة للتذكيرات',
+        data: {'enabledIds': enabledIds},
+      );
     } catch (e) {
-      _logger.error(message: '[AthkarService] فشل حفظ الوقت المخصص - $e');
+      _logger.error(
+        message: '[AthkarService] فشل تحديث الفئات المفعلة للتذكيرات',
+        error: e,
+      );
       rethrow;
     }
   }
 
-  /// إزالة الوقت المخصص لفئة واحدة
-  Future<void> removeCustomTimeForCategory(String categoryId) async {
-    try {
-      final customTimes = getCustomTimes();
-      if (customTimes.remove(categoryId) != null) {
-        await setCustomTimes(customTimes);
-        _logger.debug(message: '[AthkarService] تم إزالة الوقت المخصص للفئة: $categoryId');
-      }
-    } catch (e) {
-      _logger.error(message: '[AthkarService] فشل إزالة الوقت المخصص - $e');
-      rethrow;
-    }
-  }
-
-  /// تحديث إعدادات التذكيرات مع جدولة فورية
+  /// تحديث إعدادات التذكيرات
   Future<void> updateReminderSettings(Map<String, bool> enabledMap) async {
     try {
       final enabledIds = enabledMap.entries
@@ -346,94 +284,33 @@ class AthkarService {
       
       await setEnabledReminderCategories(enabledIds);
 
-      // إعادة جدولة جميع التذكيرات
-      await scheduleCategoryReminders();
+      // تحديث الجدولة
+      final categories = await loadCategories();
+      for (final category in categories) {
+        if (category.notifyTime == null) continue;
 
-      _logger.info(message: '[AthkarService] تم تحديث إعدادات التذكيرات وإعادة الجدولة');
-    } catch (e) {
-      _logger.error(message: '[AthkarService] فشل تحديث إعدادات التذكيرات - $e');
-      rethrow;
-    }
-  }
-
-  /// جدولة تذكير لفئة واحدة فقط
-  Future<void> scheduleReminderForCategory(String categoryId) async {
-    try {
-      final notificationManager = await _getNotificationManager();
-      if (notificationManager == null) return;
-
-      final category = await getCategoryById(categoryId);
-      if (category == null) return;
-
-      final customTimes = getCustomTimes();
-      final time = customTimes[categoryId] ?? category.notifyTime;
-      
-      if (time != null) {
-        await notificationManager.scheduleAthkarReminder(
-          categoryId: categoryId,
-          categoryName: category.title,
-          time: time,
-          repeat: NotificationRepeat.daily,
-        );
-        
-        _logger.info(message: '[AthkarService] تم جدولة تذكير للفئة $categoryId في ${_formatTimeOfDay(time)}');
-      }
-    } catch (e) {
-      _logger.error(message: '[AthkarService] فشل جدولة تذكير للفئة $categoryId - $e');
-      rethrow;
-    }
-  }
-
-  /// إلغاء تذكير لفئة واحدة فقط
-  Future<void> cancelReminderForCategory(String categoryId) async {
-    try {
-      final notificationManager = await _getNotificationManager();
-      if (notificationManager == null) return;
-
-      await notificationManager.cancelAthkarReminder(categoryId);
-      _logger.info(message: '[AthkarService] تم إلغاء تذكير الفئة: $categoryId');
-    } catch (e) {
-      _logger.error(message: '[AthkarService] فشل إلغاء تذكير الفئة $categoryId - $e');
-      rethrow;
-    }
-  }
-
-  /// التحقق من حالة إشعارات فئة معينة
-  Future<bool> isCategoryReminderEnabled(String categoryId) async {
-    final enabledIds = getEnabledReminderCategories();
-    return enabledIds.contains(categoryId);
-  }
-
-  /// الحصول على الوقت الفعلي لفئة (مخصص أو أصلي)
-  Future<TimeOfDay?> getEffectiveTimeForCategory(String categoryId) async {
-    final customTimes = getCustomTimes();
-    if (customTimes.containsKey(categoryId)) {
-      return customTimes[categoryId];
-    }
-
-    final category = await getCategoryById(categoryId);
-    return category?.notifyTime;
-  }
-
-  /// مساعدات تحويل الوقت
-  String _formatTimeOfDay(TimeOfDay time) {
-    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-  }
-
-  TimeOfDay? _parseTimeString(String timeStr) {
-    try {
-      final parts = timeStr.split(':');
-      if (parts.length == 2) {
-        final hour = int.parse(parts[0]);
-        final minute = int.parse(parts[1]);
-        if (hour >= 0 && hour < 24 && minute >= 0 && minute < 60) {
-          return TimeOfDay(hour: hour, minute: minute);
+        if (enabledIds.contains(category.id)) {
+          await NotificationManager.instance.scheduleAthkarReminder(
+            categoryId: category.id,
+            categoryName: category.title,
+            time: category.notifyTime!,
+          );
+        } else {
+          await NotificationManager.instance.cancelAthkarReminder(category.id);
         }
       }
+
+      _logger.info(
+        message: '[AthkarService] تم تحديث إعدادات التذكيرات',
+        data: {'enabledCount': enabledIds.length},
+      );
     } catch (e) {
-      // تجاهل أخطاء التحويل
+      _logger.error(
+        message: '[AthkarService] فشل تحديث إعدادات التذكيرات',
+        error: e,
+      );
+      rethrow;
     }
-    return null;
   }
 
   // ==================== إدارة المفضلة ====================
@@ -450,10 +327,17 @@ class AthkarService {
       if (!favorites.contains(key)) {
         favorites.add(key);
         await _storage.setStringList(_favoritesKey, favorites);
-        _logger.info(message: '[AthkarService] تم إضافة للمفضلة: $categoryId:$itemId');
+        
+        _logger.info(
+          message: '[AthkarService] تم إضافة للمفضلة',
+          data: {'categoryId': categoryId, 'itemId': itemId},
+        );
       }
     } catch (e) {
-      _logger.error(message: '[AthkarService] فشل إضافة للمفضلة - $e');
+      _logger.error(
+        message: '[AthkarService] فشل إضافة للمفضلة',
+        error: e,
+      );
       rethrow;
     }
   }
@@ -469,10 +353,17 @@ class AthkarService {
       
       if (favorites.remove(key)) {
         await _storage.setStringList(_favoritesKey, favorites);
-        _logger.info(message: '[AthkarService] تم إزالة من المفضلة: $categoryId:$itemId');
+        
+        _logger.info(
+          message: '[AthkarService] تم إزالة من المفضلة',
+          data: {'categoryId': categoryId, 'itemId': itemId},
+        );
       }
     } catch (e) {
-      _logger.error(message: '[AthkarService] فشل إزالة من المفضلة - $e');
+      _logger.error(
+        message: '[AthkarService] فشل إزالة من المفضلة',
+        error: e,
+      );
       rethrow;
     }
   }
@@ -528,50 +419,21 @@ class AthkarService {
         }
       }
 
-      _logger.info(message: '[AthkarService] البحث عن "$query" أعطى ${results.length} نتيجة');
+      _logger.info(
+        message: '[AthkarService] نتائج البحث',
+        data: {
+          'query': query,
+          'results': results.length,
+        },
+      );
 
       return results;
     } catch (e) {
-      _logger.error(message: '[AthkarService] فشل البحث - $e');
-      return [];
-    }
-  }
-
-  // ==================== إحصائيات محسنة ====================
-
-  /// الحصول على إحصائيات شاملة
-  Future<AthkarStatistics> getStatistics() async {
-    try {
-      final categories = await loadCategories();
-      final enabledIds = getEnabledReminderCategories();
-      
-      int totalCategories = categories.length;
-      int enabledCategories = enabledIds.length;
-      int completedToday = 0;
-      int totalProgress = 0;
-
-      for (final category in categories) {
-        final percentage = await getCategoryCompletionPercentage(category.id);
-        totalProgress += percentage;
-        
-        if (percentage >= 100) {
-          completedToday++;
-        }
-      }
-
-      final averageProgress = totalCategories > 0 ? totalProgress / totalCategories : 0.0;
-
-      return AthkarStatistics(
-        totalCategories: totalCategories,
-        enabledCategories: enabledCategories,
-        completedToday: completedToday,
-        averageProgress: averageProgress,
-        customTimesCount: getCustomTimes().length,
-        favoritesCount: getFavoriteItems().length,
+      _logger.error(
+        message: '[AthkarService] فشل البحث',
+        error: e,
       );
-    } catch (e) {
-      _logger.error(message: '[AthkarService] فشل الحصول على الإحصائيات - $e');
-      return AthkarStatistics.empty();
+      return [];
     }
   }
 
@@ -589,38 +451,15 @@ class AthkarService {
       // مسح المفضلة
       await _storage.remove(_favoritesKey);
 
-      // مسح الأوقات المخصصة
-      await _storage.remove(_customTimesKey);
-
-      // مسح إعدادات التذكيرات
-      await _storage.remove(_reminderKey);
-
       // مسح الكاش
       _progressCache.clear();
 
-      // إلغاء جميع الإشعارات
-      final notificationManager = await _getNotificationManager();
-      await notificationManager?.cancelAllAthkarReminders();
-
       _logger.info(message: '[AthkarService] تم مسح جميع البيانات');
     } catch (e) {
-      _logger.error(message: '[AthkarService] فشل مسح البيانات - $e');
-      rethrow;
-    }
-  }
-
-  /// إعادة تعيين إعدادات التذكيرات فقط
-  Future<void> resetNotificationSettings() async {
-    try {
-      await _storage.remove(_reminderKey);
-      await _storage.remove(_customTimesKey);
-      
-      final notificationManager = await _getNotificationManager();
-      await notificationManager?.cancelAllAthkarReminders();
-      
-      _logger.info(message: '[AthkarService] تم إعادة تعيين إعدادات التذكيرات');
-    } catch (e) {
-      _logger.error(message: '[AthkarService] فشل إعادة تعيين إعدادات التذكيرات - $e');
+      _logger.error(
+        message: '[AthkarService] فشل مسح البيانات',
+        error: e,
+      );
       rethrow;
     }
   }
@@ -647,44 +486,4 @@ class SearchResult {
     required this.item,
     required this.matchType,
   });
-}
-
-// ==================== نموذج الإحصائيات ====================
-
-class AthkarStatistics {
-  final int totalCategories;
-  final int enabledCategories;
-  final int completedToday;
-  final double averageProgress;
-  final int customTimesCount;
-  final int favoritesCount;
-
-  AthkarStatistics({
-    required this.totalCategories,
-    required this.enabledCategories,
-    required this.completedToday,
-    required this.averageProgress,
-    required this.customTimesCount,
-    required this.favoritesCount,
-  });
-
-  factory AthkarStatistics.empty() {
-    return AthkarStatistics(
-      totalCategories: 0,
-      enabledCategories: 0,
-      completedToday: 0,
-      averageProgress: 0.0,
-      customTimesCount: 0,
-      favoritesCount: 0,
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-    'totalCategories': totalCategories,
-    'enabledCategories': enabledCategories,
-    'completedToday': completedToday,
-    'averageProgress': averageProgress,
-    'customTimesCount': customTimesCount,
-    'favoritesCount': favoritesCount,
-  };
 }

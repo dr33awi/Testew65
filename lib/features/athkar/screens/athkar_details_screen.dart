@@ -1,493 +1,458 @@
 // lib/features/athkar/screens/athkar_details_screen.dart
+import 'package:athkar_app/app/routes/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:athkar_app/app/di/service_locator.dart';
-import 'package:athkar_app/app/themes/app_theme.dart';
-import '../models/athkar_model.dart';
-import '../models/athkar_progress.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../../app/themes/app_theme.dart';
+import '../../../app/di/service_locator.dart';
+import '../../../core/infrastructure/services/storage/storage_service.dart';
+import '../../../core/infrastructure/services/utils/extensions/string_extensions.dart';
 import '../services/athkar_service.dart';
+import '../models/athkar_model.dart';
+import '../widgets/athkar_item_card.dart';
+import '../widgets/athkar_progress_bar.dart';
+import '../widgets/athkar_completion_dialog.dart';
+import '../utils/category_utils.dart';
+import 'notification_settings_screen.dart';
 
-/// شاشة تفاصيل فئة أذكار معينة
 class AthkarDetailsScreen extends StatefulWidget {
-  final String categoryId;
-
-  const AthkarDetailsScreen({
+  String categoryId;
+  
+  AthkarDetailsScreen({
     super.key,
-    required this.categoryId,
-  });
+    String? categoryId,
+  }) : categoryId = categoryId ?? '';
 
   @override
   State<AthkarDetailsScreen> createState() => _AthkarDetailsScreenState();
 }
 
 class _AthkarDetailsScreenState extends State<AthkarDetailsScreen>
-    with TickerProviderStateMixin {
-  late final AthkarService _athkarService;
+    with SingleTickerProviderStateMixin {
+  late final AthkarService _service;
+  late final StorageService _storage;
   late final AnimationController _animationController;
-  late final AnimationController _progressAnimationController;
   
   AthkarCategory? _category;
-  AthkarProgress? _progress;
-  bool _isLoading = true;
-  String? _error;
-  int _currentIndex = 0;
-  
-  // للتحكم في الأصوات والاهتزاز
-  bool _soundEnabled = false;
-  bool _vibrationEnabled = true;
+  final Map<int, int> _counts = {};
+  final Set<int> _completedItems = {};
+  List<AthkarItem> _visibleItems = [];
+  int _totalProgress = 0;
+  bool _loading = true;
+  bool _allCompleted = false;
 
   @override
   void initState() {
     super.initState();
-    _athkarService = getService<AthkarService>();
+    _service = getIt<AthkarService>();
+    _storage = getIt<StorageService>();
     _animationController = AnimationController(
+      vsync: this,
       duration: ThemeConstants.durationNormal,
-      vsync: this,
     );
-    _progressAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _loadData();
+    _load();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
-    _progressAnimationController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadData() async {
+  Future<void> _load() async {
     try {
+      final cat = await _service.getCategoryById(widget.categoryId);
+      if (!mounted) return;
+      
+      // تحميل التقدم المحفوظ
+      final savedProgress = _loadSavedProgress();
+      
       setState(() {
-        _isLoading = true;
-        _error = null;
+        _category = cat;
+        if (cat != null) {
+          // تهيئة العدادات
+          for (var i = 0; i < cat.athkar.length; i++) {
+            final item = cat.athkar[i];
+            _counts[item.id] = savedProgress[item.id] ?? 0;
+            if (_counts[item.id]! >= item.count) {
+              _completedItems.add(item.id);
+            }
+          }
+          _updateVisibleItems();
+          _calculateProgress();
+        }
+        _loading = false;
       });
-
-      // تحميل الفئة والتقدم
-      final category = await _athkarService.getCategoryById(widget.categoryId);
-      final progress = await _athkarService.getCategoryProgress(widget.categoryId);
-
-      if (mounted && category != null) {
-        setState(() {
-          _category = category;
-          _progress = progress;
-          _isLoading = false;
-        });
-        _animationController.forward();
-        _progressAnimationController.forward();
-      } else if (mounted) {
-        setState(() {
-          _error = 'الفئة غير موجودة';
-          _isLoading = false;
-        });
-      }
+      
+      // بدء الأنيميشن
+      _animationController.forward();
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = e.toString();
-          _isLoading = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() => _loading = false);
+      context.showErrorSnackBar('حدث خطأ في تحميل الأذكار');
     }
   }
 
-  Future<void> _updateCount(int itemId, int newCount) async {
-    try {
-      await _athkarService.updateItemProgress(
-        categoryId: widget.categoryId,
-        itemId: itemId,
-        count: newCount,
-      );
+  void _updateVisibleItems() {
+    if (_category == null) return;
+    
+    // عرض فقط الأذكار غير المكتملة
+    _visibleItems = _category!.athkar
+        .where((item) => !_completedItems.contains(item.id))
+        .toList();
+  }
 
-      // تحديث التقدم محلياً
-      if (_progress != null) {
-        setState(() {
-          _progress!.itemProgress[itemId] = newCount;
-          _progress!.lastUpdated = DateTime.now();
-        });
-      }
+  Map<int, int> _loadSavedProgress() {
+    final key = 'athkar_progress_${widget.categoryId}';
+    final data = _storage.getMap(key);
+    if (data == null) return {};
+    
+    return data.map((k, v) => MapEntry(int.parse(k), v as int));
+  }
 
-      // إضافة ردود فعل حسية
-      if (_vibrationEnabled) {
-        HapticFeedback.lightImpact();
-      }
+  Future<void> _saveProgress() async {
+    final key = 'athkar_progress_${widget.categoryId}';
+    final data = _counts.map((k, v) => MapEntry(k.toString(), v));
+    await _storage.setMap(key, data);
+  }
 
-      // إشعار بإكمال الذكر
-      final item = _category!.athkar.firstWhere((a) => a.id == itemId);
-      if (newCount >= item.count) {
-        _showCompletionFeedback(item);
+  void _calculateProgress() {
+    if (_category == null) return;
+    
+    int completed = 0;
+    int total = 0;
+    
+    for (final item in _category!.athkar) {
+      final count = _counts[item.id] ?? 0;
+      completed += count.clamp(0, item.count);
+      total += item.count;
+    }
+    
+    setState(() {
+      _totalProgress = total > 0 ? ((completed / total) * 100).round() : 0;
+      _allCompleted = completed >= total && total > 0;
+    });
+  }
+
+  void _onItemTap(AthkarItem item) {
+    HapticFeedback.lightImpact();
+    
+    setState(() {
+      final currentCount = _counts[item.id] ?? 0;
+      if (currentCount < item.count) {
+        _counts[item.id] = currentCount + 1;
+        
+        // إضافة للمكتملة إذا وصلت للعدد المطلوب
+        if (_counts[item.id]! >= item.count) {
+          _completedItems.add(item.id);
+          HapticFeedback.mediumImpact();
+          _updateVisibleItems(); // إخفاء الذكر المكتمل
+        }
       }
-    } catch (e) {
-      context.showErrorSnackBar('خطأ في حفظ التقدم');
+      _calculateProgress();
+    });
+    
+    _saveProgress();
+    
+    // عرض رسالة الإكمال
+    if (_allCompleted && !_loading) {
+      _showCompletionDialog();
     }
   }
 
-  void _showCompletionFeedback(AthkarItem item) {
+  void _onItemLongPress(AthkarItem item) {
     HapticFeedback.mediumImpact();
-    context.showSuccessSnackBar('تم إكمال الذكر بنجاح ✨');
+    
+    // إعادة تعيين العداد
+    setState(() {
+      _counts[item.id] = 0;
+      _completedItems.remove(item.id);
+      _updateVisibleItems();
+      _calculateProgress();
+    });
+    
+    _saveProgress();
+    context.showInfoSnackBar('تم إعادة تعيين العداد');
   }
 
-  Future<void> _toggleFavorite(AthkarItem item) async {
-    try {
-      final isFav = _athkarService.isFavorite(widget.categoryId, item.id);
-      
-      if (isFav) {
-        await _athkarService.removeFromFavorites(
-          categoryId: widget.categoryId,
-          itemId: item.id,
-        );
-        context.showInfoSnackBar('تم إزالة من المفضلة');
-      } else {
-        await _athkarService.addToFavorites(
-          categoryId: widget.categoryId,
-          itemId: item.id,
-        );
-        context.showSuccessSnackBar('تم إضافة للمفضلة ❤️');
-      }
-      
-      setState(() {}); // لتحديث أيقونة المفضلة
-    } catch (e) {
-      context.showErrorSnackBar('خطأ في تحديث المفضلة');
+  Future<void> _showCompletionDialog() async {
+    final result = await AthkarCompletionDialog.show(
+      context: context,
+      categoryName: _category!.title,
+      onShare: _shareProgress,
+      onReset: _resetAll,
+    );
+    
+    if (result == true) {
+      // تم إعادة التعيين
+      _resetAll();
     }
   }
 
-  void _shareAthkar(AthkarItem item) {
-    // يمكن إضافة مشاركة لاحقاً
-    context.showInfoSnackBar('ميزة المشاركة قيد التطوير');
+  Future<void> _shareProgress() async {
+    // مشاركة التقدم
+    final text = '''
+✨ أكملت ${_category!.title} ✨
+${_category!.athkar.map((item) => '✓ ${item.text.truncate(50)}').join('\n')}
+
+تطبيق الأذكار
+    ''';
+    
+    await Share.share(text);
   }
 
-  void _copyToClipboard(AthkarItem item) {
-    Clipboard.setData(ClipboardData(text: item.text));
-    HapticFeedback.selectionClick();
-    context.showSuccessSnackBar('تم نسخ الذكر');
+  void _resetAll() {
+    setState(() {
+      _counts.clear();
+      _completedItems.clear();
+      _allCompleted = false;
+      _totalProgress = 0;
+      _updateVisibleItems();
+    });
+    _saveProgress();
+  }
+
+  Future<void> _shareItem(AthkarItem item) async {
+    final text = '''
+${item.text}
+
+${item.fadl != null ? 'الفضل: ${item.fadl}\n' : ''}
+${item.source != null ? 'المصدر: ${item.source}' : ''}
+
+تطبيق الأذكار
+''';
+    
+    await Share.share(text);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _buildContent(),
-      bottomNavigationBar: _category != null ? _buildBottomBar() : null,
-    );
-  }
-
-  Widget _buildContent() {
-    if (_isLoading) {
-      return Center(
-        child: AppLoading.page(
-          message: 'جاري تحميل الأذكار...',
-        ),
-      );
-    }
-
-    if (_error != null || _category == null) {
+    if (_loading) {
       return Scaffold(
-        appBar: CustomAppBar.simple(title: 'خطأ'),
-        body: AppEmptyState.error(
-          message: _error ?? 'حدث خطأ غير متوقع',
-          onRetry: _loadData,
+        body: Center(
+          child: AppLoading.page(
+            message: 'جاري تحميل الأذكار...',
+          ),
         ),
       );
     }
 
-    return CustomScrollView(
-      slivers: [
-        _buildSliverAppBar(),
-        _buildSliverContent(),
-      ],
+    if (_category == null) {
+      return Scaffold(
+        appBar: CustomAppBar.simple(title: 'الأذكار'),
+        body: AppEmptyState.error(
+          message: 'تعذر تحميل الأذكار المطلوبة',
+          onRetry: _load,
+        ),
+      );
+    }
+
+    final category = _category!;
+    
+    return Scaffold(
+      backgroundColor: context.backgroundColor,
+      appBar: CustomAppBar(
+        title: category.title,
+        leading: AppBackButton(
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        actions: [
+          // زر المفضلة
+          AppBarAction(
+            icon: Icons.favorite_outline,
+            onPressed: () {
+              Navigator.pushNamed(context, AppRouter.favorites);
+            },
+            tooltip: 'المفضلة',
+          ),
+          
+          // زر إعدادات الإشعارات
+          AppBarAction(
+            icon: Icons.notifications_outlined,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AthkarNotificationSettingsScreen(),
+                ),
+              );
+            },
+            tooltip: 'إعدادات الإشعارات',
+          ),
+          
+          // زر المشاركة
+          AppBarAction(
+            icon: Icons.share_outlined,
+            onPressed: _shareProgress,
+            tooltip: 'مشاركة',
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // شريط التقدم
+          AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              return FadeTransition(
+                opacity: _animationController,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, -1),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(
+                    parent: _animationController,
+                    curve: ThemeConstants.curveDefault,
+                  )),
+                  child: AthkarProgressBar(
+                    progress: _totalProgress,
+                    color: CategoryUtils.getCategoryThemeColor(category.id),
+                    completedCount: _completedItems.length,
+                    totalCount: category.athkar.length,
+                  ),
+                ),
+              );
+            },
+          ),
+          
+          // قائمة الأذكار
+          Expanded(
+            child: _buildContent(category),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildSliverAppBar() {
-    return SliverAppBar(
-      expandedHeight: 200,
-      floating: false,
-      pinned: true,
-      backgroundColor: _category!.color,
-      leading: AppBackButton(
-        color: Colors.white,
-        onPressed: () => Navigator.of(context).pop(),
-      ),
-      actions: [
-        AppBarAction(
-          icon: Icons.refresh,
-          onPressed: () async {
-            await _athkarService.resetCategoryProgress(widget.categoryId);
-            await _loadData();
-            context.showSuccessSnackBar('تم إعادة تعيين التقدم');
-          },
-          tooltip: 'إعادة تعيين',
-          color: Colors.white,
-        ),
-      ],
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(
-          _category!.title,
-          style: AppTextStyles.h4.copyWith(
-            color: Colors.white,
-            fontWeight: ThemeConstants.bold,
-            shadows: [
-              Shadow(
-                color: Colors.black.withValues(alpha: 0.5),
-                offset: const Offset(0, 2),
-                blurRadius: 4,
+  Widget _buildContent(AthkarCategory category) {
+    if (_visibleItems.isEmpty && _completedItems.isNotEmpty) {
+      // عرض رسالة الإكمال
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(ThemeConstants.space6),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: ThemeConstants.success.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: ThemeConstants.success.withValues(alpha: 0.3),
+                    width: 2,
+                  ),
+                ),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  size: 60,
+                  color: ThemeConstants.success,
+                ),
+              ),
+              
+              ThemeConstants.space6.h,
+              
+              Text(
+                'أحسنت! أكملت جميع الأذكار',
+                style: context.headlineSmall?.copyWith(
+                  color: ThemeConstants.success,
+                  fontWeight: ThemeConstants.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              
+              ThemeConstants.space3.h,
+              
+              Text(
+                'جعله الله في ميزان حسناتك',
+                style: context.bodyLarge?.copyWith(
+                  color: context.textSecondaryColor,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              
+              ThemeConstants.space8.h,
+              
+              Row(
+                children: [
+                  Expanded(
+                    child: AppButton.outline(
+                      text: 'مشاركة الإنجاز',
+                      icon: Icons.share_rounded,
+                      onPressed: _shareProgress,
+                      color: ThemeConstants.success,
+                    ),
+                  ),
+                  
+                  ThemeConstants.space4.w,
+                  
+                  Expanded(
+                    child: AppButton.primary(
+                      text: 'البدء من جديد',
+                      icon: Icons.refresh_rounded,
+                      onPressed: _resetAll,
+                      backgroundColor: ThemeConstants.success,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                _category!.color,
-                _category!.color.darken(0.2),
-              ],
-            ),
-          ),
-          child: _buildHeaderOverlay(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeaderOverlay() {
-    final completedCount = _getCompletedItemsCount();
-    final totalCount = _category!.athkar.length;
-    final percentage = totalCount > 0 ? (completedCount / totalCount * 100).round() : 0;
-
-    return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space6),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          const SizedBox(height: kToolbarHeight + 20),
+      );
+    }
+    
+    // عرض الأذكار
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(ThemeConstants.space4),
+        itemCount: _visibleItems.length,
+        itemBuilder: (context, index) {
+          final item = _visibleItems[index];
+          final currentCount = _counts[item.id] ?? 0;
+          final isCompleted = _completedItems.contains(item.id);
           
-          // أيقونة الفئة
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.25),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.4),
-                width: 3,
-              ),
-            ),
-            child: Icon(
-              _category!.icon,
-              color: Colors.white,
-              size: 40,
-            ),
-          ),
+          // إيجاد الفهرس الأصلي
+          final originalIndex = category.athkar.indexOf(item);
+          final number = originalIndex + 1;
           
-          const SizedBox(height: ThemeConstants.space3),
-          
-          // التقدم الإجمالي
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: ThemeConstants.space4,
-              vertical: ThemeConstants.space2,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-            ),
-            child: Text(
-              '$completedCount من $totalCount مكتمل ($percentage%)',
-              style: AppTextStyles.body2.copyWith(
-                color: Colors.white,
-                fontWeight: ThemeConstants.semiBold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSliverContent() {
-    return SliverPadding(
-      padding: context.appResponsivePadding,
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final item = _category!.athkar[index];
-            return AnimationConfiguration.staggeredList(
-              position: index,
-              duration: ThemeConstants.durationNormal,
-              child: SlideAnimation(
-                verticalOffset: 30.0,
-                child: FadeInAnimation(
-                  child: _buildAthkarCard(item, index),
+          return AnimationConfiguration.staggeredList(
+            position: index,
+            duration: ThemeConstants.durationNormal,
+            child: SlideAnimation(
+              verticalOffset: 50.0,
+              child: FadeInAnimation(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: index < _visibleItems.length - 1
+                        ? ThemeConstants.space3
+                        : 0,
+                  ),
+                  child: AthkarItemCard(
+                    item: item,
+                    currentCount: currentCount,
+                    isCompleted: isCompleted,
+                    number: number,
+                    color: CategoryUtils.getCategoryThemeColor(category.id),
+                    onTap: () => _onItemTap(item),
+                    onLongPress: () => _onItemLongPress(item),
+                    onFavoriteToggle: () => _toggleFavorite(item),
+                    onShare: () => _shareItem(item),
+                  ),
                 ),
               ),
-            );
-          },
-          childCount: _category!.athkar.length,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAthkarCard(AthkarItem item, int index) {
-    final currentCount = _progress?.itemProgress[item.id] ?? 0;
-    final isCompleted = currentCount >= item.count;
-    final isFavorite = _athkarService.isFavorite(widget.categoryId, item.id);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: ThemeConstants.space4),
-      child: AppCard.athkar(
-        content: item.text,
-        source: item.source,
-        fadl: item.fadl,
-        currentCount: currentCount,
-        totalCount: item.count,
-        isFavorite: isFavorite,
-        primaryColor: _category!.color,
-        onTap: isCompleted ? null : () => _incrementCount(item),
-        onFavoriteToggle: () => _toggleFavorite(item),
-        actions: [
-          CardAction(
-            icon: Icons.copy,
-            label: 'نسخ',
-            onPressed: () => _copyToClipboard(item),
-          ),
-          CardAction(
-            icon: Icons.share,
-            label: 'مشاركة',
-            onPressed: () => _shareAthkar(item),
-          ),
-          if (currentCount > 0)
-            CardAction(
-              icon: Icons.refresh,
-              label: 'إعادة تعيين',
-              onPressed: () => _updateCount(item.id, 0),
             ),
-        ],
-      ),
-    ).animatedPress(
-      onTap: isCompleted ? null : () => _incrementCount(item),
-    );
-  }
-
-  Widget _buildBottomBar() {
-    return Container(
-      padding: EdgeInsets.only(
-        left: ThemeConstants.space4,
-        right: ThemeConstants.space4,
-        top: ThemeConstants.space3,
-        bottom: ThemeConstants.space3 + context.safeBottom,
-      ),
-      decoration: BoxDecoration(
-        color: context.cardColor,
-        boxShadow: AppShadowSystem.strong,
-      ),
-      child: Row(
-        children: [
-          // التقدم الإجمالي
-          Expanded(
-            child: _buildProgressInfo(),
-          ),
-          
-          const SizedBox(width: ThemeConstants.space4),
-          
-          // أزرار الإجراءات
-          _buildActionButtons(),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildProgressInfo() {
-    final completedCount = _getCompletedItemsCount();
-    final totalCount = _category!.athkar.length;
-    final percentage = totalCount > 0 ? (completedCount / totalCount) : 0.0;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'التقدم: $completedCount من $totalCount',
-          style: AppTextStyles.label1.copyWith(
-            fontWeight: ThemeConstants.semiBold,
-          ),
-        ),
-        const SizedBox(height: ThemeConstants.space1),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-          child: LinearProgressIndicator(
-            value: percentage,
-            backgroundColor: context.dividerColor,
-            valueColor: AlwaysStoppedAnimation<Color>(_category!.color),
-            minHeight: 6,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // زر التنقل السابق
-        IconButton(
-          onPressed: _currentIndex > 0 ? _goToPrevious : null,
-          icon: const Icon(Icons.keyboard_arrow_up),
-          tooltip: 'السابق',
-        ),
-        
-        // زر التنقل التالي
-        IconButton(
-          onPressed: _currentIndex < _category!.athkar.length - 1 ? _goToNext : null,
-          icon: const Icon(Icons.keyboard_arrow_down),
-          tooltip: 'التالي',
-        ),
-      ],
-    );
-  }
-
-  // دوال مساعدة
-  void _incrementCount(AthkarItem item) {
-    final currentCount = _progress?.itemProgress[item.id] ?? 0;
-    if (currentCount < item.count) {
-      _updateCount(item.id, currentCount + 1);
-    }
-  }
-
-  int _getCompletedItemsCount() {
-    if (_progress == null || _category == null) return 0;
-    
-    int completed = 0;
-    for (final item in _category!.athkar) {
-      final currentCount = _progress!.itemProgress[item.id] ?? 0;
-      if (currentCount >= item.count) {
-        completed++;
-      }
-    }
-    return completed;
-  }
-
-  void _goToPrevious() {
-    if (_currentIndex > 0) {
-      setState(() {
-        _currentIndex--;
-      });
-      // يمكن إضافة تمرير تلقائي للبطاقة
-    }
-  }
-
-  void _goToNext() {
-    if (_currentIndex < _category!.athkar.length - 1) {
-      setState(() {
-        _currentIndex++;
-      });
-      // يمكن إضافة تمرير تلقائي للبطاقة
-    }
+  void _toggleFavorite(AthkarItem item) {
+    // TODO: تنفيذ المفضلة
+    context.showInfoSnackBar('سيتم إضافة ميزة المفضلة قريباً');
   }
 }

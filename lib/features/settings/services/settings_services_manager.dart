@@ -1,4 +1,4 @@
-// lib/features/settings/services/settings_services_manager.dart (مُنظف)
+// lib/features/settings/services/settings_services_manager.dart (مُصلح كاملاً)
 
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -23,7 +23,7 @@ class SettingsServicesManager {
   final BatteryService _batteryService;
   final PrayerTimesService _prayerService;
   
-  // Controllers للحالة
+  // Controllers للحالة - سيتم إعادة إنشاؤها عند الحاجة
   StreamController<AppSettings>? _settingsController;
   StreamController<ServiceStatus>? _serviceStatusController;
   
@@ -63,20 +63,23 @@ class SettingsServicesManager {
   
   // ==================== Getters ====================
   
+  /// الإعدادات الحالية
   AppSettings get currentSettings => _currentSettings;
-  ServiceStatus get currentStatus => _currentStatus;
-  PermissionService get permissionService => _permissionService;
-  BatteryService get batteryService => _batteryService;
-  NotificationManager get notificationManager => _notificationManager;
   
+  /// حالة الخدمات الحالية
+  ServiceStatus get currentStatus => _currentStatus;
+  
+  /// Stream للإعدادات - إنشاء controller جديد إذا لم يكن موجود
   Stream<AppSettings> get settingsStream {
     try {
       _ensureControllersInitialized();
+      
       final controller = _settingsController;
       if (controller != null && !controller.isClosed) {
         return controller.stream;
       } else {
         _logger.error(message: '[SettingsServicesManager] فشل في إنشاء settings controller');
+        // إرجاع stream يحتوي على القيمة الحالية على الأقل
         return Stream.value(_currentSettings);
       }
     } catch (e) {
@@ -88,14 +91,17 @@ class SettingsServicesManager {
     }
   }
   
+  /// Stream لحالة الخدمات - إنشاء controller جديد إذا لم يكن موجود
   Stream<ServiceStatus> get serviceStatusStream {
     try {
       _ensureControllersInitialized();
+      
       final controller = _serviceStatusController;
       if (controller != null && !controller.isClosed) {
         return controller.stream;
       } else {
         _logger.error(message: '[SettingsServicesManager] فشل في إنشاء service status controller');
+        // إرجاع stream يحتوي على القيمة الحالية على الأقل
         return Stream.value(_currentStatus);
       }
     } catch (e) {
@@ -107,8 +113,18 @@ class SettingsServicesManager {
     }
   }
   
+  /// الوصول لخدمة الأذونات (للاستخدام الخارجي)
+  PermissionService get permissionService => _permissionService;
+  
+  /// الوصول لخدمة البطارية (للاستخدام الخارجي)
+  BatteryService get batteryService => _batteryService;
+  
+  /// الوصول لمدير الإشعارات (للاستخدام الخارجي)
+  NotificationManager get notificationManager => _notificationManager;
+  
   // ==================== تهيئة Controllers ====================
   
+  /// التأكد من تهيئة Controllers
   void _ensureControllersInitialized() {
     if (_isDisposed) {
       _logger.warning(message: '[SettingsServicesManager] محاولة استخدام مدير محذوف');
@@ -116,10 +132,12 @@ class SettingsServicesManager {
     }
     
     try {
+      // إنشاء أو إعادة إنشاء settings controller
       final currentSettingsController = _settingsController;
       if (currentSettingsController == null || currentSettingsController.isClosed) {
         _logger.debug(message: '[SettingsServicesManager] إنشاء settings controller جديد');
         
+        // إغلاق القديم إذا كان موجود ولم يكن مُغلق
         if (currentSettingsController != null && !currentSettingsController.isClosed) {
           try {
             currentSettingsController.close();
@@ -133,6 +151,7 @@ class SettingsServicesManager {
         
         _settingsController = StreamController<AppSettings>.broadcast();
         
+        // إرسال القيمة الحالية فوراً للمستمعين الجدد
         Future.microtask(() {
           final controller = _settingsController;
           if (controller != null && !controller.isClosed) {
@@ -141,10 +160,12 @@ class SettingsServicesManager {
         });
       }
       
+      // إنشاء أو إعادة إنشاء service status controller
       final currentServiceController = _serviceStatusController;
       if (currentServiceController == null || currentServiceController.isClosed) {
         _logger.debug(message: '[SettingsServicesManager] إنشاء service status controller جديد');
         
+        // إغلاق القديم إذا كان موجود ولم يكن مُغلق
         if (currentServiceController != null && !currentServiceController.isClosed) {
           try {
             currentServiceController.close();
@@ -158,6 +179,7 @@ class SettingsServicesManager {
         
         _serviceStatusController = StreamController<ServiceStatus>.broadcast();
         
+        // إرسال القيمة الحالية فوراً للمستمعين الجدد
         Future.microtask(() {
           final controller = _serviceStatusController;
           if (controller != null && !controller.isClosed) {
@@ -180,8 +202,13 @@ class SettingsServicesManager {
     
     try {
       _logger.info(message: '[SettingsServicesManager] تهيئة مدير الخدمات');
+      
+      // تهيئة Controllers
       _ensureControllersInitialized();
+      
+      // الاستماع لتغييرات الأذونات
       _initializeSubscriptions();
+      
       _isInitialized = true;
       _logger.info(message: '[SettingsServicesManager] تم تهيئة مدير الخدمات بنجاح');
     } catch (e) {
@@ -196,9 +223,11 @@ class SettingsServicesManager {
     if (_isDisposed) return;
     
     try {
+      // إلغاء الاشتراكات القديمة إذا كانت موجودة
       _permissionSubscription?.cancel();
       _batterySubscription?.cancel();
       
+      // الاستماع لتغييرات الأذونات
       _permissionSubscription = _permissionService.permissionChanges.listen(
         _handlePermissionChange,
         onError: (error) {
@@ -207,9 +236,10 @@ class SettingsServicesManager {
             error: error,
           );
         },
-        cancelOnError: false,
+        cancelOnError: false, // لا تلغي الاشتراك عند حدوث خطأ
       );
       
+      // الاستماع لتغييرات البطارية
       _batterySubscription = _batteryService.getBatteryStateStream().listen(
         _handleBatteryChange,
         onError: (error) {
@@ -218,7 +248,7 @@ class SettingsServicesManager {
             error: error,
           );
         },
-        cancelOnError: false,
+        cancelOnError: false, // لا تلغي الاشتراك عند حدوث خطأ
       );
       
       _logger.debug(message: '[SettingsServicesManager] تم تهيئة الاشتراكات');
@@ -242,6 +272,8 @@ class SettingsServicesManager {
           'newStatus': change.newStatus.toString(),
         },
       );
+      
+      // تحديث الحالة عند تغيير الأذونات
       _updateServiceStatus();
     } catch (e) {
       _logger.error(
@@ -259,6 +291,8 @@ class SettingsServicesManager {
         message: '[SettingsServicesManager] تغيير في حالة البطارية',
         data: batteryState.toJson(),
       );
+      
+      // تحديث حالة الخدمات
       _updateServiceStatus();
     } catch (e) {
       _logger.error(
@@ -270,6 +304,7 @@ class SettingsServicesManager {
   
   // ==================== تحميل وحفظ الإعدادات ====================
   
+  /// تحميل الإعدادات من التخزين والخدمات
   Future<SettingsLoadResult> loadSettings() async {
     if (_isDisposed) {
       return SettingsLoadResult.failure('المدير محذوف');
@@ -278,17 +313,26 @@ class SettingsServicesManager {
     _logger.info(message: '[SettingsServicesManager] بدء تحميل الإعدادات');
     
     try {
+      // تأكد من تهيئة Controllers
       _ensureControllersInitialized();
       
+      // تحميل الإعدادات المحفوظة
       final savedSettings = await _loadSavedSettings();
+      
+      // تحميل حالة الخدمات الحالية
       final serviceStatus = await _loadServiceStatus();
+      
+      // دمج الإعدادات مع حالة الخدمات
       final mergedSettings = await _mergeSettingsWithServices(savedSettings);
       
+      // تحديث الحالة
       _currentSettings = mergedSettings;
       _currentStatus = serviceStatus;
       
+      // إشعار المستمعين إذا كانت Controllers متاحة
       _notifyListeners();
       
+      // تسجيل وقت آخر تحديث
       try {
         await _storage.setString(_lastSyncKey, DateTime.now().toIso8601String());
       } catch (e) {
@@ -315,15 +359,18 @@ class SettingsServicesManager {
     }
   }
   
+  /// إشعار جميع المستمعين
   void _notifyListeners() {
     if (_isDisposed) return;
     
     try {
+      // إشعار settings listeners
       final settingsController = _settingsController;
       if (settingsController != null && !settingsController.isClosed) {
         settingsController.add(_currentSettings);
       }
       
+      // إشعار service status listeners
       final serviceStatusController = _serviceStatusController;
       if (serviceStatusController != null && !serviceStatusController.isClosed) {
         serviceStatusController.add(_currentStatus);
@@ -336,6 +383,7 @@ class SettingsServicesManager {
     }
   }
   
+  /// حفظ الإعدادات
   Future<bool> saveSettings(AppSettings settings) async {
     if (_isDisposed) return false;
     
@@ -345,16 +393,23 @@ class SettingsServicesManager {
     );
     
     try {
+      // حفظ الإعدادات في التخزين
       final saved = await _storage.setObject(_settingsKey, settings, (s) => s.toJson());
       if (!saved) {
         _logger.warning(message: '[SettingsServicesManager] فشل في حفظ الإعدادات في التخزين');
         return false;
       }
       
+      // تطبيق التغييرات على الخدمات
       await _applySettingsToServices(settings);
       
+      // تحديث الحالة الحالية
       _currentSettings = settings;
+      
+      // إشعار المستمعين
       _notifyListeners();
+      
+      // تحديث حالة الخدمات
       await _updateServiceStatus();
       
       _logger.info(message: '[SettingsServicesManager] تم حفظ الإعدادات بنجاح');
@@ -410,6 +465,7 @@ class SettingsServicesManager {
   
   Future<AppSettings> _mergeSettingsWithServices(AppSettings savedSettings) async {
     try {
+      // دمج الإعدادات المحفوظة مع حالة الخدمات الحالية
       return savedSettings.copyWith(
         isDarkMode: _themeNotifier.isDarkMode,
         notificationsEnabled: await _permissionService.checkNotificationPermission(),
@@ -442,10 +498,12 @@ class SettingsServicesManager {
   
   Future<void> _applySettingsToServices(AppSettings settings) async {
     try {
+      // تطبيق إعدادات الثيم
       if (settings.isDarkMode != _themeNotifier.isDarkMode) {
         await _themeNotifier.setTheme(settings.isDarkMode);
       }
       
+      // تطبيق إعدادات الإشعارات
       final currentNotificationSettings = await _notificationManager.getSettings();
       final newNotificationSettings = currentNotificationSettings.copyWith(
         enabled: settings.notificationsEnabled,
@@ -464,6 +522,7 @@ class SettingsServicesManager {
   
   // ==================== إدارة الأذونات ====================
   
+  /// طلب إذن محدد
   Future<PermissionRequestResult> requestPermission(AppPermissionType permission) async {
     if (_isDisposed) {
       return PermissionRequestResult.failure('المدير محذوف');
@@ -476,6 +535,8 @@ class SettingsServicesManager {
     
     try {
       final status = await _permissionService.requestPermission(permission);
+      
+      // تحديث الإعدادات حسب النتيجة
       await _updateSettingsAfterPermissionChange(permission, status);
       
       _logger.info(
@@ -497,6 +558,7 @@ class SettingsServicesManager {
     }
   }
   
+  /// طلب أذونات متعددة
   Future<BatchPermissionResult> requestMultiplePermissions(
     List<AppPermissionType> permissions,
     {Function(PermissionProgress)? onProgress}
@@ -516,6 +578,7 @@ class SettingsServicesManager {
         onProgress: onProgress,
       );
       
+      // تحديث الإعدادات بناءً على النتائج
       for (final entry in result.results.entries) {
         await _updateSettingsAfterPermissionChange(entry.key, entry.value);
       }
@@ -581,6 +644,7 @@ class SettingsServicesManager {
   
   // ==================== إدارة الخدمات المتخصصة ====================
   
+  /// تحديث موقع الصلاة
   Future<LocationUpdateResult> updatePrayerLocation() async {
     if (_isDisposed) {
       return LocationUpdateResult.failure('المدير محذوف');
@@ -592,6 +656,7 @@ class SettingsServicesManager {
       final location = await _prayerService.getCurrentLocation();
       await _prayerService.updatePrayerTimes();
       
+      // تحديث الإعدادات
       final newSettings = _currentSettings.copyWith(locationEnabled: true);
       await saveSettings(newSettings);
       
@@ -614,6 +679,7 @@ class SettingsServicesManager {
     }
   }
   
+  /// تحسين إعدادات البطارية
   Future<BatteryOptimizationResult> optimizeBatterySettings() async {
     if (_isDisposed) {
       return BatteryOptimizationResult.failure('المدير محذوف');
@@ -628,11 +694,13 @@ class SettingsServicesManager {
       
       final isOptimized = status == AppPermissionStatus.granted;
       
+      // تحديث الإعدادات
       final newSettings = _currentSettings.copyWith(
         batteryOptimizationDisabled: isOptimized,
       );
       await saveSettings(newSettings);
       
+      // تحديث إعدادات البطارية في NotificationManager
       if (isOptimized) {
         try {
           await _notificationManager.setMinBatteryLevel(0);
@@ -660,10 +728,38 @@ class SettingsServicesManager {
     }
   }
   
-
+  /// مسح الكاش والبيانات المؤقتة
+  Future<CacheClearResult> clearApplicationCache() async {
+    if (_isDisposed) {
+      return CacheClearResult.failure('المدير محذوف');
+    }
+    
+    _logger.info(message: '[SettingsServicesManager] مسح الكاش');
+    
+    try {
+      // مسح كاش الأذونات
+      _permissionService.clearPermissionCache();
+      
+      // مسح البيانات المؤقتة الأخرى
+      // يمكن إضافة المزيد من عمليات المسح هنا
+      
+      _logger.info(message: '[SettingsServicesManager] تم مسح الكاش بنجاح');
+      _logger.logEvent('cache_cleared');
+      
+      return CacheClearResult.success();
+    } catch (e) {
+      _logger.error(
+        message: '[SettingsServicesManager] فشل مسح الكاش',
+        error: e,
+      );
+      
+      return CacheClearResult.failure(e.toString());
+    }
+  }
   
   // ==================== إدارة الإعدادات والتنقل ====================
   
+  /// فتح إعدادات التطبيق
   Future<bool> openAppSettings([AppSettingsType? settingsPage]) async {
     _logger.info(
       message: '[SettingsServicesManager] فتح إعدادات التطبيق',
@@ -681,6 +777,58 @@ class SettingsServicesManager {
     }
   }
   
+  /// التحقق من إمكانية إظهار تفسير الإذن
+  Future<bool> shouldShowPermissionRationale(AppPermissionType permission) async {
+    try {
+      return await _permissionService.shouldShowPermissionRationale(permission);
+    } catch (e) {
+      _logger.error(
+        message: '[SettingsServicesManager] فشل في فحص permission rationale',
+        error: e,
+      );
+      return false;
+    }
+  }
+  
+  /// التحقق من رفض الإذن نهائياً
+  Future<bool> isPermissionPermanentlyDenied(AppPermissionType permission) async {
+    try {
+      return await _permissionService.isPermissionPermanentlyDenied(permission);
+    } catch (e) {
+      _logger.error(
+        message: '[SettingsServicesManager] فشل في فحص الرفض النهائي للإذن',
+        error: e,
+      );
+      return false;
+    }
+  }
+  
+  /// الحصول على وصف الإذن
+  String getPermissionDescription(AppPermissionType permission) {
+    try {
+      return _permissionService.getPermissionDescription(permission);
+    } catch (e) {
+      _logger.error(
+        message: '[SettingsServicesManager] فشل في الحصول على وصف الإذن',
+        error: e,
+      );
+      return 'وصف غير متوفر';
+    }
+  }
+  
+  /// الحصول على اسم الإذن
+  String getPermissionName(AppPermissionType permission) {
+    try {
+      return _permissionService.getPermissionName(permission);
+    } catch (e) {
+      _logger.error(
+        message: '[SettingsServicesManager] فشل في الحصول على اسم الإذن',
+        error: e,
+      );
+      return 'اسم غير متوفر';
+    }
+  }
+  
   // ==================== تحديث حالة الخدمات ====================
   
   Future<void> _updateServiceStatus() async {
@@ -689,6 +837,7 @@ class SettingsServicesManager {
     try {
       _currentStatus = await _loadServiceStatus();
       
+      // إشعار المستمعين إذا كان Controller متاح
       final controller = _serviceStatusController;
       if (controller != null && !controller.isClosed) {
         controller.add(_currentStatus);
@@ -701,6 +850,7 @@ class SettingsServicesManager {
     }
   }
   
+  /// فرض تحديث حالة جميع الخدمات
   Future<void> refreshAllServices() async {
     if (_isDisposed) return;
     
@@ -719,7 +869,47 @@ class SettingsServicesManager {
     }
   }
   
-
+  // ==================== إحصائيات وتحليلات ====================
+  
+  /// الحصول على إحصائيات الإعدادات
+  Future<SettingsStatistics> getStatistics() async {
+    if (_isDisposed) {
+      return SettingsStatistics.empty();
+    }
+    
+    try {
+      final permissionStats = await _permissionService.getPermissionStats();
+      final lastSync = _storage.getString(_lastSyncKey);
+      
+      return SettingsStatistics(
+        lastSyncTime: lastSync != null ? DateTime.tryParse(lastSync) : null,
+        permissionStats: permissionStats,
+        settingsVersion: _currentSettings.hashCode,
+        serviceStatusHealthy: _isServiceStatusHealthy(),
+      );
+    } catch (e) {
+      _logger.error(
+        message: '[SettingsServicesManager] فشل الحصول على الإحصائيات',
+        error: e,
+      );
+      
+      return SettingsStatistics.empty();
+    }
+  }
+  
+  bool _isServiceStatusHealthy() {
+    try {
+      return _currentStatus.permissions.values
+          .where((status) => status == AppPermissionStatus.granted)
+          .length >= 2; // على الأقل إذنين مطلوبين
+    } catch (e) {
+      _logger.error(
+        message: '[SettingsServicesManager] فشل في فحص صحة الخدمات',
+        error: e,
+      );
+      return false;
+    }
+  }
   
   // ==================== تنظيف الموارد ====================
   
@@ -731,6 +921,7 @@ class SettingsServicesManager {
     _isDisposed = true;
     
     try {
+      // إلغاء الاشتراكات بأمان
       final permissionSub = _permissionSubscription;
       if (permissionSub != null) {
         await permissionSub.cancel();
@@ -743,6 +934,7 @@ class SettingsServicesManager {
         _batterySubscription = null;
       }
       
+      // إغلاق Controllers بأمان
       final settingsController = _settingsController;
       if (settingsController != null && !settingsController.isClosed) {
         await settingsController.close();
@@ -767,6 +959,7 @@ class SettingsServicesManager {
 
 // ==================== Models للنتائج ====================
 
+/// حالة الخدمات
 class ServiceStatus {
   final Map<AppPermissionType, AppPermissionStatus> permissions;
   final BatteryState batteryState;
@@ -795,6 +988,7 @@ class ServiceStatus {
   bool get isBatteryOptimized => permissions[AppPermissionType.batteryOptimization] == AppPermissionStatus.granted;
 }
 
+/// نتيجة تحميل الإعدادات
 class SettingsLoadResult {
   final bool isSuccess;
   final AppSettings? settings;
@@ -822,6 +1016,7 @@ class SettingsLoadResult {
       );
 }
 
+/// نتيجة طلب الإذن
 class PermissionRequestResult {
   final bool isSuccess;
   final AppPermissionStatus? status;
@@ -840,6 +1035,7 @@ class PermissionRequestResult {
       PermissionRequestResult._(isSuccess: false, error: error);
 }
 
+/// نتيجة طلب أذونات متعددة
 class BatchPermissionResult {
   final bool isSuccess;
   final Map<AppPermissionType, AppPermissionStatus> results;
@@ -864,6 +1060,7 @@ class BatchPermissionResult {
       BatchPermissionResult._(isSuccess: false, error: error);
 }
 
+/// نتيجة تحديث الموقع
 class LocationUpdateResult {
   final bool isSuccess;
   final dynamic location;
@@ -882,6 +1079,7 @@ class LocationUpdateResult {
       LocationUpdateResult._(isSuccess: false, error: error);
 }
 
+/// نتيجة تحسين البطارية
 class BatteryOptimizationResult {
   final bool isSuccess;
   final bool isOptimized;
@@ -898,4 +1096,46 @@ class BatteryOptimizationResult {
 
   factory BatteryOptimizationResult.failure(String error) => 
       BatteryOptimizationResult._(isSuccess: false, error: error);
+}
+
+/// نتيجة مسح الكاش
+class CacheClearResult {
+  final bool isSuccess;
+  final String? error;
+
+  CacheClearResult._({
+    required this.isSuccess,
+    this.error,
+  });
+
+  factory CacheClearResult.success() => CacheClearResult._(isSuccess: true);
+
+  factory CacheClearResult.failure(String error) => 
+      CacheClearResult._(isSuccess: false, error: error);
+}
+
+/// إحصائيات الإعدادات
+class SettingsStatistics {
+  final DateTime? lastSyncTime;
+  final PermissionStats permissionStats;
+  final int settingsVersion;
+  final bool serviceStatusHealthy;
+
+  SettingsStatistics({
+    this.lastSyncTime,
+    required this.permissionStats,
+    required this.settingsVersion,
+    required this.serviceStatusHealthy,
+  });
+
+  factory SettingsStatistics.empty() => SettingsStatistics(
+    permissionStats: PermissionStats(
+      totalRequests: 0,
+      grantedCount: 0,
+      deniedCount: 0,
+      acceptanceRate: 0,
+    ),
+    settingsVersion: 0,
+    serviceStatusHealthy: false,
+  );
 }

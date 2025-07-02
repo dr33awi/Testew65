@@ -1,9 +1,8 @@
-// lib/app/themes/widgets/layout/app_bar.dart - مُصلح بالكامل
+// lib/app/themes/widgets/layout/app_bar.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../theme_constants.dart';
 import '../../text_styles.dart';
-import '../../core/systems/app_color_system.dart';
 
 /// شريط التطبيق الموحد
 /// يستخدم بدلاً من AppBar الافتراضي
@@ -68,7 +67,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       : (backgroundColor ?? theme.scaffoldBackgroundColor);
     
     final defaultForegroundColor = foregroundColor ?? 
-      (isDark ? AppColorSystem.darkTextPrimary : AppColorSystem.lightTextPrimary);
+      (isDark ? ThemeConstants.darkTextPrimary : ThemeConstants.lightTextPrimary);
 
     // نمط النص الافتراضي للعنوان
     final defaultTitleStyle = titleTextStyle ?? AppTextStyles.h4.copyWith(
@@ -308,7 +307,7 @@ class AppBarAction extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(2),
               decoration: BoxDecoration(
-                color: badgeColor ?? AppColorSystem.error,
+                color: badgeColor ?? ThemeConstants.error,
                 shape: BoxShape.circle,
               ),
               constraints: const BoxConstraints(
