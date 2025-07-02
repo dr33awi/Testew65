@@ -1,8 +1,7 @@
-// lib/features/athkar/models/athkar_model.dart - مُصحح
-import 'package:flutter/material.dart';
-import '../../../app/themes/app_theme.dart';
+// lib/features/athkar/models/athkar_model.dart - الإصدار المُصلح
 
-/// نموذج الذكر الفردي
+import 'package:flutter/material.dart';
+
 class AthkarItem {
   final int id;
   final String text;
@@ -29,7 +28,6 @@ class AthkarItem {
   }
 }
 
-/// فئة الأذكار
 class AthkarCategory {
   final String id;
   final String title;
@@ -55,37 +53,62 @@ class AthkarCategory {
       id: json['id'] ?? '',
       title: json['title'] ?? '',
       description: json['description'],
-      icon: _iconFromString(json['icon'] ?? '', json['id'] ?? ''),
+      icon: _iconFromString(json['icon'] ?? ''),
       color: _colorFromHex(json['color'] ?? '#5D7052'),
       notifyTime: _timeOfDayFromString(json['notify_time']),
       athkar: items.map((e) => AthkarItem.fromJson(e)).toList(),
     );
   }
 
-  static IconData _iconFromString(String data, String categoryId) {
-    // ✅ استخدام النظام الموحد للأيقونات
-    return AppIconsSystem.getCategoryIcon(categoryId);
+  // ✅ إصلاح تحليل الأيقونات لتتطابق مع ملف JSON
+  static IconData _iconFromString(String iconString) {
+    // إزالة "Icons." من النص
+    final cleanIcon = iconString.replaceAll('Icons.', '');
+    
+    switch (cleanIcon) {
+      case 'wb_sunny':
+        return Icons.wb_sunny;
+      case 'nightlight_round':
+        return Icons.nightlight_round;
+      case 'bedtime':
+        return Icons.bedtime;
+      case 'alarm':
+        return Icons.alarm;
+      case 'mosque':
+        return Icons.mosque;
+      case 'home':
+        return Icons.home;
+      case 'restaurant':
+        return Icons.restaurant;
+      case 'menu_book':
+        return Icons.menu_book;
+      // إضافة المزيد حسب ملف JSON
+      default:
+        print('⚠️ أيقونة غير معروفة: $iconString');
+        return Icons.auto_awesome; // أيقونة افتراضية
+    }
   }
 
+  // ✅ إصلاح تحليل الألوان
   static Color _colorFromHex(String hex) {
-    // ✅ استخدام النظام الموحد للألوان مع fallback للـ hex
     try {
-      if (hex.isNotEmpty && hex != '#ffffff' && hex != '#000000') {
-        final buffer = StringBuffer();
-        if (hex.length == 6 || hex.length == 7) buffer.write('ff');
-        buffer.write(hex.replaceFirst('#', ''));
-        return Color(int.parse(buffer.toString(), radix: 16));
+      // إزالة # إذا كانت موجودة
+      hex = hex.replaceAll('#', '');
+      
+      // إضافة FF للشفافية إذا لم تكن موجودة
+      if (hex.length == 6) {
+        hex = 'FF$hex';
       }
+      
+      return Color(int.parse(hex, radix: 16));
     } catch (e) {
-      // في حالة فشل تحويل الـ hex، نستخدم النظام الموحد
+      print('⚠️ خطأ في تحليل اللون: $hex');
+      return const Color(0xFF5D7052); // لون افتراضي
     }
-    
-    // استخدام النظام الموحد كـ fallback
-    return AppColorSystem.primary;
   }
 
   static TimeOfDay? _timeOfDayFromString(String? time) {
-    if (time == null) return null;
+    if (time == null || time.isEmpty) return null;
     try {
       final parts = time.split(':');
       if (parts.length != 2) return null;
