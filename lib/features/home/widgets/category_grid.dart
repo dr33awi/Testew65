@@ -1,6 +1,8 @@
-// lib/features/home/widgets/category_grid.dart - محدث بالكامل للنظام الموحد
+// lib/features/home/widgets/category_grid.dart - محدث للنظام الموحد
+import 'package:athkar_app/app/themes/core/helpers/category_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 
 class SimpleCategoryGrid extends StatelessWidget {
@@ -14,22 +16,10 @@ class SimpleCategoryGrid extends StatelessWidget {
       routeName: '/prayer-times',
     ),
     CategoryItem(
-      id: 'morning',
-      title: 'أذكار الصباح',
-      subtitle: 'ابدأ يومك بالذكر',
-      routeName: '/athkar/morning',
-    ),
-    CategoryItem(
-      id: 'evening',
-      title: 'أذكار المساء',
-      subtitle: 'اختتم يومك بالذكر',
-      routeName: '/athkar/evening',
-    ),
-    CategoryItem(
-      id: 'sleep',
-      title: 'أذكار النوم',
-      subtitle: 'نم بسلام وطمأنينة',
-      routeName: '/athkar/sleep',
+      id: 'athkar',
+      title: 'الأذكار',
+      subtitle: 'أذكار الصباح والمساء',
+      routeName: '/athkar',
     ),
     CategoryItem(
       id: 'qibla',
@@ -51,10 +41,9 @@ class SimpleCategoryGrid extends StatelessWidget {
     if (category.routeName != null) {
       Navigator.pushNamed(context, category.routeName!).catchError((error) {
         if (context.mounted) {
-          context.showInfoSnackBar( // ✅ استخدام Extension
-            category.isDevelopment 
-                ? 'هذه الميزة قيد التطوير' 
-                : 'خطأ في فتح ${category.title}',
+          AppSnackBar.showInfo(
+            context: context, 
+            message: CategoryHelper.getDevelopmentMessage(category.id),
           );
         }
         return null;
@@ -66,11 +55,8 @@ class SimpleCategoryGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final crossAxisCount = context.responsiveColumns( // ✅ استخدام Extension
-          mobile: 2, 
-          tablet: 3, 
-          desktop: 4,
-        );
+        final crossAxisCount = _getCrossAxisCount(constraints.maxWidth);
+        final childAspectRatio = _getChildAspectRatio(constraints.maxWidth);
         
         return GridView.builder(
           shrinkWrap: true,
@@ -79,42 +65,228 @@ class SimpleCategoryGrid extends StatelessWidget {
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: ThemeConstants.space3,
             crossAxisSpacing: ThemeConstants.space3,
-            childAspectRatio: _getChildAspectRatio(context),
+            childAspectRatio: childAspectRatio,
           ),
           itemCount: _categories.length,
           itemBuilder: (context, index) {
             final category = _categories[index];
-            return _buildCategoryCard(context, category);
+            return _buildCategoryCard(context, category, constraints.maxWidth);
           },
         );
       },
     );
   }
 
-  double _getChildAspectRatio(BuildContext context) {
-    if (context.isDesktop) return 1.1; // ✅ استخدام Extension
-    if (context.isTablet) return 1.0;   // ✅ استخدام Extension
+  int _getCrossAxisCount(double width) {
+    if (width > 900) return 3;
+    if (width > 600) return 2;
+    return 2;
+  }
+
+  double _getChildAspectRatio(double width) {
+    if (width > 900) return 1.1;
+    if (width > 600) return 1.0;
     return 0.95;
   }
 
-  Widget _buildCategoryCard(BuildContext context, CategoryItem category) {
-    // استخدام النظام الموحد الكامل
-    return AppCard.glassCategory( // ✅ استخدام AppCard الموحد
-      title: category.title,
-      icon: category.id.themeCategoryIcon, // ✅ استخدام Extension
-      primaryColor: category.id.themeColor, // ✅ استخدام Extension
+  // تحديد أحجام النصوص حسب عرض الشاشة
+  double _getTitleFontSize(double screenWidth) {
+    if (screenWidth > 900) return 24;
+    if (screenWidth > 600) return 22;
+    if (screenWidth > 400) return 20;
+    return 18;
+  }
+
+  double _getSubtitleFontSize(double screenWidth) {
+    if (screenWidth > 900) return 18;
+    if (screenWidth > 600) return 16;
+    if (screenWidth > 400) return 15;
+    return 14;
+  }
+
+  double _getIconSize(double screenWidth) {
+    if (screenWidth > 900) return 36;
+    if (screenWidth > 600) return 32;
+    if (screenWidth > 400) return 30;
+    return 28;
+  }
+
+  double _getIconContainerSize(double screenWidth) {
+    if (screenWidth > 900) return 72;
+    if (screenWidth > 600) return 64;
+    if (screenWidth > 400) return 60;
+    return 56;
+  }
+
+  EdgeInsets _getCardPadding(double screenWidth) {
+    if (screenWidth > 900) return const EdgeInsets.all(ThemeConstants.space6);
+    if (screenWidth > 600) return const EdgeInsets.all(ThemeConstants.space5);
+    if (screenWidth > 400) return const EdgeInsets.all(ThemeConstants.space4);
+    return const EdgeInsets.all(ThemeConstants.space3);
+  }
+
+  Widget _buildCategoryCard(BuildContext context, CategoryItem category, double screenWidth) {
+    final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
+    final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
+    final gradientColors = [
+      categoryColor.withValues(alpha: 0.9),
+      categoryColor.darken(0.2).withValues(alpha: 0.9),
+    ];
+    
+    return GestureDetector(
       onTap: () => _onCategoryTap(context, category),
-      padding: _getCardPadding(context),
-    ).animatedPress( // ✅ استخدام Extension
-      onTap: () => _onCategoryTap(context, category),
-      scaleFactor: 0.95,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+          boxShadow: [
+            BoxShadow(
+              color: categoryColor.withValues(alpha: 0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+              spreadRadius: -3,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+          child: Stack(
+            children: [
+              // الخلفية المتدرجة
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: gradientColors,
+                  ),
+                ),
+              ),
+              
+              // الطبقة الزجاجية
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
+                ),
+              ),
+              
+              // المحتوى
+              Padding(
+                padding: _getCardPadding(screenWidth),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // الأيقونة
+                    Container(
+                      width: _getIconContainerSize(screenWidth),
+                      height: _getIconContainerSize(screenWidth),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.25),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.4),
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        categoryIcon,
+                        color: Colors.white,
+                        size: _getIconSize(screenWidth),
+                      ),
+                    ),
+                    
+                    const Spacer(),
+                    
+                    // النصوص
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          category.title,
+                          style: AppTextStyles.h5.copyWith(
+                            color: Colors.white,
+                            fontWeight: ThemeConstants.bold,
+                            fontSize: _getTitleFontSize(screenWidth),
+                            height: 1.2,
+                            letterSpacing: 0.3,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withValues(alpha: 0.4),
+                                offset: const Offset(0, 2),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        
+                        SizedBox(height: screenWidth > 400 ? 6 : 4),
+                        
+                        if (category.subtitle != null)
+                          Text(
+                            category.subtitle!,
+                            style: AppTextStyles.body2.copyWith(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              fontSize: _getSubtitleFontSize(screenWidth),
+                              fontWeight: ThemeConstants.medium,
+                              height: 1.4,
+                              letterSpacing: 0.2,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withValues(alpha: 0.3),
+                                  offset: const Offset(0, 1),
+                                  blurRadius: 2,
+                                ),
+                              ],
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                      ],
+                    ),
+    
+                    SizedBox(height: screenWidth > 400 ? ThemeConstants.space2 : ThemeConstants.space1),
+                  ],
+                ),
+              ),
+              
+              // تأثير الهوفر للتفاعل
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => _onCategoryTap(context, category),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                  splashColor: Colors.white.withValues(alpha: 0.2),
+                  highlightColor: Colors.white.withValues(alpha: 0.1),
+                ),
+              ),
+              
+              // عناصر زخرفية (مزالة للبساطة)
+              _buildDecorativeElements(),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  EdgeInsets _getCardPadding(BuildContext context) {
-    if (context.isDesktop) return ThemeConstants.space5.all; // ✅ استخدام Extension
-    if (context.isTablet) return ThemeConstants.space4.all;   // ✅ استخدام Extension
-    return ThemeConstants.space3.all;
+  Widget _buildDecorativeElements() {
+    // تم إزالة العناصر الزخرفية للحصول على تصميم أنظف
+    return const SizedBox.shrink();
   }
 }
 
@@ -123,13 +295,11 @@ class CategoryItem {
   final String title;
   final String? subtitle;
   final String? routeName;
-  final bool isDevelopment;
 
   const CategoryItem({
     required this.id,
     required this.title,
     this.subtitle,
     this.routeName,
-    this.isDevelopment = true, // معظم الميزات قيد التطوير
   });
 }

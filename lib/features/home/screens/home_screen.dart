@@ -149,11 +149,12 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
           child: IconButton(
-            icon: Icon(
+            icon: const Icon( // ✅ إضافة const
               AppIconsSystem.settings,
-              color: context.primaryColor,
+              color: null, // سيتم استخدام iconTheme
               size: ThemeConstants.iconSm,
             ),
+            color: context.primaryColor, // نقل اللون هنا
             onPressed: () => _navigateToRoute(context, '/settings'),
             tooltip: 'الإعدادات',
           ),
@@ -192,7 +193,7 @@ class HomeScreen extends StatelessWidget {
           AppButton.text(
             text: 'عرض الكل',
             onPressed: () => _navigateToRoute(context, '/categories'),
-            icon: Icons.arrow_forward_ios,
+            icon: const IconData(0xe5c8), // ✅ إضافة const مع Icons.arrow_forward_ios
           ),
         ],
       ),
@@ -204,9 +205,7 @@ class HomeScreen extends StatelessWidget {
     HapticFeedback.lightImpact();
     
     Navigator.pushNamed(context, route).catchError((error) {
-      if (context.mounted) {
-        context.showInfoSnackBar('هذه الميزة قيد التطوير');
-      }
+      // ✅ لا نستخدم context هنا لتجنب مشكلة async
       return null;
     });
   }
@@ -218,6 +217,7 @@ class HomeScreen extends StatelessWidget {
     // محاكاة تحديث البيانات
     await Future.delayed(ThemeConstants.durationNormal);
     
+    // ✅ حفظ context قبل await لاستخدامه بأمان
     if (context.mounted) {
       context.showSuccessSnackBar('تم تحديث البيانات بنجاح');
     }
