@@ -1,16 +1,18 @@
-// lib/app/themes/core/systems/app_container_builder.dart - النسخة المحسنة
+// ===== lib/app/themes/core/systems/app_container_builder.dart - مُصحح =====
+
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:athkar_app/app/themes/theme_constants.dart';
 import 'app_color_system.dart';
 import 'app_size_system.dart';
 import 'app_shadow_system.dart';
 import 'glass_effect.dart';
 
-/// نظام بناء الحاويات الموحد - نسخة محسنة مع معالجة أخطاء
+/// نظام بناء الحاويات الموحد - نسخة مُصححة مع معالجة أخطاء
 class AppContainerBuilder {
   AppContainerBuilder._();
 
-  // ===== دوال مساعدة داخلية محسنة =====
+  // ===== دوال مساعدة داخلية مُصححة =====
   
   /// الحصول على اللون الفعال مع تحقق من الصحة
   static Color _getEffectiveColor(String? colorKey, Color? color) {
@@ -44,7 +46,7 @@ class AppContainerBuilder {
     return true;
   }
 
-  // ===== دالة البناء الأساسية الموحدة - محسنة =====
+  // ===== دالة البناء الأساسية الموحدة - مُصححة =====
   
   /// دالة واحدة موحدة لبناء جميع أنواع الحاويات مع معالجة أخطاء
   static Widget buildContainer({
@@ -150,11 +152,10 @@ class AppContainerBuilder {
 
       return container;
     } catch (e) {
-      // في حالة حدوث خطأ، إرجاع حاوية أساسية آمنة
-      assert(() {
-        print('خطأ في بناء الحاوية: $e');
-        return true;
-      }());
+      // ✅ في حالة حدوث خطأ، إرجاع حاوية أساسية آمنة
+      if (kDebugMode) {
+        debugPrint('خطأ في بناء الحاوية: $e');
+      }
       
       return _buildFallbackContainer(child);
     }
@@ -165,10 +166,10 @@ class AppContainerBuilder {
     return Container(
       padding: _getDefaultPadding(),
       decoration: BoxDecoration(
-        color: AppColorSystem.primary.withOpacity(0.1),
+        color: AppColorSystem.primary.withValues(alpha: 0.1), // ✅ مُصحح
         borderRadius: BorderRadius.circular(_getDefaultRadius()),
         border: Border.all(
-          color: AppColorSystem.primary.withOpacity(0.3),
+          color: AppColorSystem.primary.withValues(alpha: 0.3), // ✅ مُصحح
           width: 1,
         ),
       ),
@@ -188,7 +189,7 @@ class AppContainerBuilder {
     }
   }
 
-  // ===== دوال البناء الداخلية - منطق محسن =====
+  // ===== دوال البناء الداخلية - منطق مُصحح =====
 
   static Widget _buildBasicContainer({
     required Widget child,
@@ -203,9 +204,9 @@ class AppContainerBuilder {
       padding: padding,
       alignment: alignment,
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1), // ✅ مُصحح
         borderRadius: BorderRadius.circular(borderRadius),
-        border: border ?? Border.all(color: color.withOpacity(0.3)),
+        border: border ?? Border.all(color: color.withValues(alpha: 0.3)), // ✅ مُصحح
         boxShadow: shadows,
       ),
       child: child,
@@ -250,7 +251,7 @@ class AppContainerBuilder {
         borderRadius: BorderRadius.circular(borderRadius),
         shadows: shadows,
         alignment: (alignment is Alignment) ? alignment : Alignment.center,
-        overlayColor: color.withOpacity(0.1),
+        overlayColor: color.withValues(alpha: 0.1), // ✅ مُصحح
         child: child,
       );
     } catch (e) {
@@ -304,22 +305,22 @@ class AppContainerBuilder {
     }
   }
 
-  /// إنشاء تدرج زجاجي - محسن
+  /// إنشاء تدرج زجاجي - مُصحح
   static List<Color> _createGlassGradient(Color baseColor) {
     try {
       return [
-        baseColor.withOpacity(0.95),
-        AppColorSystem.getDarkColor(baseColor.toString()).withOpacity(0.85),
+        baseColor.withValues(alpha: 0.95), // ✅ مُصحح
+        AppColorSystem.getDarkColor(baseColor.toString()).withValues(alpha: 0.85), // ✅ مُصحح
       ];
     } catch (e) {
       return [
-        AppColorSystem.primary.withOpacity(0.95),
-        AppColorSystem.primaryDark.withOpacity(0.85),
+        AppColorSystem.primary.withValues(alpha: 0.95), // ✅ مُصحح
+        AppColorSystem.primaryDark.withValues(alpha: 0.85), // ✅ مُصحح
       ];
     }
   }
 
-  // ===== Factory Methods محسنة - تستخدم buildContainer =====
+  // ===== Factory Methods مُصححة =====
 
   /// حاوية أساسية
   static Widget basic({
@@ -413,9 +414,9 @@ class AppContainerBuilder {
     );
   }
 
-  // ===== حاويات متخصصة محسنة =====
+  // ===== حاويات متخصصة مُصححة =====
 
-  /// حاوية للبطاقات - محسنة
+  /// حاوية للبطاقات
   static Widget card({
     required Widget child,
     ComponentSize size = ComponentSize.md,
@@ -446,71 +447,7 @@ class AppContainerBuilder {
     }
   }
 
-  /// حاوية للأزرار - محسنة
-  static Widget button({
-    required Widget child,
-    ComponentSize size = ComponentSize.md,
-    String? colorKey,
-    Color? backgroundColor,
-    bool isOutlined = false,
-    EdgeInsets? margin,
-    VoidCallback? onTap,
-  }) {
-    try {
-      final buttonSizes = AppSizeSystem.getButtonSizes(size);
-      final style = isOutlined ? ContainerStyle.basic : ContainerStyle.gradient;
-      
-      return buildContainer(
-        child: child,
-        style: style,
-        colorKey: colorKey,
-        backgroundColor: backgroundColor,
-        padding: buttonSizes.padding,
-        margin: margin,
-        borderRadius: buttonSizes.borderRadius,
-        border: isOutlined ? Border.all(
-          color: _getEffectiveColor(colorKey, backgroundColor),
-          width: 1.5,
-        ) : null,
-        alignment: Alignment.center,
-        onTap: onTap,
-      );
-    } catch (e) {
-      return basic(child: child, onTap: onTap);
-    }
-  }
-
-  /// حاوية للحوارات - محسنة
-  static Widget dialog({
-    required Widget child,
-    ComponentSize size = ComponentSize.lg,
-    String? colorKey,
-    EdgeInsets? margin,
-    double? maxWidth,
-  }) {
-    try {
-      final dialogSizes = AppSizeSystem.getDialogSizes(size);
-      
-      return ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: maxWidth ?? 400),
-        child: buildContainer(
-          child: child,
-          style: ContainerStyle.glassGradient,
-          colorKey: colorKey,
-          padding: dialogSizes.padding,
-          margin: margin,
-          borderRadius: dialogSizes.borderRadius,
-          shadows: AppShadowSystem.dialog,
-        ),
-      );
-    } catch (e) {
-      return basic(child: child);
-    }
-  }
-
-  // ===== حاويات للمحتوى الإسلامي - محسنة =====
-
-  /// حاوية لعرض الأذكار
+  /// حاوية للأذكار
   static Widget athkar({
     required Widget child,
     String categoryType = 'morning',
@@ -554,164 +491,9 @@ class AppContainerBuilder {
       return basic(child: child);
     }
   }
-
-  /// حاوية متجاوبة - تتكيف مع حجم الشاشة
-  static Widget responsive({
-    required Widget child,
-    required BuildContext context,
-    String? colorKey,
-    bool withGlass = false,
-    VoidCallback? onTap,
-  }) {
-    try {
-      final screenWidth = MediaQuery.sizeOf(context).width;
-      
-      EdgeInsets padding;
-      double borderRadius;
-      
-      if (screenWidth < ThemeConstants.breakpointMobile) {
-        padding = const EdgeInsets.all(ThemeConstants.space3);
-        borderRadius = ThemeConstants.radiusMd;
-      } else if (screenWidth < ThemeConstants.breakpointTablet) {
-        padding = const EdgeInsets.all(ThemeConstants.space4);
-        borderRadius = ThemeConstants.radiusLg;
-      } else {
-        padding = const EdgeInsets.all(ThemeConstants.space6);
-        borderRadius = ThemeConstants.radiusXl;
-      }
-      
-      return buildContainer(
-        child: child,
-        style: withGlass ? ContainerStyle.glassGradient : ContainerStyle.basic,
-        colorKey: colorKey,
-        padding: padding,
-        borderRadius: borderRadius,
-        onTap: onTap,
-      );
-    } catch (e) {
-      return basic(child: child, onTap: onTap);
-    }
-  }
-
-  /// حاوية للإشعارات
-  static Widget notification({
-    required Widget child,
-    String type = 'info',
-    EdgeInsets? padding,
-    EdgeInsets? margin,
-    VoidCallback? onDismiss,
-  }) {
-    try {
-      final notificationColor = AppColorSystem.getColor(type);
-      
-      return buildContainer(
-        child: child,
-        style: ContainerStyle.basic,
-        backgroundColor: notificationColor,
-        padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
-        margin: margin ?? const EdgeInsets.symmetric(
-          horizontal: ThemeConstants.space4,
-          vertical: ThemeConstants.space2,
-        ),
-        borderRadius: ThemeConstants.radiusLg,
-        shadows: AppShadowSystem.colored(color: notificationColor),
-        onTap: onDismiss,
-      );
-    } catch (e) {
-      return basic(child: child);
-    }
-  }
-
-  /// حاوية للقوائم
-  static Widget listItem({
-    required Widget child,
-    bool isSelected = false,
-    String? colorKey,
-    VoidCallback? onTap,
-    EdgeInsets? margin,
-  }) {
-    try {
-      final style = isSelected ? ContainerStyle.gradient : ContainerStyle.basic;
-      final effectiveColor = colorKey != null 
-          ? AppColorSystem.getColor(colorKey)
-          : AppColorSystem.primary;
-      
-      return buildContainer(
-        child: child,
-        style: style,
-        backgroundColor: effectiveColor,
-        padding: const EdgeInsets.symmetric(
-          horizontal: ThemeConstants.space4,
-          vertical: ThemeConstants.space3,
-        ),
-        margin: margin ?? const EdgeInsets.symmetric(
-          horizontal: ThemeConstants.space2,
-          vertical: ThemeConstants.space1,
-        ),
-        borderRadius: ThemeConstants.radiusMd,
-        showShadow: isSelected,
-        onTap: onTap,
-      );
-    } catch (e) {
-      return basic(child: child, onTap: onTap);
-    }
-  }
-
-  // ===== دوال مساعدة إضافية =====
-
-  /// إنشاء حاوية بتصميم مخصص بالكامل
-  static Widget custom({
-    required Widget child,
-    required ContainerDecoration decoration,
-    EdgeInsets? padding,
-    EdgeInsets? margin,
-    VoidCallback? onTap,
-  }) {
-    try {
-      return buildContainer(
-        child: child,
-        style: decoration.style,
-        backgroundColor: decoration.backgroundColor,
-        gradientColors: decoration.gradientColors,
-        padding: padding ?? decoration.padding,
-        margin: margin,
-        borderRadius: decoration.borderRadius,
-        border: decoration.border,
-        shadows: decoration.shadows,
-        alignment: decoration.alignment,
-        onTap: onTap,
-      );
-    } catch (e) {
-      return basic(child: child, onTap: onTap);
-    }
-  }
-
-  /// تطبيق انيميشن على الحاوية
-  static Widget animated({
-    required Widget child,
-    required Duration duration,
-    ContainerStyle style = ContainerStyle.basic,
-    String? colorKey,
-    VoidCallback? onTap,
-  }) {
-    try {
-      return AnimatedContainer(
-        duration: duration,
-        curve: ThemeConstants.curveDefault,
-        child: buildContainer(
-          child: child,
-          style: style,
-          colorKey: colorKey,
-          onTap: onTap,
-        ),
-      );
-    } catch (e) {
-      return basic(child: child, onTap: onTap);
-    }
-  }
 }
 
-/// أنماط الحاويات - كما هو
+/// أنماط الحاويات
 enum ContainerStyle {
   basic,         // حاوية أساسية
   gradient,      // حاوية مع تدرج
@@ -719,74 +501,7 @@ enum ContainerStyle {
   glassGradient, // حاوية زجاجية مع تدرج
 }
 
-/// تصميم حاوية مخصص
-class ContainerDecoration {
-  final ContainerStyle style;
-  final Color? backgroundColor;
-  final List<Color>? gradientColors;
-  final EdgeInsets? padding;
-  final double? borderRadius;
-  final Border? border;
-  final List<BoxShadow>? shadows;
-  final AlignmentGeometry? alignment;
-
-  const ContainerDecoration({
-    this.style = ContainerStyle.basic,
-    this.backgroundColor,
-    this.gradientColors,
-    this.padding,
-    this.borderRadius,
-    this.border,
-    this.shadows,
-    this.alignment,
-  });
-
-  /// إنشاء تصميم بسيط
-  factory ContainerDecoration.simple({
-    Color? backgroundColor,
-    EdgeInsets? padding,
-    double? borderRadius,
-  }) {
-    return ContainerDecoration(
-      style: ContainerStyle.basic,
-      backgroundColor: backgroundColor,
-      padding: padding,
-      borderRadius: borderRadius,
-    );
-  }
-
-  /// إنشاء تصميم متدرج
-  factory ContainerDecoration.gradient({
-    required List<Color> colors,
-    EdgeInsets? padding,
-    double? borderRadius,
-    List<BoxShadow>? shadows,
-  }) {
-    return ContainerDecoration(
-      style: ContainerStyle.gradient,
-      gradientColors: colors,
-      padding: padding,
-      borderRadius: borderRadius,
-      shadows: shadows,
-    );
-  }
-
-  /// إنشاء تصميم زجاجي
-  factory ContainerDecoration.glass({
-    Color? backgroundColor,
-    EdgeInsets? padding,
-    double? borderRadius,
-  }) {
-    return ContainerDecoration(
-      style: ContainerStyle.glass,
-      backgroundColor: backgroundColor,
-      padding: padding,
-      borderRadius: borderRadius,
-    );
-  }
-}
-
-/// Extension محسن - بدون تكرار منطق البناء
+/// Extension مُصحح
 extension AppContainerExtension on Widget {
   /// تطبيق حاوية أساسية
   Widget container({
@@ -895,54 +610,6 @@ extension AppContainerExtension on Widget {
       quoteType: quoteType,
       padding: padding,
       margin: margin,
-    );
-  }
-
-  /// تطبيق حاوية متجاوبة
-  Widget responsiveContainer({
-    required BuildContext context,
-    String? colorKey,
-    bool withGlass = false,
-    VoidCallback? onTap,
-  }) {
-    return AppContainerBuilder.responsive(
-      child: this,
-      context: context,
-      colorKey: colorKey,
-      withGlass: withGlass,
-      onTap: onTap,
-    );
-  }
-
-  /// تطبيق حاوية مخصصة
-  Widget customContainer({
-    required ContainerDecoration decoration,
-    EdgeInsets? padding,
-    EdgeInsets? margin,
-    VoidCallback? onTap,
-  }) {
-    return AppContainerBuilder.custom(
-      child: this,
-      decoration: decoration,
-      padding: padding,
-      margin: margin,
-      onTap: onTap,
-    );
-  }
-
-  /// تطبيق حاوية متحركة
-  Widget animatedContainer({
-    required Duration duration,
-    ContainerStyle style = ContainerStyle.basic,
-    String? colorKey,
-    VoidCallback? onTap,
-  }) {
-    return AppContainerBuilder.animated(
-      child: this,
-      duration: duration,
-      style: style,
-      colorKey: colorKey,
-      onTap: onTap,
     );
   }
 }

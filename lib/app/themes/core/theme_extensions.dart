@@ -1,4 +1,5 @@
-// lib/app/themes/core/theme_extensions.dart - النسخة المحسنة
+// ===== lib/app/themes/core/theme_extensions.dart - مُصحح =====
+
 import 'package:flutter/material.dart';
 import '../theme_constants.dart';
 import 'systems/app_color_system.dart';
@@ -6,7 +7,7 @@ import 'systems/app_icons_system.dart';
 import 'systems/app_size_system.dart';
 import 'helpers/category_helper.dart';
 
-/// Extension رئيسي للـ BuildContext - محسن مع معالجة أخطاء
+/// Extension رئيسي للـ BuildContext - مُصحح مع معالجة أخطاء
 extension AppThemeExtension on BuildContext {
   // ===== الوصول المباشر للثيم مع حماية من null =====
   ThemeData get theme {
@@ -44,7 +45,7 @@ extension AppThemeExtension on BuildContext {
   Color get infoColor => AppColorSystem.info;
   Color get infoLightColor => AppColorSystem.infoLight;
 
-  // ===== ألوان الخلفيات والأسطح - محسنة =====
+  // ===== ألوان الخلفيات والأسطح - مُصححة =====
   Color get backgroundColor => AppColorSystem.getBackground(this);
   Color get surfaceColor => AppColorSystem.getSurface(this);
   Color get cardColor => AppColorSystem.getCard(this);
@@ -57,7 +58,7 @@ extension AppThemeExtension on BuildContext {
   LinearGradient get accentGradient => AppColorSystem.accentGradient;
   LinearGradient get tertiaryGradient => AppColorSystem.tertiaryGradient;
 
-  // ===== دوال الألوان والتدرجات المحسنة =====
+  // ===== دوال الألوان والتدرجات المُصححة =====
   Color getColor(String key) => AppColorSystem.getColor(key);
   LinearGradient getGradient(String key) => AppColorSystem.getGradient(key);
   
@@ -65,7 +66,7 @@ extension AppThemeExtension on BuildContext {
   Color getColorSafe(String key, [Color? fallback]) => 
       AppColorSystem.getColorOrFallback(key, fallback ?? primaryColor);
   
-  /// دالة موحدة للحصول على اللون حسب السياق
+  /// دالة موحدة للحصول على اللون حسب السياق - ✅ مُصححة
   Color getContextualColor({
     required String key,
     bool isSecondary = false,
@@ -75,11 +76,11 @@ extension AppThemeExtension on BuildContext {
       Color color = AppColorSystem.getColor(key);
       
       if (isSecondary) {
-        color = color.withOpacity(0.7);
+        color = color.withValues(alpha: 0.7); // ✅ مُصحح
       }
       
       if (opacity != null) {
-        color = color.withOpacity(opacity.clamp(0.0, 1.0));
+        color = color.withValues(alpha: opacity.clamp(0.0, 1.0)); // ✅ مُصحح
       }
       
       return color;
@@ -185,15 +186,15 @@ extension AppThemeExtension on BuildContext {
   }
 }
 
-/// Extension للألوان - محسن مع withOpacity
+/// Extension للألوان - مُصحح مع withValues
 extension ColorExtensions on Color {
-  /// إضافة شفافية آمنة - تفضيل withOpacity
+  /// إضافة شفافية آمنة - ✅ تفضيل withValues
   Color withOpacitySafe(double opacity) {
     final safeOpacity = opacity.clamp(0.0, 1.0);
-    return withOpacity(safeOpacity);
+    return withValues(alpha: safeOpacity); // ✅ مُصحح
   }
 
-  /// تفتيح اللون - محسن
+  /// تفتيح اللون - مُصحح
   Color lighten([double amount = 0.1]) {
     try {
       assert(amount >= 0 && amount <= 1);
@@ -205,7 +206,7 @@ extension ColorExtensions on Color {
     }
   }
 
-  /// تغميق اللون - محسن
+  /// تغميق اللون - مُصحح
   Color darken([double amount = 0.1]) {
     try {
       assert(amount >= 0 && amount <= 1);
@@ -217,7 +218,7 @@ extension ColorExtensions on Color {
     }
   }
 
-  /// الحصول على لون النص المتباين - محسن
+  /// الحصول على لون النص المتباين - مُصحح
   Color get contrastingTextColor {
     try {
       return ThemeData.estimateBrightnessForColor(this) == Brightness.dark
@@ -228,15 +229,15 @@ extension ColorExtensions on Color {
     }
   }
 
-  /// الحصول على نسخة شفافة
-  Color get transparent => withOpacity(0.0);
-  Color get semiTransparent => withOpacity(0.5);
+  /// الحصول على نسخة شفافة - ✅ مُصححة
+  Color get transparent => withValues(alpha: 0.0); // ✅ مُصحح
+  Color get semiTransparent => withValues(alpha: 0.5); // ✅ مُصحح
   
-  /// ألوان شائعة بشفافيات مختلفة
-  Color get subtle => withOpacity(0.1);
-  Color get light => withOpacity(0.3);
-  Color get medium => withOpacity(0.6);
-  Color get strong => withOpacity(0.8);
+  /// ألوان شائعة بشفافيات مختلفة - ✅ مُصححة
+  Color get subtle => withValues(alpha: 0.1); // ✅ مُصحح
+  Color get light => withValues(alpha: 0.3); // ✅ مُصحح
+  Color get medium => withValues(alpha: 0.6); // ✅ مُصحح
+  Color get strong => withValues(alpha: 0.8); // ✅ مُصحح
 
   /// تحليل اللون
   bool get isLight => computeLuminance() > 0.5;
@@ -254,7 +255,7 @@ extension ColorExtensions on Color {
   }
 }
 
-/// Extension للنصوص - محسن
+/// Extension للنصوص - مُصحح
 extension TextStyleExtensions on TextStyle {
   // أوزان الخط
   TextStyle get bold => copyWith(fontWeight: ThemeConstants.bold);
@@ -274,7 +275,7 @@ extension TextStyleExtensions on TextStyle {
   TextStyle get underline => copyWith(decoration: TextDecoration.underline);
   TextStyle get lineThrough => copyWith(decoration: TextDecoration.lineThrough);
   
-  // ظلال النص
+  // ظلال النص - ✅ مُصحح
   TextStyle withShadow({
     Color color = Colors.black,
     double opacity = 0.3,
@@ -284,7 +285,7 @@ extension TextStyleExtensions on TextStyle {
     return copyWith(
       shadows: [
         Shadow(
-          color: color.withOpacity(opacity),
+          color: color.withValues(alpha: opacity), // ✅ مُصحح
           offset: offset,
           blurRadius: blurRadius,
         ),
@@ -334,7 +335,7 @@ extension NumberExtensions on num {
   Duration get minutes => Duration(minutes: toInt());
 }
 
-/// Extension للـ Widgets - محسن
+/// Extension للـ Widgets - مُصحح
 extension WidgetExtensions on Widget {
   /// إضافة padding مع دعم responsive
   Widget padded(EdgeInsetsGeometry padding) => Padding(
@@ -361,7 +362,7 @@ extension WidgetExtensions on Widget {
     child: this,
   );
 
-  /// إضافة تأثير تلاشي - محسن
+  /// إضافة تأثير تلاشي - مُصحح
   Widget opacity(double opacity) {
     final safeOpacity = opacity.clamp(0.0, 1.0);
     return Opacity(
@@ -370,7 +371,7 @@ extension WidgetExtensions on Widget {
     );
   }
 
-  /// إضافة دوران - محسن
+  /// إضافة دوران - مُصحح
   Widget rotate(double angle) {
     try {
       return Transform.rotate(
@@ -382,7 +383,7 @@ extension WidgetExtensions on Widget {
     }
   }
 
-  /// إضافة تحجيم - محسن
+  /// إضافة تحجيم - مُصحح
   Widget scale(double scale) {
     try {
       final safeScale = scale.clamp(0.1, 10.0);
@@ -413,9 +414,9 @@ extension WidgetExtensions on Widget {
   }
 }
 
-/// Extension موحد للـ String - محسن
+/// Extension موحد للـ String - مُصحح
 extension StringAppExtension on String {
-  // ===== الألوان من AppColorSystem - محسن =====
+  // ===== الألوان من AppColorSystem - مُصحح =====
   Color get color => AppColorSystem.getColor(this);
   Color get lightColor => AppColorSystem.getLightColor(this);
   Color get darkColor => AppColorSystem.getDarkColor(this);
@@ -446,10 +447,10 @@ extension StringAppExtension on String {
   TimeOfDay get defaultReminderTime => CategoryHelper.getDefaultReminderTime(this);
   int get categoryPriority => CategoryHelper.getCategoryPriority(this);
   
-  // ===== دوال مساعدة محسنة =====
-  /// الحصول على لون الظل
+  // ===== دوال مساعدة مُصححة =====
+  /// الحصول على لون الظل - ✅ مُصحح
   Color colorShadow([double opacity = 0.3]) => 
-      AppColorSystem.getColor(this).withOpacity(opacity.clamp(0.0, 1.0));
+      AppColorSystem.getColor(this).withValues(alpha: opacity.clamp(0.0, 1.0)); // ✅ مُصحح
       
   /// التحقق من وجود اللون
   bool get hasColor => AppColorSystem.hasColor(this);
@@ -482,7 +483,7 @@ extension StringAppExtension on String {
   }
 }
 
-/// Extension لأحجام المكونات - محسن
+/// Extension لأحجام المكونات - مُصحح
 extension ComponentSizeExtension on ComponentSize {
   /// الحصول على الارتفاع
   double get height => AppSizeSystem.getHeight(this);
@@ -527,7 +528,7 @@ extension ComponentSizeExtension on ComponentSize {
   bool get isLarge => index >= ComponentSize.lg.index;
 }
 
-/// Extension للسياق للحصول على الحجم المتجاوب - محسن
+/// Extension للسياق للحصول على الحجم المتجاوب - مُصحح
 extension ResponsiveSizeExtension on BuildContext {
   /// الحصول على الحجم المتجاوب
   ComponentSize get responsiveSize => AppSizeSystem.getResponsiveSize(this);

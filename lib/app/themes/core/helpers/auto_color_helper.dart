@@ -1,13 +1,13 @@
-// ===== lib/app/themes/core/helpers/auto_color_helper.dart =====
+// ===== lib/app/themes/core/helpers/auto_color_helper.dart - مُصحح =====
 
 import 'package:flutter/material.dart';
 import '../systems/app_color_system.dart';
 
-/// مساعد للحصول على ألوان متناسقة تلقائياً
+/// مساعد للحصول على ألوان متناسقة تلقائياً - نسخة مُصححة
 class AutoColorHelper {
   AutoColorHelper._();
 
-  /// إنشاء لوحة ألوان متناسقة من لون واحد
+  /// إنشاء لوحة ألوان متناسقة من لون واحد - ✅ مُصحح
   static Map<String, Color> createPalette(Color baseColor) {
     try {
       final hsl = HSLColor.fromColor(baseColor);
@@ -16,7 +16,7 @@ class AutoColorHelper {
         'primary': baseColor,
         'light': _adjustLightness(hsl, 0.2).toColor(),
         'dark': _adjustLightness(hsl, -0.2).toColor(),
-        'soft': baseColor.withOpacity(0.7),
+        'soft': baseColor.withValues(alpha: 0.7), // ✅ مُصحح
         'contrast': _getContrastingTextColor(baseColor),
         'complementary': _getComplementaryColor(hsl).toColor(),
         'analogous1': _adjustHue(hsl, 30).toColor(),

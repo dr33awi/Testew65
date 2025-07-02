@@ -1,7 +1,8 @@
-// lib/app/themes/core/systems/app_color_system.dart - النسخة المحسنة
+// lib/app/themes/core/systems/app_color_system.dart - النسخة المُصححة بالكامل
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
-/// نظام الألوان الموحد - النسخة المحسنة مع معالجة أخطاء أفضل
+/// نظام الألوان الموحد - النسخة المُصححة مع معالجة أخطاء أفضل
 class AppColorSystem {
   AppColorSystem._();
 
@@ -86,15 +87,14 @@ class AppColorSystem {
     'دعاء': tertiary,
   };
 
-  // ===== الدوال الأساسية الموحدة - نسخة محسنة =====
+  // ===== الدوال الأساسية الموحدة - نسخة مُصححة =====
 
   /// الدالة الأساسية للحصول على أي لون - مع معالجة محسنة للأخطاء
   static Color getColor(String key) {
     if (key.isEmpty) {
-      assert(() {
-        print('تحذير: مفتاح اللون فارغ، استخدام اللون الافتراضي');
-        return true;
-      }());
+      if (kDebugMode) { // ✅ فقط في وضع التطوير
+        debugPrint('تحذير: مفتاح اللون فارغ، استخدام اللون الافتراضي');
+      }
       return primary;
     }
 
@@ -102,11 +102,10 @@ class AppColorSystem {
     final color = _colorMap[normalizedKey];
     
     if (color == null) {
-      // تسجيل تحذير في وضع التطوير فقط
-      assert(() {
-        print('تحذير: لون غير موجود "$key", استخدام اللون الافتراضي');
-        return true;
-      }());
+      // ✅ تسجيل تحذير في وضع التطوير فقط
+      if (kDebugMode) {
+        debugPrint('تحذير: لون غير موجود "$key", استخدام اللون الافتراضي');
+      }
     }
     
     return color ?? primary;
@@ -139,7 +138,7 @@ class AppColorSystem {
     return _darkenColor(baseColor);
   }
 
-  // ===== دوال مساعدة داخلية محسنة =====
+  // ===== دوال مساعدة داخلية مُصححة =====
   
   /// تفتيح اللون - مع تحقق من صحة القيم
   static Color _lightenColor(Color color, [double amount = 0.1]) {
@@ -149,10 +148,9 @@ class AppColorSystem {
       final lightness = (hsl.lightness + clampedAmount).clamp(0.0, 1.0);
       return hsl.withLightness(lightness).toColor();
     } catch (e) {
-      assert(() {
-        print('خطأ في تفتيح اللون: $e');
-        return true;
-      }());
+      if (kDebugMode) { // ✅ فقط في وضع التطوير
+        debugPrint('خطأ في تفتيح اللون: $e');
+      }
       return color; // إرجاع اللون الأصلي في حالة الخطأ
     }
   }
@@ -165,15 +163,14 @@ class AppColorSystem {
       final lightness = (hsl.lightness - clampedAmount).clamp(0.0, 1.0);
       return hsl.withLightness(lightness).toColor();
     } catch (e) {
-      assert(() {
-        print('خطأ في تغميق اللون: $e');
-        return true;
-      }());
+      if (kDebugMode) { // ✅ فقط في وضع التطوير
+        debugPrint('خطأ في تغميق اللون: $e');
+      }
       return color; // إرجاع اللون الأصلي في حالة الخطأ
     }
   }
 
-  // ===== Aliases للتوافق مع الكود الموجود - محسنة =====
+  // ===== Aliases للتوافق مع الكود الموجود - مُصححة =====
   
   static Color getCategoryColor(String key) => getColor(key);
   static Color getCategoryLightColor(String key) => getLightColor(key);
@@ -181,7 +178,7 @@ class AppColorSystem {
   static Color getPrayerColor(String prayerName) => getColor(prayerName);
   static Color getQuoteColor(String quoteType) => getColor(quoteType);
 
-  // ===== التدرجات - منطق محسن =====
+  // ===== التدرجات - منطق مُصحح =====
 
   /// تدرج أساسي - مع معالجة أخطاء
   static LinearGradient getGradient(String key) {
@@ -195,10 +192,9 @@ class AppColorSystem {
         colors: [primaryColor, darkColor],
       );
     } catch (e) {
-      assert(() {
-        print('خطأ في إنشاء التدرج: $e');
-        return true;
-      }());
+      if (kDebugMode) { // ✅ فقط في وضع التطوير
+        debugPrint('خطأ في إنشاء التدرج: $e');
+      }
       
       // تدرج احتياطي
       return const LinearGradient(
@@ -209,7 +205,7 @@ class AppColorSystem {
     }
   }
 
-  // جميع دوال التدرج تستخدم نفس المنطق المحسن
+  // جميع دوال التدرج تستخدم نفس المنطق المُصحح
   static LinearGradient getCategoryGradient(String key) => getGradient(key);
   static LinearGradient getPrayerGradient(String key) => getGradient(key);
   static LinearGradient getQuoteGradient(String key) => getGradient(key);
@@ -249,7 +245,7 @@ class AppColorSystem {
     end: Alignment.bottomRight,
   );
 
-  // ===== دوال السياق - محسنة مع معالجة null =====
+  // ===== دوال السياق - مُصححة مع معالجة null =====
 
   static Color getBackground(BuildContext context) {
     try {
@@ -311,7 +307,7 @@ class AppColorSystem {
     }
   }
 
-  // ===== دوال مساعدة محسنة =====
+  // ===== دوال مساعدة مُصححة =====
 
   static bool hasColor(String key) {
     if (key.isEmpty) return false;
@@ -341,7 +337,7 @@ class AppColorSystem {
         'primary': baseColor,
         'light': _lightenColor(baseColor, 0.2),
         'dark': _darkenColor(baseColor, 0.2),
-        'soft': baseColor.withOpacity(0.7),
+        'soft': baseColor.withValues(alpha: 0.7), // ✅ مُصحح
         'contrast': _getContrastingTextColor(baseColor),
       };
     } catch (e) {

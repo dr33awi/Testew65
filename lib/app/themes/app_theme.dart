@@ -1,6 +1,7 @@
-// lib/app/themes/app_theme.dart - النسخة المحسنة
+// lib/app/themes/app_theme.dart - النسخة المُصححة بالكامل
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 
 // استيراد الأنظمة الموحدة
 import 'theme_constants.dart';
@@ -58,7 +59,7 @@ export 'package:flutter_staggered_animations/flutter_staggered_animations.dart'
         ScaleAnimation,
         FlipAnimation;
 
-/// نظام الثيم الموحد للتطبيق - نسخة محسنة
+/// نظام الثيم الموحد للتطبيق - نسخة مُصححة
 class AppTheme {
   AppTheme._();
 
@@ -123,11 +124,10 @@ class AppTheme {
         chipTheme: _buildChipTheme(colorSystem, brightness),
       );
     } catch (e) {
-      // في حالة حدوث خطأ، إرجاع ثيم أساسي
-      assert(() {
-        print('خطأ في بناء الثيم: $e');
-        return true;
-      }());
+      // ✅ استبدال print بـ debugPrint
+      if (kDebugMode) {
+        debugPrint('خطأ في بناء الثيم: $e');
+      }
       
       return _createFallbackTheme(brightness);
     }
@@ -142,7 +142,7 @@ class AppTheme {
     );
   }
 
-  // دوال بناء المكونات - كما هي مع تحسين بسيط في التعليقات
+  // دوال بناء المكونات - مُصححة
   static AppBarTheme _buildAppBarTheme(_ColorSystemInterface colors) {
     return AppBarTheme(
       backgroundColor: colors.background,
@@ -195,7 +195,7 @@ class AppTheme {
 
   static InputDecorationTheme _buildInputDecorationTheme(_ColorSystemInterface colors) {
     return InputDecorationTheme(
-      fillColor: colors.surface.withOpacity(colors.fillOpacity),
+      fillColor: colors.surface.withValues(alpha: colors.fillOpacity),
       filled: true,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: ThemeConstants.space4,
@@ -236,8 +236,8 @@ class AppTheme {
   static ProgressIndicatorThemeData _buildProgressIndicatorTheme(_ColorSystemInterface colors) {
     return ProgressIndicatorThemeData(
       color: colors.primary,
-      linearTrackColor: colors.divider.withOpacity(ThemeConstants.opacity50),
-      circularTrackColor: colors.divider.withOpacity(ThemeConstants.opacity50),
+      linearTrackColor: colors.divider.withValues(alpha: ThemeConstants.opacity50), // ✅ مُصحح
+      circularTrackColor: colors.divider.withValues(alpha: ThemeConstants.opacity50), // ✅ مُصحح
     );
   }
 
@@ -295,7 +295,7 @@ class AppTheme {
   static NavigationBarThemeData _buildNavigationBarTheme(_ColorSystemInterface colors) {
     return NavigationBarThemeData(
       backgroundColor: colors.card,
-      indicatorColor: colors.primary.withOpacity(ThemeConstants.opacity20),
+      indicatorColor: colors.primary.withValues(alpha: ThemeConstants.opacity20), // ✅ مُصحح
       labelTextStyle: WidgetStateProperty.all(
         AppTextStyles.label2.copyWith(color: colors.textSecondary),
       ),
@@ -313,7 +313,7 @@ class AppTheme {
   static ChipThemeData _buildChipTheme(_ColorSystemInterface colors, Brightness brightness) {
     return ChipThemeData(
       backgroundColor: colors.surface,
-      selectedColor: colors.primary.withOpacity(ThemeConstants.opacity20),
+      selectedColor: colors.primary.withValues(alpha: ThemeConstants.opacity20), // ✅ مُصحح
       disabledColor: colors.divider,
       labelStyle: AppTextStyles.label2.copyWith(color: colors.textPrimary),
       secondaryLabelStyle: AppTextStyles.label2.copyWith(color: colors.textSecondary),
@@ -386,7 +386,7 @@ class AppTheme {
   }
 }
 
-// واجهات مساعدة داخلية - كما هي
+// واجهات مساعدة داخلية
 abstract class _ColorSystemInterface {
   Color get primary;
   Color get onPrimary;

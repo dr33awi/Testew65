@@ -1,19 +1,18 @@
-// ===== lib/app/themes/core/helpers/theme_exporter.dart =====
+// ===== lib/app/themes/core/helpers/theme_exporter.dart - مُصحح =====
 
 import 'package:flutter/material.dart';
-import '../systems/app_color_system.dart';
-import '../../app_theme.dart';
+import '../../app_theme.dart'; // ✅ إزالة الاستيراد غير الضروري
 
-/// مساعد لتصدير وتخزين إعدادات الثيم
+/// مساعد لتصدير وتخزين إعدادات الثيم - نسخة مُصححة
 class ThemeExporter {
   ThemeExporter._();
 
-  /// تصدير الثيم الحالي إلى Map
+  /// تصدير الثيم الحالي إلى Map - ✅ إصلاح .value
   static Map<String, dynamic> exportTheme(ThemeData theme) {
     try {
       return {
         'version': '1.0',
-        'primaryColor': theme.primaryColor.value,
+        'primaryColor': theme.primaryColor.value.toRadixString(16), // ✅ تحويل آمن
         'brightness': theme.brightness.name,
         'fontFamily': theme.textTheme.bodyLarge?.fontFamily ?? 'Cairo',
         'colorScheme': _exportColorScheme(theme.colorScheme),
@@ -28,7 +27,7 @@ class ThemeExporter {
     }
   }
 
-  /// استيراد الثيم من Map
+  /// استيراد الثيم من Map - ✅ إصلاح .value
   static ThemeData? importTheme(Map<String, dynamic> themeData) {
     try {
       if (!_validateThemeData(themeData)) return null;
@@ -37,7 +36,9 @@ class ThemeExporter {
           ? Brightness.dark 
           : Brightness.light;
           
-      final primaryColor = Color(themeData['primaryColor'] ?? AppColorSystem.primary.value);
+      // ✅ إصلاح تحويل اللون
+      final primaryColorHex = themeData['primaryColor'] as String? ?? '5D7052';
+      final primaryColor = Color(int.parse('FF$primaryColorHex', radix: 16));
       
       return AppTheme.getCustomTheme(
         brightness: brightness,
@@ -95,18 +96,18 @@ class ThemeExporter {
     }
   }
 
-  // ===== دوال مساعدة داخلية =====
+  // ===== دوال مساعدة داخلية - ✅ مُصححة =====
 
   static Map<String, dynamic> _exportColorScheme(ColorScheme colorScheme) {
     return {
-      'primary': colorScheme.primary.value,
-      'secondary': colorScheme.secondary.value,
-      'surface': colorScheme.surface.value,
-      'error': colorScheme.error.value,
-      'onPrimary': colorScheme.onPrimary.value,
-      'onSecondary': colorScheme.onSecondary.value,
-      'onSurface': colorScheme.onSurface.value,
-      'onError': colorScheme.onError.value,
+      'primary': colorScheme.primary.value.toRadixString(16), // ✅ مُصحح
+      'secondary': colorScheme.secondary.value.toRadixString(16), // ✅ مُصحح
+      'surface': colorScheme.surface.value.toRadixString(16), // ✅ مُصحح
+      'error': colorScheme.error.value.toRadixString(16), // ✅ مُصحح
+      'onPrimary': colorScheme.onPrimary.value.toRadixString(16), // ✅ مُصحح
+      'onSecondary': colorScheme.onSecondary.value.toRadixString(16), // ✅ مُصحح
+      'onSurface': colorScheme.onSurface.value.toRadixString(16), // ✅ مُصحح
+      'onError': colorScheme.onError.value.toRadixString(16), // ✅ مُصحح
     };
   }
 
@@ -126,7 +127,7 @@ class ThemeExporter {
       'fontSize': style.fontSize,
       'fontWeight': style.fontWeight?.index,
       'fontFamily': style.fontFamily,
-      'color': style.color?.value,
+      'color': style.color?.value.toRadixString(16), // ✅ مُصحح
     };
   }
 
@@ -139,7 +140,7 @@ class ThemeExporter {
   static Map<String, dynamic> _createFallbackExport(Brightness brightness) {
     return {
       'version': '1.0',
-      'primaryColor': AppColorSystem.primary.value,
+      'primaryColor': '5D7052', // ✅ كـ string
       'brightness': brightness.name,
       'fontFamily': 'Cairo',
       'metadata': {

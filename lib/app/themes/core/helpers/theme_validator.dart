@@ -1,25 +1,25 @@
-// lib/app/themes/core/helpers/theme_validator.dart
+// ===== lib/app/themes/core/helpers/theme_validator.dart - مُصحح =====
+
 import 'package:flutter/material.dart';
 
-/// مساعد للتحقق من صحة إعدادات الثيم
+/// مساعد للتحقق من صحة إعدادات الثيم - نسخة مُصححة
 class ThemeValidator {
   ThemeValidator._();
 
-  /// التحقق من صحة الثيم
+  /// التحقق من صحة الثيم - ✅ إصلاح null comparisons
   static bool validateTheme(ThemeData? theme) {
     if (theme == null) return false;
     
     try {
-      return theme.primaryColor != null &&
-             theme.colorScheme != null &&
-             theme.textTheme != null &&
-             theme.textTheme.bodyLarge != null;
+      // ✅ إزالة المقارنات غير الضرورية مع null
+      return theme.colorScheme.primary != Colors.transparent &&
+             theme.textTheme.bodyLarge?.color != null;
     } catch (e) {
       return false;
     }
   }
 
-  /// الحصول على قائمة بمشاكل الثيم
+  /// الحصول على قائمة بمشاكل الثيم - ✅ مُصححة
   static List<String> getThemeIssues(ThemeData? theme) {
     final issues = <String>[];
     
@@ -29,27 +29,19 @@ class ThemeValidator {
     }
 
     try {
-      if (theme.primaryColor == null) {
-        issues.add('اللون الأساسي مفقود');
+      // ✅ إزالة جميع المقارنات غير الضرورية مع null
+      if (theme.colorScheme.primary == Colors.transparent) {
+        issues.add('اللون الأساسي غير صالح');
       }
       
-      if (theme.colorScheme == null) {
-        issues.add('نظام الألوان مفقود');
-      }
-      
-      if (theme.textTheme == null) {
-        issues.add('أنماط النصوص مفقودة');
-      } else if (theme.textTheme.bodyLarge == null) {
+      if (theme.textTheme.bodyLarge?.color == null) {
         issues.add('نمط النص الأساسي مفقود');
       }
       
-      if (theme.scaffoldBackgroundColor == null) {
-        issues.add('لون خلفية الصفحة مفقود');
+      if (theme.scaffoldBackgroundColor == Colors.transparent) {
+        issues.add('لون خلفية الصفحة غير صالح');
       }
       
-      if (theme.appBarTheme == null) {
-        issues.add('ثيم شريط التطبيق مفقود');
-      }
     } catch (e) {
       issues.add('خطأ في تحليل الثيم: ${e.toString()}');
     }
@@ -57,13 +49,11 @@ class ThemeValidator {
     return issues;
   }
 
-  /// التحقق من تباين الألوان
+  /// التحقق من تباين الألوان - ✅ مُصحح
   static bool hasGoodColorContrast(ThemeData theme) {
     try {
-      final primaryColor = theme.primaryColor;
+      final primaryColor = theme.colorScheme.primary;
       final backgroundColor = theme.scaffoldBackgroundColor;
-      
-      if (primaryColor == null || backgroundColor == null) return false;
       
       final primaryLuminance = primaryColor.computeLuminance();
       final backgroundLuminance = backgroundColor.computeLuminance();
@@ -121,6 +111,3 @@ class ThemeHealthReport {
     return 'يحتاج تحسين';
   }
 }
-
-
-
