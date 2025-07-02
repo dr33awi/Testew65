@@ -1,5 +1,4 @@
 // lib/features/home/widgets/category_grid.dart - محدث للنظام الموحد
-import 'package:athkar_app/app/themes/core/helpers/category_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
@@ -126,7 +125,7 @@ class SimpleCategoryGrid extends StatelessWidget {
   }
 
   Widget _buildCategoryCard(BuildContext context, CategoryItem category, double screenWidth) {
-    final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
+    final categoryColor = CategoryHelper.getCategoryColor(category.id);
     final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
     final gradientColors = [
       categoryColor.withValues(alpha: 0.9),

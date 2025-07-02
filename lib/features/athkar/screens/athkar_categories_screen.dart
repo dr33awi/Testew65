@@ -1,14 +1,12 @@
-// lib/features/athkar/screens/athkar_categories_screen.dart - مُصحح
+// lib/features/athkar/screens/athkar_categories_screen.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import '../../../app/themes/app_theme.dart';
-import '../../../app/di/service_locator.dart';
-import '../../../app/routes/app_router.dart';
-import '../../../core/infrastructure/services/storage/storage_service.dart';
-import '../services/athkar_service.dart';
+import 'package:athkar_app/app/di/service_locator.dart';
+import 'package:athkar_app/app/themes/app_theme.dart';
+import 'package:athkar_app/app/routes/app_router.dart';
 import '../models/athkar_model.dart';
-import 'notification_settings_screen.dart';
+import '../services/athkar_service.dart';
 
+/// شاشة فئات الأذكار مع التصميم الموحد
 class AthkarCategoriesScreen extends StatefulWidget {
   const AthkarCategoriesScreen({super.key});
 
@@ -16,261 +14,104 @@ class AthkarCategoriesScreen extends StatefulWidget {
   State<AthkarCategoriesScreen> createState() => _AthkarCategoriesScreenState();
 }
 
-class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen> 
-    with TickerProviderStateMixin {
-  late final AthkarService _service;
-
-  late final StorageService _storage;
+class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
+    with SingleTickerProviderStateMixin {
+  late final AthkarService _athkarService;
+  late final AnimationController _animationController;
   
-  late Future<List<AthkarCategory>> _futureCategories;
-  final Map<String, int> _progress = {};
-  
-  List<AnimationController>? _controllers;
-  List<Animation<double>>? _scaleAnimations;
-  List<Animation<double>>? _fadeAnimations;
+  List<AthkarCategory> _categories = [];
+  Map<String, int> _completionPercentages = {};
+  bool _isLoading = true;
+  String? _error;
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    _service = getIt<AthkarService>();
-    _storage = getIt<StorageService>();
-    
-    _initialize();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _loadProgress();
-  }
-
-  Future<void> _initialize() async {
-    _futureCategories = _service.loadCategories();
-    _loadProgress();
-  }
-
-  void _setupAnimations(int itemCount) {
-    // تنظيف الانيميشن السابق
-    if (_controllers != null) {
-      for (var controller in _controllers!) {
-        controller.dispose();
-      }
-    }
-    
-    _controllers = List.generate(itemCount, (index) {
-      return AnimationController(
-        duration: Duration(milliseconds: 600 + (index * 100)),
-        vsync: this,
-      );
-    });
-
-    _scaleAnimations = _controllers!.map((controller) {
-      return Tween<double>(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(CurvedAnimation(
-        parent: controller,
-        curve: Curves.elasticOut,
-      ));
-    }).toList();
-
-    _fadeAnimations = _controllers!.map((controller) {
-      return Tween<double>(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(CurvedAnimation(
-        parent: controller,
-        curve: Curves.easeOut,
-      ));
-    }).toList();
-
-    // بدء الانيميشن تدريجياً
-    for (int i = 0; i < _controllers!.length; i++) {
-      Future.delayed(Duration(milliseconds: i * 150), () {
-        if (mounted && _controllers != null && i < _controllers!.length) {
-          _controllers![i].forward();
-        }
-      });
-    }
+    _athkarService = getService<AthkarService>();
+    _animationController = AnimationController(
+      duration: ThemeConstants.durationNormal,
+      vsync: this,
+    );
+    _loadData();
   }
 
   @override
   void dispose() {
-    if (_controllers != null) {
-      for (var controller in _controllers!) {
-        controller.dispose();
-      }
-    }
+    _animationController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadProgress() async {
+  Future<void> _loadData() async {
     try {
-      final categories = await _futureCategories;
-      final progressMap = <String, int>{};
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+
+      // تحميل الفئات
+      final categories = await _athkarService.loadCategories();
       
+      // تحميل نسب الإكمال
+      final completionMap = <String, int>{};
       for (final category in categories) {
-        int totalCompleted = 0;
-        int totalRequired = 0;
-        
-        final key = 'athkar_progress_${category.id}';
-        final savedData = _storage.getMap(key);
-        final savedProgress = savedData?.map((k, v) => MapEntry(int.parse(k), v as int)) ?? <int, int>{};
-        
-        for (final item in category.athkar) {
-          final currentCount = savedProgress[item.id] ?? 0;
-          totalCompleted += currentCount.clamp(0, item.count);
-          totalRequired += item.count;
-        }
-        
-        final percentage = totalRequired > 0 ? ((totalCompleted / totalRequired) * 100).round() : 0;
-        progressMap[category.id] = percentage;
+        completionMap[category.id] = 
+            await _athkarService.getCategoryCompletionPercentage(category.id);
       }
-      
+
       if (mounted) {
         setState(() {
-          _progress.clear();
-          _progress.addAll(progressMap);
+          _categories = categories;
+          _completionPercentages = completionMap;
+          _isLoading = false;
         });
+        _animationController.forward();
       }
     } catch (e) {
-      debugPrint('Error loading progress: $e');
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
     }
   }
 
-  void _openCategoryDetails(AthkarCategory category) {
-    HapticFeedback.lightImpact();
-    Navigator.pushNamed(
-      context,
-      AppRouter.athkarDetails,
-      arguments: category.id,
-    ).then((_) {
-      _loadProgress();
-    });
+  List<AthkarCategory> get _filteredCategories {
+    if (_searchQuery.isEmpty) return _categories;
+    
+    return _categories.where((category) {
+      return category.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+             (category.description?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.backgroundColor,
       appBar: CustomAppBar.simple(
-        title: 'أذكار المسلم',
+        title: 'الأذكار',
         actions: [
           AppBarAction(
-            icon: AppIconsSystem.notifications,
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AthkarNotificationSettingsScreen(),
-              ),
+            icon: AppIconsSystem.settings,
+            onPressed: () => Navigator.pushNamed(
+              context, 
+              AppRouter.athkarNotificationsSettings,
             ),
-            tooltip: 'إعدادات الإشعارات',
+            tooltip: 'إعدادات التذكيرات',
           ),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () async {
-          await _loadProgress();
-        },
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // رسالة الترحيب
-            SliverToBoxAdapter(
-              child: _buildWelcomeSection(),
-            ),
+        onRefresh: _loadData,
+        child: Column(
+          children: [
+            // شريط البحث
+            _buildSearchBar(),
             
-            const SliverToBoxAdapter(
-              child: SizedBox(height: ThemeConstants.space4),
-            ),
-                  
-            // قائمة الفئات
-            FutureBuilder<List<AthkarCategory>>(
-              future: _futureCategories,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return SliverFillRemaining(
-                    child: AppLoading.page(
-                      message: 'جاري تحميل الأذكار...',
-                    ),
-                  );
-                }
-                
-                if (snapshot.hasError) {
-                  return SliverFillRemaining(
-                    child: AppEmptyState.error(
-                      message: 'حدث خطأ في تحميل البيانات',
-                      onRetry: () {
-                        setState(() {
-                          _futureCategories = _service.loadCategories();
-                        });
-                      },
-                    ),
-                  );
-                }
-                
-                final categories = snapshot.data ?? [];
-                
-                if (categories.isEmpty) {
-                  return SliverFillRemaining(
-                    child: AppEmptyState.noData(
-                      message: 'لا توجد أذكار متاحة حالياً',
-                    ),
-                  );
-                }
-                
-                // إعداد الانيميشن عند تحميل البيانات
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted && (_controllers == null || _controllers!.length != categories.length)) {
-                    _setupAnimations(categories.length);
-                  }
-                });
-                
-                return SliverPadding(
-                  padding: context.appResponsivePadding,
-                  sliver: SliverGrid(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: context.responsiveColumns(mobile: 1, tablet: 2, desktop: 3),
-                      mainAxisSpacing: ThemeConstants.space3,
-                      crossAxisSpacing: ThemeConstants.space3,
-                      childAspectRatio: context.isMobile ? 1.2 : 0.95,
-                    ),
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final category = categories[index];
-                        final progress = _progress[category.id] ?? 0;
-                        
-                        // إذا لم يتم إعداد الانيميشن بعد، أرجع البطاقة بدون انيميشن
-                        if (_scaleAnimations == null || _fadeAnimations == null || 
-                            index >= _scaleAnimations!.length || index >= _fadeAnimations!.length) {
-                          return _buildCategoryCard(category, progress);
-                        }
-                        
-                        return AnimatedBuilder(
-                          animation: Listenable.merge([
-                            _scaleAnimations![index],
-                            _fadeAnimations![index],
-                          ]),
-                          builder: (context, child) {
-                            return FadeTransition(
-                              opacity: _fadeAnimations![index],
-                              child: ScaleTransition(
-                                scale: _scaleAnimations![index],
-                                child: _buildCategoryCard(category, progress),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                      childCount: categories.length,
-                    ),
-                  ),
-                );
-              },
-            ),
-            
-            const SliverToBoxAdapter(
-              child: SizedBox(height: ThemeConstants.space8),
+            // المحتوى الرئيسي
+            Expanded(
+              child: _buildContent(),
             ),
           ],
         ),
@@ -278,32 +119,312 @@ class _AthkarCategoriesScreenState extends State<AthkarCategoriesScreen>
     );
   }
 
-  Widget _buildWelcomeSection() {
-    return Padding(
+  Widget _buildSearchBar() {
+    return Container(
       padding: context.appResponsivePadding,
-      child: AppCard.quote(
-        quote: 'وَاذْكُر رَّبَّكَ كَثِيرًا وَسَبِّحْ بِالْعَشِيِّ وَالْإِبْكَارِ',
-        author: 'سورة آل عمران - آية 41',
-        category: 'آية قرآنية',
-        primaryColor: 'verse'.themeColor,
-        gradientColors: [
-          'verse'.themeColor,
-          'verse'.themeColor.lighten(0.1),
+      child: AppTextField.search(
+        hint: 'البحث في الأذكار...',
+        onChanged: (value) {
+          setState(() {
+            _searchQuery = value;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    if (_isLoading) {
+      return Center(
+        child: AppLoading.page(
+          message: 'جاري تحميل الأذكار...',
+        ),
+      );
+    }
+
+    if (_error != null) {
+      return AppEmptyState.error(
+        message: _error,
+        onRetry: _loadData,
+      );
+    }
+
+    final filteredCategories = _filteredCategories;
+
+    if (filteredCategories.isEmpty) {
+      return _searchQuery.isNotEmpty
+          ? AppEmptyState.noResults(
+              searchTerm: _searchQuery,
+              onClearSearch: () {
+                setState(() {
+                  _searchQuery = '';
+                });
+              },
+            )
+          : AppEmptyState.noAthkar(
+              onRefresh: _loadData,
+            );
+    }
+
+    return AnimationLimiter(
+      child: ListView.builder(
+        padding: context.appResponsivePadding,
+        itemCount: filteredCategories.length,
+        itemBuilder: (context, index) {
+          final category = filteredCategories[index];
+          return AnimationConfiguration.staggeredList(
+            position: index,
+            duration: ThemeConstants.durationNormal,
+            child: SlideAnimation(
+              verticalOffset: 50.0,
+              child: FadeInAnimation(
+                child: _buildCategoryCard(category, index),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCategoryCard(AthkarCategory category, int index) {
+    final completionPercentage = _completionPercentages[category.id] ?? 0;
+    final isCompleted = completionPercentage >= 100;
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: ThemeConstants.space4),
+      child: AppCard.glassCategory(
+        title: category.title,
+        icon: category.icon,
+        primaryColor: category.color,
+        onTap: () => _onCategoryTap(category),
+        margin: EdgeInsets.zero,
+        padding: const EdgeInsets.all(ThemeConstants.space5),
+      ).cardContainer(
+        withGlass: true,
+        margin: EdgeInsets.zero,
+      ),
+    ).animatedPress(
+      onTap: () => _onCategoryTap(category),
+    );
+  }
+
+  void _onCategoryTap(AthkarCategory category) {
+    Navigator.pushNamed(
+      context,
+      AppRouter.athkarDetails,
+      arguments: category.id,
+    );
+  }
+}
+
+/// Extension مساعدة لبناء محتوى البطاقة
+extension _CategoryCardContent on _AthkarCategoriesScreenState {
+  Widget _buildCategoryContent(AthkarCategory category) {
+    final completionPercentage = _completionPercentages[category.id] ?? 0;
+    final isCompleted = completionPercentage >= 100;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // الرأس مع الأيقونة والعنوان
+        Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.25),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.4),
+                  width: 2,
+                ),
+              ),
+              child: Icon(
+                category.icon,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: ThemeConstants.space4),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    category.title,
+                    style: AppTextStyles.h4.copyWith(
+                      color: Colors.white,
+                      fontWeight: ThemeConstants.bold,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withValues(alpha: 0.5),
+                          offset: const Offset(0, 2),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (category.description != null) ...[
+                    const SizedBox(height: ThemeConstants.space1),
+                    Text(
+                      category.description!,
+                      style: AppTextStyles.body2.copyWith(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            offset: const Offset(0, 1),
+                            blurRadius: 2,
+                          ),
+                        ],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+        
+        const SizedBox(height: ThemeConstants.space4),
+        
+        // شريط التقدم والإحصائيات
+        _buildProgressSection(category, completionPercentage, isCompleted),
+        
+        const SizedBox(height: ThemeConstants.space3),
+        
+        // معلومات إضافية
+        _buildCategoryInfo(category),
+      ],
+    );
+  }
+
+  Widget _buildProgressSection(AthkarCategory category, int percentage, bool isCompleted) {
+    return Container(
+      padding: const EdgeInsets.all(ThemeConstants.space3),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'التقدم اليومي',
+                style: AppTextStyles.label2.copyWith(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontWeight: ThemeConstants.semiBold,
+                ),
+              ),
+              Row(
+                children: [
+                  if (isCompleted)
+                    Icon(
+                      Icons.check_circle,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  const SizedBox(width: ThemeConstants.space1),
+                  Text(
+                    '$percentage%',
+                    style: AppTextStyles.label1.copyWith(
+                      color: Colors.white,
+                      fontWeight: ThemeConstants.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: ThemeConstants.space2),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+            child: LinearProgressIndicator(
+              value: percentage / 100,
+              backgroundColor: Colors.white.withValues(alpha: 0.2),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                isCompleted ? Colors.white : Colors.white.withValues(alpha: 0.8),
+              ),
+              minHeight: 6,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryCard(AthkarCategory category, int progress) {
-    return AppCard.glassCategory(
-      title: category.title,
-      icon: category.id.themeCategoryIcon,
-      primaryColor: category.id.themeCategoryColor,
-      onTap: () => _openCategoryDetails(category),
-      margin: EdgeInsets.zero,
-      padding: const EdgeInsets.all(ThemeConstants.space5),
-    ).animatedPress(
-      onTap: () => _openCategoryDetails(category),
+  Widget _buildCategoryInfo(AthkarCategory category) {
+    return Row(
+      children: [
+        _buildInfoChip(
+          icon: Icons.list,
+          text: '${category.athkar.length} أذكار',
+        ),
+        const SizedBox(width: ThemeConstants.space2),
+        if (category.notifyTime != null)
+          _buildInfoChip(
+            icon: Icons.schedule,
+            text: '${category.notifyTime!.hour.toString().padLeft(2, '0')}:${category.notifyTime!.minute.toString().padLeft(2, '0')}',
+          ),
+        const Spacer(),
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.arrow_forward_ios_rounded,
+            color: Colors.white,
+            size: 14,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoChip({
+    required IconData icon,
+    required String text,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: ThemeConstants.space2,
+        vertical: ThemeConstants.space1,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 14,
+            color: Colors.white.withValues(alpha: 0.9),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: AppTextStyles.caption.copyWith(
+              color: Colors.white.withValues(alpha: 0.9),
+              fontWeight: ThemeConstants.medium,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
