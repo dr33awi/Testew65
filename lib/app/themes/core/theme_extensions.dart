@@ -1,4 +1,4 @@
-// ===== lib/app/themes/core/theme_extensions.dart - مُصحح =====
+// lib/app/themes/core/theme_extensions.dart - مُصحح لحل تعارض responsivePadding
 
 import 'package:flutter/material.dart';
 import '../theme_constants.dart';
@@ -6,18 +6,12 @@ import 'systems/app_color_system.dart';
 import 'systems/app_icons_system.dart';
 import 'systems/app_size_system.dart';
 import 'helpers/category_helper.dart';
+import 'helpers/theme_utils.dart';
 
-/// Extension رئيسي للـ BuildContext - مُصحح مع معالجة أخطاء
+/// Extension رئيسي للـ BuildContext - مُبسط ومُنظف
 extension AppThemeExtension on BuildContext {
-  // ===== الوصول المباشر للثيم مع حماية من null =====
-  ThemeData get theme {
-    try {
-      return Theme.of(this);
-    } catch (e) {
-      return ThemeData.fallback();
-    }
-  }
-  
+  // ===== الوصول المباشر للثيم =====
+  ThemeData get theme => Theme.of(this);
   TextTheme get textTheme => theme.textTheme;
   ColorScheme get colorScheme => theme.colorScheme;
 
@@ -25,145 +19,87 @@ extension AppThemeExtension on BuildContext {
   bool get isDarkMode => theme.brightness == Brightness.dark;
   bool get isLightMode => !isDarkMode;
 
-  // ===== الألوان الأساسية =====
+  // ===== الألوان الأساسية - بدون تكرار =====
   Color get primaryColor => AppColorSystem.primary;
   Color get primaryLightColor => AppColorSystem.primaryLight;
   Color get primaryDarkColor => AppColorSystem.primaryDark;
   Color get accentColor => AppColorSystem.accent;
-  Color get accentLightColor => AppColorSystem.accentLight;
-  Color get accentDarkColor => AppColorSystem.accentDark;
   Color get tertiaryColor => AppColorSystem.tertiary;
-  Color get tertiaryLightColor => AppColorSystem.tertiaryLight;
-  Color get tertiaryDarkColor => AppColorSystem.tertiaryDark;
 
   // ===== الألوان الدلالية =====
   Color get successColor => AppColorSystem.success;
-  Color get successLightColor => AppColorSystem.successLight;
   Color get errorColor => AppColorSystem.error;
   Color get warningColor => AppColorSystem.warning;
-  Color get warningLightColor => AppColorSystem.warningLight;
   Color get infoColor => AppColorSystem.info;
-  Color get infoLightColor => AppColorSystem.infoLight;
 
-  // ===== ألوان الخلفيات والأسطح - مُصححة =====
-  Color get backgroundColor => AppColorSystem.getBackground(this);
-  Color get surfaceColor => AppColorSystem.getSurface(this);
-  Color get cardColor => AppColorSystem.getCard(this);
-  Color get dividerColor => AppColorSystem.getDivider(this);
-  Color get textPrimaryColor => AppColorSystem.getTextPrimary(this);
-  Color get textSecondaryColor => AppColorSystem.getTextSecondary(this);
+  // ===== ألوان سياقية - استخدام ThemeUtils =====
+  Color get backgroundColor => ThemeUtils.getContextualColor(
+    this,
+    lightColor: AppColorSystem.lightBackground,
+    darkColor: AppColorSystem.darkBackground,
+  );
+
+  Color get surfaceColor => ThemeUtils.getContextualColor(
+    this,
+    lightColor: AppColorSystem.lightSurface,
+    darkColor: AppColorSystem.darkSurface,
+  );
+
+  Color get cardColor => ThemeUtils.getContextualColor(
+    this,
+    lightColor: AppColorSystem.lightCard,
+    darkColor: AppColorSystem.darkCard,
+  );
+
+  Color get dividerColor => ThemeUtils.getContextualColor(
+    this,
+    lightColor: AppColorSystem.lightDivider,
+    darkColor: AppColorSystem.darkDivider,
+  );
+
+  Color get textPrimaryColor => ThemeUtils.getContextualColor(
+    this,
+    lightColor: AppColorSystem.lightTextPrimary,
+    darkColor: AppColorSystem.darkTextPrimary,
+  );
+
+  Color get textSecondaryColor => ThemeUtils.getContextualColor(
+    this,
+    lightColor: AppColorSystem.lightTextSecondary,
+    darkColor: AppColorSystem.darkTextSecondary,
+  );
 
   // ===== التدرجات الأساسية =====
   LinearGradient get primaryGradient => AppColorSystem.primaryGradient;
   LinearGradient get accentGradient => AppColorSystem.accentGradient;
   LinearGradient get tertiaryGradient => AppColorSystem.tertiaryGradient;
 
-  // ===== دوال الألوان والتدرجات المُصححة =====
+  // ===== دوال الألوان - مبسطة =====
   Color getColor(String key) => AppColorSystem.getColor(key);
   LinearGradient getGradient(String key) => AppColorSystem.getGradient(key);
   
   /// الحصول على لون مع fallback
   Color getColorSafe(String key, [Color? fallback]) => 
       AppColorSystem.getColorOrFallback(key, fallback ?? primaryColor);
-  
-  /// دالة موحدة للحصول على اللون حسب السياق - ✅ مُصححة
-  Color getContextualColor({
-    required String key,
-    bool isSecondary = false,
-    double? opacity,
-  }) {
-    try {
-      Color color = AppColorSystem.getColor(key);
-      
-      if (isSecondary) {
-        color = color.withValues(alpha: 0.7); // ✅ مُصحح
-      }
-      
-      if (opacity != null) {
-        color = color.withValues(alpha: opacity.clamp(0.0, 1.0)); // ✅ مُصحح
-      }
-      
-      return color;
-    } catch (e) {
-      return primaryColor;
-    }
-  }
 
-  /// الحصول على لون دلالي
-  Color getSemanticColor(String type) {
-    switch (type.toLowerCase()) {
-      case 'success': return successColor;
-      case 'error': return errorColor;
-      case 'warning': return warningColor;
-      case 'info': return infoColor;
-      default: return primaryColor;
-    }
-  }
+  // ===== معلومات الشاشة - مع حماية =====
+  double get screenWidth => MediaQuery.sizeOf(this).width;
+  double get screenHeight => MediaQuery.sizeOf(this).height;
+  EdgeInsets get screenPadding => MediaQuery.paddingOf(this);
+  EdgeInsets get viewInsets => MediaQuery.viewInsetsOf(this);
 
-  // ===== معلومات الشاشة مع حماية =====
-  double get screenWidth {
-    try {
-      return MediaQuery.sizeOf(this).width;
-    } catch (e) {
-      return 400; // عرض افتراضي آمن
-    }
-  }
-  
-  double get screenHeight {
-    try {
-      return MediaQuery.sizeOf(this).height;
-    } catch (e) {
-      return 800; // ارتفاع افتراضي آمن
-    }
-  }
-  
-  EdgeInsets get screenPadding {
-    try {
-      return MediaQuery.paddingOf(this);
-    } catch (e) {
-      return EdgeInsets.zero;
-    }
-  }
-  
-  EdgeInsets get viewInsets {
-    try {
-      return MediaQuery.viewInsetsOf(this);
-    } catch (e) {
-      return EdgeInsets.zero;
-    }
-  }
-
-  // ===== نوع الجهاز =====
-  bool get isMobile => screenWidth < ThemeConstants.breakpointMobile;
-  bool get isTablet => screenWidth >= ThemeConstants.breakpointMobile && screenWidth < ThemeConstants.breakpointTablet;
-  bool get isDesktop => screenWidth >= ThemeConstants.breakpointTablet;
+  // ===== نوع الجهاز - استخدام ThemeUtils =====
+  ThemeDeviceType get deviceType => ThemeUtils.getDeviceType(this);
+  bool get isMobile => deviceType == ThemeDeviceType.mobile;
+  bool get isTablet => deviceType == ThemeDeviceType.tablet;
+  bool get isDesktop => deviceType == ThemeDeviceType.desktop;
 
   // ===== الحجم المتجاوب =====
   ComponentSize get responsiveSize => AppSizeSystem.getResponsiveSize(this);
 
-  // ===== الحشوات المتجاوبة =====
-  EdgeInsets get responsivePadding {
-    if (isMobile) return const EdgeInsets.all(ThemeConstants.space4);
-    if (isTablet) return const EdgeInsets.all(ThemeConstants.space6);
-    return const EdgeInsets.all(ThemeConstants.space8);
-  }
-
-  // ===== معلومات النظام =====
-  bool get isIOS {
-    try {
-      return theme.platform == TargetPlatform.iOS;
-    } catch (e) {
-      return false;
-    }
-  }
-  
-  bool get isAndroid {
-    try {
-      return theme.platform == TargetPlatform.android;
-    } catch (e) {
-      return false;
-    }
-  }
+  // ===== الحشوات المتجاوبة - استخدام ThemeUtils مع اسم مختلف =====
+  EdgeInsets get appResponsivePadding => ThemeUtils.getResponsivePadding(this); // ✅ اسم مختلف لتجنب التعارض
+  EdgeInsets get appResponsiveMargin => ThemeUtils.getResponsiveMargin(this);   // ✅ اسم مختلف لتجنب التعارض
 
   // ===== لوحة المفاتيح =====
   bool get isKeyboardOpen => viewInsets.bottom > 0;
@@ -172,72 +108,31 @@ extension AppThemeExtension on BuildContext {
   // ===== المناطق الآمنة =====
   double get safeTop => screenPadding.top;
   double get safeBottom => screenPadding.bottom;
-
-  // ===== دوال مساعدة إضافية =====
-  
-  /// التحقق من كفاية التباين
-  bool hasGoodContrast(Color foreground, Color background) {
-    return AppColorSystem.hasGoodContrast(foreground, background);
-  }
-
-  /// اقتراح لون نص مناسب
-  Color suggestTextColor(Color backgroundColor) {
-    return AppColorSystem.suggestTextColor(backgroundColor);
-  }
 }
 
-/// Extension للألوان - مُصحح مع withValues
+/// Extension للألوان - مُبسط باستخدام ThemeUtils
 extension ColorExtensions on Color {
-  /// إضافة شفافية آمنة - ✅ تفضيل withValues
-  Color withOpacitySafe(double opacity) {
-    final safeOpacity = opacity.clamp(0.0, 1.0);
-    return withValues(alpha: safeOpacity); // ✅ مُصحح
-  }
+  /// شفافية آمنة - استخدام ThemeUtils
+  Color withOpacitySafe(double opacity) => ThemeUtils.applyOpacity(this, opacity);
 
-  /// تفتيح اللون - مُصحح
-  Color lighten([double amount = 0.1]) {
-    try {
-      assert(amount >= 0 && amount <= 1);
-      final hsl = HSLColor.fromColor(this);
-      final lightness = (hsl.lightness + amount).clamp(0.0, 1.0);
-      return hsl.withLightness(lightness).toColor();
-    } catch (e) {
-      return this; // إرجاع اللون الأصلي في حالة الخطأ
-    }
-  }
+  /// تفتيح اللون - استخدام ThemeUtils
+  Color lighten([double amount = 0.1]) => ThemeUtils.lightenColor(this, amount);
 
-  /// تغميق اللون - مُصحح
-  Color darken([double amount = 0.1]) {
-    try {
-      assert(amount >= 0 && amount <= 1);
-      final hsl = HSLColor.fromColor(this);
-      final lightness = (hsl.lightness - amount).clamp(0.0, 1.0);
-      return hsl.withLightness(lightness).toColor();
-    } catch (e) {
-      return this;
-    }
-  }
+  /// تغميق اللون - استخدام ThemeUtils
+  Color darken([double amount = 0.1]) => ThemeUtils.darkenColor(this, amount);
 
-  /// الحصول على لون النص المتباين - مُصحح
-  Color get contrastingTextColor {
-    try {
-      return ThemeData.estimateBrightnessForColor(this) == Brightness.dark
-          ? Colors.white
-          : Colors.black87;
-    } catch (e) {
-      return Colors.white;
-    }
-  }
+  /// الحصول على لون النص المتباين - استخدام ThemeUtils
+  Color get contrastingTextColor => ThemeUtils.getContrastingTextColor(this);
 
-  /// الحصول على نسخة شفافة - ✅ مُصححة
-  Color get transparent => withValues(alpha: 0.0); // ✅ مُصحح
-  Color get semiTransparent => withValues(alpha: 0.5); // ✅ مُصحح
+  /// نسخ شفافة
+  Color get transparent => withValues(alpha: 0.0);
+  Color get semiTransparent => withValues(alpha: 0.5);
   
-  /// ألوان شائعة بشفافيات مختلفة - ✅ مُصححة
-  Color get subtle => withValues(alpha: 0.1); // ✅ مُصحح
-  Color get light => withValues(alpha: 0.3); // ✅ مُصحح
-  Color get medium => withValues(alpha: 0.6); // ✅ مُصحح
-  Color get strong => withValues(alpha: 0.8); // ✅ مُصحح
+  /// ألوان شائعة بشفافيات مختلفة
+  Color get subtle => withValues(alpha: 0.1);
+  Color get light => withValues(alpha: 0.3);
+  Color get medium => withValues(alpha: 0.6);
+  Color get strong => withValues(alpha: 0.8);
 
   /// تحليل اللون
   bool get isLight => computeLuminance() > 0.5;
@@ -255,7 +150,7 @@ extension ColorExtensions on Color {
   }
 }
 
-/// Extension للنصوص - مُصحح
+/// Extension للنصوص - مُبسط
 extension TextStyleExtensions on TextStyle {
   // أوزان الخط
   TextStyle get bold => copyWith(fontWeight: ThemeConstants.bold);
@@ -275,21 +170,18 @@ extension TextStyleExtensions on TextStyle {
   TextStyle get underline => copyWith(decoration: TextDecoration.underline);
   TextStyle get lineThrough => copyWith(decoration: TextDecoration.lineThrough);
   
-  // ظلال النص - ✅ مُصحح
+  /// ظلال النص - استخدام ThemeUtils
   TextStyle withShadow({
     Color color = Colors.black,
     double opacity = 0.3,
     Offset offset = const Offset(0, 1),
     double blurRadius = 2,
   }) {
-    return copyWith(
-      shadows: [
-        Shadow(
-          color: color.withValues(alpha: opacity), // ✅ مُصحح
-          offset: offset,
-          blurRadius: blurRadius,
-        ),
-      ],
+    return ThemeUtils.getTextStyleWithShadow(
+      this, 
+      this.color ?? Colors.black,
+      withShadow: true,
+      shadowOpacity: opacity,
     );
   }
 
@@ -309,24 +201,24 @@ extension NumberExtensions on num {
   SizedBox get h => SizedBox(height: toDouble());
   SizedBox get wh => SizedBox(width: toDouble(), height: toDouble());
 
-  // حشوات
-  EdgeInsets get all => EdgeInsets.all(toDouble());
-  EdgeInsets get horizontal => EdgeInsets.symmetric(horizontal: toDouble());
-  EdgeInsets get vertical => EdgeInsets.symmetric(vertical: toDouble());
-  EdgeInsets get left => EdgeInsets.only(left: toDouble());
-  EdgeInsets get top => EdgeInsets.only(top: toDouble());
-  EdgeInsets get right => EdgeInsets.only(right: toDouble());
-  EdgeInsets get bottom => EdgeInsets.only(bottom: toDouble());
+  // حشوات - استخدام ThemeUtils
+  EdgeInsets get all => ThemeUtils.createPadding(all: toDouble());
+  EdgeInsets get horizontal => ThemeUtils.createPadding(horizontal: toDouble());
+  EdgeInsets get vertical => ThemeUtils.createPadding(vertical: toDouble());
+  EdgeInsets get left => ThemeUtils.createPadding(left: toDouble());
+  EdgeInsets get top => ThemeUtils.createPadding(top: toDouble());
+  EdgeInsets get right => ThemeUtils.createPadding(right: toDouble());
+  EdgeInsets get bottom => ThemeUtils.createPadding(bottom: toDouble());
 
-  // زوايا دائرية
-  BorderRadius get circular => BorderRadius.circular(toDouble());
-  BorderRadius get topCircular => BorderRadius.only(
-    topLeft: Radius.circular(toDouble()),
-    topRight: Radius.circular(toDouble()),
+  // زوايا دائرية - استخدام ThemeUtils
+  BorderRadius get circular => ThemeUtils.createBorderRadius(all: toDouble());
+  BorderRadius get topCircular => ThemeUtils.createBorderRadius(
+    topLeft: toDouble(),
+    topRight: toDouble(),
   );
-  BorderRadius get bottomCircular => BorderRadius.only(
-    bottomLeft: Radius.circular(toDouble()),
-    bottomRight: Radius.circular(toDouble()),
+  BorderRadius get bottomCircular => ThemeUtils.createBorderRadius(
+    bottomLeft: toDouble(),
+    bottomRight: toDouble(),
   );
   
   // تحويلات مفيدة
@@ -335,17 +227,17 @@ extension NumberExtensions on num {
   Duration get minutes => Duration(minutes: toInt());
 }
 
-/// Extension للـ Widgets - مُصحح
+/// Extension للـ Widgets - مُبسط
 extension WidgetExtensions on Widget {
-  /// إضافة padding مع دعم responsive
+  /// إضافة padding
   Widget padded(EdgeInsetsGeometry padding) => Padding(
     padding: padding,
     child: this,
   );
 
-  /// padding ذكي حسب حجم الشاشة
-  Widget responsivePadding(BuildContext context) => Padding(
-    padding: context.responsivePadding,
+  /// padding ذكي حسب حجم الشاشة - استخدام ThemeUtils مع اسم محدد
+  Widget withAppResponsivePadding(BuildContext context) => Padding(  // ✅ اسم مختلف لتجنب التعارض
+    padding: context.appResponsivePadding,
     child: this,
   );
 
@@ -362,41 +254,13 @@ extension WidgetExtensions on Widget {
     child: this,
   );
 
-  /// إضافة تأثير تلاشي - مُصحح
-  Widget opacity(double opacity) {
-    final safeOpacity = opacity.clamp(0.0, 1.0);
-    return Opacity(
-      opacity: safeOpacity,
-      child: this,
-    );
-  }
+  /// إضافة تأثير تلاشي - استخدام ThemeUtils
+  Widget opacity(double opacity) => Opacity(
+    opacity: ThemeUtils.safeOpacity(opacity),
+    child: this,
+  );
 
-  /// إضافة دوران - مُصحح
-  Widget rotate(double angle) {
-    try {
-      return Transform.rotate(
-        angle: angle,
-        child: this,
-      );
-    } catch (e) {
-      return this;
-    }
-  }
-
-  /// إضافة تحجيم - مُصحح
-  Widget scale(double scale) {
-    try {
-      final safeScale = scale.clamp(0.1, 10.0);
-      return Transform.scale(
-        scale: safeScale,
-        child: this,
-      );
-    } catch (e) {
-      return this;
-    }
-  }
-
-  /// إضافة margin
+  /// إضافة margin - استخدام ThemeUtils
   Widget margin(EdgeInsetsGeometry margin) => Container(
     margin: margin,
     child: this,
@@ -414,9 +278,9 @@ extension WidgetExtensions on Widget {
   }
 }
 
-/// Extension موحد للـ String - مُصحح
+/// Extension موحد للـ String - مُبسط ومُنظف
 extension StringAppExtension on String {
-  // ===== الألوان من AppColorSystem - مُصحح =====
+  // ===== الألوان من AppColorSystem =====
   Color get color => AppColorSystem.getColor(this);
   Color get lightColor => AppColorSystem.getLightColor(this);
   Color get darkColor => AppColorSystem.getDarkColor(this);
@@ -447,32 +311,19 @@ extension StringAppExtension on String {
   TimeOfDay get defaultReminderTime => CategoryHelper.getDefaultReminderTime(this);
   int get categoryPriority => CategoryHelper.getCategoryPriority(this);
   
-  // ===== دوال مساعدة مُصححة =====
-  /// الحصول على لون الظل - ✅ مُصحح
+  // ===== دوال مساعدة - استخدام ThemeUtils =====
+  /// الحصول على لون الظل
   Color colorShadow([double opacity = 0.3]) => 
-      AppColorSystem.getColor(this).withValues(alpha: opacity.clamp(0.0, 1.0)); // ✅ مُصحح
+      AppColorSystem.getColor(this).withValues(alpha: ThemeUtils.safeOpacity(opacity));
       
   /// التحقق من وجود اللون
   bool get hasColor => AppColorSystem.hasColor(this);
   
-  /// تحويل آمن للأرقام
-  int? get toIntSafe {
-    try {
-      return int.tryParse(this);
-    } catch (e) {
-      return null;
-    }
-  }
-  
-  double? get toDoubleSafe {
-    try {
-      return double.tryParse(this);
-    } catch (e) {
-      return null;
-    }
-  }
+  // ===== تحويلات آمنة =====
+  int? get toIntSafe => int.tryParse(this);
+  double? get toDoubleSafe => double.tryParse(this);
 
-  /// التحقق من كون النص فارغ أو null
+  /// التحقق من كون النص فارغ
   bool get isNullOrEmpty => isEmpty;
   bool get isNotNullOrEmpty => isNotEmpty;
   
@@ -483,65 +334,44 @@ extension StringAppExtension on String {
   }
 }
 
-/// Extension لأحجام المكونات - مُصحح
+/// Extension لأحجام المكونات - مُبسط
 extension ComponentSizeExtension on ComponentSize {
   /// الحصول على الارتفاع
   double get height => AppSizeSystem.getHeight(this);
-  
-  /// الحصول على العرض
   double get width => AppSizeSystem.getWidth(this);
-  
-  /// الحصول على حجم الأيقونة
   double get iconSize => AppSizeSystem.getIconSize(this);
-  
-  /// الحصول على حجم الخط
   double get fontSize => AppSizeSystem.getFontSize(this);
-  
-  /// الحصول على الحشو الداخلي
   EdgeInsets get padding => AppSizeSystem.getPadding(this);
-  
-  /// الحصول على نصف قطر الحدود
   double get borderRadius => AppSizeSystem.getBorderRadius(this);
-  
-  /// الحصول على جميع الأحجام
   ComponentSizes get sizes => AppSizeSystem.getSizes(this);
-  
-  /// الحصول على أحجام الأزرار
   ButtonSizes get buttonSizes => AppSizeSystem.getButtonSizes(this);
-  
-  /// الحصول على أحجام الإدخال
   InputSizes get inputSizes => AppSizeSystem.getInputSizes(this);
-  
-  /// الحصول على أحجام البطاقات
   CardSizes get cardSizes => AppSizeSystem.getCardSizes(this);
-  
-  /// الحصول على أحجام التحميل
   LoadingSizes get loadingSizes => AppSizeSystem.getLoadingSizes(this);
-  
-  /// الحصول على أحجام الحوارات
   DialogSizes get dialogSizes => AppSizeSystem.getDialogSizes(this);
 
-  /// التحقق من كون الحجم صغير
+  /// التحقق من كون الحجم صغير/كبير
   bool get isSmall => index <= ComponentSize.sm.index;
-  
-  /// التحقق من كون الحجم كبير
   bool get isLarge => index >= ComponentSize.lg.index;
 }
 
-/// Extension للسياق للحصول على الحجم المتجاوب - مُصحح
+/// Extension للسياق للحصول على التخطيط المتجاوب - استخدام ThemeUtils
 extension ResponsiveSizeExtension on BuildContext {
-  /// الحصول على الحجم المتجاوب
   ComponentSize get responsiveSize => AppSizeSystem.getResponsiveSize(this);
   
-  /// الحصول على التخطيط المناسب للشاشة
   CrossAxisAlignment get responsiveAlignment {
     return isMobile ? CrossAxisAlignment.stretch : CrossAxisAlignment.center;
   }
   
-  /// الحصول على عدد الأعمدة المناسب
-  int get responsiveColumns {
-    if (isMobile) return 1;
-    if (isTablet) return 2;
-    return 3;
-  }
+  /// عدد الأعمدة المناسب - استخدام ThemeUtils
+  int responsiveColumns({
+    int mobile = 1,
+    int tablet = 2,
+    int desktop = 3,
+  }) => ThemeUtils.getResponsiveColumns(
+    this,
+    mobileColumns: mobile,
+    tabletColumns: tablet,
+    desktopColumns: desktop,
+  );
 }

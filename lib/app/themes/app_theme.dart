@@ -1,14 +1,16 @@
-// lib/app/themes/app_theme.dart - النسخة المُصححة بالكامل
+// lib/app/themes/app_theme.dart - مُصحح لحل جميع الأخطاء
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 
-// استيراد الأنظمة الموحدة
+// استيراد الأنظمة الموحدة والمُحسنة
 import 'theme_constants.dart';
 import 'text_styles.dart';
 import 'core/systems/app_color_system.dart';
+import 'core/helpers/theme_utils.dart';
 
-// تصدير الأنظمة الموحدة
+// تصدير جميع الأنظمة الموحدة
 export 'theme_constants.dart';
 export 'text_styles.dart';
 export 'core/theme_notifier.dart';
@@ -22,8 +24,12 @@ export 'core/systems/app_shadow_system.dart';
 export 'core/systems/app_container_builder.dart';
 export 'core/systems/glass_effect.dart';
 
-// المساعد المبسط
+// المساعدات الموحدة
+export 'core/helpers/theme_utils.dart';
 export 'core/helpers/category_helper.dart';
+// ✅ عدم تصدير auto_color_helper لتجنب تعارض GradientType
+// export 'core/helpers/auto_color_helper.dart';
+export 'core/helpers/theme_validator.dart';
 
 // المكونات الأساسية
 export 'widgets/core/app_button.dart';
@@ -59,7 +65,7 @@ export 'package:flutter_staggered_animations/flutter_staggered_animations.dart'
         ScaleAnimation,
         FlipAnimation;
 
-/// نظام الثيم الموحد للتطبيق - نسخة مُصححة
+/// نظام الثيم الموحد للتطبيق - مُحدث ومُصحح
 class AppTheme {
   AppTheme._();
 
@@ -73,7 +79,7 @@ class AppTheme {
     colorSystem: _DarkColorSystem(),
   );
 
-  /// بناء الثيم - منطق موحد مع معالجة أخطاء محسنة
+  /// بناء الثيم - منطق موحد مُبسط
   static ThemeData _buildTheme({
     required Brightness brightness,
     required _ColorSystemInterface colorSystem,
@@ -91,23 +97,7 @@ class AppTheme {
         useMaterial3: true,
         fontFamily: ThemeConstants.fontFamily,
         
-        colorScheme: ColorScheme(
-          brightness: brightness,
-          primary: colorSystem.primary,
-          onPrimary: colorSystem.onPrimary,
-          secondary: AppColorSystem.accent,
-          onSecondary: _getContrastingTextColor(AppColorSystem.accent),
-          tertiary: AppColorSystem.tertiary,
-          onTertiary: _getContrastingTextColor(AppColorSystem.tertiary),
-          error: AppColorSystem.error,
-          onError: Colors.white,
-          surface: colorSystem.background,
-          onSurface: colorSystem.textPrimary,
-          surfaceContainerHighest: colorSystem.card,
-          onSurfaceVariant: colorSystem.textSecondary,
-          outline: colorSystem.divider,
-        ),
-        
+        colorScheme: _buildColorScheme(brightness, colorSystem),
         appBarTheme: _buildAppBarTheme(colorSystem),
         cardTheme: _buildCardTheme(colorSystem),
         textTheme: textTheme,
@@ -124,13 +114,34 @@ class AppTheme {
         chipTheme: _buildChipTheme(colorSystem, brightness),
       );
     } catch (e) {
-      // ✅ استبدال print بـ debugPrint
       if (kDebugMode) {
         debugPrint('خطأ في بناء الثيم: $e');
       }
-      
       return _createFallbackTheme(brightness);
     }
+  }
+
+  /// إنشاء ColorScheme مُوحد
+  static ColorScheme _buildColorScheme(
+    Brightness brightness, 
+    _ColorSystemInterface colorSystem,
+  ) {
+    return ColorScheme(
+      brightness: brightness,
+      primary: colorSystem.primary,
+      onPrimary: colorSystem.onPrimary,
+      secondary: AppColorSystem.accent,
+      onSecondary: ThemeUtils.getContrastingTextColor(AppColorSystem.accent),
+      tertiary: AppColorSystem.tertiary,
+      onTertiary: ThemeUtils.getContrastingTextColor(AppColorSystem.tertiary),
+      error: AppColorSystem.error,
+      onError: Colors.white,
+      surface: colorSystem.background,
+      onSurface: colorSystem.textPrimary,
+      surfaceContainerHighest: colorSystem.card,
+      onSurfaceVariant: colorSystem.textSecondary,
+      outline: colorSystem.divider,
+    );
   }
 
   /// إنشاء ثيم احتياطي في حالة الأخطاء
@@ -142,7 +153,8 @@ class AppTheme {
     );
   }
 
-  // دوال بناء المكونات - مُصححة
+  // ===== دوال بناء المكونات - مُبسطة باستخدام ThemeUtils =====
+  
   static AppBarTheme _buildAppBarTheme(_ColorSystemInterface colors) {
     return AppBarTheme(
       backgroundColor: colors.background,
@@ -180,12 +192,12 @@ class AppTheme {
         backgroundColor: colors.primary,
         foregroundColor: colors.onPrimary,
         elevation: ThemeConstants.elevationNone,
-        padding: const EdgeInsets.symmetric(
+        padding: ThemeUtils.createPadding(
           horizontal: ThemeConstants.space6,
           vertical: ThemeConstants.space4,
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+          borderRadius: ThemeUtils.createBorderRadius(all: ThemeConstants.radiusMd),
         ),
         textStyle: AppTextStyles.button,
         minimumSize: const Size(ThemeConstants.heightLg, ThemeConstants.buttonHeight),
@@ -195,21 +207,21 @@ class AppTheme {
 
   static InputDecorationTheme _buildInputDecorationTheme(_ColorSystemInterface colors) {
     return InputDecorationTheme(
-      fillColor: colors.surface.withValues(alpha: colors.fillOpacity),
+      fillColor: ThemeUtils.applyOpacity(colors.surface, colors.fillOpacity),
       filled: true,
-      contentPadding: const EdgeInsets.symmetric(
+      contentPadding: ThemeUtils.createPadding(
         horizontal: ThemeConstants.space4,
         vertical: ThemeConstants.space4,
       ),
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        borderRadius: ThemeUtils.createBorderRadius(all: ThemeConstants.radiusMd),
         borderSide: BorderSide(
           color: colors.divider,
           width: ThemeConstants.borderLight,
         ),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+        borderRadius: ThemeUtils.createBorderRadius(all: ThemeConstants.radiusMd),
         borderSide: BorderSide(
           color: colors.primary,
           width: ThemeConstants.borderThick,
@@ -236,8 +248,8 @@ class AppTheme {
   static ProgressIndicatorThemeData _buildProgressIndicatorTheme(_ColorSystemInterface colors) {
     return ProgressIndicatorThemeData(
       color: colors.primary,
-      linearTrackColor: colors.divider.withValues(alpha: ThemeConstants.opacity50), // ✅ مُصحح
-      circularTrackColor: colors.divider.withValues(alpha: ThemeConstants.opacity50), // ✅ مُصحح
+      linearTrackColor: ThemeUtils.applyOpacity(colors.divider, ThemeConstants.opacity50),
+      circularTrackColor: ThemeUtils.applyOpacity(colors.divider, ThemeConstants.opacity50),
     );
   }
 
@@ -246,7 +258,7 @@ class AppTheme {
       backgroundColor: colors.card,
       contentTextStyle: AppTextStyles.body2.copyWith(color: colors.textPrimary),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+        borderRadius: ThemeUtils.createBorderRadius(all: ThemeConstants.radiusLg),
       ),
       behavior: SnackBarBehavior.floating,
       elevation: ThemeConstants.elevation4,
@@ -257,7 +269,7 @@ class AppTheme {
     return DialogThemeData(
       backgroundColor: colors.card,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        borderRadius: ThemeUtils.createBorderRadius(all: ThemeConstants.radiusXl),
       ),
       elevation: ThemeConstants.elevation16,
       titleTextStyle: AppTextStyles.h4.copyWith(color: colors.textPrimary),
@@ -268,10 +280,10 @@ class AppTheme {
   static BottomSheetThemeData _buildBottomSheetTheme(_ColorSystemInterface colors) {
     return BottomSheetThemeData(
       backgroundColor: colors.card,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(ThemeConstants.radiusXl),
-          topRight: Radius.circular(ThemeConstants.radiusXl),
+      shape: RoundedRectangleBorder(
+        borderRadius: ThemeUtils.createBorderRadius(
+          topLeft: ThemeConstants.radiusXl,
+          topRight: ThemeConstants.radiusXl,
         ),
       ),
       elevation: ThemeConstants.elevation16,
@@ -287,7 +299,7 @@ class AppTheme {
       hoverElevation: ThemeConstants.elevation8,
       highlightElevation: ThemeConstants.elevation12,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(ThemeConstants.fabSize / 2),
+        borderRadius: ThemeUtils.createBorderRadius(all: ThemeConstants.fabSize / 2),
       ),
     );
   }
@@ -295,7 +307,7 @@ class AppTheme {
   static NavigationBarThemeData _buildNavigationBarTheme(_ColorSystemInterface colors) {
     return NavigationBarThemeData(
       backgroundColor: colors.card,
-      indicatorColor: colors.primary.withValues(alpha: ThemeConstants.opacity20), // ✅ مُصحح
+      indicatorColor: ThemeUtils.applyOpacity(colors.primary, ThemeConstants.opacity20),
       labelTextStyle: WidgetStateProperty.all(
         AppTextStyles.label2.copyWith(color: colors.textSecondary),
       ),
@@ -313,30 +325,24 @@ class AppTheme {
   static ChipThemeData _buildChipTheme(_ColorSystemInterface colors, Brightness brightness) {
     return ChipThemeData(
       backgroundColor: colors.surface,
-      selectedColor: colors.primary.withValues(alpha: ThemeConstants.opacity20), // ✅ مُصحح
+      selectedColor: ThemeUtils.applyOpacity(colors.primary, ThemeConstants.opacity20),
       disabledColor: colors.divider,
       labelStyle: AppTextStyles.label2.copyWith(color: colors.textPrimary),
       secondaryLabelStyle: AppTextStyles.label2.copyWith(color: colors.textSecondary),
       brightness: brightness,
-      padding: const EdgeInsets.symmetric(
+      padding: ThemeUtils.createPadding(
         horizontal: ThemeConstants.space3,
         vertical: ThemeConstants.space2,
       ),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+        borderRadius: ThemeUtils.createBorderRadius(all: ThemeConstants.radiusFull),
       ),
     );
   }
 
-  static Color _getContrastingTextColor(Color color) {
-    return ThemeData.estimateBrightnessForColor(color) == Brightness.dark
-        ? Colors.white
-        : Colors.black87;
-  }
+  // ===== دوال مساعدة مُحسنة =====
 
-  // دوال مساعدة محسنة مع معالجة أخطاء أفضل
-
-  /// الحصول على ثيم مخصص بلون أساسي مختلف
+  /// الحصول على ثيم مخصص بلون أساسي مختلف - مُصحح
   static ThemeData getCustomTheme({
     required Brightness brightness,
     required Color primaryColor,
@@ -348,7 +354,7 @@ class AppTheme {
         primary: primaryColor,
         background: backgroundColor ?? (isDark 
             ? AppColorSystem.darkBackground 
-            : AppColorSystem.lightBackground),
+            : AppColorSystem.lightBackground), // ✅ مُصحح - إزالة cast_from_null
         isDark: isDark,
       );
       
@@ -357,7 +363,6 @@ class AppTheme {
         colorSystem: customColorSystem,
       );
     } catch (e) {
-      // في حالة الخطأ، إرجاع الثيم الافتراضي
       return brightness == Brightness.dark ? darkTheme : lightTheme;
     }
   }
@@ -386,7 +391,8 @@ class AppTheme {
   }
 }
 
-// واجهات مساعدة داخلية
+// ===== واجهات مساعدة داخلية - مُبسطة =====
+
 abstract class _ColorSystemInterface {
   Color get primary;
   Color get onPrimary;
@@ -404,7 +410,7 @@ class _LightColorSystem implements _ColorSystemInterface {
   @override
   Color get primary => AppColorSystem.primary;
   @override
-  Color get onPrimary => AppTheme._getContrastingTextColor(primary);
+  Color get onPrimary => ThemeUtils.getContrastingTextColor(primary);
   @override
   Color get background => AppColorSystem.lightBackground;
   @override
@@ -427,7 +433,7 @@ class _DarkColorSystem implements _ColorSystemInterface {
   @override
   Color get primary => AppColorSystem.primaryLight;
   @override
-  Color get onPrimary => AppTheme._getContrastingTextColor(primary);
+  Color get onPrimary => ThemeUtils.getContrastingTextColor(primary);
   @override
   Color get background => AppColorSystem.darkBackground;
   @override
@@ -460,7 +466,7 @@ class _CustomColorSystem implements _ColorSystemInterface {
   @override
   Color get primary => _primary;
   @override
-  Color get onPrimary => AppTheme._getContrastingTextColor(_primary);
+  Color get onPrimary => ThemeUtils.getContrastingTextColor(_primary);
   @override
   Color get background => _background;
   @override

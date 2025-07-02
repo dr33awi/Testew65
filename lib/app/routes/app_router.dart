@@ -1,4 +1,5 @@
-// lib/app/routes/app_router.dart - النسخة النهائية المصححة
+// lib/app/routes/app_router.dart - النسخة المُصححة لحل invalid_constant
+
 import 'package:flutter/material.dart';
 import '../../app/themes/app_theme.dart'; // استيراد موحد
 import '../../features/home/screens/home_screen.dart';
@@ -225,24 +226,24 @@ class AppRouter {
                   color: AppColorSystem.error.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.error_outline, // استخدام أيقونة مباشرة
+                child: Icon( // ✅ إزالة const
+                  Icons.error_outline,
                   size: 60,
                   color: AppColorSystem.error,
                 ),
               ),
               const SizedBox(height: ThemeConstants.space5),
-              const Text(
+              Text( // ✅ إزالة const
                 '404',
-                style: TextStyle( // استخدام TextStyle مباشرة لتجنب const errors
+                style: TextStyle( // ✅ إزالة const لأن color ليست const
                   fontSize: ThemeConstants.textSize4xl,
                   fontWeight: ThemeConstants.bold,
-                  color: AppColorSystem.error,
+                  color: AppColorSystem.error, // ✅ هذا السطر 247 - المشكلة هنا
                   fontFamily: ThemeConstants.fontFamily,
                 ),
               ),
               const SizedBox(height: ThemeConstants.space2),
-              const Text(
+              Text( // ✅ إزالة const
                 'الصفحة غير موجودة',
                 style: AppTextStyles.h4,
               ),
@@ -313,8 +314,8 @@ class AppRouter {
                   color: AppColorSystem.error.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.error_outline, // استخدام أيقونة مباشرة
+                child: Icon( // ✅ إزالة const
+                  Icons.error_outline,
                   size: 50,
                   color: AppColorSystem.error,
                 ),

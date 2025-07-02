@@ -1,18 +1,18 @@
-// ===== lib/app/themes/core/helpers/theme_exporter.dart - مُصحح =====
+// lib/app/themes/core/helpers/theme_exporter.dart - مُصحح لحل deprecated_member_use
 
 import 'package:flutter/material.dart';
-import '../../app_theme.dart'; // ✅ إزالة الاستيراد غير الضروري
+import '../../app_theme.dart';
 
 /// مساعد لتصدير وتخزين إعدادات الثيم - نسخة مُصححة
 class ThemeExporter {
   ThemeExporter._();
 
-  /// تصدير الثيم الحالي إلى Map - ✅ إصلاح .value
+  /// تصدير الثيم الحالي إلى Map - ✅ إصلاح .value المهجورة
   static Map<String, dynamic> exportTheme(ThemeData theme) {
     try {
       return {
         'version': '1.0',
-        'primaryColor': theme.primaryColor.value.toRadixString(16), // ✅ تحويل آمن
+        'primaryColor': _colorToHex(theme.primaryColor), // ✅ استخدام دالة مُصححة
         'brightness': theme.brightness.name,
         'fontFamily': theme.textTheme.bodyLarge?.fontFamily ?? 'Cairo',
         'colorScheme': _exportColorScheme(theme.colorScheme),
@@ -27,7 +27,7 @@ class ThemeExporter {
     }
   }
 
-  /// استيراد الثيم من Map - ✅ إصلاح .value
+  /// استيراد الثيم من Map - ✅ إصلاح .value المهجورة
   static ThemeData? importTheme(Map<String, dynamic> themeData) {
     try {
       if (!_validateThemeData(themeData)) return null;
@@ -38,7 +38,7 @@ class ThemeExporter {
           
       // ✅ إصلاح تحويل اللون
       final primaryColorHex = themeData['primaryColor'] as String? ?? '5D7052';
-      final primaryColor = Color(int.parse('FF$primaryColorHex', radix: 16));
+      final primaryColor = _hexToColor(primaryColorHex); // ✅ استخدام دالة مُصححة
       
       return AppTheme.getCustomTheme(
         brightness: brightness,
@@ -98,16 +98,41 @@ class ThemeExporter {
 
   // ===== دوال مساعدة داخلية - ✅ مُصححة =====
 
+  /// تحويل Color إلى Hex string - ✅ بديل لـ .value المهجورة
+  static String _colorToHex(Color color) {
+    try {
+      // ✅ استخدام toARGB32() بدلاً من .value المهجورة
+      final argb = color.toARGB32();
+      return argb.toRadixString(16).padLeft(8, '0').substring(2); // إزالة alpha
+    } catch (e) {
+      return '5D7052'; // لون افتراضي
+    }
+  }
+
+  /// تحويل Hex string إلى Color - ✅ بديل لـ .value المهجورة
+  static Color _hexToColor(String hex) {
+    try {
+      // التأكد من صيغة الـ hex
+      String cleanHex = hex.replaceAll('#', '');
+      if (cleanHex.length == 6) {
+        cleanHex = 'FF$cleanHex'; // إضافة alpha
+      }
+      return Color(int.parse(cleanHex, radix: 16));
+    } catch (e) {
+      return const Color(0xFF5D7052); // لون افتراضي
+    }
+  }
+
   static Map<String, dynamic> _exportColorScheme(ColorScheme colorScheme) {
     return {
-      'primary': colorScheme.primary.value.toRadixString(16), // ✅ مُصحح
-      'secondary': colorScheme.secondary.value.toRadixString(16), // ✅ مُصحح
-      'surface': colorScheme.surface.value.toRadixString(16), // ✅ مُصحح
-      'error': colorScheme.error.value.toRadixString(16), // ✅ مُصحح
-      'onPrimary': colorScheme.onPrimary.value.toRadixString(16), // ✅ مُصحح
-      'onSecondary': colorScheme.onSecondary.value.toRadixString(16), // ✅ مُصحح
-      'onSurface': colorScheme.onSurface.value.toRadixString(16), // ✅ مُصحح
-      'onError': colorScheme.onError.value.toRadixString(16), // ✅ مُصحح
+      'primary': _colorToHex(colorScheme.primary), // ✅ مُصحح
+      'secondary': _colorToHex(colorScheme.secondary), // ✅ مُصحح
+      'surface': _colorToHex(colorScheme.surface), // ✅ مُصحح
+      'error': _colorToHex(colorScheme.error), // ✅ مُصحح
+      'onPrimary': _colorToHex(colorScheme.onPrimary), // ✅ مُصحح
+      'onSecondary': _colorToHex(colorScheme.onSecondary), // ✅ مُصحح
+      'onSurface': _colorToHex(colorScheme.onSurface), // ✅ مُصحح
+      'onError': _colorToHex(colorScheme.onError), // ✅ مُصحح
     };
   }
 
@@ -127,7 +152,7 @@ class ThemeExporter {
       'fontSize': style.fontSize,
       'fontWeight': style.fontWeight?.index,
       'fontFamily': style.fontFamily,
-      'color': style.color?.value.toRadixString(16), // ✅ مُصحح
+      'color': style.color != null ? _colorToHex(style.color!) : null, // ✅ مُصحح
     };
   }
 
