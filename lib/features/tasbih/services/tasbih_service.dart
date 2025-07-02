@@ -1,10 +1,11 @@
+// lib/features/tasbih/services/tasbih_service.dart - النسخة المُصححة
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
 
-/// خدمة إدارة المسبحة الرقمية
+/// خدمة إدارة المسبحة الرقمية - مُصححة
 class TasbihService extends ChangeNotifier {
   final StorageService _storage;
   final LoggerService _logger;
@@ -13,7 +14,7 @@ class TasbihService extends ChangeNotifier {
   int _dailyCount = 0;
   int _totalCount = 0;
   DateTime _lastUpdateDate = DateTime.now();
-  Map<String, int> _statistics = {};
+  final Map<String, int> _statistics = {}; // ✅ إضافة final لحل التحذير
 
   TasbihService({
     required StorageService storage, 
@@ -48,7 +49,11 @@ class TasbihService extends ChangeNotifier {
       // تحميل الإحصائيات
       final statisticsJson = _storage.getString('${AppConstants.tasbihCounterKey}_statistics');
       if (statisticsJson != null) {
-        // يمكن إضافة منطق تحويل JSON هنا
+        // يمكن إضافة منطق تحويل JSON هنا لاحقاً
+        _logger.debug(
+          message: '[TasbihService] Statistics JSON found',
+          data: {'length': statisticsJson.length},
+        );
       }
       
       // التحقق من تغيير اليوم
@@ -218,7 +223,11 @@ class TasbihService extends ChangeNotifier {
       
       // حفظ الإحصائيات إذا كانت متوفرة
       if (_statistics.isNotEmpty) {
-        // يمكن إضافة منطق حفظ JSON هنا
+        // يمكن إضافة منطق حفظ JSON هنا لاحقاً
+        _logger.debug(
+          message: '[TasbihService] Statistics ready for save',
+          data: {'count': _statistics.length},
+        );
       }
     } catch (e) {
       _logger.error(

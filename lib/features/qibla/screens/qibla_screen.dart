@@ -1,14 +1,14 @@
-// lib/features/qibla/screens/qibla_screen.dart - محدثة للنظام الموحد
+// lib/features/qibla/screens/qibla_screen.dart - محسن بالمكونات الجديدة
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../../../app/themes/app_theme.dart'; // ✅ النظام الموحد
+import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../../../core/infrastructure/services/logging/logger_service.dart';
 import '../../../core/infrastructure/services/storage/storage_service.dart';
 import '../../../core/infrastructure/services/permissions/permission_service.dart';
 import '../services/qibla_service.dart';
 import '../widgets/qibla_compass.dart';
+import '../widgets/qibla_widgets.dart'; // ✅ المكونات الجديدة
 
 class QiblaScreen extends StatefulWidget {
   const QiblaScreen({super.key});
@@ -21,15 +21,15 @@ class _QiblaScreenState extends State<QiblaScreen>
     with WidgetsBindingObserver, TickerProviderStateMixin {
   late final QiblaService _qiblaService;
   
-  // انيميشن للبطاقة الترحيبية
-  late AnimationController _shimmerController;
-  late Animation<double> _shimmerAnimation;
+  // ✅ استخدام ThemeConstants للأنيميشن
+  late AnimationController _pageController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
     _initializeService();
-    _setupShimmerAnimation();
+    _setupAnimations();
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _updateQiblaData());
   }
@@ -42,19 +42,22 @@ class _QiblaScreenState extends State<QiblaScreen>
     );
   }
 
-  void _setupShimmerAnimation() {
-    _shimmerController = AnimationController(
-      duration: ThemeConstants.durationVerySlow,
+  // ✅ استخدام ThemeConstants للأنيميشن
+  void _setupAnimations() {
+    _pageController = AnimationController(
+      duration: ThemeConstants.durationSlow,
       vsync: this,
-    )..repeat();
+    );
 
-    _shimmerAnimation = Tween<double>(
-      begin: -2.0,
-      end: 2.0,
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
     ).animate(CurvedAnimation(
-      parent: _shimmerController,
+      parent: _pageController,
       curve: ThemeConstants.curveSmooth,
     ));
+
+    _pageController.forward();
   }
 
   @override
@@ -82,7 +85,6 @@ class _QiblaScreenState extends State<QiblaScreen>
     Future.delayed(ThemeConstants.durationVerySlow, () {
       if (!mounted) return;
       
-      // ✅ استخدام AppInfoDialog من النظام الموحد
       AppInfoDialog.show(
         context: context,
         title: 'تحسين دقة البوصلة',
@@ -105,7 +107,7 @@ class _QiblaScreenState extends State<QiblaScreen>
 
   @override
   void dispose() {
-    _shimmerController.dispose();
+    _pageController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _qiblaService.dispose();
     super.dispose();
@@ -114,21 +116,24 @@ class _QiblaScreenState extends State<QiblaScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColorSystem.getBackground(context), // ✅ من النظام الموحد
-      // ✅ CustomAppBar من النظام الموحد
+      backgroundColor: AppColorSystem.getBackground(context),
       appBar: CustomAppBar(
         title: 'اتجاه القبلة',
         backgroundColor: AppColorSystem.getBackground(context),
         foregroundColor: AppColorSystem.getTextPrimary(context),
         actions: [
-          // أيقونة المساعدة
-          IconButton(
-            icon: Icon(
-              AppIconsSystem.info,
-              color: AppColorSystem.getTextPrimary(context),
-            ),
+          // زر المعلومات
+          AppBarAction(
+            icon: AppIconsSystem.info,
             onPressed: _showInstructions,
             tooltip: 'التعليمات',
+          ),
+          
+          // زر الإعدادات
+          AppBarAction(
+            icon: AppIconsSystem.settings,
+            onPressed: _showSettings,
+            tooltip: 'الإعدادات',
           ),
         ],
       ),
@@ -136,33 +141,42 @@ class _QiblaScreenState extends State<QiblaScreen>
         value: _qiblaService,
         child: Consumer<QiblaService>(
           builder: (context, service, _) {
-            return CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                // بطاقة الترحيب
-                SliverToBoxAdapter(
-                  child: Container(
-                    margin: const EdgeInsets.all(ThemeConstants.space4),
-                    child: _buildWelcomeCard(),
+            return FadeTransition(
+              opacity: _fadeAnimation,
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  // الرأس الترحيبي
+                  SliverToBoxAdapter(
+                    child: Container(
+                      margin: const EdgeInsets.all(ThemeConstants.space4),
+                      child: _buildWelcomeSection(),
+                    ),
                   ),
-                ),
-                
-                SliverToBoxAdapter(
-                  child: SizedBox(height: ThemeConstants.space4),
-                ),
-                
-                // المحتوى الرئيسي
-                SliverToBoxAdapter(
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
-                    child: _buildMainContent(service),
+                  
+                  // المحتوى الرئيسي
+                  SliverToBoxAdapter(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+                      child: _buildMainContent(service),
+                    ),
                   ),
-                ),
-                
-                SliverToBoxAdapter(
-                  child: SizedBox(height: ThemeConstants.space8),
-                ),
-              ],
+                  
+                  // معلومات إضافية
+                  if (service.qiblaData != null && !service.isLoading)
+                    SliverToBoxAdapter(
+                      child: Container(
+                        margin: const EdgeInsets.all(ThemeConstants.space4),
+                        child: _buildAdditionalInfo(service),
+                      ),
+                    ),
+                  
+                  // المساحة السفلية
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: ThemeConstants.space8),
+                  ),
+                ],
+              ),
             );
           },
         ),
@@ -170,13 +184,23 @@ class _QiblaScreenState extends State<QiblaScreen>
     );
   }
 
-  // ✅ بطاقة ترحيب باستخدام AppCard
-  Widget _buildWelcomeCard() {
-    return AppCard.quote(
-      quote: '"وَحَيْثُ مَا كُنتُمْ فَوَلُّوا وُجُوهَكُمْ شَطْرَهُ"',
-      author: 'سورة البقرة',
-      category: 'توجه نحو الكعبة المشرفة واستقبل القبلة',
-      primaryColor: AppColorSystem.getCategoryColor('qibla'),
+  // ✅ قسم الترحيب محسن
+  Widget _buildWelcomeSection() {
+    return Column(
+      children: [
+        // الاقتباس الرئيسي
+        AppCard.quote(
+          quote: '"وَحَيْثُ مَا كُنتُمْ فَوَلُّوا وُجُوهَكُمْ شَطْرَهُ"',
+          author: 'سورة البقرة - آية 144',
+          category: 'توجه نحو الكعبة المشرفة واستقبل القبلة',
+          primaryColor: AppColorSystem.getCategoryColor('qibla'),
+        ),
+        
+        const SizedBox(height: ThemeConstants.space4),
+        
+        // بطاقة معلومات مكة
+        QiblaWidgets.buildMeccaInfoCard(),
+      ],
     );
   }
 
@@ -194,71 +218,67 @@ class _QiblaScreenState extends State<QiblaScreen>
     }
   }
 
+  // ✅ عرض البوصلة محسن بالمكونات الجديدة
   Widget _buildCompassView(QiblaService service) {
     return Column(
       children: [
-        // ✅ معلومات الموقع باستخدام AppCard
-        AppCard.info(
-          title: 'الموقع محدد بنجاح',
-          subtitle: 'استخدم البوصلة أدناه لتحديد اتجاه القبلة',
-          icon: AppIconsSystem.success,
-          iconColor: AppColorSystem.success,
-        ),
+        // بطاقة حالة القبلة
+        QiblaWidgets.buildQiblaStatusCard(service),
         
         const SizedBox(height: ThemeConstants.space4),
         
         // البوصلة
-        SizedBox(
-          width: 320,
-          height: 320,
-          child: QiblaCompass(
-            qiblaDirection: service.qiblaData!.qiblaDirection,
-            currentDirection: service.currentDirection,
-            accuracy: service.compassAccuracy,
-            isCalibrated: service.isCalibrated,
-            onCalibrate: () => service.startCalibration(),
+        Container(
+          margin: const EdgeInsets.symmetric(vertical: ThemeConstants.space4),
+          child: SizedBox(
+            width: 320,
+            height: 320,
+            child: QiblaCompass(
+              qiblaDirection: service.qiblaData!.qiblaDirection,
+              currentDirection: service.currentDirection,
+              accuracy: service.compassAccuracy,
+              isCalibrated: service.isCalibrated,
+              onCalibrate: () => service.startCalibration(),
+            ),
           ),
         ),
         
         const SizedBox(height: ThemeConstants.space4),
         
-        // ✅ معلومات الاتجاه باستخدام AppCard
-        _buildDirectionInfoCard(service),
+        // بطاقة معلومات القبلة التفصيلية
+        QiblaWidgets.buildQiblaInfoCard(
+          service.qiblaData!,
+          service.currentDirection,
+          context,
+        ),
       ],
     );
   }
 
-  Widget _buildDirectionInfoCard(QiblaService service) {
-    final direction = service.qiblaData!.qiblaDirection;
-    return AppCard.info(
-      title: 'اتجاه القبلة من موقعك',
-      subtitle: '${direction.toStringAsFixed(1)}° من الشمال',
-      icon: AppIconsSystem.qibla,
-      iconColor: AppColorSystem.getCategoryColor('qibla'),
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: ThemeConstants.space3,
-          vertical: ThemeConstants.space2,
-        ),
-        decoration: BoxDecoration(
-          color: AppColorSystem.getCategoryColor('qibla').withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-        ),
-        child: Text(
-          '${direction.toStringAsFixed(1)}°',
-          style: AppTextStyles.label1.copyWith(
-            color: AppColorSystem.getCategoryColor('qibla'),
-            fontWeight: ThemeConstants.bold,
-          ),
-        ),
-      ),
+  // ✅ معلومات إضافية
+  Widget _buildAdditionalInfo(QiblaService service) {
+    return Column(
+      children: [
+        // بطاقة حالة البوصلة
+        QiblaWidgets.buildCompassStatusCard(service),
+        
+        const SizedBox(height: ThemeConstants.space4),
+        
+        // بطاقة معلومات الموقع
+        QiblaWidgets.buildLocationCard(service.qiblaData!, context),
+        
+        const SizedBox(height: ThemeConstants.space4),
+        
+        // نصائح الاستخدام
+        QiblaWidgets.buildUsageTipsCard(context),
+      ],
     );
   }
 
+  // ✅ حالة التحميل محسنة
   Widget _buildLoadingState() {
     return Column(
       children: [
-        // ✅ حالة التحميل باستخدام AppLoading
         AppLoading.withMessage(
           message: 'جاري تحديد موقعك وحساب اتجاه القبلة...',
           size: LoadingSize.large,
@@ -268,19 +288,28 @@ class _QiblaScreenState extends State<QiblaScreen>
         
         const SizedBox(height: ThemeConstants.space4),
         
-        // ✅ نصيحة أثناء التحميل
         AppNoticeCard.info(
-          title: 'نصيحة',
-          message: 'تأكد من تفعيل خدمة الموقع للحصول على أفضل النتائج',
+          title: 'نصيحة أثناء التحميل',
+          message: 'تأكد من تفعيل خدمة الموقع والبوصلة للحصول على أفضل النتائج',
+        ),
+        
+        const SizedBox(height: ThemeConstants.space4),
+        
+        // بطاقة التعليمات أثناء التحميل
+        AppCard.info(
+          title: 'ماذا يحدث الآن؟',
+          subtitle: 'نحن نحدد موقعك ونحسب اتجاه القبلة بدقة عالية',
+          icon: Icons.location_searching,
+          iconColor: AppColorSystem.info,
         ),
       ],
     );
   }
 
+  // ✅ حالة الخطأ محسنة
   Widget _buildErrorState(QiblaService service) {
     return Column(
       children: [
-        // ✅ حالة الخطأ باستخدام AppEmptyState
         AppEmptyState.error(
           message: service.errorMessage ?? 'فشل تحميل البيانات',
           onRetry: _updateQiblaData,
@@ -288,7 +317,6 @@ class _QiblaScreenState extends State<QiblaScreen>
         
         const SizedBox(height: ThemeConstants.space4),
         
-        // ✅ تحذير الخطأ
         AppNoticeCard.error(
           title: 'خطأ في التحميل',
           message: 'تحقق من اتصال الإنترنت وإعدادات الموقع',
@@ -298,14 +326,24 @@ class _QiblaScreenState extends State<QiblaScreen>
             color: AppColorSystem.error,
           ),
         ),
+        
+        const SizedBox(height: ThemeConstants.space4),
+        
+        // نصائح حل المشاكل
+        AppCard.info(
+          title: 'نصائح لحل المشكلة',
+          subtitle: 'اتبع هذه الخطوات لحل المشكلة',
+          icon: AppIconsSystem.info,
+          iconColor: AppColorSystem.warning,
+        ),
       ],
     );
   }
 
+  // ✅ حالة عدم وجود بوصلة
   Widget _buildNoCompassState(QiblaService service) {
     return Column(
       children: [
-        // ✅ تحذير عدم وجود بوصلة
         AppNoticeCard.warning(
           title: 'البوصلة غير متوفرة',
           message: 'جهازك لا يدعم البوصلة أو أنها معطلة حالياً',
@@ -313,9 +351,16 @@ class _QiblaScreenState extends State<QiblaScreen>
         
         if (service.qiblaData != null) ...[
           const SizedBox(height: ThemeConstants.space4),
-          _buildDirectionInfoCard(service),
+          
+          // معلومات الاتجاه فقط
+          QiblaWidgets.buildQiblaInfoCard(
+            service.qiblaData!,
+            0, // لا يوجد اتجاه حالي
+            context,
+          ),
+          
           const SizedBox(height: ThemeConstants.space4),
-          // ✅ معلومات إضافية
+          
           AppCard.info(
             title: 'استخدم البوصلة الخارجية',
             subtitle: 'يمكنك استخدام بوصلة خارجية مع الاتجاه المعروض أعلاه',
@@ -327,10 +372,10 @@ class _QiblaScreenState extends State<QiblaScreen>
     );
   }
 
+  // ✅ حالة البداية
   Widget _buildInitialState() {
     return Column(
       children: [
-        // ✅ حالة البداية
         AppEmptyState.custom(
           title: 'حدد موقعك',
           message: 'اضغط هنا لتحديد موقعك وعرض اتجاه القبلة',
@@ -342,16 +387,25 @@ class _QiblaScreenState extends State<QiblaScreen>
         
         const SizedBox(height: ThemeConstants.space4),
         
-        // ✅ نصائح للبداية
         AppNoticeCard.info(
           title: 'متطلبات التشغيل',
           message: 'يحتاج التطبيق إلى تفعيل خدمة الموقع والبوصلة للعمل بشكل صحيح',
+        ),
+        
+        const SizedBox(height: ThemeConstants.space4),
+        
+        // بطاقة الميزات
+        AppCard.info(
+          title: 'ما الذي ستحصل عليه؟',
+          subtitle: 'اتجاه دقيق للقبلة مع بوصلة تفاعلية وميزات متقدمة',
+          icon: AppIconsSystem.qibla,
+          iconColor: AppColorSystem.getCategoryColor('qibla'),
         ),
       ],
     );
   }
 
-  // ✅ التعليمات باستخدام AppInfoDialog
+  // ✅ التعليمات محسنة
   void _showInstructions() {
     AppInfoDialog.show(
       context: context,
@@ -359,7 +413,39 @@ class _QiblaScreenState extends State<QiblaScreen>
       icon: Icons.help_outline,
       accentColor: AppColorSystem.getCategoryColor('qibla'),
       content: _buildInstructionsContent(),
+      actions: [
+        DialogAction(
+          label: 'عرض النصائح',
+          onPressed: () {
+            Navigator.of(context).pop();
+            _showDetailedTips();
+          },
+        ),
+      ],
       closeButtonText: 'فهمت',
+    );
+  }
+
+  void _showDetailedTips() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        margin: const EdgeInsets.all(ThemeConstants.space4),
+        child: QiblaWidgets.buildUsageTipsCard(context),
+      ),
+    );
+  }
+
+  void _showSettings() {
+    AppInfoDialog.show(
+      context: context,
+      title: 'إعدادات القبلة',
+      content: 'هذه الميزة ستكون متوفرة قريباً في التحديثات القادمة',
+      icon: AppIconsSystem.settings,
+      accentColor: AppColorSystem.info,
     );
   }
 
@@ -376,6 +462,9 @@ class _QiblaScreenState extends State<QiblaScreen>
 
 4. اتباع الاتجاه
 اتبع السهم الأخضر للتوجه نحو القبلة
+
+5. تجنب التشويش
+ابتعد عن الأجهزة الإلكترونية والمعادن
 ''';
   }
 }
