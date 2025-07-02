@@ -1,32 +1,30 @@
-// lib/app/themes/app_theme.dart - النسخة النهائية المنظفة (بدون تكرار)
+// lib/app/themes/app_theme.dart - النسخة المحسنة
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// ===== استيراد الأنظمة الموحدة فقط =====
+// استيراد الأنظمة الموحدة
 import 'theme_constants.dart';
 import 'text_styles.dart';
 import 'core/systems/app_color_system.dart';
 
-// ===== تصدير الأنظمة الموحدة فقط - منظف =====
-
-// الأساسيات
+// تصدير الأنظمة الموحدة
 export 'theme_constants.dart';
 export 'text_styles.dart';
 export 'core/theme_notifier.dart';
-export 'core/theme_extensions.dart'; // المصدر الوحيد لجميع Extensions
+export 'core/theme_extensions.dart';
 
-// الأنظمة الموحدة - مصادر وحيدة (بدون Extensions المكررة)
-export 'core/systems/app_color_system.dart';      // المصدر الوحيد للألوان
-export 'core/systems/app_icons_system.dart';      // المصدر الوحيد للأيقونات
-export 'core/systems/app_size_system.dart'; //
-export 'core/systems/app_shadow_system.dart';     // المصدر الوحيد للظلال
-export 'core/systems/app_container_builder.dart'; // المصدر الوحيد للحاويات
-export 'core/systems/glass_effect.dart';          // المصدر الوحيد للتأثيرات الزجاجية
+// الأنظمة الموحدة
+export 'core/systems/app_color_system.dart';
+export 'core/systems/app_icons_system.dart';
+export 'core/systems/app_size_system.dart';
+export 'core/systems/app_shadow_system.dart';
+export 'core/systems/app_container_builder.dart';
+export 'core/systems/glass_effect.dart';
 
 // المساعد المبسط
-export 'core/helpers/category_helper.dart';       // مبسط - بدون تكرار
+export 'core/helpers/category_helper.dart';
 
-// المكونات الأساسية  
+// المكونات الأساسية
 export 'widgets/core/app_button.dart';
 export 'widgets/core/app_text_field.dart';
 export 'widgets/core/app_loading.dart';
@@ -60,75 +58,91 @@ export 'package:flutter_staggered_animations/flutter_staggered_animations.dart'
         ScaleAnimation,
         FlipAnimation;
 
-/// نظام الثيم الموحد للتطبيق - نسخة نهائية منظفة
+/// نظام الثيم الموحد للتطبيق - نسخة محسنة
 class AppTheme {
   AppTheme._();
 
-  /// الثيم الفاتح - يستخدم AppColorSystem الموحد
   static ThemeData get lightTheme => _buildTheme(
     brightness: Brightness.light,
     colorSystem: _LightColorSystem(),
   );
 
-  /// الثيم الداكن - يستخدم AppColorSystem الموحد
   static ThemeData get darkTheme => _buildTheme(
     brightness: Brightness.dark,
     colorSystem: _DarkColorSystem(),
   );
 
-  /// بناء الثيم - منطق موحد مبسط
+  /// بناء الثيم - منطق موحد مع معالجة أخطاء محسنة
   static ThemeData _buildTheme({
     required Brightness brightness,
     required _ColorSystemInterface colorSystem,
   }) {
-    final textTheme = AppTextStyles.createTextTheme(
-      color: colorSystem.textPrimary,
-      secondaryColor: colorSystem.textSecondary,
-    );
+    try {
+      final textTheme = AppTextStyles.createTextTheme(
+        color: colorSystem.textPrimary,
+        secondaryColor: colorSystem.textSecondary,
+      );
 
+      return ThemeData(
+        brightness: brightness,
+        primaryColor: colorSystem.primary,
+        scaffoldBackgroundColor: colorSystem.background,
+        useMaterial3: true,
+        fontFamily: ThemeConstants.fontFamily,
+        
+        colorScheme: ColorScheme(
+          brightness: brightness,
+          primary: colorSystem.primary,
+          onPrimary: colorSystem.onPrimary,
+          secondary: AppColorSystem.accent,
+          onSecondary: _getContrastingTextColor(AppColorSystem.accent),
+          tertiary: AppColorSystem.tertiary,
+          onTertiary: _getContrastingTextColor(AppColorSystem.tertiary),
+          error: AppColorSystem.error,
+          onError: Colors.white,
+          surface: colorSystem.background,
+          onSurface: colorSystem.textPrimary,
+          surfaceContainerHighest: colorSystem.card,
+          onSurfaceVariant: colorSystem.textSecondary,
+          outline: colorSystem.divider,
+        ),
+        
+        appBarTheme: _buildAppBarTheme(colorSystem),
+        cardTheme: _buildCardTheme(colorSystem),
+        textTheme: textTheme,
+        elevatedButtonTheme: _buildElevatedButtonTheme(colorSystem),
+        inputDecorationTheme: _buildInputDecorationTheme(colorSystem),
+        dividerTheme: _buildDividerTheme(colorSystem),
+        iconTheme: _buildIconTheme(colorSystem),
+        progressIndicatorTheme: _buildProgressIndicatorTheme(colorSystem),
+        snackBarTheme: _buildSnackBarTheme(colorSystem),
+        dialogTheme: _buildDialogTheme(colorSystem),
+        bottomSheetTheme: _buildBottomSheetTheme(colorSystem),
+        floatingActionButtonTheme: _buildFABTheme(colorSystem),
+        navigationBarTheme: _buildNavigationBarTheme(colorSystem),
+        chipTheme: _buildChipTheme(colorSystem, brightness),
+      );
+    } catch (e) {
+      // في حالة حدوث خطأ، إرجاع ثيم أساسي
+      assert(() {
+        print('خطأ في بناء الثيم: $e');
+        return true;
+      }());
+      
+      return _createFallbackTheme(brightness);
+    }
+  }
+
+  /// إنشاء ثيم احتياطي في حالة الأخطاء
+  static ThemeData _createFallbackTheme(Brightness brightness) {
     return ThemeData(
       brightness: brightness,
-      primaryColor: colorSystem.primary,
-      scaffoldBackgroundColor: colorSystem.background,
-      useMaterial3: true,
+      primarySwatch: Colors.green,
       fontFamily: ThemeConstants.fontFamily,
-      
-      colorScheme: ColorScheme(
-        brightness: brightness,
-        primary: colorSystem.primary,
-        onPrimary: colorSystem.onPrimary,
-        secondary: AppColorSystem.accent,
-        onSecondary: _getContrastingTextColor(AppColorSystem.accent),
-        tertiary: AppColorSystem.tertiary,
-        onTertiary: _getContrastingTextColor(AppColorSystem.tertiary),
-        error: AppColorSystem.error,
-        onError: Colors.white,
-        surface: colorSystem.background,
-        onSurface: colorSystem.textPrimary,
-        surfaceContainerHighest: colorSystem.card,
-        onSurfaceVariant: colorSystem.textSecondary,
-        outline: colorSystem.divider,
-      ),
-      
-      appBarTheme: _buildAppBarTheme(colorSystem),
-      cardTheme: _buildCardTheme(colorSystem),
-      textTheme: textTheme,
-      elevatedButtonTheme: _buildElevatedButtonTheme(colorSystem),
-      inputDecorationTheme: _buildInputDecorationTheme(colorSystem),
-      dividerTheme: _buildDividerTheme(colorSystem),
-      iconTheme: _buildIconTheme(colorSystem),
-      progressIndicatorTheme: _buildProgressIndicatorTheme(colorSystem),
-      snackBarTheme: _buildSnackBarTheme(colorSystem),
-      dialogTheme: _buildDialogTheme(colorSystem),
-      bottomSheetTheme: _buildBottomSheetTheme(colorSystem),
-      floatingActionButtonTheme: _buildFABTheme(colorSystem),
-      navigationBarTheme: _buildNavigationBarTheme(colorSystem),
-      chipTheme: _buildChipTheme(colorSystem, brightness),
     );
   }
 
-  // ===== دوال بناء المكونات - مبسطة =====
-
+  // دوال بناء المكونات - كما هي مع تحسين بسيط في التعليقات
   static AppBarTheme _buildAppBarTheme(_ColorSystemInterface colors) {
     return AppBarTheme(
       backgroundColor: colors.background,
@@ -181,7 +195,7 @@ class AppTheme {
 
   static InputDecorationTheme _buildInputDecorationTheme(_ColorSystemInterface colors) {
     return InputDecorationTheme(
-      fillColor: colors.surface.withValues(alpha: colors.fillOpacity),
+      fillColor: colors.surface.withOpacity(colors.fillOpacity),
       filled: true,
       contentPadding: const EdgeInsets.symmetric(
         horizontal: ThemeConstants.space4,
@@ -222,8 +236,8 @@ class AppTheme {
   static ProgressIndicatorThemeData _buildProgressIndicatorTheme(_ColorSystemInterface colors) {
     return ProgressIndicatorThemeData(
       color: colors.primary,
-      linearTrackColor: colors.divider.withValues(alpha: ThemeConstants.opacity50),
-      circularTrackColor: colors.divider.withValues(alpha: ThemeConstants.opacity50),
+      linearTrackColor: colors.divider.withOpacity(ThemeConstants.opacity50),
+      circularTrackColor: colors.divider.withOpacity(ThemeConstants.opacity50),
     );
   }
 
@@ -281,7 +295,7 @@ class AppTheme {
   static NavigationBarThemeData _buildNavigationBarTheme(_ColorSystemInterface colors) {
     return NavigationBarThemeData(
       backgroundColor: colors.card,
-      indicatorColor: colors.primary.withValues(alpha: ThemeConstants.opacity20),
+      indicatorColor: colors.primary.withOpacity(ThemeConstants.opacity20),
       labelTextStyle: WidgetStateProperty.all(
         AppTextStyles.label2.copyWith(color: colors.textSecondary),
       ),
@@ -299,7 +313,7 @@ class AppTheme {
   static ChipThemeData _buildChipTheme(_ColorSystemInterface colors, Brightness brightness) {
     return ChipThemeData(
       backgroundColor: colors.surface,
-      selectedColor: colors.primary.withValues(alpha: ThemeConstants.opacity20),
+      selectedColor: colors.primary.withOpacity(ThemeConstants.opacity20),
       disabledColor: colors.divider,
       labelStyle: AppTextStyles.label2.copyWith(color: colors.textPrimary),
       secondaryLabelStyle: AppTextStyles.label2.copyWith(color: colors.textSecondary),
@@ -314,14 +328,13 @@ class AppTheme {
     );
   }
 
-  /// مساعد للحصول على لون النص المتباين
   static Color _getContrastingTextColor(Color color) {
     return ThemeData.estimateBrightnessForColor(color) == Brightness.dark
         ? Colors.white
         : Colors.black87;
   }
 
-  // ===== دوال مساعدة مُبسطة للتوافق =====
+  // دوال مساعدة محسنة مع معالجة أخطاء أفضل
 
   /// الحصول على ثيم مخصص بلون أساسي مختلف
   static ThemeData getCustomTheme({
@@ -329,27 +342,36 @@ class AppTheme {
     required Color primaryColor,
     Color? backgroundColor,
   }) {
-    final isDark = brightness == Brightness.dark;
-    final customColorSystem = _CustomColorSystem(
-      primary: primaryColor,
-      background: backgroundColor ?? (isDark 
-          ? AppColorSystem.darkBackground 
-          : AppColorSystem.lightBackground),
-      isDark: isDark,
-    );
-    
-    return _buildTheme(
-      brightness: brightness,
-      colorSystem: customColorSystem,
-    );
+    try {
+      final isDark = brightness == Brightness.dark;
+      final customColorSystem = _CustomColorSystem(
+        primary: primaryColor,
+        background: backgroundColor ?? (isDark 
+            ? AppColorSystem.darkBackground 
+            : AppColorSystem.lightBackground),
+        isDark: isDark,
+      );
+      
+      return _buildTheme(
+        brightness: brightness,
+        colorSystem: customColorSystem,
+      );
+    } catch (e) {
+      // في حالة الخطأ، إرجاع الثيم الافتراضي
+      return brightness == Brightness.dark ? darkTheme : lightTheme;
+    }
   }
 
   /// التحقق من توافق اللون مع الثيم
   static bool isColorCompatible(Color color, Brightness brightness) {
-    final colorBrightness = ThemeData.estimateBrightnessForColor(color);
-    return brightness == Brightness.dark 
-        ? colorBrightness == Brightness.light 
-        : colorBrightness == Brightness.dark;
+    try {
+      final colorBrightness = ThemeData.estimateBrightnessForColor(color);
+      return brightness == Brightness.dark 
+          ? colorBrightness == Brightness.light 
+          : colorBrightness == Brightness.dark;
+    } catch (e) {
+      return false;
+    }
   }
 
   /// الحصول على لون متوافق مع الثيم
@@ -364,8 +386,7 @@ class AppTheme {
   }
 }
 
-// ===== واجهات مساعدة داخلية - تجنب التكرار =====
-
+// واجهات مساعدة داخلية - كما هي
 abstract class _ColorSystemInterface {
   Color get primary;
   Color get onPrimary;
