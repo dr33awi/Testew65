@@ -1,4 +1,4 @@
-// lib/app/themes/core/systems/app_container_builder.dart - النسخة المُنظفة والمُحسنة
+// lib/app/themes/core/systems/app_container_builder.dart - النسخة المنظفة (بدون تكرار)
 import 'package:flutter/material.dart';
 import 'package:athkar_app/app/themes/theme_constants.dart';
 import 'app_color_system.dart';
@@ -6,447 +6,31 @@ import 'app_size_system.dart';
 import 'app_shadow_system.dart';
 import 'glass_effect.dart';
 
-/// نظام بناء الحاويات الموحد - مُنظف ومُحسن
-/// يوفر طرق سهلة ومتسقة لإنشاء الحاويات المختلفة
+/// نظام بناء الحاويات الموحد - منظف من التكرار
 class AppContainerBuilder {
   AppContainerBuilder._();
 
-  // ===== الحاويات الأساسية =====
-
-  /// حاوية أساسية مع إعدادات افتراضية ذكية
-  static Widget basic({
-    required Widget child,
-    EdgeInsets? padding,
-    EdgeInsets? margin,
-    double? width,
-    double? height,
-    Color? backgroundColor,
-    double? borderRadius,
-    Border? border,
-    List<BoxShadow>? shadows,
-    AlignmentGeometry? alignment,
-  }) {
-    return Container(
-      width: width,
-      height: height,
-      margin: margin,
-      padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
-      alignment: alignment,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: borderRadius != null 
-            ? BorderRadius.circular(borderRadius) 
-            : BorderRadius.circular(ThemeConstants.radiusMd),
-        border: border,
-        boxShadow: shadows,
-      ),
-      child: child,
-    );
+  // ===== دوال مساعدة داخلية - تجنب التكرار =====
+  
+  /// الحصول على اللون الفعال - دالة واحدة لكل المصنع
+  static Color _getEffectiveColor(String? colorKey, Color? color) {
+    if (color != null) return color;
+    if (colorKey != null) return AppColorSystem.getColor(colorKey);
+    return AppColorSystem.primary;
   }
 
-  /// حاوية مع تدرج لوني
-  static Widget gradient({
-    required Widget child,
-    required List<Color> colors,
-    EdgeInsets? padding,
-    EdgeInsets? margin,
-    double? width,
-    double? height,
-    double? borderRadius,
-    List<BoxShadow>? shadows,
-    AlignmentGeometry begin = Alignment.topLeft,
-    AlignmentGeometry end = Alignment.bottomRight,
-    List<double>? stops,
-    AlignmentGeometry? alignment,
-  }) {
-    return Container(
-      width: width,
-      height: height,
-      margin: margin,
-      padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
-      alignment: alignment,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: begin,
-          end: end,
-          colors: colors,
-          stops: stops,
-        ),
-        borderRadius: borderRadius != null 
-            ? BorderRadius.circular(borderRadius) 
-            : BorderRadius.circular(ThemeConstants.radiusMd),
-        boxShadow: shadows ?? AppShadowSystem.medium,
-      ),
-      child: child,
-    );
-  }
+  /// الحصول على الحشو الافتراضي
+  static EdgeInsets _getDefaultPadding() => const EdgeInsets.all(ThemeConstants.space4);
 
-  /// حاوية زجاجية (Glass Morphism)
-  static Widget glass({
-    required Widget child,
-    Color? backgroundColor,
-    double blur = 10,
-    double borderOpacity = 0.2,
-    EdgeInsets? padding,
-    EdgeInsets? margin,
-    double? width,
-    double? height,
-    double? borderRadius,
-    List<BoxShadow>? shadows,
-    GlassIntensity intensity = GlassIntensity.medium,
-    AlignmentGeometry? alignment,
-  }) {
-    return Container(
-      margin: margin,
-      alignment: alignment,
-      child: GlassEffect(
-        blur: blur,
-        borderOpacity: borderOpacity,
-        borderRadius: borderRadius != null 
-            ? BorderRadius.circular(borderRadius) 
-            : BorderRadius.circular(ThemeConstants.radiusLg),
-        padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
-        width: width,
-        height: height,
-        shadows: shadows,
-        intensity: intensity,
-        child: child,
-      ),
-    );
-  }
+  /// الحصول على نصف القطر الافتراضي
+  static double _getDefaultRadius() => ThemeConstants.radiusMd;
 
-  /// حاوية زجاجية مع تدرج لوني
-  static Widget glassGradient({
-    required Widget child,
-    required List<Color> colors,
-    double blur = 10,
-    double borderOpacity = 0.2,
-    EdgeInsets? padding,
-    EdgeInsets? margin,
-    double? width,
-    double? height,
-    double? borderRadius,
-    List<BoxShadow>? shadows,
-    AlignmentGeometry? alignment,
-  }) {
-    return Container(
-      margin: margin,
-      alignment: alignment,
-      child: GlassEffect.withGradient(
-        child: child,
-        gradientColors: colors,
-        blur: blur,
-        borderOpacity: borderOpacity,
-        borderRadius: borderRadius != null 
-            ? BorderRadius.circular(borderRadius) 
-            : BorderRadius.circular(ThemeConstants.radiusLg),
-        padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
-        shadows: shadows,
-      ),
-    );
-  }
-
-  // ===== حاويات متخصصة للمكونات =====
-
-  /// حاوية للبطاقات
-  static Widget card({
-    required Widget child,
-    ComponentSize size = ComponentSize.md,
-    Color? backgroundColor,
-    String? colorKey,
-    bool withShadow = true,
-    bool withGlass = false,
-    EdgeInsets? margin,
-    AlignmentGeometry? alignment,
-  }) {
-    final cardSizes = size.cardSizes;
-    final effectiveColor = backgroundColor ?? 
-        (colorKey != null ? AppColorSystem.getColor(colorKey) : null);
-    
-    if (withGlass) {
-      return glassGradient(
-        colors: colorKey != null 
-            ? [
-                AppColorSystem.getColor(colorKey).withValues(alpha: 0.9),
-                AppColorSystem.getDarkColor(colorKey).withValues(alpha: 0.7),
-              ]
-            : [
-                Colors.white.withValues(alpha: 0.9),
-                Colors.white.withValues(alpha: 0.7),
-              ],
-        padding: cardSizes.padding,
-        margin: margin,
-        borderRadius: cardSizes.borderRadius,
-        shadows: withShadow ? AppShadowSystem.card : null,
-        alignment: alignment,
-        child: child,
-      );
-    }
-
-    if (effectiveColor != null) {
-      return gradient(
-        colors: colorKey != null 
-            ? [
-                AppColorSystem.getColor(colorKey),
-                AppColorSystem.getDarkColor(colorKey),
-              ]
-            : [effectiveColor, effectiveColor],
-        padding: cardSizes.padding,
-        margin: margin,
-        borderRadius: cardSizes.borderRadius,
-        shadows: withShadow ? AppShadowSystem.colored(color: effectiveColor) : null,
-        alignment: alignment,
-        child: child,
-      );
-    }
-
-    return basic(
-      padding: cardSizes.padding,
-      margin: margin,
-      borderRadius: cardSizes.borderRadius,
-      shadows: withShadow ? AppShadowSystem.card : null,
-      alignment: alignment,
-      child: child,
-    );
-  }
-
-  /// حاوية للأزرار
-  static Widget button({
-    required Widget child,
-    ComponentSize size = ComponentSize.md,
-    Color? backgroundColor,
-    String? colorKey,
-    bool withShadow = true,
-    bool isOutlined = false,
-    EdgeInsets? margin,
-    VoidCallback? onTap,
-    AlignmentGeometry? alignment,
-  }) {
-    final buttonSizes = size.buttonSizes;
-    final effectiveColor = backgroundColor ?? 
-        (colorKey != null ? AppColorSystem.getColor(colorKey) : null);
-    
-    Widget container;
-    
-    if (isOutlined) {
-      container = basic(
-        padding: buttonSizes.padding,
-        margin: margin,
-        borderRadius: buttonSizes.borderRadius,
-        border: Border.all(
-          color: effectiveColor ?? Colors.grey,
-          width: 1.5,
-        ),
-        shadows: withShadow ? AppShadowSystem.button : null,
-        alignment: alignment ?? Alignment.center,
-        child: child,
-      );
-    } else if (effectiveColor != null) {
-      container = gradient(
-        colors: colorKey != null 
-            ? [
-                AppColorSystem.getColor(colorKey),
-                AppColorSystem.getDarkColor(colorKey),
-              ]
-            : [effectiveColor, effectiveColor],
-        padding: buttonSizes.padding,
-        margin: margin,
-        borderRadius: buttonSizes.borderRadius,
-        shadows: withShadow ? AppShadowSystem.colored(color: effectiveColor) : null,
-        alignment: alignment ?? Alignment.center,
-        child: child,
-      );
-    } else {
-      container = basic(
-        padding: buttonSizes.padding,
-        margin: margin,
-        backgroundColor: Colors.grey.shade200,
-        borderRadius: buttonSizes.borderRadius,
-        shadows: withShadow ? AppShadowSystem.button : null,
-        alignment: alignment ?? Alignment.center,
-        child: child,
-      );
-    }
-
-    if (onTap != null) {
-      return GestureDetector(
-        onTap: onTap,
-        child: container,
-      );
-    }
-    
-    return container;
-  }
-
-  /// حاوية للحوارات
-  static Widget dialog({
-    required Widget child,
-    ComponentSize size = ComponentSize.lg,
-    String? colorKey,
-    bool withGlass = true,
-    EdgeInsets? margin,
-    double? maxWidth,
-    AlignmentGeometry? alignment,
-  }) {
-    final dialogSizes = size.dialogSizes;
-    
-    if (withGlass && colorKey != null) {
-      return ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: maxWidth ?? 400,
-        ),
-        child: glassGradient(
-          colors: [
-            AppColorSystem.getColor(colorKey).withValues(alpha: 0.9),
-            AppColorSystem.getDarkColor(colorKey).withValues(alpha: 0.7),
-          ],
-          padding: dialogSizes.padding,
-          margin: margin,
-          borderRadius: dialogSizes.borderRadius,
-          shadows: AppShadowSystem.dialog,
-          alignment: alignment,
-          child: child,
-        ),
-      );
-    }
-    
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxWidth: maxWidth ?? 400,
-      ),
-      child: glass(
-        padding: dialogSizes.padding,
-        margin: margin,
-        borderRadius: dialogSizes.borderRadius,
-        shadows: AppShadowSystem.dialog,
-        intensity: GlassIntensity.strong,
-        alignment: alignment,
-        child: child,
-      ),
-    );
-  }
-
-  /// حاوية للإدخال
-  static Widget input({
-    required Widget child,
-    ComponentSize size = ComponentSize.md,
-    Color? backgroundColor,
-    Color? borderColor,
-    bool isFocused = false,
-    bool hasError = false,
-    EdgeInsets? margin,
-    AlignmentGeometry? alignment,
-  }) {
-    final inputSizes = size.inputSizes;
-    final effectiveBorderColor = hasError 
-        ? AppColorSystem.error
-        : isFocused 
-            ? (borderColor ?? AppColorSystem.primary)
-            : Colors.grey.shade300;
-    
-    return basic(
-      padding: inputSizes.padding,
-      margin: margin,
-      backgroundColor: backgroundColor ?? Colors.grey.shade50,
-      borderRadius: inputSizes.borderRadius,
-      border: Border.all(
-        color: effectiveBorderColor,
-        width: isFocused ? 2 : 1,
-      ),
-      alignment: alignment,
-      child: child,
-    );
-  }
-
-  // ===== حاويات للحالات الخاصة =====
-
-  /// حاوية للحالة الفارغة
-  static Widget empty({
-    required Widget child,
-    EdgeInsets? padding,
-    EdgeInsets? margin,
-    double? borderRadius,
-    AlignmentGeometry? alignment,
-  }) {
-    return basic(
-      padding: padding ?? const EdgeInsets.all(ThemeConstants.space8),
-      margin: margin,
-      backgroundColor: Colors.grey.shade50,
-      borderRadius: borderRadius ?? ThemeConstants.radiusLg,
-      border: Border.all(
-        color: Colors.grey.shade200,
-        style: BorderStyle.solid,
-      ),
-      alignment: alignment ?? Alignment.center,
-      child: child,
-    );
-  }
-
-  /// حاوية للتحميل
-  static Widget loading({
-    required Widget child,
-    EdgeInsets? padding,
-    EdgeInsets? margin,
-    Color? backgroundColor,
-    double? borderRadius,
-    AlignmentGeometry? alignment,
-  }) {
-    return basic(
-      padding: padding ?? const EdgeInsets.all(ThemeConstants.space6),
-      margin: margin,
-      backgroundColor: backgroundColor ?? Colors.white.withValues(alpha: 0.95),
-      borderRadius: borderRadius ?? ThemeConstants.radiusLg,
-      shadows: AppShadowSystem.medium,
-      alignment: alignment ?? Alignment.center,
-      child: child,
-    );
-  }
-
-  /// حاوية للإشعارات
-  static Widget notification({
-    required Widget child,
-    required String type, // 'success', 'error', 'warning', 'info'
-    EdgeInsets? padding,
-    EdgeInsets? margin,
-    double? borderRadius,
-    bool withGlass = false,
-    AlignmentGeometry? alignment,
-  }) {
-    final color = AppColorSystem.getColor(type);
-    
-    if (withGlass) {
-      return glassGradient(
-        colors: [
-          color.withValues(alpha: 0.9),
-          color.darken(0.1).withValues(alpha: 0.7),
-        ],
-        padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
-        margin: margin,
-        borderRadius: borderRadius ?? ThemeConstants.radiusLg,
-        shadows: AppShadowSystem.colored(color: color),
-        alignment: alignment,
-        child: child,
-      );
-    }
-    
-    return gradient(
-      colors: [color, color.darken(0.1)],
-      padding: padding ?? const EdgeInsets.all(ThemeConstants.space4),
-      margin: margin,
-      borderRadius: borderRadius ?? ThemeConstants.radiusLg,
-      shadows: AppShadowSystem.colored(color: color),
-      alignment: alignment,
-      child: child,
-    );
-  }
-
-  // ===== دوال مساعدة للتخصيص =====
-
-  /// إنشاء حاوية مخصصة بالكامل
-  static Widget custom({
+  // ===== دالة البناء الأساسية الموحدة =====
+  
+  /// دالة واحدة موحدة لبناء جميع أنواع الحاويات
+  static Widget buildContainer({
     required Widget child,
     ContainerStyle style = ContainerStyle.basic,
-    ComponentSize size = ComponentSize.md,
     String? colorKey,
     Color? backgroundColor,
     List<Color>? gradientColors,
@@ -459,94 +43,363 @@ class AppContainerBuilder {
     List<BoxShadow>? shadows,
     AlignmentGeometry? alignment,
     VoidCallback? onTap,
+    VoidCallback? onLongPress,
+    bool showShadow = true,
   }) {
+    final effectiveColor = _getEffectiveColor(colorKey, backgroundColor);
+    final effectivePadding = padding ?? _getDefaultPadding();
+    final effectiveRadius = borderRadius ?? _getDefaultRadius();
+    
     Widget container;
     
     switch (style) {
       case ContainerStyle.basic:
-        container = basic(
+        container = _buildBasicContainer(
           child: child,
-          padding: padding,
-          margin: margin,
-          width: width,
-          height: height,
-          backgroundColor: backgroundColor,
-          borderRadius: borderRadius,
+          color: effectiveColor,
+          padding: effectivePadding,
+          borderRadius: effectiveRadius,
           border: border,
-          shadows: shadows,
+          shadows: showShadow ? (shadows ?? AppShadowSystem.light) : null,
           alignment: alignment,
         );
         break;
         
       case ContainerStyle.gradient:
-        container = gradient(
+        container = _buildGradientContainer(
           child: child,
-          colors: gradientColors ?? 
-              (colorKey != null 
-                  ? [
-                      AppColorSystem.getColor(colorKey),
-                      AppColorSystem.getDarkColor(colorKey),
-                    ]
-                  : [Colors.grey, Colors.grey.shade700]),
-          padding: padding,
-          margin: margin,
-          width: width,
-          height: height,
-          borderRadius: borderRadius,
-          shadows: shadows,
+          colors: gradientColors ?? [effectiveColor, AppColorSystem.getDarkColor(effectiveColor.toString())],
+          padding: effectivePadding,
+          borderRadius: effectiveRadius,
+          shadows: showShadow ? (shadows ?? AppShadowSystem.colored(color: effectiveColor)) : null,
           alignment: alignment,
         );
         break;
         
       case ContainerStyle.glass:
-        container = glass(
+        container = _buildGlassContainer(
           child: child,
-          backgroundColor: backgroundColor,
-          padding: padding,
-          margin: margin,
-          width: width,
-          height: height,
-          borderRadius: borderRadius,
-          shadows: shadows,
+          color: effectiveColor,
+          padding: effectivePadding,
+          borderRadius: effectiveRadius,
+          shadows: showShadow ? (shadows ?? AppShadowSystem.glass(color: effectiveColor)) : null,
           alignment: alignment,
         );
         break;
         
       case ContainerStyle.glassGradient:
-        container = glassGradient(
+        container = _buildGlassGradientContainer(
           child: child,
-          colors: gradientColors ?? 
-              (colorKey != null 
-                  ? [
-                      AppColorSystem.getColor(colorKey).withValues(alpha: 0.9),
-                      AppColorSystem.getDarkColor(colorKey).withValues(alpha: 0.7),
-                    ]
-                  : [
-                      Colors.white.withValues(alpha: 0.9),
-                      Colors.white.withValues(alpha: 0.7),
-                    ]),
-          padding: padding,
-          margin: margin,
-          width: width,
-          height: height,
-          borderRadius: borderRadius,
-          shadows: shadows,
+          colors: gradientColors ?? _createGlassGradient(effectiveColor),
+          padding: effectivePadding,
+          borderRadius: effectiveRadius,
+          shadows: showShadow ? (shadows ?? AppShadowSystem.colored(color: effectiveColor)) : null,
           alignment: alignment,
         );
         break;
     }
-    
-    if (onTap != null) {
-      return GestureDetector(
-        onTap: onTap,
+
+    // تطبيق الأبعاد والهوامش
+    if (width != null || height != null || margin != null) {
+      container = Container(
+        width: width,
+        height: height,
+        margin: margin,
         child: container,
       );
     }
-    
+
+    // تطبيق التفاعل
+    if (onTap != null || onLongPress != null) {
+      container = GestureDetector(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        child: container,
+      );
+    }
+
     return container;
   }
 
-  // ===== حاويات خاصة للأذكار والمحتوى الإسلامي =====
+  // ===== دوال البناء الداخلية - منطق موحد =====
+
+  static Widget _buildBasicContainer({
+    required Widget child,
+    required Color color,
+    required EdgeInsets padding,
+    required double borderRadius,
+    Border? border,
+    List<BoxShadow>? shadows,
+    AlignmentGeometry? alignment,
+  }) {
+    return Container(
+      padding: padding,
+      alignment: alignment,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: border ?? Border.all(color: color.withValues(alpha: 0.3)),
+        boxShadow: shadows,
+      ),
+      child: child,
+    );
+  }
+
+  static Widget _buildGradientContainer({
+    required Widget child,
+    required List<Color> colors,
+    required EdgeInsets padding,
+    required double borderRadius,
+    List<BoxShadow>? shadows,
+    AlignmentGeometry? alignment,
+  }) {
+    return Container(
+      padding: padding,
+      alignment: alignment,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: colors,
+        ),
+        boxShadow: shadows,
+      ),
+      child: child,
+    );
+  }
+
+  static Widget _buildGlassContainer({
+    required Widget child,
+    required Color color,
+    required EdgeInsets padding,
+    required double borderRadius,
+    List<BoxShadow>? shadows,
+    AlignmentGeometry? alignment,
+  }) {
+    return GlassEffect(
+      padding: padding,
+      borderRadius: BorderRadius.circular(borderRadius),
+      shadows: shadows,
+      alignment: (alignment is Alignment) ? alignment : Alignment.center,
+      overlayColor: color.withValues(alpha: 0.1),
+      child: child,
+    );
+  }
+
+  static Widget _buildGlassGradientContainer({
+    required Widget child,
+    required List<Color> colors,
+    required EdgeInsets padding,
+    required double borderRadius,
+    List<BoxShadow>? shadows,
+    AlignmentGeometry? alignment,
+  }) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(borderRadius),
+      child: Container(
+        padding: padding,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: colors,
+          ),
+          borderRadius: BorderRadius.circular(borderRadius),
+          boxShadow: shadows,
+        ),
+        alignment: alignment,
+        child: child,
+      ),
+    );
+  }
+
+  /// إنشاء تدرج زجاجي
+  static List<Color> _createGlassGradient(Color baseColor) {
+    return [
+      baseColor.withValues(alpha: 0.95),
+      AppColorSystem.getDarkColor(baseColor.toString()).withValues(alpha: 0.85),
+    ];
+  }
+
+  // ===== Factory Methods مبسطة - تستخدم buildContainer =====
+
+  /// حاوية أساسية
+  static Widget basic({
+    required Widget child,
+    String? colorKey,
+    Color? backgroundColor,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+    double? borderRadius,
+    VoidCallback? onTap,
+  }) {
+    return buildContainer(
+      child: child,
+      style: ContainerStyle.basic,
+      colorKey: colorKey,
+      backgroundColor: backgroundColor,
+      padding: padding,
+      margin: margin,
+      borderRadius: borderRadius,
+      onTap: onTap,
+    );
+  }
+
+  /// حاوية مع تدرج
+  static Widget gradient({
+    required Widget child,
+    String? colorKey,
+    Color? backgroundColor,
+    List<Color>? gradientColors,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+    double? borderRadius,
+    VoidCallback? onTap,
+  }) {
+    return buildContainer(
+      child: child,
+      style: ContainerStyle.gradient,
+      colorKey: colorKey,
+      backgroundColor: backgroundColor,
+      gradientColors: gradientColors,
+      padding: padding,
+      margin: margin,
+      borderRadius: borderRadius,
+      onTap: onTap,
+    );
+  }
+
+  /// حاوية زجاجية
+  static Widget glass({
+    required Widget child,
+    String? colorKey,
+    Color? backgroundColor,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+    double? borderRadius,
+    VoidCallback? onTap,
+  }) {
+    return buildContainer(
+      child: child,
+      style: ContainerStyle.glass,
+      colorKey: colorKey,
+      backgroundColor: backgroundColor,
+      padding: padding,
+      margin: margin,
+      borderRadius: borderRadius,
+      onTap: onTap,
+    );
+  }
+
+  /// حاوية زجاجية مع تدرج
+  static Widget glassGradient({
+    required Widget child,
+    String? colorKey,
+    Color? backgroundColor,
+    List<Color>? gradientColors,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+    double? borderRadius,
+    VoidCallback? onTap,
+  }) {
+    return buildContainer(
+      child: child,
+      style: ContainerStyle.glassGradient,
+      colorKey: colorKey,
+      backgroundColor: backgroundColor,
+      gradientColors: gradientColors,
+      padding: padding,
+      margin: margin,
+      borderRadius: borderRadius,
+      onTap: onTap,
+    );
+  }
+
+  // ===== حاويات متخصصة - تستخدم buildContainer =====
+
+  /// حاوية للبطاقات
+  static Widget card({
+    required Widget child,
+    ComponentSize size = ComponentSize.md,
+    String? colorKey,
+    Color? backgroundColor,
+    bool withShadow = true,
+    bool withGlass = false,
+    EdgeInsets? margin,
+    VoidCallback? onTap,
+  }) {
+    final cardSizes = AppSizeSystem.getCardSizes(size);
+    final style = withGlass ? ContainerStyle.glassGradient : ContainerStyle.basic;
+    
+    return buildContainer(
+      child: child,
+      style: style,
+      colorKey: colorKey,
+      backgroundColor: backgroundColor,
+      padding: cardSizes.padding,
+      margin: margin,
+      borderRadius: cardSizes.borderRadius,
+      showShadow: withShadow,
+      onTap: onTap,
+    );
+  }
+
+  /// حاوية للأزرار
+  static Widget button({
+    required Widget child,
+    ComponentSize size = ComponentSize.md,
+    String? colorKey,
+    Color? backgroundColor,
+    bool isOutlined = false,
+    EdgeInsets? margin,
+    VoidCallback? onTap,
+  }) {
+    final buttonSizes = AppSizeSystem.getButtonSizes(size);
+    final style = isOutlined ? ContainerStyle.basic : ContainerStyle.gradient;
+    
+    return buildContainer(
+      child: child,
+      style: style,
+      colorKey: colorKey,
+      backgroundColor: backgroundColor,
+      padding: buttonSizes.padding,
+      margin: margin,
+      borderRadius: buttonSizes.borderRadius,
+      border: isOutlined ? Border.all(
+        color: _getEffectiveColor(colorKey, backgroundColor),
+        width: 1.5,
+      ) : null,
+      alignment: Alignment.center,
+      onTap: onTap,
+    );
+  }
+
+  /// حاوية للحوارات
+  static Widget dialog({
+    required Widget child,
+    ComponentSize size = ComponentSize.lg,
+    String? colorKey,
+    EdgeInsets? margin,
+    double? maxWidth,
+  }) {
+    final dialogSizes = AppSizeSystem.getDialogSizes(size);
+    
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxWidth ?? 400),
+      child: buildContainer(
+        child: child,
+        style: ContainerStyle.glassGradient,
+        colorKey: colorKey,
+        padding: dialogSizes.padding,
+        margin: margin,
+        borderRadius: dialogSizes.borderRadius,
+        shadows: AppShadowSystem.dialog,
+      ),
+    );
+  }
+
+  // ===== حاويات للمحتوى الإسلامي - مبسطة =====
 
   /// حاوية لعرض الأذكار
   static Widget athkar({
@@ -556,64 +409,37 @@ class AppContainerBuilder {
     EdgeInsets? padding,
     EdgeInsets? margin,
   }) {
-    if (withGlass) {
-      return glassGradient(
-        colors: [
-          AppColorSystem.getColor(categoryType).withValues(alpha: 0.95),
-          AppColorSystem.getDarkColor(categoryType).withValues(alpha: 0.85),
-          AppColorSystem.getDarkColor(categoryType).withValues(alpha: 0.75),
-        ],
-        padding: padding ?? const EdgeInsets.all(ThemeConstants.space5),
-        margin: margin,
-        borderRadius: ThemeConstants.radiusXl,
-        shadows: AppShadowSystem.colored(
-          color: AppColorSystem.getColor(categoryType),
-          intensity: ShadowIntensity.medium,
-        ),
-        child: child,
-      );
-    }
-
-    return gradient(
-      colors: [
-        AppColorSystem.getColor(categoryType),
-        AppColorSystem.getDarkColor(categoryType),
-      ],
+    return buildContainer(
+      child: child,
+      style: withGlass ? ContainerStyle.glassGradient : ContainerStyle.gradient,
+      colorKey: categoryType,
       padding: padding ?? const EdgeInsets.all(ThemeConstants.space5),
       margin: margin,
       borderRadius: ThemeConstants.radiusXl,
-      shadows: AppShadowSystem.colored(
-        color: AppColorSystem.getColor(categoryType),
-      ),
-      child: child,
+      showShadow: true,
     );
   }
 
-  /// حاوية لعرض آية أو حديث
+  /// حاوية لعرض اقتباس
   static Widget quote({
     required Widget child,
     String quoteType = 'verse',
     EdgeInsets? padding,
     EdgeInsets? margin,
   }) {
-    return glassGradient(
-      colors: [
-        AppColorSystem.getColor(quoteType).withValues(alpha: 0.9),
-        AppColorSystem.getDarkColor(quoteType).withValues(alpha: 0.7),
-      ],
+    return buildContainer(
+      child: child,
+      style: ContainerStyle.glassGradient,
+      colorKey: quoteType,
       padding: padding ?? const EdgeInsets.all(ThemeConstants.space6),
       margin: margin,
       borderRadius: ThemeConstants.radius2xl,
-      shadows: AppShadowSystem.colored(
-        color: AppColorSystem.getColor(quoteType),
-        intensity: ShadowIntensity.strong,
-      ),
-      child: child,
+      showShadow: true,
     );
   }
 }
 
-/// أنماط الحاويات المختلفة
+/// أنماط الحاويات - مبسطة
 enum ContainerStyle {
   basic,         // حاوية أساسية
   gradient,      // حاوية مع تدرج
@@ -621,32 +447,33 @@ enum ContainerStyle {
   glassGradient, // حاوية زجاجية مع تدرج
 }
 
-/// Extension لتسهيل الاستخدام - مُحسن
+/// Extension مبسط - بدون تكرار منطق البناء
 extension AppContainerExtension on Widget {
   /// تطبيق حاوية أساسية
   Widget container({
+    String? colorKey,
+    Color? backgroundColor,
     EdgeInsets? padding,
     EdgeInsets? margin,
-    Color? backgroundColor,
     double? borderRadius,
-    List<BoxShadow>? shadows,
     VoidCallback? onTap,
   }) {
     return AppContainerBuilder.basic(
       child: this,
+      colorKey: colorKey,
+      backgroundColor: backgroundColor,
       padding: padding,
       margin: margin,
-      backgroundColor: backgroundColor,
       borderRadius: borderRadius,
-      shadows: shadows,
-    ).let((container) => onTap != null 
-        ? GestureDetector(onTap: onTap, child: container)
-        : container);
+      onTap: onTap,
+    );
   }
   
   /// تطبيق حاوية مع تدرج
   Widget gradientContainer({
-    required List<Color> colors,
+    String? colorKey,
+    Color? backgroundColor,
+    List<Color>? gradientColors,
     EdgeInsets? padding,
     EdgeInsets? margin,
     double? borderRadius,
@@ -654,40 +481,20 @@ extension AppContainerExtension on Widget {
   }) {
     return AppContainerBuilder.gradient(
       child: this,
-      colors: colors,
+      colorKey: colorKey,
+      backgroundColor: backgroundColor,
+      gradientColors: gradientColors,
       padding: padding,
       margin: margin,
       borderRadius: borderRadius,
-    ).let((container) => onTap != null 
-        ? GestureDetector(onTap: onTap, child: container)
-        : container);
-  }
-  
-  /// تطبيق حاوية مع تدرج بناءً على مفتاح لوني
-  Widget categoryContainer({
-    required String colorKey,
-    EdgeInsets? padding,
-    EdgeInsets? margin,
-    double? borderRadius,
-    VoidCallback? onTap,
-  }) {
-    return AppContainerBuilder.gradient(
-      child: this,
-      colors: [
-        AppColorSystem.getColor(colorKey),
-        AppColorSystem.getDarkColor(colorKey),
-      ],
-      padding: padding,
-      margin: margin,
-      borderRadius: borderRadius,
-    ).let((container) => onTap != null 
-        ? GestureDetector(onTap: onTap, child: container)
-        : container);
+      onTap: onTap,
+    );
   }
   
   /// تطبيق حاوية زجاجية
   Widget glassContainer({
-    double blur = 10,
+    String? colorKey,
+    Color? backgroundColor,
     EdgeInsets? padding,
     EdgeInsets? margin,
     double? borderRadius,
@@ -695,13 +502,13 @@ extension AppContainerExtension on Widget {
   }) {
     return AppContainerBuilder.glass(
       child: this,
-      blur: blur,
+      colorKey: colorKey,
+      backgroundColor: backgroundColor,
       padding: padding,
       margin: margin,
       borderRadius: borderRadius,
-    ).let((container) => onTap != null 
-        ? GestureDetector(onTap: onTap, child: container)
-        : container);
+      onTap: onTap,
+    );
   }
   
   /// تطبيق حاوية للبطاقة
@@ -718,9 +525,8 @@ extension AppContainerExtension on Widget {
       colorKey: colorKey,
       withGlass: withGlass,
       margin: margin,
-    ).let((container) => onTap != null 
-        ? GestureDetector(onTap: onTap, child: container)
-        : container);
+      onTap: onTap,
+    );
   }
 
   /// تطبيق حاوية للأذكار
@@ -751,19 +557,5 @@ extension AppContainerExtension on Widget {
       padding: padding,
       margin: margin,
     );
-  }
-}
-
-/// Extension مساعدة
-extension WidgetExtension on Widget {
-  T let<T>(T Function(Widget) operation) => operation(this);
-}
-
-/// Extension للألوان - محلي لتجنب التضارب
-extension _ColorHelper on Color {
-  Color darken([double amount = 0.1]) {
-    final hsl = HSLColor.fromColor(this);
-    final lightness = (hsl.lightness - amount).clamp(0.0, 1.0);
-    return hsl.withLightness(lightness).toColor();
   }
 }

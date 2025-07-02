@@ -1,4 +1,4 @@
-// lib/app/themes/core/systems/app_size_system.dart - النسخة النظيفة المنفصلة
+// lib/app/themes/core/systems/app_size_system.dart - بدون Extensions مكررة
 import 'package:flutter/material.dart';
 import '../../theme_constants.dart';
 
@@ -383,47 +383,3 @@ class DialogSizes {
   });
 }
 
-/// Extension لتسهيل الاستخدام
-extension ComponentSizeExtension on ComponentSize {
-  /// الحصول على الارتفاع
-  double get height => AppSizeSystem.getHeight(this);
-  
-  /// الحصول على العرض
-  double get width => AppSizeSystem.getWidth(this);
-  
-  /// الحصول على حجم الأيقونة
-  double get iconSize => AppSizeSystem.getIconSize(this);
-  
-  /// الحصول على حجم الخط
-  double get fontSize => AppSizeSystem.getFontSize(this);
-  
-  /// الحصول على الحشو الداخلي
-  EdgeInsets get padding => AppSizeSystem.getPadding(this);
-  
-  /// الحصول على نصف قطر الحدود
-  double get borderRadius => AppSizeSystem.getBorderRadius(this);
-  
-  /// الحصول على جميع الأحجام
-  ComponentSizes get sizes => AppSizeSystem.getSizes(this);
-  
-  /// الحصول على أحجام الأزرار
-  ButtonSizes get buttonSizes => AppSizeSystem.getButtonSizes(this);
-  
-  /// الحصول على أحجام الإدخال
-  InputSizes get inputSizes => AppSizeSystem.getInputSizes(this);
-  
-  /// الحصول على أحجام البطاقات
-  CardSizes get cardSizes => AppSizeSystem.getCardSizes(this);
-  
-  /// الحصول على أحجام التحميل
-  LoadingSizes get loadingSizes => AppSizeSystem.getLoadingSizes(this);
-  
-  /// الحصول على أحجام الحوارات
-  DialogSizes get dialogSizes => AppSizeSystem.getDialogSizes(this);
-}
-
-/// Extension للسياق للحصول على الحجم المتجاوب
-extension ResponsiveSizeExtension on BuildContext {
-  /// الحصول على الحجم المتجاوب
-  ComponentSize get responsiveSize => AppSizeSystem.getResponsiveSize(this);
-}

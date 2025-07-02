@@ -1,38 +1,32 @@
-// lib/app/themes/core/helpers/category_helper.dart - النسخة المُبسطة
+// lib/app/themes/core/helpers/category_helper.dart - بدون Extensions مكررة
 import 'package:flutter/material.dart';
 import '../systems/app_color_system.dart';
 import '../systems/app_icons_system.dart';
 
-/// مساعد بسيط للفئات - يعيد التوجيه فقط لـ AppColorSystem
+/// مساعد الفئات - مبسط ويعيد التوجيه فقط (بدون تكرار)
 class CategoryHelper {
   CategoryHelper._();
 
-  /// الحصول على لون الفئة
-  static Color getCategoryColor(String categoryId) {
-    return AppColorSystem.getCategoryColor(categoryId);
-  }
+  // ===== إعادة التوجيه للأنظمة الموحدة - بدون تكرار =====
+  
+  static Color getCategoryColor(String categoryId) => 
+      AppColorSystem.getCategoryColor(categoryId);
 
-  /// الحصول على لون الفئة الفاتح
-  static Color getCategoryLightColor(String categoryId) {
-    return AppColorSystem.getCategoryLightColor(categoryId);
-  }
+  static Color getCategoryLightColor(String categoryId) => 
+      AppColorSystem.getCategoryLightColor(categoryId);
 
-  /// الحصول على لون الفئة الداكن
-  static Color getCategoryDarkColor(String categoryId) {
-    return AppColorSystem.getCategoryDarkColor(categoryId);
-  }
+  static Color getCategoryDarkColor(String categoryId) => 
+      AppColorSystem.getCategoryDarkColor(categoryId);
 
-  /// الحصول على أيقونة الفئة
-  static IconData getCategoryIcon(String categoryId) {
-    return AppIconsSystem.getCategoryIcon(categoryId);
-  }
+  static IconData getCategoryIcon(String categoryId) => 
+      AppIconsSystem.getCategoryIcon(categoryId);
 
-  /// الحصول على تدرج لوني للفئة
-  static LinearGradient getCategoryGradient(String categoryId) {
-    return AppColorSystem.getCategoryGradient(categoryId);
-  }
+  static LinearGradient getCategoryGradient(String categoryId) => 
+      AppColorSystem.getCategoryGradient(categoryId);
 
-  /// الحصول على وصف الفئة
+  // ===== البيانات الفريدة لـ CategoryHelper فقط =====
+
+  /// الحصول على وصف الفئة - المنطق الوحيد المتبقي هنا
   static String getCategoryDescription(String categoryId) {
     switch (categoryId.toLowerCase()) {
       case 'morning':
@@ -62,7 +56,7 @@ class CategoryHelper {
     }
   }
 
-  /// التحقق من ضرورة التفعيل التلقائي للفئة
+  /// التحقق من ضرورة التفعيل التلقائي
   static bool shouldAutoEnable(String categoryId) {
     switch (categoryId.toLowerCase()) {
       case 'morning':
@@ -98,32 +92,24 @@ class CategoryHelper {
   /// الحصول على أولوية الفئة للترتيب
   static int getCategoryPriority(String categoryId) {
     switch (categoryId.toLowerCase()) {
-      case 'prayer_times':
-        return 1;
+      case 'prayer_times': return 1;
       case 'morning':
-      case 'الصباح':
-        return 2;
+      case 'الصباح': return 2;
       case 'evening':
-      case 'المساء':
-        return 3;
+      case 'المساء': return 3;
       case 'prayer':
-      case 'بعد الصلاة':
-        return 4;
+      case 'بعد الصلاة': return 4;
       case 'sleep':
-      case 'النوم':
-        return 5;
-      case 'qibla':
-        return 6;
-      case 'tasbih':
-        return 7;
-      case 'quran':
-        return 8;
-      case 'dua':
-        return 9;
-      default:
-        return 99;
+      case 'النوم': return 5;
+      case 'qibla': return 6;
+      case 'tasbih': return 7;
+      case 'quran': return 8;
+      case 'dua': return 9;
+      default: return 99;
     }
   }
+
+  // ===== دوال التصنيف والفلترة =====
 
   /// ترتيب الفئات حسب الأولوية
   static List<T> sortCategoriesByPriority<T>(
@@ -150,17 +136,3 @@ class CategoryHelper {
   }
 }
 
-/// Extension لتسهيل الاستخدام
-extension CategoryExtension on String {
-  /// الحصول على لون الفئة
-  Color get categoryColor => CategoryHelper.getCategoryColor(this);
-  
-  /// الحصول على أيقونة الفئة
-  IconData get categoryIcon => CategoryHelper.getCategoryIcon(this);
-  
-  /// الحصول على وصف الفئة
-  String get categoryDescription => CategoryHelper.getCategoryDescription(this);
-  
-  /// الحصول على تدرج الفئة
-  LinearGradient get categoryGradient => CategoryHelper.getCategoryGradient(this);
-}

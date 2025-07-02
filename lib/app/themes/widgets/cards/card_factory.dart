@@ -1,13 +1,47 @@
-// lib/app/themes/widgets/cards/card_factory.dart - إصلاح الاستدعاءات المحذوفة
+// lib/app/themes/widgets/cards/card_factory.dart - نسخة منظفة (بدون تكرار)
 import 'package:flutter/material.dart';
 import '../../theme_constants.dart';
-import '../../core/theme_extensions.dart';
 import '../../core/systems/app_color_system.dart';
+import '../../core/systems/app_icons_system.dart';
 import 'card_types.dart';
 
-/// Factory واحد فقط لجميع البطاقات - بسيط ونظيف
+/// Factory واحد لجميع البطاقات - منظف من التكرار
 class CardFactory {
   CardFactory._();
+
+  // ===== دوال مساعدة داخلية - تجنب التكرار =====
+  
+  /// الحصول على اللون بذكاء - دالة واحدة لكل المصنع
+  static Color _getEffectiveColor({
+    Color? providedColor,
+    String? categoryType,
+    String? quoteType,
+    Color fallback = AppColorSystem.primary,
+  }) {
+    if (providedColor != null) return providedColor;
+    
+    if (categoryType != null) {
+      return AppColorSystem.getCategoryColor(categoryType);
+    }
+    
+    if (quoteType != null) {
+      return AppColorSystem.getQuoteColor(quoteType);
+    }
+    
+    return fallback;
+  }
+
+  /// إنشاء تدرج ذكي - دالة واحدة
+  static List<Color> _createGradientColors(Color baseColor, [List<Color>? provided]) {
+    if (provided != null && provided.isNotEmpty) return provided;
+    
+    return [
+      baseColor,
+      AppColorSystem.getDarkColor(baseColor.toString()),
+    ];
+  }
+
+  // ===== Factory Methods الأساسية - منطق موحد =====
 
   /// بطاقة بسيطة
   static CardProperties simple({
@@ -23,7 +57,7 @@ class CardFactory {
       subtitle: subtitle,
       icon: icon,
       onTap: onTap,
-      primaryColor: primaryColor,
+      primaryColor: primaryColor ?? AppColorSystem.primary,
     );
   }
 
@@ -36,16 +70,16 @@ class CardFactory {
     int totalCount = 1,
     bool isFavorite = false,
     Color? primaryColor,
-    String? categoryType, // لتحديد اللون تلقائياً
+    String? categoryType,
     VoidCallback? onTap,
     VoidCallback? onFavoriteToggle,
     List<CardAction>? actions,
   }) {
-    // تحديد اللون تلقائياً حسب النوع إذا لم يُحدد
-    Color effectiveColor = primaryColor ?? AppColorSystem.primary;
-    if (primaryColor == null && categoryType != null) {
-      effectiveColor = AppColorSystem.getCategoryColor(categoryType);
-    }
+    final effectiveColor = _getEffectiveColor(
+      providedColor: primaryColor,
+      categoryType: categoryType,
+      fallback: AppColorSystem.primary,
+    );
 
     return CardProperties(
       type: CardType.athkar,
@@ -70,26 +104,13 @@ class CardFactory {
     String? category,
     Color? primaryColor,
     List<Color>? gradientColors,
-    String? quoteType, // verse, hadith, dua
+    String? quoteType,
   }) {
-    // تحديد اللون تلقائياً حسب النوع
-    Color effectiveColor = primaryColor ?? AppColorSystem.primary;
-    if (primaryColor == null && quoteType != null) {
-      switch (quoteType.toLowerCase()) {
-        case 'verse':
-        case 'آية':
-          effectiveColor = AppColorSystem.primary;
-          break;
-        case 'hadith':
-        case 'حديث':
-          effectiveColor = AppColorSystem.accent;
-          break;
-        case 'dua':
-        case 'دعاء':
-          effectiveColor = AppColorSystem.tertiary;
-          break;
-      }
-    }
+    final effectiveColor = _getEffectiveColor(
+      providedColor: primaryColor,
+      quoteType: quoteType,
+      fallback: AppColorSystem.primary,
+    );
 
     return CardProperties(
       type: CardType.quote,
@@ -98,10 +119,7 @@ class CardFactory {
       source: author,
       subtitle: category,
       primaryColor: effectiveColor,
-      gradientColors: gradientColors ?? [
-        effectiveColor,
-        effectiveColor.darken(0.2),
-      ],
+      gradientColors: _createGradientColors(effectiveColor, gradientColors),
     );
   }
 
@@ -120,7 +138,7 @@ class CardFactory {
       subtitle: subtitle,
       icon: icon,
       onTap: onTap,
-      primaryColor: iconColor,
+      primaryColor: iconColor ?? AppColorSystem.primary,
       trailing: trailing,
     );
   }
@@ -139,11 +157,7 @@ class CardFactory {
       title: title,
       icon: icon,
       primaryColor: primaryColor,
-      gradientColors: [
-        primaryColor.withValues(alpha: 0.95),
-        primaryColor.darken(0.15).withValues(alpha: 0.90),
-        primaryColor.darken(0.25).withValues(alpha: 0.85),
-      ],
+      gradientColors: _createGlassGradientColors(primaryColor),
       onTap: onTap,
       margin: margin ?? EdgeInsets.zero,
       padding: padding ?? const EdgeInsets.all(ThemeConstants.space5),
@@ -151,9 +165,18 @@ class CardFactory {
     );
   }
 
-  // ===== Factory Methods مبسطة للاستخدام السريع =====
+  /// دالة مساعدة للتدرج الزجاجي
+  static List<Color> _createGlassGradientColors(Color baseColor) {
+    return [
+      baseColor.withValues(alpha: 0.95),
+      AppColorSystem.getDarkColor(baseColor.toString()).withValues(alpha: 0.90),
+      AppColorSystem.getDarkColor(baseColor.toString()).withValues(alpha: 0.85),
+    ];
+  }
 
-  /// أذكار الصباح - استخدام athkar() مع نوع محدد
+  // ===== Factory Methods مبسطة - استخدام الدوال الموحدة =====
+
+  /// أذكار الصباح
   static CardProperties morningAthkar({
     required String content,
     String? source,
@@ -171,12 +194,11 @@ class CardFactory {
       totalCount: totalCount,
       onTap: onTap,
       actions: actions,
-      primaryColor: AppColorSystem.primary,
-      categoryType: 'morning',
+      categoryType: 'morning', // يحدد اللون تلقائياً
     );
   }
 
-  /// أذكار المساء - استخدام athkar() مع نوع محدد
+  /// أذكار المساء
   static CardProperties eveningAthkar({
     required String content,
     String? source,
@@ -194,12 +216,11 @@ class CardFactory {
       totalCount: totalCount,
       onTap: onTap,
       actions: actions,
-      primaryColor: AppColorSystem.accent,
-      categoryType: 'evening',
+      categoryType: 'evening', // يحدد اللون تلقائياً
     );
   }
 
-  /// أذكار النوم - استخدام athkar() مع نوع محدد
+  /// أذكار النوم
   static CardProperties sleepAthkar({
     required String content,
     String? source,
@@ -217,12 +238,11 @@ class CardFactory {
       totalCount: totalCount,
       onTap: onTap,
       actions: actions,
-      primaryColor: AppColorSystem.tertiary,
-      categoryType: 'sleep',
+      categoryType: 'sleep', // يحدد اللون تلقائياً
     );
   }
 
-  /// آية قرآنية - استخدام quote() مع نوع محدد
+  /// آية قرآنية
   static CardProperties verse({
     required String verse,
     String? surah,
@@ -232,12 +252,12 @@ class CardFactory {
       quote: verse,
       author: surah,
       category: 'آية قرآنية',
-      primaryColor: primaryColor ?? AppColorSystem.primary,
-      quoteType: 'verse',
+      primaryColor: primaryColor,
+      quoteType: 'verse', // يحدد اللون تلقائياً
     );
   }
 
-  /// حديث نبوي - استخدام quote() مع نوع محدد
+  /// حديث نبوي
   static CardProperties hadith({
     required String hadith,
     String? narrator,
@@ -247,12 +267,12 @@ class CardFactory {
       quote: hadith,
       author: narrator,
       category: 'حديث شريف',
-      primaryColor: primaryColor ?? AppColorSystem.accent,
-      quoteType: 'hadith',
+      primaryColor: primaryColor,
+      quoteType: 'hadith', // يحدد اللون تلقائياً
     );
   }
 
-  /// دعاء مأثور - استخدام quote() مع نوع محدد
+  /// دعاء مأثور
   static CardProperties dua({
     required String dua,
     String? source,
@@ -262,12 +282,12 @@ class CardFactory {
       quote: dua,
       author: source,
       category: 'دعاء مأثور',
-      primaryColor: primaryColor ?? AppColorSystem.tertiary,
-      quoteType: 'dua',
+      primaryColor: primaryColor,
+      quoteType: 'dua', // يحدد اللون تلقائياً
     );
   }
 
-  /// بطاقة فئة أذكار - استخدام glassCategory() مع تحديد تلقائي للون والأيقونة
+  /// بطاقة فئة أذكار - استخدام الدوال الموحدة
   static CardProperties athkarCategory({
     required String title,
     required String categoryId,
@@ -275,8 +295,8 @@ class CardFactory {
   }) {
     return glassCategory(
       title: title,
-      icon: _getCategoryIcon(categoryId),
-      primaryColor: _getCategoryColor(categoryId),
+      icon: AppIconsSystem.getCategoryIcon(categoryId), // من النظام الموحد
+      primaryColor: AppColorSystem.getCategoryColor(categoryId), // من النظام الموحد
       onTap: onTap,
     );
   }
@@ -294,47 +314,5 @@ class CardFactory {
       primaryColor: primaryColor ?? AppColorSystem.primary,
       onTap: onTap,
     );
-  }
-
-  // ===== دوال مساعدة خاصة =====
-  
-  /// الحصول على لون الفئة - مبسط
-  static Color _getCategoryColor(String categoryId) {
-    switch (categoryId.toLowerCase()) {
-      case 'morning':
-      case 'الصباح':
-        return AppColorSystem.primary;
-      case 'evening':
-      case 'المساء':
-        return AppColorSystem.accent;
-      case 'sleep':
-      case 'النوم':
-        return AppColorSystem.tertiary;
-      case 'prayer':
-      case 'بعد الصلاة':
-        return AppColorSystem.primaryLight;
-      default:
-        return AppColorSystem.primary;
-    }
-  }
-
-  /// الحصول على أيقونة الفئة - مبسط
-  static IconData _getCategoryIcon(String categoryId) {
-    switch (categoryId.toLowerCase()) {
-      case 'morning':
-      case 'الصباح':
-        return Icons.wb_sunny_rounded;
-      case 'evening':
-      case 'المساء':
-        return Icons.nights_stay_rounded;
-      case 'sleep':
-      case 'النوم':
-        return Icons.bedtime_rounded;
-      case 'prayer':
-      case 'بعد الصلاة':
-        return Icons.mosque_rounded;
-      default:
-        return Icons.menu_book_rounded;
-    }
   }
 }

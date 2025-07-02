@@ -1,11 +1,12 @@
-// lib/app/themes/core/theme_extensions.dart - النسخة المُبسطة والموحدة
+// lib/app/themes/core/theme_extensions.dart - Extensions موحدة (بدون تكرار)
 import 'package:flutter/material.dart';
 import '../theme_constants.dart';
 import 'systems/app_color_system.dart';
 import 'systems/app_icons_system.dart';
 import 'systems/app_size_system.dart';
+import 'helpers/category_helper.dart';
 
-/// Extension رئيسي للـ BuildContext - كل شيء في مكان واحد
+/// Extension رئيسي للـ BuildContext - موحد وشامل
 extension AppThemeExtension on BuildContext {
   // ===== الوصول المباشر للثيم =====
   ThemeData get theme => Theme.of(this);
@@ -52,7 +53,6 @@ extension AppThemeExtension on BuildContext {
   // ===== دوال الألوان والتدرجات =====
   Color getColor(String key) => AppColorSystem.getColor(key);
   LinearGradient getGradient(String key) => AppColorSystem.getGradient(key);
-  LinearGradient getTimeBasedGradient() => AppColorSystem.getTimeBasedGradient();
 
   // ===== معلومات الشاشة =====
   double get screenWidth => MediaQuery.sizeOf(this).width;
@@ -88,7 +88,7 @@ extension AppThemeExtension on BuildContext {
   double get safeBottom => screenPadding.bottom;
 }
 
-/// Extension للألوان - مُبسط ومُحسن
+/// Extension للألوان - موحد وشامل (يحل محل جميع Extensions المكررة)
 extension ColorExtensions on Color {
   /// إضافة شفافية آمنة
   Color withOpacitySafe(double opacity) {
@@ -124,7 +124,7 @@ extension ColorExtensions on Color {
   Color get semiTransparent => withValues(alpha: 0.5);
 }
 
-/// Extension للنصوص - مُبسط
+/// Extension للنصوص - مبسط
 extension TextStyleExtensions on TextStyle {
   // أوزان الخط
   TextStyle get bold => copyWith(fontWeight: ThemeConstants.bold);
@@ -216,30 +216,35 @@ extension WidgetExtensions on Widget {
   );
 }
 
-/// Extension موحد للـ String - كل شيء في مكان واحد
+/// Extension موحد للـ String - يحل محل جميع Extensions المكررة
 extension StringAppExtension on String {
-  // ===== الألوان =====
+  // ===== الألوان من AppColorSystem =====
   Color get color => AppColorSystem.getColor(this);
   Color get lightColor => AppColorSystem.getLightColor(this);
   Color get darkColor => AppColorSystem.getDarkColor(this);
   
-  // للتوافق مع الكود الموجود
+  // للتوافق مع الكود الموجود (نفس الدوال بدون تكرار المنطق)
   Color get categoryColor => AppColorSystem.getCategoryColor(this);
   Color get prayerColor => AppColorSystem.getPrayerColor(this);
   Color get quoteColor => AppColorSystem.getQuoteColor(this);
   
-  // ===== الأيقونات =====
+  // ===== الأيقونات من AppIconsSystem =====
   IconData get categoryIcon => AppIconsSystem.getCategoryIcon(this);
   IconData get prayerIcon => AppIconsSystem.getPrayerIcon(this);
   IconData get quoteTypeIcon => AppIconsSystem.getQuoteTypeIcon(this);
   IconData get stateIcon => AppIconsSystem.getStateIcon(this);
   
-  // ===== التدرجات =====
+  // ===== التدرجات من AppColorSystem =====
   LinearGradient get gradient => AppColorSystem.getGradient(this);
   LinearGradient get categoryGradient => AppColorSystem.getCategoryGradient(this);
   LinearGradient get prayerGradient => AppColorSystem.getPrayerGradient(this);
   LinearGradient get lightGradient => AppColorSystem.getLightGradient(this);
-  LinearGradient get tripleGradient => AppColorSystem.getTripleGradient(this);
+  
+  // ===== خصائص الفئات من CategoryHelper =====
+  String get categoryDescription => CategoryHelper.getCategoryDescription(this);
+  bool get shouldAutoEnable => CategoryHelper.shouldAutoEnable(this);
+  TimeOfDay get defaultReminderTime => CategoryHelper.getDefaultReminderTime(this);
+  int get categoryPriority => CategoryHelper.getCategoryPriority(this);
   
   // ===== دوال مساعدة =====
   /// الحصول على لون الظل
@@ -248,4 +253,49 @@ extension StringAppExtension on String {
       
   /// التحقق من وجود اللون
   bool get hasColor => AppColorSystem.hasColor(this);
+}
+
+/// Extension لأحجام المكونات
+extension ComponentSizeExtension on ComponentSize {
+  /// الحصول على الارتفاع
+  double get height => AppSizeSystem.getHeight(this);
+  
+  /// الحصول على العرض
+  double get width => AppSizeSystem.getWidth(this);
+  
+  /// الحصول على حجم الأيقونة
+  double get iconSize => AppSizeSystem.getIconSize(this);
+  
+  /// الحصول على حجم الخط
+  double get fontSize => AppSizeSystem.getFontSize(this);
+  
+  /// الحصول على الحشو الداخلي
+  EdgeInsets get padding => AppSizeSystem.getPadding(this);
+  
+  /// الحصول على نصف قطر الحدود
+  double get borderRadius => AppSizeSystem.getBorderRadius(this);
+  
+  /// الحصول على جميع الأحجام
+  ComponentSizes get sizes => AppSizeSystem.getSizes(this);
+  
+  /// الحصول على أحجام الأزرار
+  ButtonSizes get buttonSizes => AppSizeSystem.getButtonSizes(this);
+  
+  /// الحصول على أحجام الإدخال
+  InputSizes get inputSizes => AppSizeSystem.getInputSizes(this);
+  
+  /// الحصول على أحجام البطاقات
+  CardSizes get cardSizes => AppSizeSystem.getCardSizes(this);
+  
+  /// الحصول على أحجام التحميل
+  LoadingSizes get loadingSizes => AppSizeSystem.getLoadingSizes(this);
+  
+  /// الحصول على أحجام الحوارات
+  DialogSizes get dialogSizes => AppSizeSystem.getDialogSizes(this);
+}
+
+/// Extension للسياق للحصول على الحجم المتجاوب
+extension ResponsiveSizeExtension on BuildContext {
+  /// الحصول على الحجم المتجاوب
+  ComponentSize get responsiveSize => AppSizeSystem.getResponsiveSize(this);
 }
