@@ -1,10 +1,9 @@
-// lib/features/settings/screens/settings_screen.dart - مُصحح
-
+// lib/features/settings/screens/settings_screen.dart - محدثة بالكامل للنظام الموحد
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/app_theme.dart'; // ✅ النظام الموحد
 import '../../../app/di/service_locator.dart';
 import '../../../app/routes/app_router.dart';
 import '../../../core/constants/app_constants.dart';
@@ -12,8 +11,7 @@ import '../../../core/infrastructure/services/permissions/permission_service.dar
 import '../../../core/infrastructure/services/logging/logger_service.dart';
 import '../services/settings_services_manager.dart';
 import '../widgets/service_status_widgets.dart';
-import '../widgets/settings_section.dart';
-import '../widgets/settings_tile.dart';
+
 import '../models/app_settings.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -430,10 +428,13 @@ class _SettingsScreenState extends State<SettingsScreen>
         AppPermissionType.batteryOptimization,
       ];
       
+      // ✅ استخدام AppLoading الموحد
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const _PermissionProgressDialog(),
+        builder: (context) => AppLoading.page(
+          message: 'جاري طلب الأذونات...',
+        ),
       );
       
       final result = await _servicesManager!.requestMultiplePermissions(
@@ -528,12 +529,32 @@ $appUrl
   }
   
   void _showAboutDialog() {
-    showDialog(
+    AppInfoDialog.show(
       context: context,
-      builder: (context) => _AboutDialog(
-        servicesManager: _servicesManager,
-        onContactSupport: _contactSupport,
-      ),
+      title: AppConstants.appName,
+      content: '''
+حصن المسلم - تطبيق شامل للمسلم
+
+الإصدار: ${AppConstants.appVersion}
+رقم البناء: ${AppConstants.appBuildNumber}
+
+تطبيق شامل للمسلم يحتوي على الأذكار اليومية ومواقيت الصلاة واتجاه القبلة والمزيد من الميزات الإسلامية المفيدة.
+
+صُنع بحب لخدمة المسلمين في جميع أنحاء العالم.
+
+© 2024 جميع الحقوق محفوظة''',
+      icon: AppIconsSystem.info,
+      accentColor: AppColorSystem.primary,
+      actions: [
+        DialogAction(
+          label: 'تواصل معنا',
+          onPressed: () {
+            Navigator.of(context).pop();
+            _contactSupport();
+          },
+          isPrimary: true,
+        ),
+      ],
     );
   }
   
@@ -554,23 +575,21 @@ $appUrl
     }
   }
   
-  // ==================== Helper Methods - محسنة بالنظام الموحد ====================
+  // ==================== Helper Methods - النظام الموحد ====================
   
   void _showSuccessMessage(String message) {
     if (!mounted) return;
-    // ✅ تحسين: استخدام AppSnackBar مباشرة
     AppSnackBar.showSuccess(context: context, message: message);
   }
   
   void _showErrorMessage(String message) {
     if (!mounted) return;
-    // ✅ تحسين: استخدام AppSnackBar مباشرة مع action
     AppSnackBar.showError(
       context: context,
       message: message,
       action: SnackBarAction(
         label: 'إعادة المحاولة',
-        textColor: context.surfaceColor,
+        textColor: Colors.white,
         onPressed: _refreshSettings,
       ),
     );
@@ -578,7 +597,6 @@ $appUrl
   
   void _showInfoMessage(String message) {
     if (!mounted) return;
-    // ✅ تحسين: استخدام AppSnackBar مباشرة
     AppSnackBar.showInfo(context: context, message: message);
   }
   
@@ -592,28 +610,25 @@ $appUrl
   }) async {
     if (!mounted) return false;
     
-    // ✅ تحسين: استخدام AppInfoDialog الموحد
     return await AppInfoDialog.showConfirmation(
       context: context,
       title: title,
       content: content,
       confirmText: confirmText,
       cancelText: cancelText,
-      icon: icon ?? Icons.help_outline,
-      destructive: destructive,
+      isDestructive: destructive,
     ) ?? false;
   }
   
   void _showPermissionDeniedDialog(String permissionName) {
     if (!mounted) return;
     
-    // ✅ تحسين: استخدام AppInfoDialog الموحد
     AppInfoDialog.show(
       context: context,
       title: 'إذن $permissionName مطلوب',
       content: 'لاستخدام هذه الميزة، يجب منح إذن $permissionName. يمكنك تفعيله من إعدادات التطبيق.',
-      icon: Icons.security,
-      accentColor: context.warningColor,
+      icon: AppIconsSystem.getStateIcon('warning'),
+      accentColor: AppColorSystem.warning,
       actions: [
         DialogAction(
           label: 'فتح الإعدادات',
@@ -632,13 +647,12 @@ $appUrl
   void _showBatteryOptimizationFailedDialog() {
     if (!mounted) return;
     
-    // ✅ تحسين: استخدام AppInfoDialog الموحد
     AppInfoDialog.show(
       context: context,
       title: 'تحسين البطارية',
       content: 'لم نتمكن من تحسين إعدادات البطارية تلقائياً. يرجى فتح إعدادات النظام وإيقاف تحسين البطارية لهذا التطبيق يدوياً.',
       icon: Icons.battery_saver,
-      accentColor: context.warningColor,
+      accentColor: AppColorSystem.warning,
       actions: [
         DialogAction(
           label: 'فتح الإعدادات',
@@ -661,13 +675,12 @@ $appUrl
         .map((p) => _getPermissionDisplayName(p))
         .join('، ');
     
-    // ✅ تحسين: استخدام AppInfoDialog الموحد
     AppInfoDialog.show(
       context: context,
       title: 'أذونات مفقودة',
       content: 'تم منح بعض الأذونات بنجاح، لكن الأذونات التالية لم يتم منحها:\n\n$deniedPermissions\n\nيمكنك منحها لاحقاً من إعدادات التطبيق.',
-      icon: Icons.security,
-      accentColor: context.warningColor,
+      icon: AppIconsSystem.getStateIcon('warning'),
+      accentColor: AppColorSystem.warning,
       actions: [
         DialogAction(
           label: 'فتح الإعدادات',
@@ -689,12 +702,12 @@ $appUrl
     
     if (_errorMessage != null && _servicesManager == null) {
       return Scaffold(
-        backgroundColor: context.backgroundColor,
+        backgroundColor: AppColorSystem.getBackground(context),
         appBar: CustomAppBar.simple(
           title: 'الإعدادات',
           actions: [
             AppBarAction(
-              icon: Icons.refresh,
+              icon: AppIconsSystem.loading,
               onPressed: () {
                 setState(() => _errorMessage = null);
                 _initializeServices();
@@ -709,19 +722,19 @@ $appUrl
     
     if (_loading) {
       return Scaffold(
-        backgroundColor: context.backgroundColor,
+        backgroundColor: AppColorSystem.getBackground(context),
         appBar: CustomAppBar.simple(title: 'الإعدادات'),
         body: _buildLoadingView(),
       );
     }
 
     return Scaffold(
-      backgroundColor: context.backgroundColor,
+      backgroundColor: AppColorSystem.getBackground(context),
       appBar: CustomAppBar.simple(
         title: 'الإعدادات',
         actions: [
           AppBarAction(
-            icon: Icons.refresh,
+            icon: AppIconsSystem.loading,
             onPressed: _refreshSettings,
             tooltip: 'تحديث',
           ),
@@ -729,14 +742,13 @@ $appUrl
       ),
       body: RefreshIndicator(
         onRefresh: _refreshSettings,
-        color: context.primaryColor,
+        color: AppColorSystem.primary,
         child: _buildContent(),
       ),
     );
   }
   
   Widget _buildErrorView() {
-    // ✅ تحسين: استخدام AppEmptyState الموحد
     return AppEmptyState.error(
       message: _errorMessage ?? 'حدث خطأ غير معروف',
       onRetry: () {
@@ -747,8 +759,10 @@ $appUrl
   }
   
   Widget _buildLoadingView() {
-    // ✅ تحسين: استخدام AppLoading الموحد
-    return AppLoading.page(message: 'جاري تحميل الإعدادات...');
+    return AppLoading.page(
+      message: 'جاري تحميل الإعدادات...',
+      color: AppColorSystem.primary,
+    );
   }
   
   Widget _buildContent() {
@@ -757,7 +771,7 @@ $appUrl
       padding: const EdgeInsets.only(bottom: ThemeConstants.space8),
       child: Column(
         children: [
-          ThemeConstants.space4.h,
+          const SizedBox(height: ThemeConstants.space4),
           
           if (_errorMessage != null) _buildErrorBanner(),
           
@@ -768,176 +782,345 @@ $appUrl
               onRefresh: _refreshSettings,
             ),
           
-          SettingsSection(
-            title: 'الأذونات والصلاحيات',
-            icon: Icons.security_outlined,
-            children: [
-              SettingsTile(
-                icon: Icons.notifications_active_outlined,
-                title: 'الإشعارات',
-                subtitle: _settings.notificationsEnabled 
-                    ? 'الإشعارات مفعلة - اضغط للتخصيص' 
-                    : 'الإشعارات معطلة - اضغط للتفعيل',
-                onTap: _handleNotificationPermission,
-                trailing: _settings.notificationsEnabled
-                    ? Icon(Icons.settings, color: context.primaryColor)
-                    : Icon(Icons.add_circle, color: context.warningColor),
-                iconColor: _settings.notificationsEnabled 
-                    ? context.successColor 
-                    : context.warningColor,
-                badge: !_settings.notificationsEnabled 
-                    ? SettingsBadge.warning()
-                    : null,
-                enabled: _servicesManager != null,
+          // ✅ القسم الأول: الأذونات
+          _buildPermissionsSection(),
+          
+          // ✅ القسم الثاني: الإشعارات
+          _buildNotificationsSection(),
+          
+          // ✅ القسم الثالث: المظهر
+          _buildAppearanceSection(),
+          
+          // ✅ القسم الرابع: الدعم
+          _buildSupportSection(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPermissionsSection() {
+    return AppCard.custom(
+      type: CardType.normal,
+      style: CardStyle.normal,
+      margin: const EdgeInsets.all(ThemeConstants.space4),
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // رأس القسم
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space4),
+            decoration: BoxDecoration(
+              color: AppColorSystem.primary.withValues(alpha: 0.1),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(ThemeConstants.radiusMd),
+                topRight: Radius.circular(ThemeConstants.radiusMd),
               ),
-              SettingsTile(
-                icon: Icons.location_on_outlined,
-                title: 'الموقع للصلاة',
-                subtitle: _serviceStatus.locationAvailable
-                    ? 'الموقع محدد - اضغط للتحديث'
-                    : 'لم يتم تحديد الموقع',
-                onTap: _handleLocationUpdate,
-                trailing: _isRefreshing
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : _serviceStatus.locationAvailable
-                        ? Icon(Icons.refresh, color: context.primaryColor)
-                        : Icon(Icons.add_location, color: context.warningColor),
-                enabled: !_isRefreshing && _servicesManager != null,
-                iconColor: _serviceStatus.locationAvailable
-                    ? context.successColor
-                    : context.warningColor,
-                badge: !_serviceStatus.locationAvailable 
-                    ? SettingsBadge.warning()
-                    : null,
-              ),
-              SettingsTile(
-                icon: Icons.battery_saver_outlined,
-                title: 'تحسين البطارية',
-                subtitle: _settings.batteryOptimizationDisabled
-                    ? 'تم تحسين إعدادات البطارية'
-                    : 'يُنصح بتحسين إعدادات البطارية',
-                onTap: _handleBatteryOptimization,
-                iconColor: _settings.batteryOptimizationDisabled 
-                    ? context.successColor 
-                    : context.warningColor,
-                trailing: _settings.batteryOptimizationDisabled
-                    ? Icon(Icons.check_circle, color: context.successColor)
-                    : Icon(Icons.warning, color: context.warningColor),
-                badge: !_settings.batteryOptimizationDisabled 
-                    ? SettingsBadge.warning()
-                    : null,
-                enabled: _servicesManager != null,
-              ),
-              SettingsTile(
-                icon: Icons.admin_panel_settings_outlined,
-                title: 'طلب جميع الأذونات',
-                subtitle: 'تفعيل جميع الأذونات دفعة واحدة',
-                onTap: _requestAllPermissions,
-                iconColor: context.primaryColor,
-                trailing: Icon(Icons.security_update_good, color: context.primaryColor),
-                enabled: _servicesManager != null,
-              ),
-            ],
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  AppIconsSystem.getStateIcon('success'),
+                  color: AppColorSystem.primary,
+                  size: ThemeConstants.iconMd,
+                ),
+                const SizedBox(width: ThemeConstants.space3),
+                Text(
+                  'الأذونات والصلاحيات',
+                  style: AppTextStyles.h5.copyWith(
+                    color: AppColorSystem.primary,
+                    fontWeight: ThemeConstants.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
           
-          SettingsSection(
-            title: 'الإشعارات والتنبيهات',
-            icon: Icons.notifications_outlined,
-            children: [
-              SettingsTile(
-                icon: Icons.menu_book_outlined,
-                title: 'إشعارات الأذكار',
-                subtitle: 'تخصيص تذكيرات الأذكار اليومية',
-                onTap: () => Navigator.pushNamed(
-                  context, 
-                  AppRouter.athkarNotificationsSettings,
-                ),
-                enabled: _settings.notificationsEnabled,
-              ),
-              SettingsTile(
-                icon: Icons.mosque_outlined,
-                title: 'إشعارات الصلاة',
-                subtitle: 'تخصيص تنبيهات أوقات الصلاة',
-                onTap: () => Navigator.pushNamed(context, AppRouter.prayerNotificationsSettings),
-                enabled: _settings.notificationsEnabled,
-              ),
-              SettingsTile(
-                icon: Icons.volume_up_outlined,
-                title: 'الصوت',
-                subtitle: 'تفعيل الأصوات مع الإشعارات',
-                trailing: SettingsSwitch(
-                  value: _settings.soundEnabled,
-                  onChanged: _servicesManager != null ? _toggleSound : null,
-                  enabled: _settings.notificationsEnabled && _servicesManager != null,
-                ),
-                enabled: _settings.notificationsEnabled,
-              ),
-              SettingsTile(
-                icon: Icons.vibration_outlined,
-                title: 'الاهتزاز',
-                subtitle: 'تفعيل الاهتزاز مع الإشعارات',
-                trailing: SettingsSwitch(
-                  value: _settings.vibrationEnabled,
-                  onChanged: _servicesManager != null ? _toggleVibration : null,
-                  activeColor: context.primaryColor,
-                  enabled: _servicesManager != null,
-                ),
-              ),
-            ],
+          // محتوى القسم
+          _buildPermissionTile(
+            icon: Icons.notifications_active_outlined,
+            title: 'الإشعارات',
+            subtitle: _settings.notificationsEnabled 
+                ? 'الإشعارات مفعلة - اضغط للتخصيص' 
+                : 'الإشعارات معطلة - اضغط للتفعيل',
+            onTap: _handleNotificationPermission,
+            trailing: _settings.notificationsEnabled
+                ? const Icon(Icons.settings, color: AppColorSystem.primary)
+                : const Icon(Icons.add_circle, color: AppColorSystem.warning),
+            iconColor: _settings.notificationsEnabled 
+                ? AppColorSystem.success 
+                : AppColorSystem.warning,
+            showWarning: !_settings.notificationsEnabled,
+            enabled: _servicesManager != null,
           ),
           
-          SettingsSection(
-            title: 'المظهر والعرض',
-            icon: Icons.palette_outlined,
-            children: [
-              SettingsTile(
-                icon: _settings.isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                title: 'وضع العرض',
-                subtitle: _settings.isDarkMode ? 'الوضع الليلي مفعل' : 'الوضع النهاري مفعل',
-                trailing: SettingsSwitch(
-                  value: _settings.isDarkMode,
-                  onChanged: _servicesManager != null ? _toggleTheme : null,
-                  activeColor: context.primaryColor,
-                  enabled: _servicesManager != null,
-                ),
-                iconColor: _settings.isDarkMode ? Colors.orange : Colors.blue,
-              ),
-            ],
+          _buildDivider(),
+          
+          _buildPermissionTile(
+            icon: Icons.location_on_outlined,
+            title: 'الموقع للصلاة',
+            subtitle: _serviceStatus.locationAvailable
+                ? 'الموقع محدد - اضغط للتحديث'
+                : 'لم يتم تحديد الموقع',
+            onTap: _handleLocationUpdate,
+            trailing: _isRefreshing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : _serviceStatus.locationAvailable
+                    ? const Icon(Icons.refresh, color: AppColorSystem.primary)
+                    : const Icon(Icons.add_location, color: AppColorSystem.warning),
+            enabled: !_isRefreshing && _servicesManager != null,
+            iconColor: _serviceStatus.locationAvailable
+                ? AppColorSystem.success
+                : AppColorSystem.warning,
+            showWarning: !_serviceStatus.locationAvailable,
           ),
           
-          SettingsSection(
-            title: 'الدعم والمعلومات',
-            icon: Icons.help_outline,
-            children: [
-              SettingsTile(
-                icon: Icons.share_outlined,
-                title: 'مشاركة التطبيق',
-                subtitle: 'شارك التطبيق مع الأصدقاء والعائلة',
-                onTap: _shareApp,
+          _buildDivider(),
+          
+          _buildPermissionTile(
+            icon: Icons.battery_saver_outlined,
+            title: 'تحسين البطارية',
+            subtitle: _settings.batteryOptimizationDisabled
+                ? 'تم تحسين إعدادات البطارية'
+                : 'يُنصح بتحسين إعدادات البطارية',
+            onTap: _handleBatteryOptimization,
+            iconColor: _settings.batteryOptimizationDisabled 
+                ? AppColorSystem.success 
+                : AppColorSystem.warning,
+            trailing: _settings.batteryOptimizationDisabled
+                ? const Icon(Icons.check_circle, color: AppColorSystem.success)
+                : const Icon(Icons.warning, color: AppColorSystem.warning),
+            showWarning: !_settings.batteryOptimizationDisabled,
+            enabled: _servicesManager != null,
+          ),
+          
+          _buildDivider(),
+          
+          _buildPermissionTile(
+            icon: Icons.admin_panel_settings_outlined,
+            title: 'طلب جميع الأذونات',
+            subtitle: 'تفعيل جميع الأذونات دفعة واحدة',
+            onTap: _requestAllPermissions,
+            iconColor: AppColorSystem.primary,
+            trailing: const Icon(Icons.security_update_good, color: AppColorSystem.primary),
+            enabled: _servicesManager != null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationsSection() {
+    return AppCard.custom(
+      type: CardType.normal,
+      style: CardStyle.normal,
+      margin: const EdgeInsets.all(ThemeConstants.space4),
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // رأس القسم
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space4),
+            decoration: BoxDecoration(
+              color: AppColorSystem.accent.withValues(alpha: 0.1),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(ThemeConstants.radiusMd),
+                topRight: Radius.circular(ThemeConstants.radiusMd),
               ),
-              SettingsTile(
-                icon: Icons.star_outline,
-                title: 'تقييم التطبيق',
-                subtitle: 'قيم التطبيق على المتجر وادعمنا',
-                onTap: _rateApp,
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.notifications_outlined,
+                  color: AppColorSystem.accent,
+                  size: ThemeConstants.iconMd,
+                ),
+                const SizedBox(width: ThemeConstants.space3),
+                Text(
+                  'الإشعارات والتنبيهات',
+                  style: AppTextStyles.h5.copyWith(
+                    color: AppColorSystem.accent,
+                    fontWeight: ThemeConstants.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          _buildSettingTile(
+            icon: Icons.menu_book_outlined,
+            title: 'إشعارات الأذكار',
+            subtitle: 'تخصيص تذكيرات الأذكار اليومية',
+            onTap: () => Navigator.pushNamed(
+              context, 
+              AppRouter.athkarNotificationsSettings,
+            ),
+            enabled: _settings.notificationsEnabled,
+          ),
+          
+          _buildDivider(),
+          
+          _buildSettingTile(
+            icon: Icons.mosque_outlined,
+            title: 'إشعارات الصلاة',
+            subtitle: 'تخصيص تنبيهات أوقات الصلاة',
+            onTap: () => Navigator.pushNamed(context, AppRouter.prayerNotificationsSettings),
+            enabled: _settings.notificationsEnabled,
+          ),
+          
+          _buildDivider(),
+          
+          _buildSwitchTile(
+            icon: Icons.volume_up_outlined,
+            title: 'الصوت',
+            subtitle: 'تفعيل الأصوات مع الإشعارات',
+            value: _settings.soundEnabled,
+            onChanged: _servicesManager != null ? _toggleSound : null,
+            enabled: _settings.notificationsEnabled && _servicesManager != null,
+          ),
+          
+          _buildDivider(),
+          
+          _buildSwitchTile(
+            icon: Icons.vibration_outlined,
+            title: 'الاهتزاز',
+            subtitle: 'تفعيل الاهتزاز مع الإشعارات',
+            value: _settings.vibrationEnabled,
+            onChanged: _servicesManager != null ? _toggleVibration : null,
+            enabled: _servicesManager != null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppearanceSection() {
+    return AppCard.custom(
+      type: CardType.normal,
+      style: CardStyle.normal,
+      margin: const EdgeInsets.all(ThemeConstants.space4),
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // رأس القسم
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space4),
+            decoration: BoxDecoration(
+              color: AppColorSystem.tertiary.withValues(alpha: 0.1),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(ThemeConstants.radiusMd),
+                topRight: Radius.circular(ThemeConstants.radiusMd),
               ),
-              SettingsTile(
-                icon: Icons.support_agent_outlined,
-                title: 'تواصل معنا',
-                subtitle: 'أرسل استفساراتك ومقترحاتك',
-                onTap: _contactSupport,
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.palette_outlined,
+                  color: AppColorSystem.tertiary,
+                  size: ThemeConstants.iconMd,
+                ),
+                const SizedBox(width: ThemeConstants.space3),
+                Text(
+                  'المظهر والعرض',
+                  style: AppTextStyles.h5.copyWith(
+                    color: AppColorSystem.tertiary,
+                    fontWeight: ThemeConstants.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          _buildSwitchTile(
+            icon: _settings.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+            title: 'وضع العرض',
+            subtitle: _settings.isDarkMode ? 'الوضع الليلي مفعل' : 'الوضع النهاري مفعل',
+            value: _settings.isDarkMode,
+            onChanged: _servicesManager != null ? _toggleTheme : null,
+            iconColor: _settings.isDarkMode ? Colors.orange : Colors.blue,
+            enabled: _servicesManager != null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSupportSection() {
+    return AppCard.custom(
+      type: CardType.normal,
+      style: CardStyle.normal,
+      margin: const EdgeInsets.all(ThemeConstants.space4),
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // رأس القسم
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space4),
+            decoration: BoxDecoration(
+              color: AppColorSystem.info.withValues(alpha: 0.1),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(ThemeConstants.radiusMd),
+                topRight: Radius.circular(ThemeConstants.radiusMd),
               ),
-              SettingsTile(
-                icon: Icons.info_outline,
-                title: 'عن التطبيق',
-                subtitle: 'معلومات الإصدار والمطور',
-                onTap: _showAboutDialog,
-              ),
-            ],
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.help_outline,
+                  color: AppColorSystem.info,
+                  size: ThemeConstants.iconMd,
+                ),
+                const SizedBox(width: ThemeConstants.space3),
+                Text(
+                  'الدعم والمعلومات',
+                  style: AppTextStyles.h5.copyWith(
+                    color: AppColorSystem.info,
+                    fontWeight: ThemeConstants.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          _buildSettingTile(
+            icon: Icons.share_outlined,
+            title: 'مشاركة التطبيق',
+            subtitle: 'شارك التطبيق مع الأصدقاء والعائلة',
+            onTap: _shareApp,
+          ),
+          
+          _buildDivider(),
+          
+          _buildSettingTile(
+            icon: Icons.star_outline,
+            title: 'تقييم التطبيق',
+            subtitle: 'قيم التطبيق على المتجر وادعمنا',
+            onTap: _rateApp,
+          ),
+          
+          _buildDivider(),
+          
+          _buildSettingTile(
+            icon: Icons.support_agent_outlined,
+            title: 'تواصل معنا',
+            subtitle: 'أرسل استفساراتك ومقترحاتك',
+            onTap: _contactSupport,
+          ),
+          
+          _buildDivider(),
+          
+          _buildSettingTile(
+            icon: AppIconsSystem.info,
+            title: 'عن التطبيق',
+            subtitle: 'معلومات الإصدار والمطور',
+            onTap: _showAboutDialog,
           ),
         ],
       ),
@@ -945,231 +1128,288 @@ $appUrl
   }
   
   Widget _buildErrorBanner() {
-    // ✅ تحسين: استخدام AppNoticeCard الموحد
-    return AppNoticeCard.error(
-      title: 'خطأ في النظام',
-      message: _errorMessage!,
-      onClose: () => setState(() => _errorMessage = null),
-      isDismissible: true,
+    return Container(
       margin: const EdgeInsets.all(ThemeConstants.space4),
+      child: AppNoticeCard.error(
+        title: 'خطأ في النظام',
+        message: _errorMessage!,
+        onClose: () => setState(() => _errorMessage = null),
+      ),
     );
   }
-}
 
-// ==================== Dialogs مساعدة ====================
+  // =============== Helper Widgets ===============
 
-class _AboutDialog extends StatelessWidget {
-  final SettingsServicesManager? servicesManager;
-  final VoidCallback onContactSupport;
-
-  const _AboutDialog({
-    required this.servicesManager,
-    required this.onContactSupport,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: ThemeConstants.radiusXl.circular,
-      ),
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 400),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(ThemeConstants.space6),
-              decoration: BoxDecoration(
-                gradient: context.primaryGradient,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(ThemeConstants.radiusXl),
-                  topRight: Radius.circular(ThemeConstants.radiusXl),
-                ),
-              ),
-              child: Column(
+  Widget _buildPermissionTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback? onTap,
+    required Color iconColor,
+    Widget? trailing,
+    bool showWarning = false,
+    bool enabled = true,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        child: Container(
+          padding: const EdgeInsets.all(ThemeConstants.space4),
+          child: Row(
+            children: [
+              Stack(
+                alignment: Alignment.center,
                 children: [
                   Container(
-                    width: 64,
-                    height: 64,
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
-                      color: context.surfaceColor.withOpacitySafe(0.2),
-                      borderRadius: ThemeConstants.radiusMd.circular,
+                      color: enabled 
+                          ? iconColor.withValues(alpha: 0.1)
+                          : AppColorSystem.getTextSecondary(context).withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                     ),
                     child: Icon(
-                      Icons.auto_awesome,
-                      color: context.surfaceColor,
-                      size: 32,
+                      icon,
+                      color: enabled 
+                          ? iconColor
+                          : AppColorSystem.getTextSecondary(context).withValues(alpha: 0.5),
+                      size: ThemeConstants.iconMd,
                     ),
                   ),
-                  ThemeConstants.space3.h,
-                  Text(
-                    AppConstants.appName,
-                    style: context.headlineSmall?.copyWith(
-                      color: context.surfaceColor,
-                      fontWeight: ThemeConstants.bold,
-                    ),
-                  ),
-                  Text(
-                    'حصن المسلم',
-                    style: context.bodyMedium?.copyWith(
-                      color: context.surfaceColor.withOpacitySafe(0.9),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            Padding(
-              padding: const EdgeInsets.all(ThemeConstants.space6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _InfoRow(
-                    icon: Icons.info_outline,
-                    label: 'الإصدار',
-                    value: AppConstants.appVersion,
-                  ),
-                  ThemeConstants.space2.h,
-                  _InfoRow(
-                    icon: Icons.build_outlined,
-                    label: 'رقم البناء',
-                    value: AppConstants.appBuildNumber,
-                  ),
-                  ThemeConstants.space4.h,
-                  Text(
-                    'تطبيق شامل للمسلم يحتوي على الأذكار اليومية ومواقيت الصلاة واتجاه القبلة والمزيد من الميزات الإسلامية المفيدة.',
-                    style: context.bodyMedium?.copyWith(height: 1.6),
-                    textAlign: TextAlign.justify,
-                  ),
-                  ThemeConstants.space4.h,
-                  Container(
-                    padding: const EdgeInsets.all(ThemeConstants.space4),
-                    decoration: BoxDecoration(
-                      color: context.primaryColor.withOpacitySafe(0.1),
-                      borderRadius: ThemeConstants.radiusMd.circular,
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.favorite,
-                          color: context.errorColor,
-                          size: ThemeConstants.iconSm,
+                  
+                  if (showWarning)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: Container(
+                        width: 16,
+                        height: 16,
+                        decoration: const BoxDecoration(
+                          color: AppColorSystem.warning,
+                          shape: BoxShape.circle,
                         ),
-                        ThemeConstants.space2.w,
-                        Expanded(
-                          child: Text(
-                            'صُنع بحب لخدمة المسلمين في جميع أنحاء العالم',
-                            style: context.labelMedium?.copyWith(
-                              color: context.primaryColor,
-                              fontWeight: ThemeConstants.semiBold,
-                            ),
-                          ),
+                        child: const Icon(
+                          Icons.warning,
+                          color: Colors.white,
+                          size: 10,
                         ),
-                      ],
-                    ),
-                  ),
-                  ThemeConstants.space4.h,
-                  Center(
-                    child: Text(
-                      '© 2024 جميع الحقوق محفوظة',
-                      style: context.labelSmall?.copyWith(
-                        color: context.textSecondaryColor,
                       ),
                     ),
-                  ),
                 ],
               ),
-            ),
-            
-            Padding(
-              padding: const EdgeInsets.all(ThemeConstants.space4),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('إغلاق'),
+              
+              const SizedBox(width: ThemeConstants.space4),
+              
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyles.label1.copyWith(
+                        color: enabled 
+                            ? AppColorSystem.getTextPrimary(context)
+                            : AppColorSystem.getTextSecondary(context).withValues(alpha: 0.7),
+                        fontWeight: ThemeConstants.medium,
+                      ),
                     ),
-                  ),
-                  ThemeConstants.space3.w,
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        onContactSupport();
-                      },
-                      icon: const Icon(Icons.support_agent, size: 18),
-                      label: const Text('تواصل معنا'),
+                    const SizedBox(height: ThemeConstants.space1),
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.caption.copyWith(
+                        color: enabled 
+                            ? AppColorSystem.getTextSecondary(context)
+                            : AppColorSystem.getTextSecondary(context).withValues(alpha: 0.5),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+              
+              if (trailing != null) ...[
+                const SizedBox(width: ThemeConstants.space3),
+                trailing,
+              ] else if (onTap != null && enabled) ...[
+                const SizedBox(width: ThemeConstants.space3),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: ThemeConstants.iconSm,
+                  color: AppColorSystem.getTextSecondary(context).withValues(alpha: 0.6),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
   }
-}
 
-class _PermissionProgressDialog extends StatelessWidget {
-  const _PermissionProgressDialog();
+  Widget _buildSettingTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback? onTap,
+    Color? iconColor,
+    Widget? trailing,
+    bool enabled = true,
+  }) {
+    final effectiveIconColor = iconColor ?? AppColorSystem.primary;
+    
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        child: Container(
+          padding: const EdgeInsets.all(ThemeConstants.space4),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: enabled 
+                      ? effectiveIconColor.withValues(alpha: 0.1)
+                      : AppColorSystem.getTextSecondary(context).withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                ),
+                child: Icon(
+                  icon,
+                  color: enabled 
+                      ? effectiveIconColor
+                      : AppColorSystem.getTextSecondary(context).withValues(alpha: 0.5),
+                  size: ThemeConstants.iconMd,
+                ),
+              ),
+              
+              const SizedBox(width: ThemeConstants.space4),
+              
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyles.label1.copyWith(
+                        color: enabled 
+                            ? AppColorSystem.getTextPrimary(context)
+                            : AppColorSystem.getTextSecondary(context).withValues(alpha: 0.7),
+                        fontWeight: ThemeConstants.medium,
+                      ),
+                    ),
+                    const SizedBox(height: ThemeConstants.space1),
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.caption.copyWith(
+                        color: enabled 
+                            ? AppColorSystem.getTextSecondary(context)
+                            : AppColorSystem.getTextSecondary(context).withValues(alpha: 0.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              if (trailing != null) ...[
+                const SizedBox(width: ThemeConstants.space3),
+                trailing,
+              ] else if (onTap != null && enabled) ...[
+                const SizedBox(width: ThemeConstants.space3),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: ThemeConstants.iconSm,
+                  color: AppColorSystem.getTextSecondary(context).withValues(alpha: 0.6),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
+  Widget _buildSwitchTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool>? onChanged,
+    Color? iconColor,
+    bool enabled = true,
+  }) {
+    final effectiveIconColor = iconColor ?? AppColorSystem.primary;
+    
+    return Container(
+      padding: const EdgeInsets.all(ThemeConstants.space4),
+      child: Row(
         children: [
-          const CircularProgressIndicator(),
-          ThemeConstants.space4.h,
-          const Text('جاري طلب الأذونات...'),
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: enabled 
+                  ? effectiveIconColor.withValues(alpha: 0.1)
+                  : AppColorSystem.getTextSecondary(context).withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+            ),
+            child: Icon(
+              icon,
+              color: enabled 
+                  ? effectiveIconColor
+                  : AppColorSystem.getTextSecondary(context).withValues(alpha: 0.5),
+              size: ThemeConstants.iconMd,
+            ),
+          ),
+          
+          const SizedBox(width: ThemeConstants.space4),
+          
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.label1.copyWith(
+                    color: enabled 
+                        ? AppColorSystem.getTextPrimary(context)
+                        : AppColorSystem.getTextSecondary(context).withValues(alpha: 0.7),
+                    fontWeight: ThemeConstants.medium,
+                  ),
+                ),
+                const SizedBox(height: ThemeConstants.space1),
+                Text(
+                  subtitle,
+                  style: AppTextStyles.caption.copyWith(
+                    color: enabled 
+                        ? AppColorSystem.getTextSecondary(context)
+                        : AppColorSystem.getTextSecondary(context).withValues(alpha: 0.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(width: ThemeConstants.space3),
+          
+          Switch.adaptive(
+            value: value,
+            onChanged: enabled ? onChanged : null,
+            activeColor: AppColorSystem.primary,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
         ],
       ),
     );
   }
-}
 
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _InfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: ThemeConstants.iconSm,
-            color: context.textSecondaryColor,
-          ),
-          ThemeConstants.space2.w,
-          Expanded(
-            child: Text(
-              '$label: ',
-              style: context.labelMedium?.copyWith(
-                color: context.textSecondaryColor,
-              ),
-            ),
-          ),
-          Text(
-            value,
-            style: context.labelMedium?.copyWith(
-              fontWeight: ThemeConstants.semiBold,
-            ),
-          ),
-        ],
-      ),
+  Widget _buildDivider() {
+    return Divider(
+      height: 1,
+      thickness: 1,
+      indent: ThemeConstants.space6,
+      endIndent: ThemeConstants.space6,
+      color: AppColorSystem.getDivider(context).withValues(alpha: 0.3),
     );
   }
 }

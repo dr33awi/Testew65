@@ -1,4 +1,5 @@
-// lib/features/home/widgets/simple_category_grid.dart - شبكة فئات بسيطة بدون Animations
+// lib/features/home/widgets/category_grid.dart - محدث للنظام الموحد
+import 'package:athkar_app/app/themes/core/helpers/category_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
@@ -40,7 +41,10 @@ class SimpleCategoryGrid extends StatelessWidget {
     if (category.routeName != null) {
       Navigator.pushNamed(context, category.routeName!).catchError((error) {
         if (context.mounted) {
-          AppSnackBar.showWarning(context: context, message: 'هذه الميزة قيد التطوير');
+          AppSnackBar.showInfo(
+            context: context, 
+            message: CategoryHelper.getDevelopmentMessage(category.id),
+          );
         }
         return null;
       });
@@ -85,7 +89,7 @@ class SimpleCategoryGrid extends StatelessWidget {
     return 0.95;
   }
 
-  // تحديد أحجام النصوص حسب عرض الشاشة - تم تكبير الأحجام
+  // تحديد أحجام النصوص حسب عرض الشاشة
   double _getTitleFontSize(double screenWidth) {
     if (screenWidth > 900) return 24;
     if (screenWidth > 600) return 22;
@@ -125,8 +129,8 @@ class SimpleCategoryGrid extends StatelessWidget {
     final categoryColor = CategoryHelper.getCategoryColor(context, category.id);
     final categoryIcon = CategoryHelper.getCategoryIcon(category.id);
     final gradientColors = [
-      categoryColor,
-      categoryColor.darken(0.2),
+      categoryColor.withValues(alpha: 0.9),
+      categoryColor.darken(0.2).withValues(alpha: 0.9),
     ];
     
     return GestureDetector(
@@ -153,9 +157,7 @@ class SimpleCategoryGrid extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: gradientColors.map((c) => 
-                      c.withValues(alpha: 0.9)
-                    ).toList(),
+                    colors: gradientColors,
                   ),
                 ),
               ),
@@ -214,7 +216,7 @@ class SimpleCategoryGrid extends StatelessWidget {
                       children: [
                         Text(
                           category.title,
-                          style: context.titleLarge?.copyWith(
+                          style: AppTextStyles.h5.copyWith(
                             color: Colors.white,
                             fontWeight: ThemeConstants.bold,
                             fontSize: _getTitleFontSize(screenWidth),
@@ -237,7 +239,7 @@ class SimpleCategoryGrid extends StatelessWidget {
                         if (category.subtitle != null)
                           Text(
                             category.subtitle!,
-                            style: context.bodyMedium?.copyWith(
+                            style: AppTextStyles.body2.copyWith(
                               color: Colors.white.withValues(alpha: 0.9),
                               fontSize: _getSubtitleFontSize(screenWidth),
                               fontWeight: ThemeConstants.medium,
@@ -258,8 +260,6 @@ class SimpleCategoryGrid extends StatelessWidget {
                     ),
     
                     SizedBox(height: screenWidth > 400 ? ThemeConstants.space2 : ThemeConstants.space1),
-                    
-                    // إزالة مؤشر الانتقال
                   ],
                 ),
               ),
@@ -275,8 +275,8 @@ class SimpleCategoryGrid extends StatelessWidget {
                 ),
               ),
               
-              // عناصر زخرفية
-              _buildDecorativeElements(categoryColor, screenWidth),
+              // عناصر زخرفية (مزالة للبساطة)
+              _buildDecorativeElements(),
             ],
           ),
         ),
@@ -284,8 +284,8 @@ class SimpleCategoryGrid extends StatelessWidget {
     );
   }
 
-  Widget _buildDecorativeElements(Color categoryColor, double screenWidth) {
-    // إزالة العناصر الزخرفية (الدائرة والخط)
+  Widget _buildDecorativeElements() {
+    // تم إزالة العناصر الزخرفية للحصول على تصميم أنظف
     return const SizedBox.shrink();
   }
 }

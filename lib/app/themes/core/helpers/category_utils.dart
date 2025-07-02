@@ -1,6 +1,7 @@
 // lib/features/athkar/utils/category_utils.dart - محدث ومدموج مع النظام الموحد
+import 'package:athkar_app/app/themes/core/helpers/category_helper.dart';
 import 'package:flutter/material.dart';
-import '../../../app/themes/app_theme.dart';
+import '../../app_theme.dart';
 
 /// أدوات مساعدة لفئات الأذكار - موحدة مع CategoryHelper
 /// 

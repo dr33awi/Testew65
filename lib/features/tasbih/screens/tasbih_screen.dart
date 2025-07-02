@@ -1,4 +1,4 @@
-// lib/features/tasbih/screens/tasbih_screen.dart (محول للنظام الموحد)
+// lib/features/tasbih/screens/tasbih_screen.dart - محدثة بالكامل للنظام الموحد
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -27,37 +27,37 @@ class _TasbihScreenState extends State<TasbihScreen> {
       text: 'سُبْحَانَ اللَّهِ',
       transliteration: 'سبحان الله',
       meaning: 'تنزيه الله عن كل نقص',
-      primaryColor: context.primaryColor,
+      categoryKey: 'tasbih',
     ),
     TasbihItem(
       text: 'الْحَمْدُ لِلَّهِ',
       transliteration: 'الحمد لله',
       meaning: 'الثناء والشكر لله',
-      primaryColor: context.accentColor,
+      categoryKey: 'prayer',
     ),
     TasbihItem(
       text: 'اللَّهُ أَكْبَرُ',
       transliteration: 'الله أكبر',
       meaning: 'الله أعظم من كل شيء',
-      primaryColor: context.tertiaryColor,
+      categoryKey: 'morning',
     ),
     TasbihItem(
       text: 'لَا إِلَهَ إِلَّا اللَّهُ',
       transliteration: 'لا إله إلا الله',
       meaning: 'لا معبود بحق إلا الله',
-      primaryColor: context.primaryDarkColor,
+      categoryKey: 'evening',
     ),
     TasbihItem(
       text: 'أَسْتَغْفِرُ اللَّهَ',
       transliteration: 'أستغفر الله',
       meaning: 'طلب المغفرة من الله',
-      primaryColor: context.accentDarkColor,
+      categoryKey: 'general',
     ),
     TasbihItem(
       text: 'سُبْحَانَ اللَّهِ وَبِحَمْدِهِ',
       transliteration: 'سبحان الله وبحمده',
       meaning: 'تنزيه الله مع حمده',
-      primaryColor: context.tertiaryDarkColor,
+      categoryKey: 'sleep',
     ),
   ];
 
@@ -88,7 +88,7 @@ class _TasbihScreenState extends State<TasbihScreen> {
       content: 'هل أنت متأكد من تصفير عداد التسبيح؟',
       confirmText: 'تصفير',
       cancelText: 'إلغاء',
-      destructive: true,
+      isDestructive: true,
     ).then((confirmed) {
       if (confirmed == true) {
         _service.reset();
@@ -106,12 +106,12 @@ class _TasbihScreenState extends State<TasbihScreen> {
     return ChangeNotifierProvider.value(
       value: _service,
       child: Scaffold(
-        backgroundColor: context.backgroundColor, // ✅ من النظام الموحد
+        backgroundColor: AppColorSystem.getBackground(context), // ✅ من النظام الموحد
         // ✅ CustomAppBar من النظام الموحد
         appBar: CustomAppBar(
           title: 'المسبحة الرقمية',
-          backgroundColor: context.backgroundColor,
-          foregroundColor: context.textPrimaryColor,
+          backgroundColor: AppColorSystem.getBackground(context),
+          foregroundColor: AppColorSystem.getTextPrimary(context),
           actions: [
             // زر تصفير العداد
             IconButton(
@@ -119,7 +119,10 @@ class _TasbihScreenState extends State<TasbihScreen> {
                 HapticFeedback.lightImpact();
                 _onReset();
               },
-              icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+              icon: Icon(
+                AppIconsSystem.loading, // استخدام الأيقونة الموحدة
+                color: AppColorSystem.getTextPrimary(context),
+              ),
               tooltip: 'تصفير العداد',
             ),
             // زر المعلومات
@@ -128,7 +131,10 @@ class _TasbihScreenState extends State<TasbihScreen> {
                 HapticFeedback.lightImpact();
                 _showTasbihInfo();
               },
-              icon: const Icon(Icons.info_outline, color: Colors.white),
+              icon: Icon(
+                AppIconsSystem.info,
+                color: AppColorSystem.getTextPrimary(context),
+              ),
               tooltip: 'معلومات التسبيح',
             ),
           ],
@@ -141,7 +147,10 @@ class _TasbihScreenState extends State<TasbihScreen> {
                 slivers: [
                   // مقدمة التطبيق
                   SliverToBoxAdapter(
-                    child: _buildIntroCard(),
+                    child: Container(
+                      margin: const EdgeInsets.all(ThemeConstants.space4),
+                      child: _buildIntroCard(),
+                    ),
                   ),
                   
                   // اختيار نوع التسبيح
@@ -149,21 +158,27 @@ class _TasbihScreenState extends State<TasbihScreen> {
                     child: _buildTasbihSelector(),
                   ),
                   
-                  ThemeConstants.space3.sliverBox, // تقليل المسافة من space4
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: ThemeConstants.space3),
+                  ),
                   
                   // نص التسبيح المختار مع العداد المدمج
                   SliverToBoxAdapter(
                     child: _buildSelectedTasbihWithCounter(service),
                   ),
                   
-                  ThemeConstants.space5.sliverBox,
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: ThemeConstants.space5),
+                  ),
                   
                   // زر التسبيح
                   SliverToBoxAdapter(
                     child: _buildTasbihButton(),
                   ),
                   
-                  ThemeConstants.space8.sliverBox,
+                  SliverToBoxAdapter(
+                    child: SizedBox(height: ThemeConstants.space8),
+                  ),
                 ],
               );
             },
@@ -178,8 +193,8 @@ class _TasbihScreenState extends State<TasbihScreen> {
     return AppCard.info(
       title: 'سبح الله واذكره',
       subtitle: 'اختر نوع التسبيح واضغط على الزر لبدء العد',
-      icon: Icons.auto_awesome,
-      iconColor: context.successColor,
+      icon: AppIconsSystem.generalAthkar,
+      iconColor: AppColorSystem.success,
     );
   }
 
@@ -192,14 +207,16 @@ class _TasbihScreenState extends State<TasbihScreen> {
           padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
           child: Text(
             'اختر نوع التسبيح',
-            style: context.titleMedium?.semiBold,
+            style: AppTextStyles.h5.copyWith(
+              color: AppColorSystem.getTextPrimary(context),
+            ),
           ),
         ),
         
-        ThemeConstants.space3.h,
+        const SizedBox(height: ThemeConstants.space3),
         
         SizedBox(
-          height: 100, // تقليل الارتفاع من 120 إلى 100
+          height: 100,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
@@ -216,41 +233,49 @@ class _TasbihScreenState extends State<TasbihScreen> {
                   HapticFeedback.selectionClick();
                 },
                 child: Container(
-                  width: 110, // تقليل العرض من 140 إلى 110
-                  margin: const EdgeInsets.only(right: ThemeConstants.space2), // تقليل المسافة
-                  child: AppCard(
+                  width: 110,
+                  margin: const EdgeInsets.only(right: ThemeConstants.space2),
+                  child: AppCard.custom(
                     type: CardType.normal,
                     style: isSelected ? CardStyle.gradient : CardStyle.normal,
-                    primaryColor: item.primaryColor,
-                    backgroundColor: !isSelected ? context.cardColor : null,
+                    primaryColor: AppColorSystem.getCategoryColor(item.categoryKey),
+                    backgroundColor: !isSelected ? AppColorSystem.getCard(context) : null,
                     showShadow: isSelected,
-                    padding: const EdgeInsets.all(ThemeConstants.space2), // تقليل الحشو
+                    padding: const EdgeInsets.all(ThemeConstants.space2),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(ThemeConstants.space1), // تقليل الحشو
+                          padding: const EdgeInsets.all(ThemeConstants.space1),
                           decoration: BoxDecoration(
-                            color: (isSelected ? Colors.white : item.primaryColor)
+                            color: (isSelected 
+                                ? Colors.white 
+                                : AppColorSystem.getCategoryColor(item.categoryKey))
                                 .withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            Icons.auto_awesome_rounded,
-                            color: isSelected ? Colors.white : item.primaryColor,
-                            size: ThemeConstants.iconSm, // تقليل حجم الأيقونة
+                            AppIconsSystem.generalAthkar,
+                            color: isSelected 
+                                ? Colors.white 
+                                : AppColorSystem.getCategoryColor(item.categoryKey),
+                            size: ThemeConstants.iconSm,
                           ),
                         ),
                         
-                        ThemeConstants.space1.h, // تقليل المسافة
+                        const SizedBox(height: ThemeConstants.space1),
                         
-                        Flexible( // إضافة Flexible لتجنب overflow
+                        Flexible(
                           child: Text(
                             item.transliteration,
-                            style: context.labelSmall?.copyWith( // تغيير إلى labelSmall
-                              color: isSelected ? Colors.white : context.textPrimaryColor,
-                              fontWeight: isSelected ? ThemeConstants.semiBold : ThemeConstants.medium,
-                              fontSize: 11, // تصغير الخط
+                            style: AppTextStyles.caption.copyWith(
+                              color: isSelected 
+                                  ? Colors.white 
+                                  : AppColorSystem.getTextPrimary(context),
+                              fontWeight: isSelected 
+                                  ? ThemeConstants.semiBold 
+                                  : ThemeConstants.medium,
+                              fontSize: 11,
                             ),
                             textAlign: TextAlign.center,
                             maxLines: 2,
@@ -269,16 +294,16 @@ class _TasbihScreenState extends State<TasbihScreen> {
     );
   }
 
-  // ✅ التسبيح المختار مع العداد المدمج
+  // ✅ التسبيح المختار مع العداد المدمج - باستخدام AppCard
   Widget _buildSelectedTasbihWithCounter(TasbihService service) {
     final selectedItem = _tasbihItems[_selectedTasbihIndex];
     
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
-      child: AppCard(
-        type: CardType.normal,
+      child: AppCard.custom(
+        type: CardType.athkar,
         style: CardStyle.gradient,
-        primaryColor: selectedItem.primaryColor,
+        primaryColor: AppColorSystem.getCategoryColor(selectedItem.categoryKey),
         padding: const EdgeInsets.all(ThemeConstants.space4),
         child: Column(
           children: [
@@ -298,7 +323,7 @@ class _TasbihScreenState extends State<TasbihScreen> {
                 children: [
                   Text(
                     selectedItem.text,
-                    style: context.headlineMedium?.copyWith(
+                    style: AppTextStyles.athkar.copyWith(
                       color: Colors.white,
                       fontWeight: ThemeConstants.bold,
                       fontSize: 20,
@@ -314,11 +339,11 @@ class _TasbihScreenState extends State<TasbihScreen> {
                     textAlign: TextAlign.center,
                   ),
                   
-                  ThemeConstants.space2.h,
+                  const SizedBox(height: ThemeConstants.space2),
                   
                   Text(
                     selectedItem.meaning,
-                    style: context.bodyMedium?.copyWith(
+                    style: AppTextStyles.body2.copyWith(
                       color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 13,
                       height: 1.2,
@@ -329,7 +354,7 @@ class _TasbihScreenState extends State<TasbihScreen> {
               ),
             ),
             
-            ThemeConstants.space4.h,
+            const SizedBox(height: ThemeConstants.space4),
             
             // العداد المدمج
             Container(
@@ -347,7 +372,7 @@ class _TasbihScreenState extends State<TasbihScreen> {
                 children: [
                   Text(
                     '${service.count}',
-                    style: context.displayLarge?.copyWith(
+                    style: AppTextStyles.h1.copyWith(
                       color: Colors.white,
                       fontWeight: ThemeConstants.bold,
                       fontSize: 48,
@@ -363,7 +388,7 @@ class _TasbihScreenState extends State<TasbihScreen> {
                   
                   Text(
                     service.count == 1 ? 'تسبيحة' : 'تسبيحة',
-                    style: context.titleMedium?.copyWith(
+                    style: AppTextStyles.h5.copyWith(
                       color: Colors.white.withValues(alpha: 0.9),
                       fontWeight: ThemeConstants.medium,
                     ),
@@ -377,9 +402,10 @@ class _TasbihScreenState extends State<TasbihScreen> {
     );
   }
 
-  // ✅ زر التسبيح الرئيسي
+  // ✅ زر التسبيح الرئيسي - محسن
   Widget _buildTasbihButton() {
     final selectedItem = _tasbihItems[_selectedTasbihIndex];
+    final primaryColor = AppColorSystem.getCategoryColor(selectedItem.categoryKey);
     
     return Center(
       child: AnimatedPress(
@@ -394,18 +420,16 @@ class _TasbihScreenState extends State<TasbihScreen> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                selectedItem.primaryColor,
-                selectedItem.primaryColor.darken(0.2),
+                primaryColor,
+                primaryColor.darken(0.2),
               ],
             ),
             shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: selectedItem.primaryColor.withValues(alpha: 0.4),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
+            boxShadow: AppShadowSystem.colored(
+              color: primaryColor,
+              intensity: ShadowIntensity.strong,
+              opacity: 0.4,
+            ),
           ),
           child: Material(
             color: Colors.transparent,
@@ -431,11 +455,11 @@ class _TasbihScreenState extends State<TasbihScreen> {
                     ],
                   ),
                   
-                  ThemeConstants.space2.h,
+                  const SizedBox(height: ThemeConstants.space2),
                   
                   Text(
                     'سَبِّح',
-                    style: context.headlineMedium?.copyWith(
+                    style: AppTextStyles.h3.copyWith(
                       color: Colors.white,
                       fontWeight: ThemeConstants.bold,
                       shadows: [
@@ -462,24 +486,39 @@ class _TasbihScreenState extends State<TasbihScreen> {
       context: context,
       title: 'عن التسبيح',
       content: 'التسبيح هو ذكر الله وتنزيهه عن كل نقص. قال رسول الله ﷺ: "كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن: سبحان الله وبحمده، سبحان الله العظيم"',
-      icon: Icons.auto_awesome,
-      accentColor: context.successColor,
+      icon: AppIconsSystem.generalAthkar,
+      accentColor: AppColorSystem.success,
       closeButtonText: 'فهمت',
     );
   }
 }
 
-/// نموذج بيانات التسبيح المبسط
+/// نموذج بيانات التسبيح المبسط - محدث للنظام الموحد
 class TasbihItem {
   final String text;
   final String transliteration;
   final String meaning;
-  final Color primaryColor;
+  final String categoryKey; // ✅ استخدام مفتاح الفئة بدلاً من اللون المباشر
 
   const TasbihItem({
     required this.text,
     required this.transliteration,
     required this.meaning,
-    required this.primaryColor,
+    required this.categoryKey,
   });
+
+  /// الحصول على اللون من النظام الموحد
+  Color get primaryColor => AppColorSystem.getCategoryColor(categoryKey);
+
+  /// الحصول على اللون الفاتح
+  Color get lightColor => AppColorSystem.getCategoryLightColor(categoryKey);
+
+  /// الحصول على اللون الداكن
+  Color get darkColor => AppColorSystem.getCategoryDarkColor(categoryKey);
+
+  /// الحصول على التدرج اللوني
+  LinearGradient get gradient => AppColorSystem.getCategoryGradient(categoryKey);
+
+  /// الحصول على الأيقونة المناسبة
+  IconData get icon => AppIconsSystem.getCategoryIcon(categoryKey);
 }

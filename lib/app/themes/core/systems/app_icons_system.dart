@@ -1,4 +1,4 @@
-// lib/app/themes/core/systems/app_icons_system.dart
+// lib/app/themes/core/systems/app_icons_system.dart - محدث مع الأيقونات المفقودة
 import 'package:flutter/material.dart';
 
 /// نظام الأيقونات الموحد للتطبيق
@@ -13,6 +13,31 @@ class AppIconsSystem {
   static const IconData back = Icons.arrow_back_ios_rounded;
   static const IconData settings = Icons.settings_rounded;
   static const IconData info = Icons.info_rounded;
+  static const IconData save = Icons.save_rounded;
+  static const IconData refresh = Icons.refresh_rounded;
+
+  // ===== أيقونات الحالات =====
+  static const IconData success = Icons.check_circle_rounded;
+  static const IconData error = Icons.error_rounded;
+  static const IconData warning = Icons.warning_rounded;
+  static const IconData loading = Icons.hourglass_empty_rounded;
+  static const IconData empty = Icons.inbox_rounded;
+  static const IconData progress = Icons.trending_up_rounded;
+  static const IconData notifications = Icons.notifications_rounded;
+
+  // ===== أيقونات الوقت والتاريخ =====
+  static const IconData time = Icons.access_time_filled;
+  static const IconData schedule = Icons.schedule_rounded;
+  static const IconData current = Icons.radio_button_checked;
+
+  // ===== أيقونات الموقع =====
+  static const IconData location = Icons.location_on_rounded;
+  static const IconData myLocation = Icons.my_location;
+
+  // ===== أيقونات التطبيق =====
+  static const IconData calculate = Icons.calculate_rounded;
+  static const IconData school = Icons.school_rounded;
+  static const IconData tune = Icons.tune_rounded;
 
   // ===== أيقونات الصلوات =====
   static const IconData prayer = Icons.mosque;
@@ -43,15 +68,6 @@ class AppIconsSystem {
   static const IconData favoriteOutlined = Icons.favorite_border_rounded;
   static const IconData share = Icons.share_rounded;
   static const IconData copy = Icons.content_copy_rounded;
-
-  // ===== أيقونات الحالات =====
-  static const IconData success = Icons.check_circle_rounded;
-  static const IconData error = Icons.error_rounded;
-  static const IconData warning = Icons.warning_rounded;
-  static const IconData loading = Icons.hourglass_empty_rounded;
-  static const IconData empty = Icons.inbox_rounded;
-  static const IconData progress = Icons.trending_up_rounded;
-  static const IconData notifications = Icons.notifications_rounded;
 
   // ===== دوال مساعدة =====
 

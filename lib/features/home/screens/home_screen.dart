@@ -1,4 +1,4 @@
-// lib/features/home/screens/home_screen.dart - محسن بالنظام الموحد
+// lib/features/home/screens/home_screen.dart - محدث للنظام الموحد
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
@@ -13,12 +13,12 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.backgroundColor,
+      backgroundColor: AppColorSystem.getBackground(context),
       appBar: _buildCustomAppBar(context),
       body: RefreshIndicator(
         onRefresh: () => _handleRefresh(context),
-        color: context.primaryColor,
-        backgroundColor: context.cardColor,
+        color: AppColorSystem.primary,
+        backgroundColor: AppColorSystem.getCard(context),
         child: const SingleChildScrollView(
           physics: BouncingScrollPhysics(),
           padding: EdgeInsets.symmetric(
@@ -63,7 +63,7 @@ class HomeScreen extends StatelessWidget {
       automaticallyImplyLeading: false,
       systemOverlayStyle: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: context.isDarkMode 
+        statusBarIconBrightness: Theme.of(context).brightness == Brightness.dark
             ? Brightness.light 
             : Brightness.dark,
       ),
@@ -73,8 +73,8 @@ class HomeScreen extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              context.primaryColor.withValues(alpha: 0.1),
-              context.primaryColor.withValues(alpha: 0.05),
+              AppColorSystem.primary.withValues(alpha: 0.1),
+              AppColorSystem.primary.withValues(alpha: 0.05),
               Colors.transparent,
             ],
           ),
@@ -90,27 +90,27 @@ class HomeScreen extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  context.primaryColor,
-                  context.primaryColor.darken(0.2),
+                  AppColorSystem.primary,
+                  AppColorSystem.primary.darken(0.2),
                 ],
               ),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: context.primaryColor.withValues(alpha: 0.3),
+                  color: AppColorSystem.primary.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: Icon(
-              Icons.mosque_outlined,
-              color: context.surfaceColor, // ✅ تحسين: استخدام context بدلاً من Colors.white
+              AppIconsSystem.home,
+              color: Colors.white,
               size: 24,
             ),
           ),
           
-          ThemeConstants.space3.w,
+          const SizedBox(width: ThemeConstants.space3),
           
           // اسم التطبيق والترحيب
           Expanded(
@@ -120,17 +120,17 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Text(
                   'مُسلم',
-                  style: context.headlineSmall?.copyWith(
+                  style: AppTextStyles.h4.copyWith(
                     fontWeight: ThemeConstants.bold,
-                    color: context.textPrimaryColor,
+                    color: AppColorSystem.getTextPrimary(context),
                     fontSize: 20,
                     height: 1.1,
                   ),
                 ),
                 Text(
                   'السلام عليكم ورحمة الله',
-                  style: context.bodySmall?.copyWith(
-                    color: context.textSecondaryColor,
+                  style: AppTextStyles.caption.copyWith(
+                    color: AppColorSystem.getTextSecondary(context),
                     fontSize: 12,
                     height: 1.2,
                   ),
@@ -145,15 +145,15 @@ class HomeScreen extends StatelessWidget {
         Container(
           margin: const EdgeInsets.only(left: ThemeConstants.space4),
           decoration: BoxDecoration(
-            color: context.cardColor.withValues(alpha: 0.8),
+            color: AppColorSystem.getCard(context).withValues(alpha: 0.8),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: context.dividerColor.withValues(alpha: 0.3),
+              color: AppColorSystem.getDivider(context).withValues(alpha: 0.3),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: context.primaryColor.withValues(alpha: 0.1),
+                color: AppColorSystem.primary.withValues(alpha: 0.1),
                 blurRadius: 6,
                 offset: const Offset(0, 3),
               ),
@@ -161,15 +161,17 @@ class HomeScreen extends StatelessWidget {
           ),
           child: IconButton(
             icon: Icon(
-              Icons.settings_outlined,
-              color: context.primaryColor,
+              AppIconsSystem.settings,
+              color: AppColorSystem.primary,
               size: 22,
             ),
             onPressed: () {
               HapticFeedback.lightImpact();
               Navigator.pushNamed(context, '/settings').catchError((error) {
-                // ✅ تحسين: استخدام النظام الموحد للإشعارات
-                context.showInfoSnackBar('هذه الميزة قيد التطوير');
+                AppSnackBar.showInfo(
+                  context: context,
+                  message: 'هذه الميزة قيد التطوير',
+                );
                 return null;
               });
             },
@@ -187,8 +189,10 @@ class HomeScreen extends StatelessWidget {
     await Future.delayed(ThemeConstants.durationNormal);
     
     if (context.mounted) {
-      // ✅ تحسين: استخدام النظام الموحد للإشعارات
-      AppSnackBar.showSuccess(context: context, message:'تم تحديث البيانات بنجاح');
+      AppSnackBar.showSuccess(
+        context: context, 
+        message: 'تم تحديث البيانات بنجاح',
+      );
     }
   }
 }

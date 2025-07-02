@@ -1,7 +1,8 @@
-// lib/features/daily_quote/widgets/daily_quotes_card.dart - محسن باستخدام النظام الموحد
+// lib/features/daily_quote/widgets/daily_quotes_card.dart - محدث للنظام الموحد
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
+import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 import '../../../app/di/service_locator.dart';
 import '../services/daily_quote_service.dart';
@@ -151,10 +152,9 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
   }
 
   Widget _buildLoadingState() {
-    // ✅ استخدام نظام الألوان الموحد
     final gradientColors = [
-      context.primaryColor.withValues(alpha: 0.8),
-      context.primaryColor.darken(0.2).withValues(alpha: 0.8),
+      AppColorSystem.primary.withValues(alpha: 0.9),
+      AppColorSystem.primary.darken(0.2).withValues(alpha: 0.9),
     ];
     
     return SizedBox(
@@ -165,7 +165,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
           borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
           boxShadow: [
             BoxShadow(
-              color: context.primaryColor.withValues(alpha: 0.2),
+              color: AppColorSystem.primary.withValues(alpha: 0.2),
               blurRadius: 15,
               offset: const Offset(0, 8),
               spreadRadius: -3,
@@ -188,12 +188,15 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
               ),
               
               // الطبقة الزجاجية
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1,
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
                   ),
                 ),
               ),
@@ -203,18 +206,13 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SizedBox(
-                      width: 32,
-                      height: 32,
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        strokeWidth: 3,
-                      ),
+                    AppLoading.circular(
+                      color: Colors.white,
                     ),
                     const SizedBox(height: ThemeConstants.space3),
                     Text(
                       'جاري تحميل الاقتباسات...',
-                      style: context.bodyMedium?.copyWith(
+                      style: AppTextStyles.body2.copyWith(
                         color: Colors.white.withValues(alpha: 0.9),
                         fontWeight: ThemeConstants.medium,
                       ),
@@ -230,8 +228,10 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
   }
 
   Widget _buildQuoteCard(QuoteData quote) {
-    // ✅ استخدام QuoteHelper الموحد
-    final gradientColors = QuoteHelper.getQuoteColors(context, quote.type);
+    final gradientColors = [
+      AppColorSystem.getCategoryColor(quote.type),
+      AppColorSystem.getCategoryDarkColor(quote.type),
+    ];
     
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -270,12 +270,15 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
                   ),
                   
                   // الطبقة الزجاجية
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        width: 1,
+                  BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
                       ),
                     ),
                   ),
@@ -330,11 +333,9 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
               ),
             ),
             child: Text(
-              // ✅ استخدام QuoteHelper للعنوان
-              QuoteHelper.getQuoteTitle(quote.type),
-              style: (isTablet ? context.labelLarge : context.labelMedium)?.copyWith(
-                // ✅ استخدام QuoteHelper للألوان
-                color: QuoteHelper.getQuoteTextColor(context, quote.type),
+              _getQuoteTitle(quote.type),
+              style: AppTextStyles.caption.copyWith(
+                color: Colors.white,
                 fontWeight: ThemeConstants.medium,
                 fontSize: isTablet ? 14 : 12,
               ),
@@ -352,10 +353,10 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
               vertical: isTablet ? ThemeConstants.space2 : ThemeConstants.space1,
             ),
             decoration: BoxDecoration(
-              color: QuoteHelper.getQuoteOverlayColor(context, quote.type),
+              color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
               border: Border.all(
-                color: QuoteHelper.getQuoteBorderColor(context, quote.type),
+                color: Colors.white.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -363,8 +364,8 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.library_books_rounded,
-                  color: QuoteHelper.getQuoteSecondaryTextColor(context, quote.type),
+                  AppIconsSystem.getCategoryIcon(quote.type),
+                  color: Colors.white.withValues(alpha: 0.9),
                   size: isTablet ? 16 : 14,
                 ),
                 
@@ -372,8 +373,8 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
                 
                 Text(
                   quote.source,
-                  style: (isTablet ? context.labelLarge : context.labelMedium)?.copyWith(
-                    color: QuoteHelper.getQuoteSecondaryTextColor(context, quote.type),
+                  style: AppTextStyles.caption.copyWith(
+                    color: Colors.white.withValues(alpha: 0.9),
                     fontWeight: ThemeConstants.medium,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -392,22 +393,21 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
               vertical: isTablet ? ThemeConstants.space5 : ThemeConstants.space4,
             ),
             decoration: BoxDecoration(
-              color: QuoteHelper.getQuoteOverlayColor(context, quote.type),
+              color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
               border: Border.all(
-                color: QuoteHelper.getQuoteBorderColor(context, quote.type),
+                color: Colors.white.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
             child: Text(
               quote.content,
-              style: (isTablet ? context.headlineSmall : context.titleMedium)?.copyWith(
-                color: QuoteHelper.getQuoteTextColor(context, quote.type),
+              style: AppTextStyles.body1.copyWith(
+                color: Colors.white,
                 height: 1.7,
                 fontWeight: ThemeConstants.semiBold,
                 fontSize: isShortText ? (isTablet ? 22 : 18) : (isTablet ? 20 : 16),
                 letterSpacing: 0.5,
-                // ✅ استخدام EnhancedCategoryHelper للظلال
                 shadows: [
                   Shadow(
                     color: Colors.black.withValues(alpha: 0.4),
@@ -432,8 +432,8 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
       children: List.generate(quotes.length, (index) {
         final isActive = index == _currentPage;
         final color = isActive 
-            ? QuoteHelper.getQuotePrimaryColor(context, quotes[_currentPage].type)
-            : QuoteHelper.getQuoteOverlayColor(context, quotes[_currentPage].type);
+            ? AppColorSystem.getCategoryColor(quotes[_currentPage].type)
+            : AppColorSystem.getTextSecondary(context).withValues(alpha: 0.5);
             
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
@@ -454,6 +454,22 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
         );
       }),
     );
+  }
+
+  String _getQuoteTitle(String type) {
+    switch (type.toLowerCase()) {
+      case 'verse':
+      case 'آية':
+        return 'آية قرآنية';
+      case 'hadith':
+      case 'حديث':
+        return 'حديث شريف';
+      case 'dua':
+      case 'دعاء':
+        return 'دعاء مأثور';
+      default:
+        return 'نص ديني';
+    }
   }
 
   void _showQuoteDetails(QuoteData quote) {
@@ -489,7 +505,10 @@ class _QuoteDetailsModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gradientColors = QuoteHelper.getQuoteColors(context, quote.type);
+    final gradientColors = [
+      AppColorSystem.getCategoryColor(quote.type),
+      AppColorSystem.getCategoryDarkColor(quote.type),
+    ];
     
     return Container(
       constraints: BoxConstraints(
@@ -528,12 +547,15 @@ class _QuoteDetailsModal extends StatelessWidget {
             ),
             
             // الطبقة الزجاجية
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  width: 1,
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
                 ),
               ),
             ),
@@ -571,11 +593,10 @@ class _QuoteDetailsModal extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            // ✅ استخدام QuoteHelper للعنوان
-                            QuoteHelper.getQuoteTitle(quote.type),
-                            style: context.headlineSmall?.copyWith(
+                            _getQuoteTitle(quote.type),
+                            style: AppTextStyles.h4.copyWith(
                               fontWeight: ThemeConstants.bold,
-                              color: QuoteHelper.getQuoteTextColor(context, quote.type),
+                              color: Colors.white,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -597,10 +618,10 @@ class _QuoteDetailsModal extends StatelessWidget {
                           ),
                           child: Text(
                             quote.content,
-                            style: context.bodyLarge?.copyWith(
+                            style: AppTextStyles.body1.copyWith(
                               height: 1.8,
                               fontSize: 17,
-                              color: QuoteHelper.getQuoteTextColor(context, quote.type),
+                              color: Colors.white,
                               fontWeight: ThemeConstants.medium,
                             ),
                             textAlign: TextAlign.center,
@@ -625,8 +646,8 @@ class _QuoteDetailsModal extends StatelessWidget {
                           ),
                           child: Text(
                             quote.source,
-                            style: context.titleSmall?.copyWith(
-                              color: QuoteHelper.getQuoteTextColor(context, quote.type),
+                            style: AppTextStyles.label1.copyWith(
+                              color: Colors.white,
                               fontWeight: ThemeConstants.semiBold,
                             ),
                             textAlign: TextAlign.center,
@@ -639,24 +660,21 @@ class _QuoteDetailsModal extends StatelessWidget {
                         Row(
                           children: [
                             Expanded(
-                              child: _buildActionButton(
-                                context,
+                              child: AppButton.outline(
                                 text: 'نسخ',
-                                icon: Icons.copy_rounded,
                                 onPressed: () => _copyQuote(context),
-                                isPrimary: false,
+                                color: Colors.white,
                               ),
                             ),
                             
                             const SizedBox(width: ThemeConstants.space3),
                             
                             Expanded(
-                              child: _buildActionButton(
-                                context,
+                              child: AppButton.primary(
                                 text: 'مشاركة',
-                                icon: Icons.share_rounded,
                                 onPressed: () => _shareQuote(context),
-                                isPrimary: true,
+                                backgroundColor: Colors.white,
+                                textColor: AppColorSystem.getCategoryColor(quote.type),
                               ),
                             ),
                           ],
@@ -673,50 +691,20 @@ class _QuoteDetailsModal extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(
-    BuildContext context, {
-    required String text,
-    required IconData icon,
-    required VoidCallback onPressed,
-    required bool isPrimary,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            vertical: ThemeConstants.space4,
-            horizontal: ThemeConstants.space3,
-          ),
-          decoration: BoxDecoration(
-            color: isPrimary 
-                ? Colors.white.withValues(alpha: 0.9)
-                : Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: isPrimary ? 0.9 : 0.4),
-              width: 1.5,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                text,
-                style: context.titleSmall?.copyWith(
-                  color: isPrimary 
-                      ? QuoteHelper.getQuotePrimaryColor(context, quote.type)
-                      : QuoteHelper.getQuoteTextColor(context, quote.type),
-                  fontWeight: ThemeConstants.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  String _getQuoteTitle(String type) {
+    switch (type.toLowerCase()) {
+      case 'verse':
+      case 'آية':
+        return 'آية قرآنية';
+      case 'hadith':
+      case 'حديث':
+        return 'حديث شريف';
+      case 'dua':
+      case 'دعاء':
+        return 'دعاء مأثور';
+      default:
+        return 'نص ديني';
+    }
   }
 
   void _copyQuote(BuildContext context) {
@@ -724,7 +712,6 @@ class _QuoteDetailsModal extends StatelessWidget {
     Clipboard.setData(ClipboardData(text: fullText));
     
     if (context.mounted) {
-      // ✅ استخدام النظام الموحد
       AppSnackBar.showSuccess(
         context: context,
         message: 'تم نسخ النص بنجاح',
@@ -737,11 +724,10 @@ class _QuoteDetailsModal extends StatelessWidget {
 
   void _shareQuote(BuildContext context) async {
     try {
-      // ✅ استخدام QuoteHelper للعنوان
-      final shareText = '${quote.content}\n\n${quote.source}\n\nمن تطبيق ${QuoteHelper.getQuoteTitle(quote.type)}';
+      final shareText = '${quote.content}\n\n${quote.source}\n\nمن تطبيق ${_getQuoteTitle(quote.type)}';
       await Share.share(
         shareText,
-        subject: QuoteHelper.getQuoteTitle(quote.type),
+        subject: _getQuoteTitle(quote.type),
       );
       HapticFeedback.lightImpact();
       
@@ -750,7 +736,6 @@ class _QuoteDetailsModal extends StatelessWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        // ✅ استخدام النظام الموحد للأخطاء
         AppSnackBar.showError(
           context: context,
           message: 'فشل في مشاركة النص',

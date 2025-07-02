@@ -1,7 +1,8 @@
+// lib/features/qibla/widgets/qibla_compass.dart - محدث للنظام الموحد
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../app/themes/app_theme.dart';
+import '../../../app/themes/app_theme.dart'; // ✅ النظام الموحد
 
 class QiblaCompass extends StatefulWidget {
   final double qiblaDirection;
@@ -112,27 +113,23 @@ class _QiblaCompassState extends State<QiblaCompass>
         shape: BoxShape.circle,
         gradient: RadialGradient(
           colors: [
-            context.cardColor,
-            context.cardColor.withValues(alpha: 0.98),
-            context.cardColor.withValues(alpha: 0.95),
+            AppColorSystem.getCard(context),
+            AppColorSystem.getCard(context).withValues(alpha: 0.98),
+            AppColorSystem.getCard(context).withValues(alpha: 0.95),
           ],
           stops: const [0.0, 0.7, 1.0],
         ),
+        // ✅ استخدام AppShadowSystem
         boxShadow: [
-          BoxShadow(
-            color: context.primaryColor.withValues(alpha: 0.15),
-            blurRadius: 25,
-            offset: const Offset(0, 12),
-            spreadRadius: 3,
+          ...AppShadowSystem.colored(
+            color: AppColorSystem.getCategoryColor('qibla'),
+            intensity: ShadowIntensity.medium,
+            opacity: 0.15,
           ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
+          ...AppShadowSystem.medium,
         ],
         border: Border.all(
-          color: context.primaryColor.withValues(alpha: 0.1),
+          color: AppColorSystem.getCategoryColor('qibla').withValues(alpha: 0.1),
           width: 2,
         ),
       ),
@@ -169,9 +166,9 @@ class _QiblaCompassState extends State<QiblaCompass>
             height: size * 0.8,
             child: CustomPaint(
               painter: CompassPainter(
-                primaryColor: context.primaryColor,
-                textColor: context.textPrimaryColor,
-                secondaryColor: context.textSecondaryColor,
+                primaryColor: AppColorSystem.getCategoryColor('qibla'),
+                textColor: AppColorSystem.getTextPrimary(context),
+                secondaryColor: AppColorSystem.getTextSecondary(context),
               ),
             ),
           ),
@@ -199,7 +196,7 @@ class _QiblaCompassState extends State<QiblaCompass>
               height: size * 0.3,
               child: CustomPaint(
                 painter: EnhancedQiblaArrowPainter(
-                  color: isAccurate ? ThemeConstants.success : context.primaryColor,
+                  color: isAccurate ? AppColorSystem.success : AppColorSystem.getCategoryColor('qibla'),
                   isAccurate: isAccurate,
                 ),
               ),
@@ -214,23 +211,21 @@ class _QiblaCompassState extends State<QiblaCompass>
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: (isAccurate ? ThemeConstants.success : context.primaryColor)
+                  color: (isAccurate ? AppColorSystem.success : AppColorSystem.getCategoryColor('qibla'))
                       .withValues(alpha: 0.95),
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: (isAccurate ? ThemeConstants.success : context.primaryColor)
-                          .withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                  // ✅ استخدام AppShadowSystem
+                  boxShadow: AppShadowSystem.colored(
+                    color: isAccurate ? AppColorSystem.success : AppColorSystem.getCategoryColor('qibla'),
+                    intensity: ShadowIntensity.light,
+                    opacity: 0.3,
+                  ),
                 ),
                 child: Text(
                   'القبلة',
-                  style: context.labelMedium?.copyWith(
+                  style: AppTextStyles.label2.copyWith(
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: ThemeConstants.bold,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -247,61 +242,26 @@ class _QiblaCompassState extends State<QiblaCompass>
                     vertical: 5,
                   ),
                   decoration: BoxDecoration(
-                    color: context.cardColor.withValues(alpha: 0.95),
+                    color: AppColorSystem.getCard(context).withValues(alpha: 0.95),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: (isAccurate ? ThemeConstants.success : context.primaryColor)
+                      color: (isAccurate ? AppColorSystem.success : AppColorSystem.getCategoryColor('qibla'))
                           .withValues(alpha: 0.4),
                       width: 1.5,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    boxShadow: AppShadowSystem.light,
                   ),
                   child: Text(
                     '${angleDifference.toStringAsFixed(1)}°',
-                    style: context.labelMedium?.copyWith(
-                      color: isAccurate ? ThemeConstants.success : context.primaryColor,
-                      fontWeight: FontWeight.bold,
+                    style: AppTextStyles.label2.copyWith(
+                      color: isAccurate ? AppColorSystem.success : AppColorSystem.getCategoryColor('qibla'),
+                      fontWeight: ThemeConstants.bold,
                     ),
                   ),
                 ),
               ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDeviceIndicator(BuildContext context) {
-    return Positioned(
-      top: 10,
-      child: Column(
-        children: [
-          Container(
-            width: 0,
-            height: 0,
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(width: 8, color: Colors.transparent),
-                right: BorderSide(width: 8, color: Colors.transparent),
-                bottom: BorderSide(width: 15, color: ThemeConstants.error),
-              ),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'الجهاز',
-            style: context.labelSmall?.copyWith(
-              color: ThemeConstants.error,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -316,12 +276,8 @@ class _QiblaCompassState extends State<QiblaCompass>
       decoration: BoxDecoration(
         gradient: RadialGradient(
           colors: [
-            isAccurate ? ThemeConstants.success : context.primaryColor,
-            Color.lerp(
-              isAccurate ? ThemeConstants.success : context.primaryColor,
-              Colors.black,
-              0.2,
-            )!,
+            isAccurate ? AppColorSystem.success : AppColorSystem.getCategoryColor('qibla'),
+            (isAccurate ? AppColorSystem.success : AppColorSystem.getCategoryColor('qibla')).darken(0.2),
           ],
         ),
         shape: BoxShape.circle,
@@ -330,17 +286,12 @@ class _QiblaCompassState extends State<QiblaCompass>
           width: 4,
         ),
         boxShadow: [
-          BoxShadow(
-            color: (isAccurate ? ThemeConstants.success : context.primaryColor)
-                .withValues(alpha: 0.4),
-            blurRadius: isAccurate ? 20 : 12,
-            offset: const Offset(0, 3),
+          ...AppShadowSystem.colored(
+            color: isAccurate ? AppColorSystem.success : AppColorSystem.getCategoryColor('qibla'),
+            intensity: isAccurate ? ShadowIntensity.strong : ShadowIntensity.medium,
+            opacity: 0.4,
           ),
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
+          ...AppShadowSystem.light,
         ],
       ),
       child: isAccurate
@@ -372,30 +323,31 @@ class _QiblaCompassState extends State<QiblaCompass>
               vertical: ThemeConstants.space2,
             ),
             decoration: BoxDecoration(
-              color: context.cardColor.withValues(alpha: 0.95),
+              color: AppColorSystem.getCard(context).withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
-              border: Border.all(color: context.primaryColor.withValues(alpha: 0.2)),
+              border: Border.all(color: AppColorSystem.getCategoryColor('qibla').withValues(alpha: 0.2)),
+              boxShadow: AppShadowSystem.light,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.navigation,
-                  color: context.primaryColor,
+                  AppIconsSystem.qibla,
+                  color: AppColorSystem.getCategoryColor('qibla'),
                   size: 16,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   '${widget.currentDirection.toStringAsFixed(1)}°',
-                  style: context.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
+                  style: AppTextStyles.label1.copyWith(
+                    fontWeight: ThemeConstants.bold,
                   ),
                 ),
                 const SizedBox(width: 4),
                 Text(
                   _getCompassDirection(widget.currentDirection),
-                  style: context.labelSmall?.copyWith(
-                    color: context.textSecondaryColor,
+                  style: AppTextStyles.label2.copyWith(
+                    color: AppColorSystem.getTextSecondary(context),
                   ),
                 ),
               ],
@@ -422,7 +374,7 @@ class _QiblaCompassState extends State<QiblaCompass>
                     context,
                     Icons.compass_calibration,
                     'معايرة',
-                    ThemeConstants.warning,
+                    AppColorSystem.warning,
                   ),
                 ),
               ],
@@ -448,9 +400,9 @@ class _QiblaCompassState extends State<QiblaCompass>
           const SizedBox(width: 4),
           Text(
             text,
-            style: context.labelSmall?.copyWith(
+            style: AppTextStyles.caption.copyWith(
               color: color,
-              fontWeight: FontWeight.w600,
+              fontWeight: ThemeConstants.semiBold,
             ),
           ),
         ],
@@ -460,9 +412,9 @@ class _QiblaCompassState extends State<QiblaCompass>
 
   // دوال مساعدة
   Color _getAccuracyColor(double accuracy) {
-    if (accuracy >= 0.8) return ThemeConstants.success;
-    if (accuracy >= 0.5) return ThemeConstants.warning;
-    return ThemeConstants.error;
+    if (accuracy >= 0.8) return AppColorSystem.success;
+    if (accuracy >= 0.5) return AppColorSystem.warning;
+    return AppColorSystem.error;
   }
 
   IconData _getAccuracyIcon(double accuracy) {
@@ -562,7 +514,7 @@ class CompassPainter extends CustomPainter {
       if (isMainDirection) {
         lineLength = 25;
         linePaint = Paint()
-          ..color = i == 0 ? ThemeConstants.error : primaryColor
+          ..color = i == 0 ? AppColorSystem.error : primaryColor
           ..strokeWidth = 3
           ..strokeCap = StrokeCap.round;
       } else if (isMediumDirection) {
@@ -604,7 +556,7 @@ class CompassPainter extends CustomPainter {
 
   void _drawDirectionLabels(Canvas canvas, Offset center, double radius) {
     final directions = [
-      {'text': 'ش', 'angle': 0.0, 'color': ThemeConstants.error, 'isMain': true},
+      {'text': 'ش', 'angle': 0.0, 'color': AppColorSystem.error, 'isMain': true},
       {'text': 'ق', 'angle': 90.0, 'color': primaryColor, 'isMain': true},
       {'text': 'ج', 'angle': 180.0, 'color': primaryColor, 'isMain': true},
       {'text': 'غ', 'angle': 270.0, 'color': primaryColor, 'isMain': true},
@@ -634,7 +586,7 @@ class CompassPainter extends CustomPainter {
       final textStyle = TextStyle(
         color: direction['color'] as Color,
         fontSize: 18,
-        fontWeight: FontWeight.bold,
+        fontWeight: ThemeConstants.bold, // ✅ استخدام النظام الموحد
       );
 
       final textPainter = TextPainter(
@@ -689,9 +641,9 @@ class EnhancedQiblaArrowPainter extends CustomPainter {
         end: Alignment.bottomCenter,
         colors: [
           color,
-          Color.lerp(color, Colors.white, 0.1)!,
-          Color.lerp(color, Colors.black, 0.1)!,
-          Color.lerp(color, Colors.black, 0.2)!,
+          color.lighten(0.1), // ✅ استخدام extension من النظام الموحد
+          color.darken(0.1),
+          color.darken(0.2),
         ],
         stops: const [0.0, 0.3, 0.7, 1.0],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
@@ -708,7 +660,7 @@ class EnhancedQiblaArrowPainter extends CustomPainter {
 
     // حدود السهم
     final borderPaint = Paint()
-      ..color = Color.lerp(color, Colors.black, 0.3)!
+      ..color = color.darken(0.3) // ✅ استخدام extension من النظام الموحد
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
       ..strokeJoin = StrokeJoin.round
