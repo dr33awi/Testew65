@@ -1,10 +1,13 @@
-// lib/features/home/widgets/enhanced_daily_quotes_card.dart
+// lib/features/home/widgets/daily_quotes_card.dart
 import 'package:athkar_app/features/home/widgets/color_helper.dart';
 import 'package:athkar_app/features/home/widgets/islamic_pattern_painter.dart';
+import 'package:athkar_app/features/models/daily_quote_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'dart:ui';
 import 'dart:math' as math;
+import 'dart:convert';
 import '../../../app/themes/app_theme.dart';
 
 class DailyQuotesCard extends StatefulWidget {
@@ -23,34 +26,126 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
   late Animation<double> _scaleAnimation;
   
   int _currentPage = 0;
-  
-  // بيانات وهمية - يجب استبدالها ببيانات حقيقية
-  final List<QuoteData> quotes = [
-    QuoteData(
-      type: QuoteType.verse,
-      content: 'وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا وَيَرْزُقْهُ مِنْ حَيْثُ لَا يَحْتَسِبُ',
-      source: 'سورة الطلاق - آية 2-3',
-      gradient: ColorHelper.getContentGradient('verse').colors,
-    ),
-    QuoteData(
-      type: QuoteType.hadith,
-      content: 'مَنْ قَالَ سُبْحَانَ اللَّهِ وَبِحَمْدِهِ فِي يَوْمٍ مِائَةَ مَرَّةٍ، حُطَّتْ خَطَايَاهُ وَلَوْ كَانَتْ مِثْلَ زَبَدِ الْبَحْرِ',
-      source: 'صحيح البخاري',
-      gradient: ColorHelper.getContentGradient('hadith').colors,
-    ),
-    QuoteData(
-      type: QuoteType.dua,
-      content: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
-      source: 'سورة البقرة - آية 201',
-      gradient: ColorHelper.getContentGradient('dua').colors,
-    ),
-  ];
+  List<QuoteData> quotes = [];
+  Map<String, dynamic> quotesData = {};
 
   @override
   void initState() {
     super.initState();
     _setupControllers();
     _setupAnimations();
+    _loadQuotesData();
+  }
+
+  void _loadQuotesData() {
+    // البيانات من JSON المرفق
+    final jsonData = '''
+{
+  "verses": [
+    {
+      "text": "وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا وَيَرْزُقْهُ مِنْ حَيْثُ لَا يَحْتَسِبُ",
+      "source": "سورة الطلاق - آية 2-3",
+      "theme": "التقوى والرزق",
+      "reference": "القرآن الكريم"
+    },
+    {
+      "text": "إِنَّ مَعَ الْعُسْرِ يُسْرًا",
+      "source": "سورة الشرح - آية 6",
+      "theme": "الأمل والفرج",
+      "reference": "القرآن الكريم"
+    },
+    {
+      "text": "وَلَا تَيْأَسُوا مِن رَّوْحِ اللَّهِ ۖ إِنَّهُ لَا يَيْأَسُ مِن رَّوْحِ اللَّهِ إِلَّا الْقَوْمُ الْكَافِرُونَ",
+      "source": "سورة يوسف - آية 87",
+      "theme": "الأمل وعدم اليأس",
+      "reference": "القرآن الكريم"
+    }
+  ],
+  "hadiths": [
+    {
+      "text": "مَنْ قَالَ سُبْحَانَ اللَّهِ وَبِحَمْدِهِ فِي يَوْمٍ مِائَةَ مَرَّةٍ، حُطَّتْ خَطَايَاهُ وَلَوْ كَانَتْ مِثْلَ زَبَدِ الْبَحْرِ",
+      "source": "صحيح البخاري",
+      "narrator": "أبو هريرة",
+      "theme": "التسبيح ومغفرة الذنوب",
+      "reference": "السنة النبوية"
+    },
+    {
+      "text": "الْمُؤْمِنُ لِلْمُؤْمِنِ كَالْبُنْيَانِ يَشُدُّ بَعْضُهُ بَعْضًا",
+      "source": "صحيح البخاري",
+      "narrator": "أبو موسى الأشعري",
+      "theme": "التكافل والأخوة",
+      "reference": "السنة النبوية"
+    },
+    {
+      "text": "بَشِّرُوا وَلَا تُنَفِّرُوا، وَيَسِّرُوا وَلَا تُعَسِّرُوا",
+      "source": "صحيح البخاري",
+      "narrator": "أنس بن مالك",
+      "theme": "التبشير والتيسير",
+      "reference": "السنة النبوية"
+    }
+  ],
+  "duas": [
+    {
+      "text": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
+      "source": "سورة البقرة - آية 201",
+      "theme": "دعاء شامل",
+      "reference": "القرآن الكريم"
+    },
+    {
+      "text": "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي وَاحْلُلْ عُقْدَةً مِّن لِّسَانِي يَفْقَهُوا قَوْلِي",
+      "source": "سورة طه - آية 25-28",
+      "theme": "دعاء الانشراح والتيسير",
+      "reference": "القرآن الكريم"
+    },
+    {
+      "text": "اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ",
+      "source": "رواه أبو داود",
+      "theme": "الاستعانة على العبادة",
+      "reference": "السنة النبوية"
+    }
+  ]
+}
+''';
+
+    quotesData = jsonDecode(jsonData);
+    _generateDailyQuotes();
+  }
+
+  void _generateDailyQuotes() {
+    final random = math.Random();
+    quotes.clear();
+
+    // اختيار آية عشوائية
+    final verses = quotesData['verses'] as List;
+    final selectedVerse = verses[random.nextInt(verses.length)];
+    quotes.add(QuoteData(
+      type: QuoteType.verse,
+      content: selectedVerse['text'],
+      source: selectedVerse['source'],
+      gradient: ColorHelper.getContentGradient('verse').colors,
+    ));
+
+    // اختيار حديث عشوائي
+    final hadiths = quotesData['hadiths'] as List;
+    final selectedHadith = hadiths[random.nextInt(hadiths.length)];
+    quotes.add(QuoteData(
+      type: QuoteType.hadith,
+      content: selectedHadith['text'],
+      source: selectedHadith['source'],
+      gradient: ColorHelper.getContentGradient('hadith').colors,
+    ));
+
+    // اختيار دعاء عشوائي
+    final duas = quotesData['duas'] as List;
+    final selectedDua = duas[random.nextInt(duas.length)];
+    quotes.add(QuoteData(
+      type: QuoteType.dua,
+      content: selectedDua['text'],
+      source: selectedDua['source'],
+      gradient: ColorHelper.getContentGradient('dua').colors,
+    ));
+
+    setState(() {});
   }
 
   void _setupControllers() {
@@ -161,26 +256,18 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
       ),
       child: Row(
         children: [
-          // أيقونة متحركة
-          AnimatedBuilder(
-            animation: _backgroundController,
-            builder: (context, child) {
-              return Transform.rotate(
-                angle: _backgroundController.value * 2 * math.pi,
-                child: Container(
-                  padding: const EdgeInsets.all(ThemeConstants.space2),
-                  decoration: BoxDecoration(
-                    gradient: ThemeConstants.primaryGradient,
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-                  ),
-                  child: const Icon(
-                    Icons.auto_stories_rounded,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                ),
-              );
-            },
+          // أيقونة ثابتة
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space2),
+            decoration: BoxDecoration(
+              gradient: ThemeConstants.primaryGradient,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+            ),
+            child: const Icon(
+              Icons.auto_stories_rounded,
+              color: Colors.white,
+              size: 28,
+            ),
           ),
           
           ThemeConstants.space4.w,
@@ -293,28 +380,6 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
             ),
           ),
           
-          // دوائر متحركة
-          ...List.generate(5, (index) {
-            return AnimatedBuilder(
-              animation: _backgroundController,
-              builder: (context, child) {
-                final offset = _backgroundController.value * 2 * math.pi + (index * math.pi / 2.5);
-                return Positioned(
-                  top: 20 + (index * 30) + (math.sin(offset) * 15),
-                  right: 20 + (index * 25) + (math.cos(offset) * 20),
-                  child: Container(
-                    width: 8 + (math.sin(offset) * 4),
-                    height: 8 + (math.sin(offset) * 4),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.3 + (math.sin(offset) * 0.2)),
-                    ),
-                  ),
-                );
-              },
-            );
-          }),
-          
           // تأثير ضوئي
           Positioned(
             top: -50,
@@ -377,6 +442,24 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
                     ),
                   ),
                 ],
+              ),
+            ),
+            
+            // زر النسخ
+            Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+              child: InkWell(
+                onTap: () => _copyQuote(context, quote),
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
+                child: Container(
+                  padding: const EdgeInsets.all(ThemeConstants.space2),
+                  child: Icon(
+                    Icons.copy_rounded,
+                    color: Colors.white.withValues(alpha: 0.8),
+                    size: ThemeConstants.iconSm,
+                  ),
+                ),
               ),
             ),
             
@@ -542,15 +625,21 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
 
   void _refreshQuotes() {
     HapticFeedback.mediumImpact();
-    // إعادة تحميل الاقتباسات
-    context.showInfoSnackBar('جاري تحديث الاقتباسات...');
+    _generateDailyQuotes();
+    context.showInfoSnackBar('تم تحديث الاقتباسات بنجاح');
+  }
+
+  void _copyQuote(BuildContext context, QuoteData quote) {
+    final shareText = '${quote.content}\n\n${quote.source}\n\nمن تطبيق الأذكار';
+    Clipboard.setData(ClipboardData(text: shareText));
+    context.showSuccessSnackBar('تم نسخ النص بنجاح');
+    HapticFeedback.mediumImpact();
   }
 
   void _shareQuote(BuildContext context, QuoteData quote) {
     HapticFeedback.lightImpact();
     final shareText = '${quote.content}\n\n${quote.source}\n\nمن تطبيق الأذكار';
-    // استخدام share_plus package
-    context.showInfoSnackBar('سيتم إضافة ميزة المشاركة قريباً');
+    Share.share(shareText);
   }
 
   void _showQuoteDetails(BuildContext context, QuoteData quote) {
@@ -735,6 +824,7 @@ class QuoteDetailsModal extends StatelessWidget {
 
   void _shareQuote(BuildContext context) {
     HapticFeedback.lightImpact();
-    context.showInfoSnackBar('سيتم إضافة ميزة المشاركة قريباً');
+    final shareText = '${quote.content}\n\n${quote.source}\n\nمن تطبيق الأذكار';
+    Share.share(shareText);
   }
 }
