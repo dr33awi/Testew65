@@ -181,10 +181,10 @@ class _HomeScreenState extends State<HomeScreen>
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   // رسالة الترحيب المطورة
-                  AnimationConfiguration.staggeredList(
+                  const AnimationConfiguration.staggeredList(
                     position: 0,
                     duration: ThemeConstants.durationSlow,
-                    child: const SlideAnimation(
+                    child: SlideAnimation(
                       verticalOffset: 50.0,
                       child: FadeInAnimation(
                         child: WelcomeMessage(),
@@ -195,10 +195,10 @@ class _HomeScreenState extends State<HomeScreen>
                   ThemeConstants.space4.h,
                   
                   // إحصائيات سريعة
-                  AnimationConfiguration.staggeredList(
+                  const AnimationConfiguration.staggeredList(
                     position: 1,
                     duration: ThemeConstants.durationSlow,
-                    child: const SlideAnimation(
+                    child: SlideAnimation(
                       verticalOffset: 50.0,
                       child: FadeInAnimation(
                         child: QuickStatsSection(),
@@ -209,10 +209,10 @@ class _HomeScreenState extends State<HomeScreen>
                   ThemeConstants.space4.h,
                   
                   // بطاقة مواقيت الصلاة المطورة
-                  AnimationConfiguration.staggeredList(
+                  const AnimationConfiguration.staggeredList(
                     position: 2,
                     duration: ThemeConstants.durationSlow,
-                    child: const SlideAnimation(
+                    child: SlideAnimation(
                       verticalOffset: 50.0,
                       child: FadeInAnimation(
                         child: PrayerTimesCard(),
@@ -223,10 +223,10 @@ class _HomeScreenState extends State<HomeScreen>
                   ThemeConstants.space4.h,
                   
                   // بطاقة الاقتباسات المطورة
-                  AnimationConfiguration.staggeredList(
+                  const AnimationConfiguration.staggeredList(
                     position: 3,
                     duration: ThemeConstants.durationSlow,
-                    child: const SlideAnimation(
+                    child: SlideAnimation(
                       verticalOffset: 50.0,
                       child: FadeInAnimation(
                         child: DailyQuotesCard(),
@@ -245,8 +245,8 @@ class _HomeScreenState extends State<HomeScreen>
             ),
             
             // شبكة الفئات المطورة
-            AnimationLimiter(
-              child: const CategoryGrid(),
+            const AnimationLimiter(
+              child: CategoryGrid(),
             ),
             
             // مساحة في الأسفل
@@ -420,7 +420,7 @@ class _HomeScreenState extends State<HomeScreen>
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     colors: [ThemeConstants.accent, ThemeConstants.accentDark],
                   ),
                   shape: BoxShape.circle,
