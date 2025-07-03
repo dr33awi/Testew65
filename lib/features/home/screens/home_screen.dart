@@ -5,9 +5,7 @@ import 'dart:ui';
 import '../../../app/themes/app_theme.dart';
 import '../widgets/category_grid.dart';
 import 'package:athkar_app/features/home/widgets/daily_quotes_card.dart';
-import 'package:athkar_app/features/home/widgets/quick_stats_card.dart';
 import 'package:athkar_app/features/home/widgets/welcome_message.dart';
-import 'package:athkar_app/features/home/widgets/floating_action_menu.dart';
 import 'package:athkar_app/features/prayer_times/widgets/home_prayer_times_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -26,7 +24,6 @@ class _HomeScreenState extends State<HomeScreen>
   late Animation<Offset> _slideAnimation;
   
   double _scrollOffset = 0.0;
-  bool _showFloatingMenu = false;
 
   @override
   void initState() {
@@ -71,7 +68,6 @@ class _HomeScreenState extends State<HomeScreen>
       ..addListener(() {
         setState(() {
           _scrollOffset = _scrollController.offset;
-          _showFloatingMenu = _scrollOffset > 200;
         });
       });
   }
@@ -95,12 +91,6 @@ class _HomeScreenState extends State<HomeScreen>
           
           // المحتوى الرئيسي
           _buildMainContent(context),
-          
-          // قائمة الإجراءات العائمة
-          FloatingActionMenu(
-            visible: _showFloatingMenu,
-            onScrollToTop: _scrollToTop,
-          ),
         ],
       ),
     );
@@ -194,23 +184,9 @@ class _HomeScreenState extends State<HomeScreen>
                   
                   ThemeConstants.space4.h,
                   
-                  // إحصائيات سريعة
-                  const AnimationConfiguration.staggeredList(
-                    position: 1,
-                    duration: ThemeConstants.durationSlow,
-                    child: SlideAnimation(
-                      verticalOffset: 50.0,
-                      child: FadeInAnimation(
-                        child: QuickStatsSection(),
-                      ),
-                    ),
-                  ),
-                  
-                  ThemeConstants.space4.h,
-                  
                   // بطاقة مواقيت الصلاة المطورة
                   const AnimationConfiguration.staggeredList(
-                    position: 2,
+                    position: 1,
                     duration: ThemeConstants.durationSlow,
                     child: SlideAnimation(
                       verticalOffset: 50.0,
@@ -224,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen>
                   
                   // بطاقة الاقتباسات المطورة
                   const AnimationConfiguration.staggeredList(
-                    position: 3,
+                    position: 2,
                     duration: ThemeConstants.durationSlow,
                     child: SlideAnimation(
                       verticalOffset: 50.0,
@@ -454,7 +430,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildSectionHeader(BuildContext context) {
     return AnimationConfiguration.staggeredList(
-      position: 4,
+      position: 3,
       duration: ThemeConstants.durationSlow,
       child: SlideAnimation(
         verticalOffset: 30.0,
@@ -546,14 +522,6 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ),
       ),
-    );
-  }
-
-  void _scrollToTop() {
-    _scrollController.animateTo(
-      0,
-      duration: ThemeConstants.durationSlow,
-      curve: ThemeConstants.curveSmooth,
     );
   }
 }
