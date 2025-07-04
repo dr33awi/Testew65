@@ -410,25 +410,22 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => _showQuoteDetails(context, quote),
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-              child: Stack(
-                children: [
-                  // خلفية زخرفية
-                  _buildQuoteBackground(quote),
-                  
-                  // المحتوى
-                  Padding(
-                    padding: const EdgeInsets.all(ThemeConstants.space5),
-                    child: _buildQuoteContent(context, quote),
-                  ),
-                ],
-              ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _showQuoteDetails(context, quote),
+            borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+            child: Stack(
+              children: [
+                // تحسين: خلفية مبسطة
+                _buildSimpleQuoteBackground(quote),
+                
+                // المحتوى
+                Padding(
+                  padding: const EdgeInsets.all(ThemeConstants.space5),
+                  child: _buildQuoteContent(context, quote),
+                ),
+              ],
             ),
           ),
         ),
@@ -436,21 +433,11 @@ class _DailyQuotesCardState extends State<DailyQuotesCard> {
     );
   }
 
-  Widget _buildQuoteBackground(QuoteData quote) {
+  Widget _buildSimpleQuoteBackground(QuoteData quote) {
     return Positioned.fill(
       child: Stack(
         children: [
-          // نمط إسلامي زخرفي
-          Positioned.fill(
-            child: CustomPaint(
-              painter: IslamicPatternPainter(
-                color: Colors.white.withValues(alpha: 0.1),
-                animation: 0.0, // قيمة ثابتة بدلاً من animation
-              ),
-            ),
-          ),
-          
-          // تأثير ضوئي
+          // تحسين: تأثير ضوئي ثابت
           Positioned(
             top: -50,
             left: -50,

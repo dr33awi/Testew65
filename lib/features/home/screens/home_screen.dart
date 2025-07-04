@@ -18,6 +18,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late ScrollController _scrollController;
   double _scrollOffset = 0.0;
+  
+  // تحسين: تخزين الخلفية لتجنب إعادة البناء
+  Widget? _cachedBackground;
+  bool _backgroundBuilt = false;
 
   @override
   void initState() {
@@ -28,9 +32,13 @@ class _HomeScreenState extends State<HomeScreen> {
   void _setupScrollController() {
     _scrollController = ScrollController()
       ..addListener(() {
-        setState(() {
-          _scrollOffset = _scrollController.offset;
-        });
+        // تحسين: تقليل عدد استدعاءات setState
+        final newOffset = _scrollController.offset;
+        if ((newOffset - _scrollOffset).abs() > 20) { // زيادة threshold
+          setState(() {
+            _scrollOffset = newOffset;
+          });
+        }
       });
   }
 
@@ -46,8 +54,8 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: context.backgroundColor,
       body: Stack(
         children: [
-          // خلفية متدرجة متطورة
-          _buildEnhancedBackground(context),
+          // تحسين: استخدام خلفية مُحسنة
+          _buildOptimizedBackground(context),
           
           // المحتوى الرئيسي
           _buildMainContent(context),
@@ -56,57 +64,83 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildEnhancedBackground(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: context.isDarkMode
-              ? [
-                  ThemeConstants.darkBackground,
-                  ThemeConstants.darkSurface.withValues(alpha: 0.8),
-                  ThemeConstants.darkBackground,
-                ]
-              : [
-                  ThemeConstants.lightBackground,
-                  ThemeConstants.primarySoft.withValues(alpha: 0.1),
-                  ThemeConstants.lightBackground,
-                ],
-          stops: const [0.0, 0.3, 1.0],
-        ),
-      ),
-      child: Stack(
-        children: [
-          // نمط هندسي خفيف
-          Positioned.fill(
-            child: CustomPaint(
-              painter: GeometricPatternPainter(
-                color: context.primaryColor.withValues(alpha: 0.05),
-                isDark: context.isDarkMode,
-              ),
-            ),
-          ),
-          
-          // تأثير الضوء العلوي
-          Positioned(
-            top: -100,
-            right: -100,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    context.primaryColor.withValues(alpha: 0.1),
-                    Colors.transparent,
+  Widget _buildOptimizedBackground(BuildContext context) {
+    // تحسين: بناء الخلفية مرة واحدة فقط
+    if (!_backgroundBuilt) {
+      _cachedBackground = Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: context.isDarkMode
+                ? [
+                    ThemeConstants.darkBackground,
+                    ThemeConstants.darkSurface.withValues(alpha: 0.8),
+                    ThemeConstants.darkBackground,
+                  ]
+                : [
+                    ThemeConstants.lightBackground,
+                    ThemeConstants.primarySoft.withValues(alpha: 0.1),
+                    ThemeConstants.lightBackground,
                   ],
+            stops: const [0.0, 0.3, 1.0],
+          ),
+        ),
+        child: Stack(
+          children: [
+            // تحسين: نمط هندسي مبسط
+            _buildSimplePattern(context),
+            
+            // تحسين: تأثير ضوئي ثابت
+            Positioned(
+              top: -100,
+              right: -100,
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      context.primaryColor.withValues(alpha: 0.1),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
               ),
             ),
+          ],
+        ),
+      );
+      _backgroundBuilt = true;
+    }
+    return _cachedBackground!;
+  }
+
+  Widget _buildSimplePattern(BuildContext context) {
+    // تحسين: نمط مبسط بدلاً من CustomPaint
+    return Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: const AssetImage('assets/images/pattern.png'), // إذا توفر
+            fit: BoxFit.cover,
+            opacity: 0.05,
           ),
-        ],
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.transparent,
+                context.primaryColor.withValues(alpha: 0.02),
+                Colors.transparent,
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -116,8 +150,8 @@ class _HomeScreenState extends State<HomeScreen> {
       controller: _scrollController,
       physics: const BouncingScrollPhysics(),
       slivers: [
-        // شريط التطبيق المطور
-        _buildEnhancedAppBar(context),
+        // تحسين: شريط تطبيق مبسط
+        _buildOptimizedAppBar(context),
         
         // المحتوى الرئيسي
         SliverPadding(
@@ -160,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildEnhancedAppBar(BuildContext context) {
+  Widget _buildOptimizedAppBar(BuildContext context) {
     return SliverAppBar(
       expandedHeight: 120.0,
       floating: false,
@@ -180,18 +214,14 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          child: ClipRRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: context.backgroundColor.withValues(alpha: 0.8),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: context.dividerColor.withValues(alpha: 0.3),
-                      width: 1,
-                    ),
-                  ),
+          // تحسين: إزالة BackdropFilter المكلف
+          child: Container(
+            decoration: BoxDecoration(
+              color: context.backgroundColor.withValues(alpha: 0.8),
+              border: Border(
+                bottom: BorderSide(
+                  color: context.dividerColor.withValues(alpha: 0.3),
+                  width: 1,
                 ),
               ),
             ),
@@ -251,16 +281,15 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       
       actions: [
-        // زر الإشعارات
-        _buildAppBarAction(
+        // تحسين: أزرار مبسطة
+        _buildSimpleAppBarAction(
           icon: Icons.notifications_outlined,
           onPressed: () => Navigator.pushNamed(context, '/notifications'),
           badge: '3',
           tooltip: 'الإشعارات',
         ),
         
-        // زر الإعدادات
-        _buildAppBarAction(
+        _buildSimpleAppBarAction(
           icon: Icons.settings_outlined,
           onPressed: () => Navigator.pushNamed(context, '/settings'),
           tooltip: 'الإعدادات',
@@ -271,7 +300,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildAppBarAction({
+  Widget _buildSimpleAppBarAction({
     required IconData icon,
     required VoidCallback onPressed,
     String? badge,
@@ -282,6 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Stack(
         alignment: Alignment.center,
         children: [
+          // تحسين: إزالة BackdropFilter
           Material(
             color: Colors.transparent,
             shape: const CircleBorder(),
@@ -297,13 +327,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: context.dividerColor.withValues(alpha: 0.3),
                     width: 1,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: context.primaryColor.withValues(alpha: 0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
                 ),
                 child: Icon(
                   icon,
@@ -325,13 +348,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     colors: [ThemeConstants.accent, ThemeConstants.accentDark],
                   ),
                   shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: ThemeConstants.accent.withValues(alpha: 0.5),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
                 ),
                 constraints: const BoxConstraints(
                   minWidth: 18,
@@ -447,55 +463,4 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-/// رسام النمط الهندسي للخلفية
-class GeometricPatternPainter extends CustomPainter {
-  final Color color;
-  final bool isDark;
-
-  GeometricPatternPainter({
-    required this.color,
-    required this.isDark,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    const double spacing = 60.0;
-    
-    // رسم شبكة من الأشكال الهندسية
-    for (double x = 0; x < size.width + spacing; x += spacing) {
-      for (double y = 0; y < size.height + spacing; y += spacing) {
-        // رسم دائرة صغيرة
-        canvas.drawCircle(
-          Offset(x, y),
-          2,
-          paint,
-        );
-        
-        // رسم خطوط متقاطعة
-        if (x + spacing < size.width) {
-          canvas.drawLine(
-            Offset(x + 10, y),
-            Offset(x + spacing - 10, y),
-            paint,
-          );
-        }
-        
-        if (y + spacing < size.height) {
-          canvas.drawLine(
-            Offset(x, y + 10),
-            Offset(x, y + spacing - 10),
-            paint,
-          );
-        }
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
+// تحسين: إزالة GeometricPatternPainter المعقد لتحسين الأداء

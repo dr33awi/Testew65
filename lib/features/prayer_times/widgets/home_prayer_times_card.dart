@@ -36,8 +36,9 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
   }
 
   void _setupAnimations() {
+    // تحسين: تقليل سرعة الحركة
     _pulseController = AnimationController(
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 3), // زيادة المدة
       vsync: this,
     )..repeat(reverse: true);
 
@@ -118,33 +119,30 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: _navigateToPrayerTimes,
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-              child: Container(
-                padding: const EdgeInsets.all(ThemeConstants.space4),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1,
-                  ),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: _navigateToPrayerTimes,
+            borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+            child: Container(
+              padding: const EdgeInsets.all(ThemeConstants.space4),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  width: 1,
                 ),
-                child: Column(
-                  children: [
-                    // رأس البطاقة المدمج
-                    _buildCompactHeader(context),
-                    
-                    ThemeConstants.space4.h,
-                    
-                    // نقاط الصلوات المبسطة
-                    _buildSimplePrayerPoints(context),
-                  ],
-                ),
+                borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+              ),
+              child: Column(
+                children: [
+                  // رأس البطاقة المدمج
+                  _buildCompactHeader(context),
+                  
+                  ThemeConstants.space4.h,
+                  
+                  // نقاط الصلوات المبسطة
+                  _buildSimplePrayerPoints(context),
+                ],
               ),
             ),
           ),
@@ -285,7 +283,7 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // الأيقونة مع تأثير النبض للصلاة القادمة
+        // تحسين: الأيقونة مع تأثير محدود للصلاة القادمة
         AnimatedBuilder(
           animation: _pulseAnimation,
           builder: (context, child) {
@@ -301,15 +299,15 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
                 ),
                 boxShadow: isActive ? [
                   BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.6 + (_pulseAnimation.value * 0.4)),
-                    blurRadius: 8 + (_pulseAnimation.value * 12),
-                    spreadRadius: 1 + (_pulseAnimation.value * 3),
+                    color: Colors.white.withValues(alpha: 0.3 + (_pulseAnimation.value * 0.2)), // تقليل التأثير
+                    blurRadius: 4 + (_pulseAnimation.value * 6), // تقليل التأثير
+                    spreadRadius: 1 + (_pulseAnimation.value * 1), // تقليل التأثير
                   ),
                 ] : null,
               ),
               child: Center(
                 child: Transform.scale(
-                  scale: isActive ? 1.0 + (_pulseAnimation.value * 0.2) : 1.0,
+                  scale: isActive ? 1.0 + (_pulseAnimation.value * 0.1) : 1.0, // تقليل التحجيم
                   child: Icon(
                     prayer.icon,
                     color: isPassed || isActive ? prayer.color : Colors.white,

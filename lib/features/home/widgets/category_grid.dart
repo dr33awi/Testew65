@@ -114,41 +114,38 @@ class _CategoryGridState extends State<CategoryGrid> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => _onCategoryTap(category),
-              borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      category.gradient[0].withValues(alpha: 0.9),
-                      category.gradient[1].withValues(alpha: 0.8),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    width: 1.5,
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    // خلفية زخرفية
-                    _buildCategoryBackground(category),
-                    
-                    // المحتوى
-                    Padding(
-                      padding: const EdgeInsets.all(ThemeConstants.space4),
-                      child: _buildCategoryContent(context, category),
-                    ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _onCategoryTap(category),
+            borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    category.gradient[0].withValues(alpha: 0.9),
+                    category.gradient[1].withValues(alpha: 0.8),
                   ],
                 ),
+                borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  width: 1.5,
+                ),
+              ),
+              child: Stack(
+                children: [
+                  // تحسين: خلفية مبسطة
+                  _buildSimpleCategoryBackground(category),
+                  
+                  // المحتوى
+                  Padding(
+                    padding: const EdgeInsets.all(ThemeConstants.space4),
+                    child: _buildCategoryContent(context, category),
+                  ),
+                ],
               ),
             ),
           ),
@@ -157,11 +154,11 @@ class _CategoryGridState extends State<CategoryGrid> {
     );
   }
 
-  Widget _buildCategoryBackground(CategoryItem category) {
+  Widget _buildSimpleCategoryBackground(CategoryItem category) {
     return Positioned.fill(
       child: Stack(
         children: [
-          // تأثير الضوء
+          // تحسين: تأثير ضوئي ثابت
           Positioned(
             top: -40,
             right: -40,
@@ -180,21 +177,45 @@ class _CategoryGridState extends State<CategoryGrid> {
             ),
           ),
           
-          // دوائر صغيرة متحركة
-          ...List.generate(3, (index) {
-            return Positioned(
-              bottom: 20 + (index * 15),
-              left: 20 + (index * 20),
-              child: Container(
-                width: 6 + (index * 2),
-                height: 6 + (index * 2),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.3 - (index * 0.1)),
-                ),
+          // تحسين: دوائر ثابتة بدلاً من متحركة
+          Positioned(
+            bottom: 20,
+            left: 20,
+            child: Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.3),
               ),
-            );
-          }),
+            ),
+          ),
+          
+          Positioned(
+            bottom: 35,
+            left: 40,
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+            ),
+          ),
+          
+          Positioned(
+            bottom: 50,
+            left: 60,
+            child: Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withValues(alpha: 0.1),
+              ),
+            ),
+          ),
         ],
       ),
     );

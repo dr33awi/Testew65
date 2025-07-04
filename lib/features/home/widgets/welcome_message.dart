@@ -274,7 +274,7 @@ class _WelcomeMessageState extends State<WelcomeMessage>
               color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(
+            child: const Icon(
               Icons.access_time_rounded,
               color: Colors.white,
               size: ThemeConstants.iconSm,
