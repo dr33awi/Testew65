@@ -1,8 +1,8 @@
-// lib/features/home/widgets/category_grid.dart
+// lib/features/home/widgets/category_grid.dart - محسن للأداء
+
 import 'package:athkar_app/features/home/widgets/color_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:ui';
 import 'dart:math' as math;
 import '../../../app/themes/app_theme.dart';
 
@@ -14,13 +14,13 @@ class CategoryGrid extends StatefulWidget {
 }
 
 class _CategoryGridState extends State<CategoryGrid> {
-  final List<CategoryItem> _categories = [
+  // بيانات ثابتة للأداء
+  static const List<CategoryItem> _categories = [
     CategoryItem(
       id: 'prayer_times',
       title: 'مواقيت الصلاة',
       subtitle: 'أوقات الصلوات الخمس',
       icon: Icons.mosque,
-      gradient: ColorHelper.getCategoryGradient('prayer_times').colors,
       routeName: '/prayer-times',
       progress: 0.8,
     ),
@@ -29,7 +29,6 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'الأذكار اليومية',
       subtitle: 'أذكار الصباح والمساء',
       icon: Icons.auto_awesome,
-      gradient: ColorHelper.getCategoryGradient('athkar').colors,
       routeName: '/athkar',
       progress: 0.6,
     ),
@@ -38,7 +37,6 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'القرآن الكريم',
       subtitle: 'تلاوة وتدبر',
       icon: Icons.menu_book_rounded,
-      gradient: ColorHelper.getCategoryGradient('quran').colors,
       routeName: '/quran',
       progress: 0.4,
     ),
@@ -47,7 +45,6 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'اتجاه القبلة',
       subtitle: 'البوصلة الذكية',
       icon: Icons.explore,
-      gradient: ColorHelper.getCategoryGradient('qibla').colors,
       routeName: '/qibla',
       progress: 1.0,
     ),
@@ -56,7 +53,6 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'المسبحة الرقمية',
       subtitle: 'عداد التسبيح',
       icon: Icons.radio_button_checked,
-      gradient: ColorHelper.getCategoryGradient('tasbih').colors,
       routeName: '/tasbih',
       progress: 0.9,
     ),
@@ -65,7 +61,6 @@ class _CategoryGridState extends State<CategoryGrid> {
       title: 'الأدعية المأثورة',
       subtitle: 'أدعية من الكتاب والسنة',
       icon: Icons.pan_tool_rounded,
-      gradient: ColorHelper.getCategoryGradient('dua').colors,
       routeName: '/dua',
       progress: 0.3,
     ),
@@ -88,225 +83,258 @@ class _CategoryGridState extends State<CategoryGrid> {
   Widget build(BuildContext context) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
-      sliver: SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: ThemeConstants.space4,
-          crossAxisSpacing: ThemeConstants.space4,
-          childAspectRatio: 0.85,
-        ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            if (index >= _categories.length) return null;
-            
-            return _buildCategoryItem(context, _categories[index], index);
-          },
-          childCount: _categories.length,
-        ),
+      sliver: SliverList(
+        delegate: SliverChildListDelegate([
+          // الصف الأول: المفضلة وإنجاز اليوم
+          Row(
+            children: [
+              // المفضلة (عريضة)
+              Expanded(
+                flex: 2,
+                child: _buildCategoryItem(context, _categories[4]), // tasbih
+              ),
+              ThemeConstants.space4.w,
+              // إنجاز اليوم (مربعة)
+              Expanded(
+                child: _buildSquareCategoryItem(context, _categories[1]), // athkar
+              ),
+            ],
+          ),
+          
+          ThemeConstants.space4.h,
+          
+          // الصف الثاني: أيام متتالية وأذكار اليوم
+          Row(
+            children: [
+              // أيام متتالية (مربعة)
+              Expanded(
+                child: _buildSquareCategoryItem(context, _categories[2]), // quran
+              ),
+              ThemeConstants.space4.w,
+              // أذكار اليوم (عريضة)
+              Expanded(
+                flex: 2,
+                child: _buildCategoryItem(context, _categories[0]), // prayer_times
+              ),
+            ],
+          ),
+          
+          ThemeConstants.space4.h,
+          
+          // الصف الثالث: اتجاه القبلة والأدعية
+          Row(
+            children: [
+              // اتجاه القبلة
+              Expanded(
+                child: _buildCategoryItem(context, _categories[3]), // qibla
+              ),
+              ThemeConstants.space4.w,
+              // الأدعية
+              Expanded(
+                child: _buildCategoryItem(context, _categories[5]), // dua
+              ),
+            ],
+          ),
+        ]),
       ),
     );
   }
 
-  Widget _buildCategoryItem(BuildContext context, CategoryItem category, int index) {
+  Widget _buildSquareCategoryItem(BuildContext context, CategoryItem category) {
+    // حساب الألوان مرة واحدة
+    final gradient = ColorHelper.getCategoryGradient(category.id);
+    
     return Container(
+      height: 160, // زيادة الارتفاع أكثر
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => _onCategoryTap(category),
-            borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    category.gradient[0].withValues(alpha: 0.9),
-                    category.gradient[1].withValues(alpha: 0.8),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  width: 1.5,
-                ),
-              ),
-              child: Stack(
-                children: [
-                  // تحسين: خلفية مبسطة
-                  _buildSimpleCategoryBackground(category),
-                  
-                  // المحتوى
-                  Padding(
-                    padding: const EdgeInsets.all(ThemeConstants.space4),
-                    child: _buildCategoryContent(context, category),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSimpleCategoryBackground(CategoryItem category) {
-    return Positioned.fill(
-      child: Stack(
-        children: [
-          // تحسين: تأثير ضوئي ثابت
-          Positioned(
-            top: -40,
-            right: -40,
-            child: Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    Colors.white.withValues(alpha: 0.2),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          
-          // تحسين: دوائر ثابتة بدلاً من متحركة
-          Positioned(
-            bottom: 20,
-            left: 20,
-            child: Container(
-              width: 6,
-              height: 6,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.3),
-              ),
-            ),
-          ),
-          
-          Positioned(
-            bottom: 35,
-            left: 40,
-            child: Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.2),
-              ),
-            ),
-          ),
-          
-          Positioned(
-            bottom: 50,
-            left: 60,
-            child: Container(
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.1),
-              ),
-            ),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        gradient: gradient,
+        boxShadow: [
+          BoxShadow(
+            color: gradient.colors[0].withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        child: InkWell(
+          onTap: () => _onCategoryTap(category),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // الأيقونة
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.2),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Icon(
+                    category.icon,
+                    color: Colors.white,
+                    size: 30,
+                  ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // العنوان فقط - سطرين مع تباعد أفضل
+                Text(
+                  category.title,
+                  style: context.titleMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: ThemeConstants.bold,
+                    fontSize: 16,
+                    height: 1.3,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        offset: const Offset(0, 1),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildCategoryContent(BuildContext context, CategoryItem category) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // الأيقونة والتقدم
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // الأيقونة
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.25),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.4),
-                  width: 2,
+  Widget _buildCategoryItem(BuildContext context, CategoryItem category) {
+    // حساب الألوان مرة واحدة
+    final gradient = ColorHelper.getCategoryGradient(category.id);
+    
+    return Container(
+      height: 160, // ارتفاع موحد مع البطاقات المربعة
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        gradient: gradient,
+        boxShadow: [
+          BoxShadow(
+            color: gradient.colors[0].withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        child: InkWell(
+          onTap: () => _onCategoryTap(category),
+          borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // الأيقونة
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.2),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Icon(
+                    category.icon,
+                    color: Colors.white,
+                    size: 30,
+                  ),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
+                
+                const SizedBox(width: 16),
+                
+                // النص والتقدم
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // العنوان فقط - سطرين للأسماء الطويلة
+                      Text(
+                        category.title,
+                        style: context.titleMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: ThemeConstants.bold,
+                          fontSize: 17,
+                          height: 1.3,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              offset: const Offset(0, 1),
+                              blurRadius: 2,
+                            ),
+                          ],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      
+                      const SizedBox(height: 16),
+                      
+                      // شريط التقدم مكتمل
+                      Container(
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Icon(
-                category.icon,
-                color: Colors.white,
-                size: 32,
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-        
-        const Spacer(),
-        
-        // النصوص
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              category.title,
-              style: context.titleLarge?.copyWith(
-                color: Colors.white,
-                fontWeight: ThemeConstants.bold,
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    offset: const Offset(0, 2),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            
-            ThemeConstants.space1.h,
-            
-            Text(
-              category.subtitle,
-              style: context.labelMedium?.copyWith(
-                color: Colors.white.withValues(alpha: 0.9),
-                height: 1.3,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-        
-        ThemeConstants.space3.h,
-      ],
+      ),
     );
   }
 }
 
-/// نموذج بيانات الفئة المطور
+/// نموذج بيانات الفئة المحسن
 class CategoryItem {
   final String id;
   final String title;
   final String subtitle;
   final IconData icon;
-  final List<Color> gradient;
   final String? routeName;
   final double progress;
 
@@ -315,7 +343,6 @@ class CategoryItem {
     required this.title,
     required this.subtitle,
     required this.icon,
-    required this.gradient,
     this.routeName,
     required this.progress,
   });
