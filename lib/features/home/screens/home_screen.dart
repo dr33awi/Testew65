@@ -57,62 +57,56 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildEnhancedBackground(BuildContext context) {
-    return RepaintBoundary(
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: context.isDarkMode
-                ? [
-                    ThemeConstants.darkBackground,
-                    ThemeConstants.darkSurface.withValues(alpha: 0.8),
-                    ThemeConstants.darkBackground,
-                  ]
-                : [
-                    ThemeConstants.lightBackground,
-                    ThemeConstants.primarySoft.withValues(alpha: 0.1),
-                    ThemeConstants.lightBackground,
-                  ],
-            stops: const [0.0, 0.3, 1.0],
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: context.isDarkMode
+              ? [
+                  ThemeConstants.darkBackground,
+                  ThemeConstants.darkSurface.withValues(alpha: 0.8),
+                  ThemeConstants.darkBackground,
+                ]
+              : [
+                  ThemeConstants.lightBackground,
+                  ThemeConstants.primarySoft.withValues(alpha: 0.1),
+                  ThemeConstants.lightBackground,
+                ],
+          stops: const [0.0, 0.3, 1.0],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // نمط هندسي خفيف
+          Positioned.fill(
+            child: CustomPaint(
+              painter: GeometricPatternPainter(
+                color: context.primaryColor.withValues(alpha: 0.05),
+                isDark: context.isDarkMode,
+              ),
+            ),
           ),
-        ),
-        child: Stack(
-          children: [
-            // نمط هندسي خفيف
-            RepaintBoundary(
-              child: Positioned.fill(
-                child: CustomPaint(
-                  painter: GeometricPatternPainter(
-                    color: context.primaryColor.withValues(alpha: 0.05),
-                    isDark: context.isDarkMode,
-                  ),
+          
+          // تأثير الضوء العلوي
+          Positioned(
+            top: -100,
+            right: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    context.primaryColor.withValues(alpha: 0.1),
+                    Colors.transparent,
+                  ],
                 ),
               ),
             ),
-            
-            // تأثير الضوء العلوي
-            RepaintBoundary(
-              child: Positioned(
-                top: -100,
-                right: -100,
-                child: Container(
-                  width: 300,
-                  height: 300,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        context.primaryColor.withValues(alpha: 0.1),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -174,30 +168,28 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.transparent,
       elevation: 0,
       
-      flexibleSpace: RepaintBoundary(
-        child: FlexibleSpaceBar(
-          background: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  context.primaryColor.withValues(alpha: 0.1),
-                  Colors.transparent,
-                ],
-              ),
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                context.primaryColor.withValues(alpha: 0.1),
+                Colors.transparent,
+              ],
             ),
-            child: ClipRRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: context.backgroundColor.withValues(alpha: 0.8),
-                    border: Border(
-                      bottom: BorderSide(
-                        color: context.dividerColor.withValues(alpha: 0.3),
-                        width: 1,
-                      ),
+          ),
+          child: ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: context.backgroundColor.withValues(alpha: 0.8),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: context.dividerColor.withValues(alpha: 0.3),
+                      width: 1,
                     ),
                   ),
                 ),
@@ -207,70 +199,71 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       
-      title: RepaintBoundary(
-        child: Row(
-          children: [
-            // أيقونة التطبيق
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                gradient: ThemeConstants.primaryGradient,
-                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-              ),
-              child: const Icon(
-                Icons.mosque,
-                color: Colors.white,
-                size: 24,
-              ),
+      title: Row(
+        children: [
+          // أيقونة التطبيق
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              gradient: ThemeConstants.primaryGradient,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              boxShadow: [
+                BoxShadow(
+                  color: context.primaryColor.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            
-            ThemeConstants.space3.w,
-            
-            // النص
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'تطبيق الأذكار',
-                    style: context.titleLarge?.copyWith(
-                      fontWeight: ThemeConstants.bold,
-                      color: context.textPrimaryColor,
-                    ),
-                  ),
-                  Text(
-                    'السلام عليكم',
-                    style: context.labelMedium?.copyWith(
-                      color: context.textSecondaryColor,
-                    ),
-                  ),
-                ],
-              ),
+            child: const Icon(
+              Icons.mosque,
+              color: Colors.white,
+              size: 24,
             ),
-          ],
-        ),
+          ),
+          
+          ThemeConstants.space3.w,
+          
+          // النص
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'تطبيق الأذكار',
+                  style: context.titleLarge?.copyWith(
+                    fontWeight: ThemeConstants.bold,
+                    color: context.textPrimaryColor,
+                  ),
+                ),
+                Text(
+                  'السلام عليكم',
+                  style: context.labelMedium?.copyWith(
+                    color: context.textSecondaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
       
       actions: [
         // زر الإشعارات
-        RepaintBoundary(
-          child: _buildAppBarAction(
-            icon: Icons.notifications_outlined,
-            onPressed: () => Navigator.pushNamed(context, '/notifications'),
-            badge: '3',
-            tooltip: 'الإشعارات',
-          ),
+        _buildAppBarAction(
+          icon: Icons.notifications_outlined,
+          onPressed: () => Navigator.pushNamed(context, '/notifications'),
+          badge: '3',
+          tooltip: 'الإشعارات',
         ),
         
         // زر الإعدادات
-        RepaintBoundary(
-          child: _buildAppBarAction(
-            icon: Icons.settings_outlined,
-            onPressed: () => Navigator.pushNamed(context, '/settings'),
-            tooltip: 'الإعدادات',
-          ),
+        _buildAppBarAction(
+          icon: Icons.settings_outlined,
+          onPressed: () => Navigator.pushNamed(context, '/settings'),
+          tooltip: 'الإعدادات',
         ),
         
         ThemeConstants.space2.w,
@@ -304,6 +297,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: context.dividerColor.withValues(alpha: 0.3),
                     width: 1,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: context.primaryColor.withValues(alpha: 0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Icon(
                   icon,
@@ -325,6 +325,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     colors: [ThemeConstants.accent, ThemeConstants.accentDark],
                   ),
                   shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: ThemeConstants.accent.withValues(alpha: 0.5),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 constraints: const BoxConstraints(
                   minWidth: 18,
