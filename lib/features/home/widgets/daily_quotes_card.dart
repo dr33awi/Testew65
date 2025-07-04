@@ -16,13 +16,8 @@ class DailyQuotesCard extends StatefulWidget {
   State<DailyQuotesCard> createState() => _DailyQuotesCardState();
 }
 
-class _DailyQuotesCardState extends State<DailyQuotesCard>
-    with TickerProviderStateMixin {
+class _DailyQuotesCardState extends State<DailyQuotesCard> {
   late PageController _pageController;
-  late AnimationController _animationController;
-  late AnimationController _backgroundController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
   
   int _currentPage = 0;
   List<QuoteData> quotes = [];
@@ -33,8 +28,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
   @override
   void initState() {
     super.initState();
-    _setupControllers();
-    _setupAnimations();
+    _pageController = PageController();
     _loadQuotesData();
   }
 
@@ -164,45 +158,9 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
     }
   }
 
-  void _setupControllers() {
-    _pageController = PageController();
-    
-    _animationController = AnimationController(
-      duration: ThemeConstants.durationSlow,
-      vsync: this,
-    );
-
-    _backgroundController = AnimationController(
-      duration: const Duration(seconds: 10),
-      vsync: this,
-    )..repeat();
-  }
-
-  void _setupAnimations() {
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: ThemeConstants.curveSmooth,
-    ));
-
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: ThemeConstants.curveSmooth,
-    ));
-
-    _animationController.forward();
-  }
-
   @override
   void dispose() {
     _pageController.dispose();
-    _animationController.dispose();
-    _backgroundController.dispose();
     super.dispose();
   }
 
@@ -223,47 +181,36 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
       return _buildEmptyCard(context);
     }
 
-    return AnimatedBuilder(
-      animation: _fadeAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Opacity(
-            opacity: _fadeAnimation.value,
-            child: Column(
-              children: [
-                // عنوان القسم
-                _buildSectionHeader(context),
-                
-                ThemeConstants.space4.h,
-                
-                // بطاقة الاقتباسات
-                SizedBox(
-                  height: 280,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentPage = index;
-                      });
-                      HapticFeedback.selectionClick();
-                    },
-                    itemCount: quotes.length,
-                    itemBuilder: (context, index) {
-                      return _buildQuoteCard(context, quotes[index]);
-                    },
-                  ),
-                ),
-                
-                ThemeConstants.space4.h,
-                
-                // مؤشر الصفحات
-                _buildPageIndicator(context),
-              ],
-            ),
+    return Column(
+      children: [
+        // عنوان القسم
+        _buildSectionHeader(context),
+        
+        ThemeConstants.space4.h,
+        
+        // بطاقة الاقتباسات
+        SizedBox(
+          height: 280,
+          child: PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+              });
+              HapticFeedback.selectionClick();
+            },
+            itemCount: quotes.length,
+            itemBuilder: (context, index) {
+              return _buildQuoteCard(context, quotes[index]);
+            },
           ),
-        );
-      },
+        ),
+        
+        ThemeConstants.space4.h,
+        
+        // مؤشر الصفحات
+        _buildPageIndicator(context),
+      ],
     );
   }
 
@@ -375,27 +322,31 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
 
   Widget _buildSectionHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: ThemeConstants.space4,
+        vertical: ThemeConstants.space3,
+      ),
       decoration: BoxDecoration(
         color: context.cardColor,
-        borderRadius: BorderRadius.circular(ThemeConstants.radiusXl),
+        borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
         border: Border.all(
-          color: context.dividerColor.withValues(alpha: 0.3),
+          color: context.dividerColor.withValues(alpha: 0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: context.primaryColor.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
-          // أيقونة ثابتة
+          // أيقونة مدمجة
           Container(
-            padding: const EdgeInsets.all(ThemeConstants.space2),
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               gradient: ThemeConstants.primaryGradient,
               borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
@@ -403,49 +354,39 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
             child: const Icon(
               Icons.auto_stories_rounded,
               color: Colors.white,
-              size: 28,
+              size: 20,
             ),
           ),
           
-          ThemeConstants.space4.w,
+          ThemeConstants.space3.w,
           
           // النصوص
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'الاقتباس اليومي',
-                  style: context.titleLarge?.copyWith(
-                    fontWeight: ThemeConstants.bold,
-                  ),
-                ),
-                Text(
-                  'آية وحديث ودعاء مختار',
-                  style: context.labelMedium?.copyWith(
-                    color: context.textSecondaryColor,
-                  ),
-                ),
-              ],
+            child: Text(
+              'الاقتباس اليومي',
+              style: context.titleMedium?.copyWith(
+                fontWeight: ThemeConstants.bold,
+              ),
             ),
           ),
           
-          // زر التحديث
-          Material(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-            child: InkWell(
-              onTap: _refreshQuotes,
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-              child: Container(
-                padding: const EdgeInsets.all(ThemeConstants.space2),
-                decoration: BoxDecoration(
-                  color: context.primaryColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-                ),
+          // زر التحديث مدمج
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: context.primaryColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              child: InkWell(
+                onTap: _refreshQuotes,
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
                 child: Icon(
                   Icons.refresh_rounded,
-                  size: ThemeConstants.iconMd,
+                  size: 18,
                   color: context.primaryColor,
                 ),
               ),
@@ -466,14 +407,6 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
           end: Alignment.bottomRight,
           colors: quote.gradient.map((c) => c.withValues(alpha: 0.9)).toList(),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: quote.gradient[0].withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-            spreadRadius: 2,
-          ),
-        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
@@ -512,7 +445,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
             child: CustomPaint(
               painter: IslamicPatternPainter(
                 color: Colors.white.withValues(alpha: 0.1),
-                animation: _backgroundController.value,
+                animation: 0.0, // قيمة ثابتة بدلاً من animation
               ),
             ),
           ),
@@ -572,19 +505,38 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
                       fontWeight: ThemeConstants.bold,
                     ),
                   ),
-                  Text(
-                    _getQuoteSubtitle(quote.type),
-                    style: context.labelMedium?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
-                  ),
                   if (quote.theme != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      quote.theme!,
-                      style: context.labelSmall?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontStyle: FontStyle.italic,
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: ThemeConstants.space3,
+                        vertical: ThemeConstants.space1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.label_outline,
+                            color: Colors.white.withValues(alpha: 0.8),
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            quote.theme!,
+                            style: context.labelSmall?.copyWith(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              fontWeight: ThemeConstants.medium,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -693,72 +645,26 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
         
         const Spacer(),
         
-        // المصدر والموضوع
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            // المصدر على اليسار
-            Flexible(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: ThemeConstants.space4,
-                  vertical: ThemeConstants.space2,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                ),
-                child: Text(
-                  quote.source,
-                  style: context.labelMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: ThemeConstants.semiBold,
-                  ),
-                ),
+        // المصدر
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: ThemeConstants.space4,
+              vertical: ThemeConstants.space2,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
+            ),
+            child: Text(
+              quote.source,
+              style: context.labelMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: ThemeConstants.semiBold,
               ),
             ),
-            
-            // الموضوع على اليمين
-            if (quote.theme != null) 
-              Flexible(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: ThemeConstants.space3,
-                    vertical: ThemeConstants.space1,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusFull),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.label_outline,
-                        color: Colors.white.withValues(alpha: 0.8),
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          quote.theme!,
-                          style: context.labelSmall?.copyWith(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            fontWeight: ThemeConstants.medium,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
+          ),
         ),
       ],
     );
@@ -769,8 +675,7 @@ class _DailyQuotesCardState extends State<DailyQuotesCard>
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(quotes.length, (index) {
         final isActive = index == _currentPage;
-        return AnimatedContainer(
-          duration: ThemeConstants.durationNormal,
+        return Container(
           margin: const EdgeInsets.symmetric(horizontal: 4),
           width: isActive ? 32 : 8,
           height: 8,

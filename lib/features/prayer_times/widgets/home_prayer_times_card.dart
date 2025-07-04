@@ -115,20 +115,6 @@ class _PrayerTimesCardState extends State<PrayerTimesCard>
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),
         gradient: _getPrayerGradient(_nextPrayer?.nameAr ?? 'الفجر'),
-        boxShadow: [
-          BoxShadow(
-            color: _getPrayerColor(_nextPrayer?.nameAr ?? 'الفجر').withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-            spreadRadius: 2,
-          ),
-          BoxShadow(
-            color: _getPrayerColor(_nextPrayer?.nameAr ?? 'الفجر').withValues(alpha: 0.1),
-            blurRadius: 40,
-            offset: const Offset(0, 20),
-            spreadRadius: 4,
-          ),
-        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(ThemeConstants.radius2xl),

@@ -14,11 +14,8 @@ class WelcomeMessage extends StatefulWidget {
 
 class _WelcomeMessageState extends State<WelcomeMessage>
     with TickerProviderStateMixin {
-  late AnimationController _animationController;
   late AnimationController _iconController;
-  late Animation<double> _scaleAnimation;
   late Animation<double> _rotationAnimation;
-  late Animation<Color?> _colorAnimation;
 
   @override
   void initState() {
@@ -27,23 +24,10 @@ class _WelcomeMessageState extends State<WelcomeMessage>
   }
 
   void _setupAnimations() {
-    _animationController = AnimationController(
-      duration: ThemeConstants.durationExtraSlow,
-      vsync: this,
-    );
-
     _iconController = AnimationController(
       duration: const Duration(seconds: 8),
       vsync: this,
     )..repeat();
-
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: ThemeConstants.curveSmooth,
-    ));
 
     _rotationAnimation = Tween<double>(
       begin: 0.0,
@@ -52,28 +36,13 @@ class _WelcomeMessageState extends State<WelcomeMessage>
       parent: _iconController,
       curve: Curves.linear,
     ));
-
-    final hour = DateTime.now().hour;
-    final gradientColors = _getGradientColors(hour);
-    
-    _colorAnimation = ColorTween(
-      begin: gradientColors[0],
-      end: gradientColors[1],
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-
-    _animationController.forward();
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
     _iconController.dispose();
     super.dispose();
   }
-
   @override
   Widget build(BuildContext context) {
     final hour = DateTime.now().hour;
@@ -82,64 +51,42 @@ class _WelcomeMessageState extends State<WelcomeMessage>
     final icon = _getIcon(hour);
     final gradient = _getGradientColors(hour);
     
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return ScaleTransition(
-          scale: _scaleAnimation,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
           child: Container(
             decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: gradient.map((c) => c.withValues(alpha: 0.9)).toList(),
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-              boxShadow: [
-                BoxShadow(
-                  color: gradient[0].withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                  spreadRadius: 2,
-                ),
-                BoxShadow(
-                  color: gradient[1].withValues(alpha: 0.1),
-                  blurRadius: 40,
-                  offset: const Offset(0, 20),
-                  spreadRadius: 4,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1.5,
+              ),
+            ),
+            child: Stack(
+              children: [
+                // خلفية زخرفية
+                _buildDecorativeBackground(),
+                
+                // المحتوى الرئيسي
+                Padding(
+                  padding: const EdgeInsets.all(ThemeConstants.space6),
+                  child: _buildContent(context, greeting, message, icon),
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: gradient.map((c) => c.withValues(alpha: 0.9)).toList(),
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radius3xl),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Stack(
-                    children: [
-                      // خلفية زخرفية
-                      _buildDecorativeBackground(),
-                      
-                      // المحتوى الرئيسي
-                      Padding(
-                        padding: const EdgeInsets.all(ThemeConstants.space6),
-                        child: _buildContent(context, greeting, message, icon),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 

@@ -60,7 +60,7 @@ class IslamicPatternPainter extends CustomPainter {
       
       // نقاط على الزوايا
       for (int i = 0; i < 6; i++) {
-        final angle = (i * math.pi / 3) + (animation * math.pi / 6);
+        final angle = (i * math.pi / 3);
         final x = centerX + layerRadius * math.cos(angle);
         final y = centerY + layerRadius * math.sin(angle);
         
@@ -108,8 +108,8 @@ class IslamicPatternPainter extends CustomPainter {
     final double angle = 2 * math.pi / points;
     
     for (int i = 0; i < points; i++) {
-      final outerAngle = i * angle - math.pi / 2 + (animation * math.pi / 4);
-      final innerAngle = (i + 0.5) * angle - math.pi / 2 + (animation * math.pi / 4);
+      final outerAngle = i * angle - math.pi / 2;
+      final innerAngle = (i + 0.5) * angle - math.pi / 2;
       
       final outerX = center.dx + radius * math.cos(outerAngle);
       final outerY = center.dy + radius * math.sin(outerAngle);
@@ -213,7 +213,7 @@ class IslamicPatternPainter extends CustomPainter {
   void _drawIslamicFlower(Canvas canvas, Offset center, double radius, Paint strokePaint, Paint fillPaint) {
     // رسم زهرة إسلامية بستة بتلات
     for (int i = 0; i < 6; i++) {
-      final angle = (i * math.pi / 3) + (animation * math.pi / 6);
+      final angle = (i * math.pi / 3);
       final petalCenter = Offset(
         center.dx + (radius * 0.7) * math.cos(angle),
         center.dy + (radius * 0.7) * math.sin(angle),
