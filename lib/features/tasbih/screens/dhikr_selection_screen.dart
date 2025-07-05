@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../app/themes/app_theme.dart';
 import '../models/dhikr_model.dart';
 import '../services/tasbih_service.dart';
-import '../widgets/dhikr_card.dart';
+import 'package:athkar_app/features/tasbih/widgets/dhikr_card.dart';
 import '../widgets/add_custom_dhikr_dialog.dart';
 
 class DhikrSelectionScreen extends StatefulWidget {
@@ -22,29 +22,24 @@ class DhikrSelectionScreen extends StatefulWidget {
   State<DhikrSelectionScreen> createState() => _DhikrSelectionScreenState();
 }
 
-class _DhikrSelectionScreenState extends State<DhikrSelectionScreen>
-    with TickerProviderStateMixin {
-  late TabController _tabController;
+class _DhikrSelectionScreenState extends State<DhikrSelectionScreen> {
   final TextEditingController _searchController = TextEditingController();
   
   List<DhikrItem> _allAdhkar = [];
   List<DhikrItem> _filteredAdhkar = [];
   List<DhikrItem> _customAdhkar = [];
-  List<DhikrItem> _favoriteAdhkar = [];
-  DhikrCategory _selectedCategory = DhikrCategory.tasbih;
+  List<String> _favoriteIds = []; // تخزين معرفات المفضلة
   String _searchQuery = '';
+  String _currentFilter = 'الكل';
 
   @override
   void initState() {
     super.initState();
     _loadAdhkar();
-    _tabController = TabController(length: 4, vsync: this);
-    _tabController.addListener(_onTabChanged);
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -52,13 +47,11 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen>
   void _loadAdhkar() {
     _allAdhkar = DefaultAdhkar.getAll();
     _filteredAdhkar = List.from(_allAdhkar);
-    // تحميل الأذكار المخصصة والمفضلة من الخدمة
     _loadCustomAdhkar();
     _loadFavoriteAdhkar();
   }
 
   void _loadCustomAdhkar() {
-    // تحميل الأذكار المخصصة من TasbihService إذا كان متوفراً
     try {
       final tasbihService = context.read<TasbihService>();
       _customAdhkar = tasbihService.customAdhkar;
@@ -69,37 +62,35 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen>
         }
       }
     } catch (e) {
-      // إذا لم تكن الخدمة متوفرة، نبدأ بقائمة فارغة
       _customAdhkar = [];
     }
   }
 
   void _loadFavoriteAdhkar() {
-    // تحميل الأذكار المفضلة من التخزين
-    // مؤقتاً بعض الأذكار الشائعة
-    _favoriteAdhkar = DefaultAdhkar.getPopular();
+    // تحميل معرفات المفضلة (مؤقتاً بعض الأذكار الشائعة)
+    _favoriteIds = [
+      'subhan_allah',
+      'alhamdulillah', 
+      'allahu_akbar',
+      'la_ilaha_illa_allah',
+    ];
   }
 
-  void _onTabChanged() {
-    setState(() {
-      _filterAdhkar();
-    });
+  List<DhikrItem> get _favoriteAdhkar {
+    return _allAdhkar.where((dhikr) => _favoriteIds.contains(dhikr.id)).toList();
   }
 
   void _filterAdhkar() {
     List<DhikrItem> sourceList;
     
-    switch (_tabController.index) {
-      case 0: // الكل
+    switch (_currentFilter) {
+      case 'الكل':
         sourceList = _allAdhkar;
         break;
-      case 1: // المفضلة
+      case 'المفضلة':
         sourceList = _favoriteAdhkar;
         break;
-      case 2: // حسب التصنيف
-        sourceList = DefaultAdhkar.getByCategory(_selectedCategory);
-        break;
-      case 3: // المخصصة
+      case 'المخصصة':
         sourceList = _customAdhkar;
         break;
       default:
@@ -110,9 +101,7 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen>
       _filteredAdhkar = List.from(sourceList);
     } else {
       _filteredAdhkar = sourceList
-          .where((dhikr) =>
-              dhikr.text.contains(_searchQuery) ||
-              (dhikr.translation?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false))
+          .where((dhikr) => dhikr.text.contains(_searchQuery))
           .toList();
     }
   }
@@ -126,7 +115,14 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen>
 
   void _onCategoryChanged(DhikrCategory category) {
     setState(() {
-      _selectedCategory = category;
+      _currentFilter = 'التصنيف';
+      _filteredAdhkar = DefaultAdhkar.getByCategory(category);
+    });
+  }
+
+  void _onFilterChanged(String filter) {
+    setState(() {
+      _currentFilter = filter;
       _filterAdhkar();
     });
   }
@@ -143,11 +139,9 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen>
       builder: (context) => AddCustomDhikrDialog(
         onDhikrAdded: (dhikr) async {
           try {
-            // إضافة الذكر للخدمة
             final tasbihService = context.read<TasbihService>();
             await tasbihService.addCustomDhikr(dhikr);
             
-            // تحديث القوائم المحلية
             setState(() {
               _customAdhkar.add(dhikr);
               _allAdhkar.add(dhikr);
@@ -190,14 +184,12 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen>
                 ),
                 child: Stack(
                   children: [
-                    // نمط زخرفي
                     Positioned.fill(
                       child: CustomPaint(
                         painter: _SelectionScreenPainter(),
                       ),
                     ),
                     
-                    // المحتوى
                     Padding(
                       padding: const EdgeInsets.only(
                         left: 16,
@@ -278,62 +270,61 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen>
             ),
           ),
 
-          // التصنيفات التبويبية
+          // القوائم الرئيسية
           SliverToBoxAdapter(
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: context.cardColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                indicator: BoxDecoration(
-                  color: ThemeConstants.primary,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                indicatorPadding: const EdgeInsets.all(4),
-                labelColor: Colors.white,
-                unselectedLabelColor: context.textSecondaryColor,
-                tabs: const [
-                  Tab(text: 'الكل'),
-                  Tab(text: 'المفضلة'),
-                  Tab(text: 'التصنيف'),
-                  Tab(text: 'المخصصة'),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  // صف الفئات الرئيسية
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildFilterButton(
+                          'المفضلة',
+                          Icons.favorite,
+                          Colors.red,
+                          _favoriteAdhkar.length,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildFilterButton(
+                          'التصنيف',
+                          Icons.category,
+                          ThemeConstants.primary,
+                          DefaultAdhkar.getAll().length,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildFilterButton(
+                          'المخصصة',
+                          Icons.edit,
+                          ThemeConstants.accent,
+                          _customAdhkar.length,
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // زر عرض الكل
+                  SizedBox(
+                    width: double.infinity,
+                    child: _buildFilterButton(
+                      'عرض جميع الأذكار',
+                      Icons.list,
+                      ThemeConstants.success,
+                      _allAdhkar.length,
+                      isFullWidth: true,
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
-
-          // محدد التصنيف (يظهر فقط في تبويب التصنيف)
-          if (_tabController.index == 2)
-            SliverToBoxAdapter(
-              child: Container(
-                height: 60,
-                margin: const EdgeInsets.all(16),
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: DhikrCategory.values.length - 1, // استثناء المخصص
-                  itemBuilder: (context, index) {
-                    final category = DhikrCategory.values[index];
-                    final isSelected = category == _selectedCategory;
-                    
-                    return Container(
-                      margin: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        selected: isSelected,
-                        label: Text(category.title),
-                        avatar: Icon(category.icon, size: 18),
-                        onSelected: (_) => _onCategoryChanged(category),
-                        selectedColor: ThemeConstants.primary.withValues(alpha: 0.2),
-                        checkmarkColor: ThemeConstants.primary,
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
 
           // قائمة الأذكار
           SliverPadding(
@@ -347,12 +338,14 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen>
                       (context, index) {
                         final dhikr = _filteredAdhkar[index];
                         final isSelected = widget.currentDhikr?.id == dhikr.id;
+                        final isFavorite = _favoriteIds.contains(dhikr.id);
                         
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: DhikrCard(
+                          child: DhikrCardSimple(
                             dhikr: dhikr,
                             isSelected: isSelected,
+                            isFavorite: isFavorite,
                             onTap: () => _onDhikrTap(dhikr),
                             onFavoriteToggle: () => _toggleFavorite(dhikr),
                             onDelete: dhikr.isCustom ? () => _deleteCustomDhikr(dhikr) : null,
@@ -401,7 +394,7 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen>
               ),
               textAlign: TextAlign.center,
             ),
-            if (_tabController.index == 3) ...[
+            if (_currentFilter == 'المخصصة') ...[
               ThemeConstants.space4.h,
               AppButton.outline(
                 text: 'إضافة ذكر مخصص',
@@ -415,18 +408,255 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen>
     );
   }
 
+  Widget _buildFilterButton(
+    String title,
+    IconData icon,
+    Color color,
+    int count, {
+    bool isFullWidth = false,
+  }) {
+    final isSelected = _currentFilter == title || 
+                      (title == 'عرض جميع الأذكار' && _currentFilter == 'الكل');
+    
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: () {
+          if (title == 'عرض جميع الأذكار') {
+            _onFilterChanged('الكل');
+          } else if (title == 'التصنيف') {
+            _showCategoriesDialog();
+          } else {
+            _onFilterChanged(title);
+          }
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: isSelected 
+                ? LinearGradient(
+                    colors: [color, color.lighten(0.2)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            color: !isSelected ? context.cardColor : null,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected 
+                  ? Colors.transparent
+                  : context.dividerColor.withValues(alpha: 0.3),
+            ),
+            boxShadow: isSelected ? [
+              BoxShadow(
+                color: color.withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ] : null,
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: isFullWidth 
+                    ? MainAxisAlignment.center 
+                    : MainAxisAlignment.spaceBetween,
+                children: [
+                  Icon(
+                    icon,
+                    color: isSelected ? Colors.white : color,
+                    size: isFullWidth ? 28 : 24,
+                  ),
+                  if (!isFullWidth) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected 
+                            ? Colors.white.withValues(alpha: 0.2)
+                            : color.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '$count',
+                        style: context.labelSmall?.copyWith(
+                          color: isSelected ? Colors.white : color,
+                          fontWeight: ThemeConstants.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              
+              const SizedBox(height: 8),
+              
+              Text(
+                title,
+                style: context.titleSmall?.copyWith(
+                  color: isSelected ? Colors.white : context.textPrimaryColor,
+                  fontWeight: isSelected ? ThemeConstants.bold : ThemeConstants.semiBold,
+                ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+              
+              if (isFullWidth) ...[
+                const SizedBox(height: 4),
+                Text(
+                  '$count ذكر',
+                  style: context.bodySmall?.copyWith(
+                    color: isSelected 
+                        ? Colors.white.withValues(alpha: 0.8)
+                        : context.textSecondaryColor,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showCategoriesDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+        ),
+        decoration: BoxDecoration(
+          color: context.cardColor,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // مقبض السحب
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: context.dividerColor,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'اختر التصنيف',
+                      style: context.titleLarge?.copyWith(
+                        fontWeight: ThemeConstants.bold,
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // شبكة التصنيفات
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 1.2,
+                      ),
+                      itemCount: DhikrCategory.values.length - 1, // استثناء المخصص
+                      itemBuilder: (context, index) {
+                        final category = DhikrCategory.values[index];
+                        final count = DefaultAdhkar.getByCategory(category).length;
+                        
+                        return Material(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(12),
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.pop(context);
+                              _onCategoryChanged(category);
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: context.surfaceColor,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: context.dividerColor.withValues(alpha: 0.3),
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    category.icon,
+                                    color: ThemeConstants.primary,
+                                    size: 24,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    category.title,
+                                    style: context.labelMedium?.copyWith(
+                                      fontWeight: ThemeConstants.semiBold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    '$count',
+                                    style: context.labelSmall?.copyWith(
+                                      color: context.textSecondaryColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _toggleFavorite(DhikrItem dhikr) {
     setState(() {
-      if (_favoriteAdhkar.any((d) => d.id == dhikr.id)) {
-        _favoriteAdhkar.removeWhere((d) => d.id == dhikr.id);
+      if (_favoriteIds.contains(dhikr.id)) {
+        _favoriteIds.remove(dhikr.id);
       } else {
-        _favoriteAdhkar.add(dhikr);
+        _favoriteIds.add(dhikr.id);
       }
       _filterAdhkar();
     });
     
-    // هنا يجب حفظ المفضلة في التخزين
     HapticFeedback.lightImpact();
+    final isFavorite = _favoriteIds.contains(dhikr.id);
+    context.showInfoSnackBar(
+      isFavorite ? 'تم إضافة للمفضلة' : 'تم إزالة من المفضلة'
+    );
   }
 
   void _deleteCustomDhikr(DhikrItem dhikr) {
@@ -441,16 +671,14 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen>
     ).then((confirmed) async {
       if (confirmed == true) {
         try {
-          // حذف الذكر من الخدمة
           final tasbihService = context.read<TasbihService>();
           await tasbihService.removeCustomDhikr(dhikr.id);
           
-          // تحديث القوائم المحلية
           setState(() {
             _customAdhkar.removeWhere((d) => d.id == dhikr.id);
             _allAdhkar.removeWhere((d) => d.id == dhikr.id);
             _filteredAdhkar.removeWhere((d) => d.id == dhikr.id);
-            _favoriteAdhkar.removeWhere((d) => d.id == dhikr.id);
+            _favoriteIds.remove(dhikr.id);
           });
           
           HapticFeedback.mediumImpact();

@@ -125,9 +125,6 @@ class _TasbihScreenState extends State<TasbihScreen>
                   Expanded(
                     child: _buildMainTasbihArea(context),
                   ),
-                  
-                  // منطقة التحكم السفلية
-                  _buildControlsArea(context),
                 ],
               ),
             ),
@@ -202,23 +199,62 @@ class _TasbihScreenState extends State<TasbihScreen>
             ),
           ),
           
-          // زر التاريخ والإحصائيات
+          // زر تصفير العداد
+          Consumer<TasbihService>(
+            builder: (context, service, _) {
+              return Container(
+                margin: const EdgeInsets.only(left: ThemeConstants.space2),
+                child: Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                  child: InkWell(
+                    onTap: () => _showResetDialog(service),
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                    child: Container(
+                      padding: const EdgeInsets.all(ThemeConstants.space2),
+                      decoration: BoxDecoration(
+                        color: context.cardColor,
+                        borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                        border: Border.all(
+                          color: context.dividerColor.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.refresh_rounded,
+                        color: ThemeConstants.error,
+                        size: ThemeConstants.iconMd,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          
+          // زر الإحصائيات
           Container(
-            padding: const EdgeInsets.all(ThemeConstants.space2),
-            decoration: BoxDecoration(
-              color: context.cardColor,
+            margin: const EdgeInsets.only(left: ThemeConstants.space2),
+            child: Material(
+              color: Colors.transparent,
               borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-              border: Border.all(
-                color: context.dividerColor.withValues(alpha: 0.3),
-              ),
-            ),
-            child: InkWell(
-              onTap: _showStatistics,
-              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-              child: Icon(
-                Icons.bar_chart_rounded,
-                color: context.textPrimaryColor,
-                size: ThemeConstants.iconMd,
+              child: InkWell(
+                onTap: _showStatistics,
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                child: Container(
+                  padding: const EdgeInsets.all(ThemeConstants.space2),
+                  decoration: BoxDecoration(
+                    color: context.cardColor,
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                    border: Border.all(
+                      color: context.dividerColor.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.bar_chart_rounded,
+                    color: context.textPrimaryColor,
+                    size: ThemeConstants.iconMd,
+                  ),
+                ),
               ),
             ),
           ),
@@ -309,7 +345,7 @@ class _TasbihScreenState extends State<TasbihScreen>
                   ),
                 ),
                 
-                Icon(
+                const Icon(
                   Icons.keyboard_arrow_down_rounded,
                   color: Colors.white,
                   size: ThemeConstants.iconMd,
@@ -532,82 +568,6 @@ class _TasbihScreenState extends State<TasbihScreen>
     );
   }
 
-  Widget _buildControlsArea(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(ThemeConstants.space4),
-      child: Consumer<TasbihService>(
-        builder: (context, service, _) {
-          return Row(
-            children: [
-              // زر التصفير
-              Expanded(
-                child: AppButton.outline(
-                  text: 'تصفير العداد',
-                  icon: Icons.refresh_rounded,
-                  onPressed: () => _showResetDialog(service),
-                  color: ThemeConstants.error,
-                ),
-              ),
-              
-              ThemeConstants.space3.w,
-              
-              // زر الإعدادات
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: context.cardColor,
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-                  border: Border.all(
-                    color: context.dividerColor.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-                  child: InkWell(
-                    onTap: _showSettings,
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-                    child: Icon(
-                      Icons.settings_outlined,
-                      color: context.textPrimaryColor,
-                    ),
-                  ),
-                ),
-              ),
-              
-              ThemeConstants.space3.w,
-              
-              // زر المشاركة
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: _currentDhikr.gradient,
-                  ),
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-                  child: InkWell(
-                    onTap: () => _shareProgress(service),
-                    borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-                    child: const Icon(
-                      Icons.share_rounded,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
   void _incrementCounter(TasbihService service) {
     service.increment(dhikrType: _currentDhikr.text);
     
@@ -678,28 +638,5 @@ class _TasbihScreenState extends State<TasbihScreen>
 
   void _showStatistics() {
     context.showInfoSnackBar('ستتم إضافة الإحصائيات قريباً');
-  }
-
-  void _showSettings() {
-    context.showInfoSnackBar('ستتم إضافة الإعدادات قريباً');
-  }
-
-  void _shareProgress(TasbihService service) {
-    final completedRounds = service.count ~/ _currentDhikr.recommendedCount;
-    
-    final shareText = '''
-🕌 المسبحة الرقمية
-
-سبحت الله ${service.count} مرة اليوم
-${_currentDhikr.text}
-أكملت ${completedRounds} جولة
-
-"واذكر ربك كثيراً وسبح بالعشي والإبكار"
-
-من تطبيق الأذكار
-''';
-    
-    // يمكن استخدام share_plus package هنا
-    context.showInfoSnackBar('تمت مشاركة التقدم');
   }
 }

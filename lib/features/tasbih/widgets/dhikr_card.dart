@@ -1,25 +1,25 @@
-// lib/features/tasbih/widgets/dhikr_card.dart
+// lib/features/tasbih/widgets/dhikr_card_simple.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/themes/app_theme.dart';
 import '../models/dhikr_model.dart';
 
-class DhikrCard extends StatelessWidget {
+class DhikrCardSimple extends StatelessWidget {
   final DhikrItem dhikr;
   final bool isSelected;
+  final bool isFavorite;
   final VoidCallback onTap;
   final VoidCallback? onFavoriteToggle;
   final VoidCallback? onDelete;
-  final bool showFavoriteButton;
 
-  const DhikrCard({
+  const DhikrCardSimple({
     super.key,
     required this.dhikr,
     required this.isSelected,
+    required this.isFavorite,
     required this.onTap,
     this.onFavoriteToggle,
     this.onDelete,
-    this.showFavoriteButton = true,
   });
 
   @override
@@ -69,7 +69,7 @@ class DhikrCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // الرأس مع التصنيف والمفضلة
+                  // الرأس مع التصنيف والإجراءات
                   Row(
                     children: [
                       // تصنيف الذكر
@@ -134,7 +134,7 @@ class DhikrCard extends StatelessWidget {
                       ),
                       
                       // زر المفضلة
-                      if (showFavoriteButton && onFavoriteToggle != null) ...[
+                      if (onFavoriteToggle != null) ...[
                         const SizedBox(width: 8),
                         Material(
                           color: Colors.transparent,
@@ -145,11 +145,13 @@ class DhikrCard extends StatelessWidget {
                             child: Padding(
                               padding: const EdgeInsets.all(4),
                               child: Icon(
-                                Icons.favorite_outline, // يجب تغييرها حسب حالة المفضلة
+                                isFavorite ? Icons.favorite : Icons.favorite_outline,
                                 size: 20,
-                                color: isSelected 
-                                    ? Colors.white.withValues(alpha: 0.8)
-                                    : context.textSecondaryColor,
+                                color: isFavorite 
+                                    ? Colors.red
+                                    : (isSelected 
+                                        ? Colors.white.withValues(alpha: 0.8)
+                                        : context.textSecondaryColor),
                               ),
                             ),
                           ),
@@ -211,32 +213,6 @@ class DhikrCard extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                   ),
-                  
-                  // الترجمة (إذا وُجدت)
-                  if (dhikr.translation != null) ...[
-                    ThemeConstants.space2.h,
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isSelected 
-                            ? Colors.white.withValues(alpha: 0.1)
-                            : context.textSecondaryColor.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        dhikr.translation!,
-                        style: context.bodySmall?.copyWith(
-                          color: isSelected 
-                              ? Colors.white.withValues(alpha: 0.8)
-                              : context.textSecondaryColor,
-                          fontStyle: FontStyle.italic,
-                          height: 1.4,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
                   
                   // الفضل (إذا وُجد)
                   if (dhikr.virtue != null) ...[

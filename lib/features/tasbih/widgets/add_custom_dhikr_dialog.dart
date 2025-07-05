@@ -36,8 +36,10 @@ class _AddCustomDhikrDialogState extends State<AddCustomDhikrDialog> {
     ThemeConstants.info,
     ThemeConstants.error,
     ThemeConstants.primaryDark,
-    ThemeConstants.accentDark,
-    ThemeConstants.tertiaryDark,
+    const Color(0xFF9C27B0), // Purple
+    const Color(0xFF00BCD4), // Cyan
+    const Color(0xFF795548), // Brown  
+    const Color(0xFF607D8B), // Blue Grey
   ];
 
   @override
@@ -275,47 +277,53 @@ class _AddCustomDhikrDialogState extends State<AddCustomDhikrDialog> {
                       const SizedBox(height: 20),
                       
                       // اختيار اللون
-                      _buildLabel('اللون'),
+                      _buildLabel('اختيار اللون'),
                       const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        children: _availableColors.map((color) {
-                          final isSelected = color == _selectedColor;
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _selectedColor = color;
-                              });
-                              HapticFeedback.selectionClick();
-                            },
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: color,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isSelected ? Colors.white : Colors.transparent,
-                                  width: 3,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: color.withValues(alpha: 0.3),
-                                    blurRadius: isSelected ? 8 : 4,
-                                    offset: Offset(0, isSelected ? 4 : 2),
+                      Container(
+                        constraints: const BoxConstraints(maxHeight: 120),
+                        child: SingleChildScrollView(
+                          child: Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: _availableColors.map((color) {
+                              final isSelected = color == _selectedColor;
+                              return GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedColor = color;
+                                  });
+                                  HapticFeedback.selectionClick();
+                                },
+                                child: Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    color: color,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: isSelected ? Colors.white : Colors.transparent,
+                                      width: 3,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: color.withValues(alpha: 0.3),
+                                        blurRadius: isSelected ? 8 : 4,
+                                        offset: Offset(0, isSelected ? 4 : 2),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              child: isSelected
-                                  ? const Icon(
-                                      Icons.check,
-                                      color: Colors.white,
-                                      size: 20,
-                                    )
-                                  : null,
-                            ),
-                          );
-                        }).toList(),
+                                  child: isSelected
+                                      ? const Icon(
+                                          Icons.check,
+                                          color: Colors.white,
+                                          size: 20,
+                                        )
+                                      : null,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
                       ),
                     ],
                   ),

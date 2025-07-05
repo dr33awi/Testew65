@@ -1,7 +1,6 @@
 // lib/features/tasbih/widgets/tasbih_counter_ring.dart
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import '../../../app/themes/app_theme.dart';
 
 /// ويدجت الحلقة الدائرية لعرض التقدم
 class TasbihCounterRing extends StatefulWidget {

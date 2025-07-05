@@ -77,7 +77,8 @@ class _HomeScreenState extends State<HomeScreen> {
           // المحتوى الرئيسي
           CustomScrollView(
             controller: _scrollController,
-            physics: const BouncingScrollPhysics(),
+            // تغيير فيزياء التمرير لإزالة السلوك المطاطي
+            physics: const ClampingScrollPhysics(),
             slivers: [
               // شريط تطبيق مبسط
               SliverAppBar(
