@@ -1268,7 +1268,7 @@ $appUrl
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.warning,
             color: ThemeConstants.error,
             size: 20,
@@ -1284,7 +1284,7 @@ $appUrl
           ),
           IconButton(
             onPressed: () => setState(() => _errorMessage = null),
-            icon: Icon(
+            icon: const Icon(
               Icons.close,
               color: ThemeConstants.error,
               size: 20,
@@ -1422,7 +1422,7 @@ class _AboutDialog extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.favorite,
                           color: ThemeConstants.error,
                           size: ThemeConstants.iconSm,

@@ -12,7 +12,6 @@ import '../../../core/infrastructure/services/permissions/permission_service.dar
 import '../services/qibla_service.dart';
 import '../widgets/qibla_compass.dart';
 import '../widgets/qibla_info_card.dart';
-// import '../widgets/qibla_accuracy_indicator.dart'; // Removed this import
 
 class QiblaScreen extends StatefulWidget {
   const QiblaScreen({super.key});
@@ -145,75 +144,202 @@ class _QiblaScreenState extends State<QiblaScreen>
           builder: (context, service, _) {
             return FadeTransition(
               opacity: _fadeAnimation,
-              child: CustomScrollView(
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-                  SliverAppBar(
-                    floating: true,
-                    snap: true,
-                    pinned: false,
-                    backgroundColor: context.backgroundColor,
-                    elevation: 0,
-                    toolbarHeight: 60,
-                    flexibleSpace: PreferredSize(
-                      preferredSize: const Size.fromHeight(60.0),
-                      child: CustomAppBar(
-                        title: 'اتجاه القبلة',
-                        actions: [
-                          AppBarAction(
-                            icon: Icons.info_outline,
-                            onPressed: _showCalibrationInfo,
-                            tooltip: 'معلومات حول المعايرة',
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    // Custom AppBar محسن
+                    _buildCustomAppBar(context, service),
+                    
+                    // المحتوى
+                    Expanded(
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
+                          child: Column(
+                            children: [
+                              ThemeConstants.space4.h,
+
+                              // البوصلة أو رسالة الخطأ
+                              AnimatedSwitcher(
+                                duration: ThemeConstants.durationNormal,
+                                child: _buildMainContent(service),
+                              ),
+
+                              ThemeConstants.space6.h,
+
+                              // معلومات إضافية
+                              if (service.qiblaData != null) ...[
+                                QiblaInfoCard(qiblaData: service.qiblaData!),
+                              ],
+
+                              ThemeConstants.space12.h,
+                            ],
                           ),
-                          if (!service.isLoading)
-                            AppBarAction(
-                              icon: Icons.refresh,
-                              onPressed: () {
-                                HapticFeedback.lightImpact();
-                                _updateQiblaData();
-                              },
-                              tooltip: 'تحديث الموقع',
-                            ),
-                          if (service.isLoading)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                              child: AppLoading.circular(size: LoadingSize.small),
-                            ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                  
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: ThemeConstants.space4),
-                      child: Column(
-                        children: [
-                          ThemeConstants.space4.h,
-
-                          // البوصلة أو رسالة الخطأ
-                          AnimatedSwitcher(
-                            duration: ThemeConstants.durationNormal,
-                            child: _buildMainContent(service),
-                          ),
-
-                          ThemeConstants.space6.h,
-
-                          // معلومات إضافية
-                          if (service.qiblaData != null) ...[
-                            QiblaInfoCard(qiblaData: service.qiblaData!),
-                          ],
-
-                          ThemeConstants.space12.h,
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildCustomAppBar(BuildContext context, QiblaService service) {
+    // استخدام نفس التدرج المستخدم في CategoryGrid لفئة qibla
+    const gradient = LinearGradient(
+      colors: [ThemeConstants.primaryDark, ThemeConstants.primary],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+    
+    return Container(
+      padding: const EdgeInsets.all(ThemeConstants.space4),
+      child: Row(
+        children: [
+          // زر الرجوع
+          AppBackButton(
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          
+          ThemeConstants.space3.w,
+          
+          // الأيقونة الجانبية مع نفس التدرج المستخدم في CategoryGrid
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space2),
+            decoration: BoxDecoration(
+              gradient: gradient,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              boxShadow: [
+                BoxShadow(
+                  color: ThemeConstants.primaryDark.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.explore,
+              color: Colors.white,
+              size: ThemeConstants.iconMd,
+            ),
+          ),
+          
+          ThemeConstants.space3.w,
+          
+          // العنوان والوصف
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'اتجاه القبلة',
+                  style: context.titleLarge?.copyWith(
+                    fontWeight: ThemeConstants.bold,
+                    color: context.textPrimaryColor,
+                  ),
+                ),
+                Text(
+                  service.qiblaData != null 
+                      ? 'الاتجاه: ${service.qiblaData!.qiblaDirection.toStringAsFixed(1)}°'
+                      : 'البوصلة الذكية',
+                  style: context.bodySmall?.copyWith(
+                    color: context.textSecondaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // زر معلومات المعايرة
+          Container(
+            margin: const EdgeInsets.only(left: ThemeConstants.space2),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              child: InkWell(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  _showCalibrationInfo();
+                },
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                child: Container(
+                  padding: const EdgeInsets.all(ThemeConstants.space2),
+                  decoration: BoxDecoration(
+                    color: context.cardColor,
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                    border: Border.all(
+                      color: context.dividerColor.withValues(alpha: 0.3),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.info_outline,
+                    color: context.textSecondaryColor,
+                    size: ThemeConstants.iconMd,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          
+          // زر التحديث أو مؤشر التحميل
+          Container(
+            margin: const EdgeInsets.only(left: ThemeConstants.space2),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              child: InkWell(
+                onTap: service.isLoading ? null : () {
+                  HapticFeedback.lightImpact();
+                  _updateQiblaData();
+                },
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                child: Container(
+                  padding: const EdgeInsets.all(ThemeConstants.space2),
+                  decoration: BoxDecoration(
+                    color: context.cardColor,
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                    border: Border.all(
+                      color: context.dividerColor.withValues(alpha: 0.3),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: service.isLoading 
+                      ? const SizedBox(
+                          width: ThemeConstants.iconMd, 
+                          height: ThemeConstants.iconMd, 
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(ThemeConstants.primaryDark),
+                          ),
+                        )
+                      : const Icon(
+                          Icons.refresh_rounded,
+                          color: ThemeConstants.primaryDark,
+                          size: ThemeConstants.iconMd,
+                        ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -233,22 +359,10 @@ class _QiblaScreenState extends State<QiblaScreen>
   }
 
   Widget _buildCompassView(QiblaService service) {
-    // Removed CompassBackgroundPainter to remove the visual background
     return SizedBox(
       height: 350,
       child: Stack(
         children: [
-          // Removed background painter to remove the visual card-like effect
-          /*
-          Positioned.fill(
-            child: CustomPaint(
-              painter: CompassBackgroundPainter(
-                color: context.primaryColor.withOpacity(0.05),
-              ),
-            ),
-          ),
-          */
-
           // البوصلة
           Padding(
             padding: const EdgeInsets.all(ThemeConstants.space4),

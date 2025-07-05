@@ -1,0 +1,169 @@
+{
+  "defaultAdhkar": [
+    {
+      "id": "subhan_allah",
+      "text": "سُبْحَانَ اللهِ",
+      "translation": "Glory be to Allah",
+      "virtue": "من قال سبحان الله مائة مرة حطت خطاياه وإن كانت مثل زبد البحر",
+      "recommendedCount": 33,
+      "category": "tasbih",
+      "gradient": [4283215696, 4284264176],
+      "primaryColor": 4283215696,
+      "isCustom": false
+    },
+    {
+      "id": "subhan_allah_wa_bihamdihi",
+      "text": "سُبْحَانَ اللهِ وَبِحَمْدِهِ",
+      "translation": "Glory be to Allah and praise be to Him",
+      "virtue": "من قال سبحان الله وبحمده في يوم مائة مرة حطت خطاياه",
+      "recommendedCount": 100,
+      "category": "tasbih",
+      "gradient": [4283477552, 4283215696],
+      "primaryColor": 4283215696,
+      "isCustom": false
+    },
+    {
+      "id": "subhan_allah_azeem",
+      "text": "سُبْحَانَ اللهِ الْعَظِيمِ",
+      "translation": "Glory be to Allah, the Great",
+      "virtue": "كلمة خفيفة على اللسان ثقيلة في الميزان حبيبة إلى الرحمن",
+      "recommendedCount": 33,
+      "category": "tasbih",
+      "gradient": [4282953840, 4283215696],
+      "primaryColor": 4283215696,
+      "isCustom": false
+    },
+    {
+      "id": "alhamdulillah",
+      "text": "الْحَمْدُ لِلّهِ",
+      "translation": "Praise be to Allah",
+      "virtue": "الحمد لله تملأ الميزان",
+      "recommendedCount": 33,
+      "category": "tahmid",
+      "gradient": [4294934352, 4294948720],
+      "primaryColor": 4294934352,
+      "isCustom": false
+    },
+    {
+      "id": "alhamdulillah_rabbil_alameen",
+      "text": "الْحَمْدُ لِلّهِ رَبِّ الْعَالَمِينَ",
+      "translation": "Praise be to Allah, Lord of the worlds",
+      "virtue": "فاتحة الكتاب وأم القرآن",
+      "recommendedCount": 25,
+      "category": "tahmid",
+      "gradient": [4294941264, 4294934352],
+      "primaryColor": 4294934352,
+      "isCustom": false
+    },
+    {
+      "id": "allahu_akbar",
+      "text": "اللهُ أَكْبَرُ",
+      "translation": "Allah is the Greatest",
+      "virtue": "التكبير يملأ ما بين السماء والأرض",
+      "recommendedCount": 34,
+      "category": "takbir",
+      "gradient": [4294944768, 4294951424],
+      "primaryColor": 4294944768,
+      "isCustom": false
+    },
+    {
+      "id": "allahu_akbar_kabiran",
+      "text": "اللهُ أَكْبَرُ كَبِيرًا",
+      "translation": "Allah is the Greatest, greatly",
+      "virtue": "من التكبيرات المستحبة في الصلاة",
+      "recommendedCount": 10,
+      "category": "takbir",
+      "gradient": [4294948096, 4294944768],
+      "primaryColor": 4294944768,
+      "isCustom": false
+    },
+    {
+      "id": "la_ilaha_illa_allah",
+      "text": "لاَ إِلَهَ إِلاَّ اللهُ",
+      "translation": "There is no god but Allah",
+      "virtue": "أفضل الذكر لا إله إلا الله",
+      "recommendedCount": 100,
+      "category": "tahlil",
+      "gradient": [4283781476, 4284830000],
+      "primaryColor": 4283781476,
+      "isCustom": false
+    },
+    {
+      "id": "la_ilaha_illa_allah_wahdahu",
+      "text": "لاَ إِلَهَ إِلاَّ اللهُ وَحْدَهُ لاَ شَرِيكَ لَهُ",
+      "translation": "There is no god but Allah alone, with no partner",
+      "virtue": "من قالها عشر مرات كان كمن أعتق أربعة أنفس من ولد إسماعيل",
+      "recommendedCount": 10,
+      "category": "tahlil",
+      "gradient": [4283519620, 4283781476],
+      "primaryColor": 4283781476,
+      "isCustom": false
+    },
+    {
+      "id": "astaghfirullah",
+      "text": "أَسْتَغْفِرُ اللهَ",
+      "translation": "I seek forgiveness from Allah",
+      "virtue": "الاستغفار يمحو الذنوب ويجلب الرزق",
+      "recommendedCount": 100,
+      "category": "istighfar",
+      "gradient": [4282692196, 4283215696],
+      "primaryColor": 4282692196,
+      "isCustom": false
+    },
+    {
+      "id": "astaghfirullah_azeem",
+      "text": "أَسْتَغْفِرُ اللهَ الْعَظِيمَ",
+      "translation": "I seek forgiveness from Allah, the Great",
+      "virtue": "من قالها ثلاثاً غفر له وإن كان فارّاً من الزحف",
+      "recommendedCount": 3,
+      "category": "istighfar",
+      "gradient": [4282954052, 4282692196],
+      "primaryColor": 4282692196,
+      "isCustom": false
+    },
+    {
+      "id": "salallahu_alayhi_wasallam",
+      "text": "اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ",
+      "translation": "O Allah, send prayers and peace upon our Prophet Muhammad",
+      "virtue": "من صلى علي صلاة صلى الله عليه بها عشراً",
+      "recommendedCount": 10,
+      "category": "salawat",
+      "gradient": [4294672640, 4294934352],
+      "primaryColor": 4294672640,
+      "isCustom": false
+    },
+    {
+      "id": "rabbana_atina",
+      "text": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
+      "translation": "Our Lord, give us good in this world and good in the next world, and save us from the punishment of the Fire",
+      "virtue": "دعاء جامع لخير الدنيا والآخرة",
+      "recommendedCount": 7,
+      "category": "dua",
+      "gradient": [4294683392, 4294944768],
+      "primaryColor": 4294683392,
+      "isCustom": false
+    },
+    {
+      "id": "qul_huwa_allah_ahad",
+      "text": "قُلْ هُوَ اللَّهُ أَحَدٌ * اللَّهُ الصَّمَدُ * لَمْ يَلِدْ وَلَمْ يُولَدْ * وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ",
+      "translation": "Say: He is Allah, the One! Allah, the Eternal, Absolute; He begets not, nor is He begotten; And there is none like unto Him.",
+      "virtue": "تعدل ثلث القرآن",
+      "recommendedCount": 3,
+      "category": "quran",
+      "gradient": [4286578688, 4287234160],
+      "primaryColor": 4286578688,
+      "isCustom": false
+    },
+    {
+      "id": "hasbi_allah",
+      "text": "حَسْبِيَ اللهُ لاَ إِلَهَ إِلاَّ هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ",
+      "translation": "Allah is sufficient for me; there is no god but He. In Him I put my trust, and He is the Lord of the Great Throne",
+      "virtue": "من قالها سبع مرات كفاه الله ما أهمه",
+      "recommendedCount": 7,
+      "category": "general",
+      "gradient": [4294956800, 4294962160],
+      "primaryColor": 4294956800,
+      "isCustom": false
+    }
+  ]
+}

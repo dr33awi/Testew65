@@ -171,71 +171,229 @@ class _PrayerTimesScreenState extends State<PrayerTimesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.backgroundColor,
-      body: RefreshIndicator(
-        onRefresh: _loadPrayerTimes,
-        child: CustomScrollView(
-          controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            // App Bar
-            _buildAppBar(),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Custom AppBar محسن
+            _buildCustomAppBar(context),
             
             // المحتوى
-            if (_isLoading && _dailyTimes == null)
-              _buildLoadingState()
-            else if (_errorMessage != null && _dailyTimes == null)
-              _buildErrorState()
-            else if (_dailyTimes != null)
-              ..._buildContent()
-            else
-              _buildEmptyState(),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _loadPrayerTimes,
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    // المحتوى
+                    if (_isLoading && _dailyTimes == null)
+                      _buildLoadingState()
+                    else if (_errorMessage != null && _dailyTimes == null)
+                      _buildErrorState()
+                    else if (_dailyTimes != null)
+                      ..._buildContent()
+                    else
+                      _buildEmptyState(),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAppBar() {
-    return SliverAppBar(
-      floating: true,
-      snap: true,
-      backgroundColor: context.backgroundColor,
-      surfaceTintColor: Colors.transparent,
-      title: Text(
-        'مواقيت الصلاة',
-        style: context.titleLarge?.semiBold,
-      ),
-      actions: [
-        // زر تحديث الموقع
-        IconButton(
-          icon: _isRetryingLocation 
-              ? SizedBox(
-                  width: 20, 
-                  height: 20, 
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(context.primaryColor),
+  Widget _buildCustomAppBar(BuildContext context) {
+    // استخدام نفس التدرج المستخدم في CategoryGrid لفئة prayer_times
+    const gradient = LinearGradient(
+      colors: [ThemeConstants.primary, ThemeConstants.primaryLight],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+    
+    return Container(
+      padding: const EdgeInsets.all(ThemeConstants.space4),
+      child: Row(
+        children: [
+          // زر الرجوع
+          AppBackButton(
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          
+          ThemeConstants.space3.w,
+          
+          // الأيقونة الجانبية مع نفس التدرج المستخدم في CategoryGrid
+          Container(
+            padding: const EdgeInsets.all(ThemeConstants.space2),
+            decoration: BoxDecoration(
+              gradient: gradient,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              boxShadow: [
+                BoxShadow(
+                  color: ThemeConstants.primary.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.schedule_rounded,
+              color: Colors.white,
+              size: ThemeConstants.iconMd,
+            ),
+          ),
+          
+          ThemeConstants.space3.w,
+          
+          // العنوان والوصف
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'مواقيت الصلاة',
+                  style: context.titleLarge?.copyWith(
+                    fontWeight: ThemeConstants.bold,
+                    color: context.textPrimaryColor,
                   ),
-                )
-              : const Icon(Icons.my_location),
-          onPressed: _isRetryingLocation ? null : _requestLocation,
-          tooltip: 'تحديث الموقع',
-        ),
-        
-        // زر إعدادات الإشعارات
-        IconButton(
-          icon: const Icon(Icons.notifications_outlined),
-          onPressed: () => Navigator.pushNamed(context, '/prayer-notifications-settings'),
-          tooltip: 'إعدادات الإشعارات',
-        ),
-        
-        // زر الإعدادات
-        IconButton(
-          icon: const Icon(Icons.settings_outlined),
-          onPressed: () => Navigator.pushNamed(context, '/prayer-settings'),
-          tooltip: 'الإعدادات',
-        ),
-      ],
+                ),
+                Text(
+                  _nextPrayer != null 
+                      ? 'الصلاة التالية: ${_nextPrayer!.nameAr}'
+                      : 'وَأَقِمِ الصَّلَاةَ لِذِكْرِي',
+                  style: context.bodySmall?.copyWith(
+                    color: context.textSecondaryColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // زر تحديث الموقع
+          Container(
+            margin: const EdgeInsets.only(left: ThemeConstants.space2),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              child: InkWell(
+                onTap: _isRetryingLocation ? null : () {
+                  HapticFeedback.lightImpact();
+                  _requestLocation();
+                },
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                child: Container(
+                  padding: const EdgeInsets.all(ThemeConstants.space2),
+                  decoration: BoxDecoration(
+                    color: context.cardColor,
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                    border: Border.all(
+                      color: context.dividerColor.withValues(alpha: 0.3),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: _isRetryingLocation 
+                      ? SizedBox(
+                          width: ThemeConstants.iconMd, 
+                          height: ThemeConstants.iconMd, 
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(ThemeConstants.primary),
+                          ),
+                        )
+                      : Icon(
+                          Icons.my_location_rounded,
+                          color: ThemeConstants.primary,
+                          size: ThemeConstants.iconMd,
+                        ),
+                ),
+              ),
+            ),
+          ),
+          
+          // زر إعدادات الإشعارات
+          Container(
+            margin: const EdgeInsets.only(left: ThemeConstants.space2),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              child: InkWell(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  Navigator.pushNamed(context, '/prayer-notifications-settings');
+                },
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                child: Container(
+                  padding: const EdgeInsets.all(ThemeConstants.space2),
+                  decoration: BoxDecoration(
+                    color: context.cardColor,
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                    border: Border.all(
+                      color: context.dividerColor.withValues(alpha: 0.3),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.notifications_outlined,
+                    color: context.textPrimaryColor,
+                    size: ThemeConstants.iconMd,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          
+          // زر الإعدادات
+          Container(
+            margin: const EdgeInsets.only(left: ThemeConstants.space2),
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+              child: InkWell(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  Navigator.pushNamed(context, '/prayer-settings');
+                },
+                borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                child: Container(
+                  padding: const EdgeInsets.all(ThemeConstants.space2),
+                  decoration: BoxDecoration(
+                    color: context.cardColor,
+                    borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
+                    border: Border.all(
+                      color: context.dividerColor.withValues(alpha: 0.3),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    Icons.settings_outlined,
+                    color: context.textSecondaryColor,
+                    size: ThemeConstants.iconMd,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
