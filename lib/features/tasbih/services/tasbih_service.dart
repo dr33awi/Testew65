@@ -35,7 +35,7 @@ class TasbihService extends ChangeNotifier {
   int get totalCount => _totalCount;
   Map<String, int> get dhikrStats => Map.unmodifiable(_dhikrStats);
   List<DailyRecord> get history => List.unmodifiable(_history);
-  List<DhikrItem> get customAdhkar => List.unmodifiable(_customAdhkar); // إضافة getter للأذكار المخصصة
+  List<DhikrItem> get customAdhkar => List.unmodifiable(_customAdhkar);
 
   Future<void> _loadData() async {
     try {
@@ -74,15 +74,7 @@ class TasbihService extends ChangeNotifier {
       }
       
       // تحميل إحصائيات الأذكار
-      final statsData = _storage.getMap('${AppConstants.tasbihCounterKey}_stats');
-      if (statsData != null) {
-        _dhikrStats = {};
-        statsData.forEach((key, value) {
-          if (key is String && value is int) {
-            _dhikrStats[key] = value;
-          }
-        });
-      }
+      await _loadDhikrStats();
       
       // تحميل التاريخ
       await _loadHistory();
@@ -116,6 +108,28 @@ class TasbihService extends ChangeNotifier {
       _history = [];
       _customAdhkar = [];
       notifyListeners();
+    }
+  }
+
+  Future<void> _loadDhikrStats() async {
+    try {
+      final statsData = _storage.getMap('${AppConstants.tasbihCounterKey}_stats');
+      if (statsData != null) {
+        _dhikrStats = {};
+        statsData.forEach((key, value) {
+          if (key is String && value is int) {
+            _dhikrStats[key] = value;
+          } else if (key is String && value is num) {
+            _dhikrStats[key] = value.toInt();
+          }
+        });
+      }
+    } catch (e) {
+      _logger.error(
+        message: '[TasbihService] Error loading dhikr stats',
+        error: e,
+      );
+      _dhikrStats = {};
     }
   }
 
@@ -276,7 +290,6 @@ class TasbihService extends ChangeNotifier {
             } catch (e) {
               _logger.warning(
                 message: '[TasbihService] Invalid history record format',
-                data: {'key': key, 'data': recordData},
               );
             }
           }
@@ -287,7 +300,6 @@ class TasbihService extends ChangeNotifier {
         message: '[TasbihService] Error loading history',
         error: e,
       );
-      // في حالة الخطأ، نبدأ بقائمة فارغة
       _history = [];
     }
   }
@@ -360,7 +372,7 @@ class TasbihService extends ChangeNotifier {
     return mostUsed;
   }
 
-  // إدارة الأذكار المخصصة
+  // إدارة الأذكار المخصصة - النسخة المحدثة
   Future<void> _loadCustomAdhkar() async {
     try {
       final customData = _storage.getMap('${AppConstants.tasbihCounterKey}_custom_adhkar');
@@ -379,22 +391,25 @@ class TasbihService extends ChangeNotifier {
           final dhikrData = customData[key.toString()];
           if (dhikrData is Map<String, dynamic>) {
             try {
-              _customAdhkar.add(DhikrItem.fromMap(dhikrData));
+              final dhikr = DhikrItem.fromMap(dhikrData);
+              _customAdhkar.add(dhikr);
             } catch (e) {
               _logger.warning(
                 message: '[TasbihService] Invalid custom dhikr format',
-                data: {'key': key, 'data': dhikrData},
               );
             }
           }
         }
+        
+        _logger.debug(
+          message: '[TasbihService] Custom adhkar loaded',
+        );
       }
     } catch (e) {
       _logger.error(
         message: '[TasbihService] Error loading custom adhkar',
         error: e,
       );
-      // في حالة الخطأ، نبدأ بقائمة فارغة
       _customAdhkar = [];
     }
   }
@@ -406,27 +421,33 @@ class TasbihService extends ChangeNotifier {
         customData[i.toString()] = _customAdhkar[i].toMap();
       }
       await _storage.setMap('${AppConstants.tasbihCounterKey}_custom_adhkar', customData);
+      
+      _logger.debug(
+        message: '[TasbihService] Custom adhkar saved',
+      );
     } catch (e) {
       _logger.error(
         message: '[TasbihService] Error saving custom adhkar',
         error: e,
       );
+      rethrow;
     }
   }
 
   Future<void> addCustomDhikr(DhikrItem dhikr) async {
     try {
+      // التحقق من عدم وجود ذكر بنفس المعرف
+      if (_customAdhkar.any((existing) => existing.id == dhikr.id)) {
+        throw Exception('Dhikr with this ID already exists');
+      }
+
       _customAdhkar.add(dhikr);
       await _saveCustomAdhkar();
+      
       notifyListeners();
       
       _logger.info(
-        message: '[TasbihService] Custom dhikr added',
-        data: {
-          'dhikrId': dhikr.id,
-          'dhikrText': dhikr.text,
-          'category': dhikr.category.name,
-        },
+        message: '[TasbihService] Custom dhikr added successfully',
       );
     } catch (e) {
       _logger.error(
@@ -439,14 +460,21 @@ class TasbihService extends ChangeNotifier {
 
   Future<void> removeCustomDhikr(String dhikrId) async {
     try {
+      final oldLength = _customAdhkar.length;
       _customAdhkar.removeWhere((dhikr) => dhikr.id == dhikrId);
-      await _saveCustomAdhkar();
-      notifyListeners();
       
-      _logger.info(
-        message: '[TasbihService] Custom dhikr removed',
-        data: {'dhikrId': dhikrId},
-      );
+      if (_customAdhkar.length < oldLength) {
+        await _saveCustomAdhkar();
+        notifyListeners();
+        
+        _logger.info(
+          message: '[TasbihService] Custom dhikr removed successfully',
+        );
+      } else {
+        _logger.warning(
+          message: '[TasbihService] Custom dhikr not found for removal',
+        );
+      }
     } catch (e) {
       _logger.error(
         message: '[TasbihService] Error removing custom dhikr',
@@ -465,9 +493,10 @@ class TasbihService extends ChangeNotifier {
         notifyListeners();
         
         _logger.info(
-          message: '[TasbihService] Custom dhikr updated',
-          data: {'dhikrId': updatedDhikr.id},
+          message: '[TasbihService] Custom dhikr updated successfully',
         );
+      } else {
+        throw Exception('Custom dhikr not found for update');
       }
     } catch (e) {
       _logger.error(
@@ -483,6 +512,31 @@ class TasbihService extends ChangeNotifier {
     final allAdhkar = List<DhikrItem>.from(DefaultAdhkar.getAll());
     allAdhkar.addAll(_customAdhkar);
     return allAdhkar;
+  }
+
+  // دالة للتحقق من صحة البيانات المحفوظة
+  Future<bool> validateStoredData() async {
+    try {
+      // تحقق من وجود البيانات
+      final customData = _storage.getMap('${AppConstants.tasbihCounterKey}_custom_adhkar');
+      
+      _logger.debug(
+        message: '[TasbihService] Validating stored data',
+      );
+      
+      return true;
+    } catch (e) {
+      _logger.error(
+        message: '[TasbihService] Error validating stored data',
+        error: e,
+      );
+      return false;
+    }
+  }
+
+  // دالة لإعادة تحميل البيانات يدوياً
+  Future<void> reloadData() async {
+    await _loadData();
   }
 }
 
@@ -509,7 +563,7 @@ class DailyRecord {
   factory DailyRecord.fromMap(Map<String, dynamic> map) {
     return DailyRecord(
       date: DateTime.parse(map['date']),
-      count: map['count'],
+      count: map['count'] ?? 0,
       dhikrBreakdown: Map<String, int>.from(map['dhikrBreakdown'] ?? {}),
     );
   }

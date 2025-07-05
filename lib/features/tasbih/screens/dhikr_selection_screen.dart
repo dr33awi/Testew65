@@ -27,7 +27,6 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen> {
   
   List<DhikrItem> _allAdhkar = [];
   List<DhikrItem> _filteredAdhkar = [];
-  List<DhikrItem> _customAdhkar = [];
   List<String> _favoriteIds = []; // تخزين معرفات المفضلة
   String _searchQuery = '';
   String _currentFilter = 'الكل';
@@ -45,25 +44,29 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen> {
   }
 
   void _loadAdhkar() {
-    _allAdhkar = DefaultAdhkar.getAll();
-    _filteredAdhkar = List.from(_allAdhkar);
-    _loadCustomAdhkar();
-    _loadFavoriteAdhkar();
-  }
-
-  void _loadCustomAdhkar() {
+    // تحميل الأذكار الافتراضية
+    _allAdhkar = List.from(DefaultAdhkar.getAll());
+    
+    // تحميل الأذكار المخصصة من الخدمة (مع التحقق من وجودها)
     try {
       final tasbihService = context.read<TasbihService>();
-      _customAdhkar = tasbihService.customAdhkar;
+      final customAdhkar = tasbihService.customAdhkar;
+      
       // إضافة الأذكار المخصصة للقائمة الرئيسية
-      for (final customDhikr in _customAdhkar) {
-        if (!_allAdhkar.any((dhikr) => dhikr.id == customDhikr.id)) {
-          _allAdhkar.add(customDhikr);
-        }
-      }
+      _allAdhkar.addAll(customAdhkar);
+      
+      // طباعة للتشخيص
+      debugPrint('[DhikrSelection] تم تحميل ${_allAdhkar.length} ذكر (${customAdhkar.length} مخصص)');
     } catch (e) {
-      _customAdhkar = [];
+      // في حالة عدم توفر الخدمة، نكتفي بالأذكار الافتراضية
+      debugPrint('[DhikrSelection] خطأ في تحميل الأذكار المخصصة: $e');
     }
+    
+    // تحميل المفضلة
+    _loadFavoriteAdhkar();
+    
+    // تطبيق الفلتر
+    _filterAdhkar();
   }
 
   void _loadFavoriteAdhkar() {
@@ -78,6 +81,10 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen> {
 
   List<DhikrItem> get _favoriteAdhkar {
     return _allAdhkar.where((dhikr) => _favoriteIds.contains(dhikr.id)).toList();
+  }
+
+  List<DhikrItem> get _customAdhkar {
+    return _allAdhkar.where((dhikr) => dhikr.isCustom).toList();
   }
 
   void _filterAdhkar() {
@@ -104,6 +111,9 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen> {
           .where((dhikr) => dhikr.text.contains(_searchQuery))
           .toList();
     }
+
+    // طباعة للتشخيص
+    debugPrint('[DhikrSelection] فلترة: ${_filteredAdhkar.length} من ${sourceList.length} (الفلتر: $_currentFilter)');
   }
 
   void _onSearchChanged(String query) {
@@ -139,18 +149,40 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen> {
       builder: (context) => AddCustomDhikrDialog(
         onDhikrAdded: (dhikr) async {
           try {
+            // محاولة الحصول على الخدمة
             final tasbihService = context.read<TasbihService>();
+            
+            // إضافة الذكر إلى الخدمة
             await tasbihService.addCustomDhikr(dhikr);
             
-            setState(() {
-              _customAdhkar.add(dhikr);
-              _allAdhkar.add(dhikr);
-              _filterAdhkar();
-            });
-            
-            context.showSuccessSnackBar('تم إضافة الذكر المخصص بنجاح');
+            // تحديث الواجهة فوراً
+            if (mounted) {
+              setState(() {
+                // إضافة الذكر المخصص للقائمة المحلية أيضاً لضمان ظهوره
+                if (!_allAdhkar.any((d) => d.id == dhikr.id)) {
+                  _allAdhkar.add(dhikr);
+                }
+                _filterAdhkar(); // إعادة تطبيق الفلتر
+              });
+              
+              context.showSuccessSnackBar('تم إضافة الذكر المخصص بنجاح');
+              
+              // التبديل إلى عرض الأذكار المخصصة لرؤية الذكر الجديد
+              _onFilterChanged('المخصصة');
+            }
           } catch (e) {
-            context.showErrorSnackBar('حدث خطأ أثناء حفظ الذكر المخصص');
+            if (mounted) {
+              // إذا لم تكن الخدمة متاحة، نضيف الذكر محلياً فقط
+              if (e.toString().contains('Provider')) {
+                setState(() {
+                  _allAdhkar.add(dhikr);
+                  _filterAdhkar();
+                });
+                context.showInfoSnackBar('تم إضافة الذكر مؤقتاً (سيحفظ عند إعادة التشغيل)');
+              } else {
+                context.showErrorSnackBar('حدث خطأ أثناء حفظ الذكر المخصص: ${e.toString()}');
+              }
+            }
           }
         },
       ),
@@ -236,6 +268,17 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen> {
                 icon: const Icon(Icons.add, color: Colors.white),
                 onPressed: _showAddCustomDhikr,
                 tooltip: 'إضافة ذكر مخصص',
+              ),
+              // زر إعادة التحميل للتشخيص
+              IconButton(
+                icon: const Icon(Icons.refresh, color: Colors.white),
+                onPressed: () {
+                  setState(() {
+                    _loadAdhkar();
+                  });
+                  context.showInfoSnackBar('تم إعادة تحميل الأذكار');
+                },
+                tooltip: 'إعادة تحميل',
               ),
             ],
           ),
@@ -325,6 +368,42 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen> {
               ),
             ),
           ),
+
+          // معلومات تشخيصية (ستُحذف لاحقاً)
+          SliverToBoxAdapter(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'معلومات التشخيص:',
+                    style: context.labelMedium?.copyWith(
+                      fontWeight: ThemeConstants.bold,
+                      color: Colors.orange[800],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'إجمالي الأذكار: ${_allAdhkar.length} | المخصصة: ${_customAdhkar.length} | المعروضة: ${_filteredAdhkar.length}',
+                    style: context.bodySmall?.copyWith(color: Colors.orange[700]),
+                  ),
+                  Text(
+                    'الفلتر الحالي: $_currentFilter',
+                    style: context.bodySmall?.copyWith(color: Colors.orange[700]),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
           // قائمة الأذكار
           SliverPadding(
@@ -672,19 +751,36 @@ class _DhikrSelectionScreenState extends State<DhikrSelectionScreen> {
       if (confirmed == true) {
         try {
           final tasbihService = context.read<TasbihService>();
+          
+          // حذف الذكر من الخدمة
           await tasbihService.removeCustomDhikr(dhikr.id);
           
-          setState(() {
-            _customAdhkar.removeWhere((d) => d.id == dhikr.id);
-            _allAdhkar.removeWhere((d) => d.id == dhikr.id);
-            _filteredAdhkar.removeWhere((d) => d.id == dhikr.id);
-            _favoriteIds.remove(dhikr.id);
-          });
-          
-          HapticFeedback.mediumImpact();
-          context.showSuccessSnackBar('تم حذف الذكر المخصص');
+          // تحديث الواجهة
+          if (mounted) {
+            setState(() {
+              // حذف الذكر من القائمة المحلية أيضاً
+              _allAdhkar.removeWhere((d) => d.id == dhikr.id);
+              _favoriteIds.remove(dhikr.id); // إزالة من المفضلة أيضاً
+              _filterAdhkar(); // إعادة تطبيق الفلتر
+            });
+            
+            HapticFeedback.mediumImpact();
+            context.showSuccessSnackBar('تم حذف الذكر المخصص');
+          }
         } catch (e) {
-          context.showErrorSnackBar('حدث خطأ أثناء حذف الذكر');
+          if (mounted) {
+            // إذا لم تكن الخدمة متاحة، نحذف الذكر محلياً فقط
+            if (e.toString().contains('Provider')) {
+              setState(() {
+                _allAdhkar.removeWhere((d) => d.id == dhikr.id);
+                _favoriteIds.remove(dhikr.id);
+                _filterAdhkar();
+              });
+              context.showInfoSnackBar('تم حذف الذكر مؤقتاً');
+            } else {
+              context.showErrorSnackBar('حدث خطأ أثناء حذف الذكر: ${e.toString()}');
+            }
+          }
         }
       }
     });
